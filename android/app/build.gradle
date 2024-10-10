@@ -79,12 +79,12 @@ android {
 
     namespace "com.crmapp"
     defaultConfig {
-        applicationId "com.crmapp"
-        minSdkVersion rootProject.ext.minSdkVersion
-        targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
-    }
+    applicationId "com.crmapp"
+    minSdkVersion 24  // Keep this line only
+    targetSdkVersion rootProject.ext.targetSdkVersion
+    versionCode 1
+    versionName "1.0"
+}
     signingConfigs {
         debug {
             storeFile file('debug.keystore')
