@@ -11,6 +11,7 @@ import {
   Keyboard,
   ScrollView,
   KeyboardAvoidingView,
+  SafeAreaView,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useDispatch } from 'react-redux';
@@ -358,7 +359,7 @@ const onlineStatus=useOnlineStatus();
 
   return (
     // <KeyboardAwareScrollView contentContainerStyle={{ flexGrow: 1 }}>
-    <KeyboardAvoidingView
+    <SafeAreaView
     style={{ flex: 1 }}
     behavior={Platform.OS === 'ios' ? 'padding' : 'height'} // Adjust behavior based on the platform
     keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0} // Adjust this offset if necessary
@@ -508,7 +509,7 @@ const onlineStatus=useOnlineStatus();
       </View>
     </View>
     </ScrollView>
-    </KeyboardAvoidingView>
+    </SafeAreaView>
     // </KeyboardAwareScrollView>
   );
 };

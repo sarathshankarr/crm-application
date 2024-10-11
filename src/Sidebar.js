@@ -7,6 +7,7 @@ import {
   View,
   Modal,
   ScrollView,
+  SafeAreaView,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -275,7 +276,7 @@ const Sidebar = ({navigation, route}) => {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={{backgroundColor: '#1F74BA'}}>
           <View style={styles.header}>
@@ -611,7 +612,7 @@ const Sidebar = ({navigation, route}) => {
           </View>
         </View>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 };
 

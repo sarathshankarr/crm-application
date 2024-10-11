@@ -107,7 +107,7 @@ const ModalComponent = ({
 
   const handleSaveItem = () => {
     if (isSaveDisabled) return; // Prevent save action if button is disabled
-
+  
     const existingItemFromOtherScreen = cartItems.find(
       item => item.sourceScreen && item.sourceScreen !== 'ModalComponent'
     );
@@ -116,26 +116,32 @@ const ModalComponent = ({
       Alert.alert('Cannot add items from two screens simultaneously.');
       return;
     }
-
+  
     if (currentScreen && currentScreen !== 'ModalComponent') {
       Alert.alert('Cannot add items from two screens simultaneously.');
       return;
     }
-
+  
     let itemsToUpdate = [];
-
+  
     stylesData.forEach(style => {
       if (!style.sizeList || style.sizeList.length === 0) return;
-
+  
       style.sizeList.forEach(size => {
         const sizeDesc = size.sizeDesc;
-        const dealerPrice=size.dealerPrice;
-        const retailerPrice=size.retailerPrice;
+        const dealerPrice = size.dealerPrice;
+        const retailerPrice = size.retailerPrice;
+        // Assuming the gst is on the style level, you should pull it from style
+        const gst = style.gst || 0; // Correctly reference the gst value from style
         const inputValue = inputValues[sizeDesc] || '0';
-
+  
+        console.log("gst====>", gst);
+        console.log('Current Size:', size); // Log the current size object
+        console.log('GST from Style:', gst); // Log gst specifically
+  
         if (parseInt(inputValue, 10) > 0) {
           const itemBaseDetails = {
-            availQty: style.availQty,
+            availQty: style.availableQty, // Assuming it's availableQty
             color: style.color,
             colorId: style.colorId,
             styleId: style.styleId,
@@ -150,19 +156,21 @@ const ModalComponent = ({
             sizeDesc: sizeDesc,
             sizeId: size.sizeId,
             quantity: inputValue,
-            dealerPrice:dealerPrice,
-            retailerPrice:retailerPrice,
+            dealerPrice: dealerPrice,
+            retailerPrice: retailerPrice,
+            gst: gst, // Use the gst value from style
             sourceScreen: 'ModalComponent', // Include source screen
-            // sizeList:style.sizeList,
           };
-
+  
+          console.log('Adding item with GST:', gst);
+  
           const existingItemIndex = cartItems.findIndex(
             item =>
               item.styleId === style.styleId &&
               item.colorId === style.colorId &&
               item.sizeId === size.sizeId,
           );
-
+  
           if (existingItemIndex !== -1) {
             const updatedQuantity = parseInt(inputValue, 10);
             const updatedItem = {
@@ -176,13 +184,14 @@ const ModalComponent = ({
         }
       });
     });
-
+  
     if (itemsToUpdate.length > 0) {
       itemsToUpdate.forEach(item => dispatch(addItemToCart(item)));
     }
     clearAllInputs();
     closeModal();
   };
+  
 
 
   // const handleSaveItem = () => {
@@ -297,6 +306,7 @@ const ModalComponent = ({
       })
       .then(response => {
         setStylesData(response?.data?.response?.stylesList || []);
+        console.log("response?.data?.response?.stylesList =====>",response?.data?.response?.stylesList)
       })
       .catch(error => {
         console.error('Error:', error);

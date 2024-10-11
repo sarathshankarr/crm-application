@@ -1,5 +1,5 @@
 import React from 'react';
-import {View, TouchableOpacity, Image, StyleSheet} from 'react-native';
+import {View, TouchableOpacity, Image, StyleSheet, SafeAreaView} from 'react-native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import Categories from '../bottom/Categories';
 import Order from '../bottom/Order';
@@ -10,7 +10,7 @@ const Bottom = createBottomTabNavigator();
 
 const HomeScreen = ({navigation}) => {
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
     <Bottom.Navigator
       screenOptions={({route}) => ({
         tabBarIcon: ({color, size, focused}) => {
@@ -80,7 +80,7 @@ const HomeScreen = ({navigation}) => {
         options={{headerTitle: 'Order'}}
       />
     </Bottom.Navigator>
-    </View>
+    </SafeAreaView>
   );
 };
 

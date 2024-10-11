@@ -188,6 +188,9 @@ const NewStyleDetail = ({ route }) => {
 
   const [gsm, setGsm] = useState('');
   const [hsn, setHsn] = useState('');
+
+  const [gst, setGst] = useState('');
+
   // const [clousures, setClousures]=useState('');
   // const [peak, setPeak]=useState('');
   // const [logo, setlogo]=useState('');
@@ -292,6 +295,12 @@ const NewStyleDetail = ({ route }) => {
       if (styleDetails?.c_hsn) {
         setHsn(styleDetails?.c_hsn);
       }
+
+      if (styleDetails?.gst) {
+        setGst(styleDetails?.gst.toString());
+        console.log("styleDetails.gst==========>",styleDetails.gst)
+      }
+
 
       if (styleDetails?.gsm) {
         setGsm(styleDetails?.gsm);
@@ -1528,6 +1537,7 @@ const NewStyleDetail = ({ route }) => {
       gsm: gsm,
       customerLevel: Number(selectedCustomerLevelId),
       hsn: hsn,
+      gst:gst,
       discount: 0,
       categoryId: selectedCategoryId,
       locationId: selectedLocationId,
@@ -2607,6 +2617,21 @@ const NewStyleDetail = ({ route }) => {
               value={hsn}
               keyboardType='numeric'
               onChangeText={text => setHsn(text)}
+            />
+          </View>
+          <Text
+            style={{ marginHorizontal: 20, marginVertical: 3, color: '#000' }}>
+            {'GST'}
+          </Text>
+
+          <View style={style.inputContainer}>
+            <TextInput
+              style={style.txtinput}
+              placeholder="GST "
+              placeholderTextColor="#000"
+              value={gst}
+              keyboardType='numeric'
+              onChangeText={text => setGst(text)}
             />
           </View>
 

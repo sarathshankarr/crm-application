@@ -84,6 +84,14 @@ const Cart = () => {
   const [filteredCompanyLocationList, setFilteredCompanyLocationList] = useState([]);
   const [selectedCompanyLocation, setSelectedCompanyLocation] = useState('');
   const [selectedCompanyLocationId, setSelectedCompanyLocationId] = useState(0);
+  const [gstValues, setGstValues] = useState({});
+
+  const handleGstChange = (index, text) => {
+    setGstValues(prevValues => ({
+      ...prevValues,
+      [index]: text, // Update GST value for the specific index/item
+    }));
+  };
 
 
   const userData = useSelector(state => state.loggedInUser);
@@ -822,19 +830,31 @@ const Cart = () => {
         : '';
 
     const selectedShipDate = shipDate || currentDate;
-    const gstRate = 5;
-    const totalGst = cartItems.reduce((acc, item) => {
-      const itemTotalPrice = parseFloat(isEnabled ? item?.retailerPrice : item?.dealerPrice) * parseInt(item.quantity);
-      const itemGst = (itemTotalPrice * gstRate) / 100;
-      return acc + itemGst;
-    }, 0);
-    const totalAmount = parseFloat(totalPrice) + totalGst;
+    // const gstRate = 5;
+    // const totalGst = cartItems.reduce((acc, item) => {
+    //   const itemTotalPrice = parseFloat(isEnabled ? item?.retailerPrice : item?.dealerPrice) * parseInt(item.quantity);
+    //   const itemGst = (itemTotalPrice * gstRate) / 100;
+    //   return acc + itemGst;
+    // }, 0);
+
+    const totalGst = cartItems.reduce((acc, item, index) => {
+      const gstPercentage = parseFloat(gstValues[index] !== undefined ? gstValues[index] : item.gst); // Use updated GST if available
+      const itemTotalPrice = parseFloat(isEnabled ? item?.retailerPrice : item?.dealerPrice) * parseInt(item.quantity, 10);
+      const itemGst = (itemTotalPrice * gstPercentage) / 100;
+      return acc + itemGst; // Sum GST
+    }, 0).toFixed(2);
+    
+
+    // Calculate total amount
+    const totalAmount = (parseFloat(totalPrice) + parseFloat(totalGst)).toFixed(2); // Total amount formatted to 2 decimal places
+
+
     const requestData = {
-      totalAmount: totalAmount.toFixed(2),
+      totalAmount: totalAmount,
       totalDiscount: '0',
       totalDiscountSec: '0',
       totalDiscountThird: '0',
-      totalGst: totalGst.toFixed(2),
+      totalGst: totalGst,
       totalQty: totalQty.toString(),
       orderStatus: 'Open',
       comments: comments,
@@ -846,7 +866,7 @@ const Cart = () => {
       companyLocId: '0',
       agentId: '0',
       subAgentId: '0',
-      orderLineItems: cartItems.map(item => ({
+      orderLineItems: cartItems.map((item, index) => ({
         qty: item.quantity.toString(),
         styleId: item.styleId,
         colorId: colorId,
@@ -861,7 +881,7 @@ const Cart = () => {
         // gross: (parseFloat(isEnabled ? item?.retailerPrice : item?.dealerPrice) || item?.price) * parseInt(item.quantity),
         discountPercentage: '0',
         discountAmount: '0',
-        gst: 5,
+        gst: gstValues[index] !== undefined ? gstValues[index] : item.gst,
         total: (parseFloat(isEnabled ? item?.retailerPrice?.toString() : item?.dealerPrice?.toString()) || item?.price?.toString() * parseInt(item.quantity))?.toString(),
         itemStatus: 'OPEN',
         pcqty: '0',
@@ -1126,20 +1146,36 @@ const Cart = () => {
     cartItems.map(item => `${item.styleId}-${item.colorId}-${item.sizeId}`),
   );
   const totalItems = uniqueSets.size;
-  const totalPrice = cartItems
-    .reduce((total, item) => {
-      // Parse price and quantity to floats and integers respectively
-      const parsedPrice = parseFloat(isEnabled ? item?.retailerPrice?.toString() : item?.dealerPrice?.toString() || item?.price?.toString());
-      const parsedQuantity = parseInt(item.quantity);
+  // Assuming cartItems and gstValues are defined properly
+  const totalPrice = cartItems.reduce((total, item) => {
+    // Parse price and quantity to floats and integers respectively
+    const parsedPrice = parseFloat(isEnabled ? item?.retailerPrice?.toString() : item?.dealerPrice?.toString() || item?.price?.toString());
+    const parsedQuantity = parseInt(item.quantity, 10);
 
-      // Check if parsedPrice and parsedQuantity are valid numbers
-      if (!isNaN(parsedPrice) && !isNaN(parsedQuantity)) {
-        return total + parsedPrice * parsedQuantity;
-      } else {
-        return total; // Ignore invalid items
-      }
-    }, 0)
-    .toFixed(2);
+    // Check if parsedPrice and parsedQuantity are valid numbers
+    if (!isNaN(parsedPrice) && !isNaN(parsedQuantity)) {
+      return total + parsedPrice * parsedQuantity;
+    } else {
+      return total; // Ignore invalid items
+    }
+  }, 0).toFixed(2); // Total price formatted to 2 decimal places
+
+  // Calculate total GST based on the totalPrice and user input (gstValues)
+  const totalGst = cartItems.reduce((acc, item, index) => {
+    const gstPercentage = parseFloat(gstValues[index] !== undefined ? gstValues[index] : item.gst); // Use updated GST if available
+    const itemTotalPrice = parseFloat(isEnabled ? item?.retailerPrice : item?.dealerPrice) * parseInt(item.quantity, 10);
+    const itemGst = (itemTotalPrice * gstPercentage) / 100;
+    return acc + itemGst; // Sum GST
+  }, 0).toFixed(2);
+  
+  // Calculate total amount
+  const totalAmount = (parseFloat(totalPrice) + parseFloat(totalGst)).toFixed(2); // Total amount formatted to 2 decimal places
+
+  // Outputting the total values for debugging
+  console.log("Total Price:", totalPrice);
+  console.log("Total GST:", totalGst);
+  console.log("Total Amount:", totalAmount);
+
 
   const [locationInputValues, setLocationInputValues] = useState({
     locationName: '',
@@ -1801,18 +1837,21 @@ const Cart = () => {
                             </View>
                           </View>
                           <View style={style.sizehead}>
-                            <View style={{ flex: 0.6 }}>
+                            <View style={{ flex: 0.5 }}>
                               <Text style={{ color: '#000', marginLeft: 10 }}>
                                 SIZE
                               </Text>
                             </View>
-                            <View style={{ flex: 0.6, marginLeft: 29 }}>
+                            <View style={{ flex: 0.8, marginLeft: 29 }}>
                               <Text style={{ color: '#000' }}>QUANTITY</Text>
                             </View>
-                            <View style={{ flex: 0.4, marginLeft: 30 }}>
+                            <View style={{ flex: 0.5, marginLeft: 30 }}>
                               <Text style={{ color: '#000' }}>PRICE</Text>
                             </View>
-                            <View style={{ flex: 0.5, marginLeft: 20 }}>
+                            <View style={{ flex: 0.4, marginLeft: 30 }}>
+                              <Text style={{ color: '#000' }}>GST</Text>
+                            </View>
+                            <View style={{ flex: 0.5, marginLeft: 10, marginRight: 10 }}>
                               <Text style={{ color: '#000' }}>GROSS PRICE</Text>
                             </View>
                             <TouchableOpacity
@@ -1826,7 +1865,7 @@ const Cart = () => {
                         </View>
                       )}
                     <View style={style.itemDetails}>
-                      <View style={{ flex: 0.3, marginLeft: 10 }}>
+                      <View style={{ flex: 0.3, }}>
                         <Text style={{ color: '#000' }}>{item.sizeDesc}</Text>
                       </View>
                       <TouchableOpacity
@@ -1866,7 +1905,7 @@ const Cart = () => {
                           source={require('../../../assets/add1.png')}
                         />
                       </TouchableOpacity>
-                      <View style={{ flex: 0.3, marginLeft: 10, borderBottomWidth: 1, borderColor: "#000" }}>
+                      <View style={{ flex: 0.4, marginLeft: 10, borderBottomWidth: 1, borderColor: "#000" }}>
                         <TextInput
                           style={{ color: '#000', alignSelf: "center" }}
                           value={isEnabled ? item?.retailerPrice?.toString() : item?.dealerPrice?.toString() || item?.price?.toString()}
@@ -1875,6 +1914,15 @@ const Cart = () => {
                           keyboardType="numeric"
                         />
                       </View>
+                      <View style={{ flex: 0.2, marginLeft: 30, borderBottomWidth: 1, borderColor: "#000" }}>
+                        <TextInput
+                          style={{ color: '#000', alignSelf: "center" }}
+                          value={gstValues[index] !== undefined ? gstValues[index] : item.gst.toString()} // Using gstValues if edited, otherwise item.gst
+                          onChangeText={text => handleGstChange(index, text)} // Update gstValues state
+                          keyboardType="numeric" // Numeric input
+                        />
+                      </View>
+
                       <View style={{ flex: 0.3, marginLeft: 30 }}>
                         <Text style={{ color: '#000' }}>
                           {(
@@ -1990,8 +2038,12 @@ const Cart = () => {
               <Text style={style.value2}>: {totalItems}</Text>
             </View>
             <View style={style.row}>
+              <Text style={style.label3}>Total Gst</Text>
+              <Text style={style.value3}>: {totalGst}</Text>
+            </View>
+            <View style={style.row}>
               <Text style={style.label3}>Total Amt</Text>
-              <Text style={style.value3}>: {totalPrice}</Text>
+              <Text style={style.value3}>: {totalAmount}</Text>
             </View>
           </View>
 

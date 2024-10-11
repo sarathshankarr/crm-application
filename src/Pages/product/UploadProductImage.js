@@ -198,7 +198,7 @@ const UploadProductImage = ({ route }) => {
     formData.append("trimId", productStyle.trims);
     formData.append("gsm", productStyle.gsm);
     formData.append("hsn", productStyle.hsn);
-
+    formData.append("gst", productStyle.gst);
     selectedImages.forEach((image, index) => {
       formData.append('files', {
         uri: image.uri,
@@ -207,7 +207,7 @@ const UploadProductImage = ({ route }) => {
       });
     });
 
-    // console.log("data before submit ==> ", formData)
+    console.log("data before submit ==> ", formData)
     // return;
 
     const apiUrl0 = `${global?.userData?.productURL}${API.ADD_NEW_STYLE}`;
@@ -264,6 +264,7 @@ const UploadProductImage = ({ route }) => {
     formData.append("retailerPrice", productStyle.retailerPrice.toString());
     formData.append("mrp", productStyle.mrp.toString());
     formData.append("hsn", productStyle.hsn || '');
+    formData.append("gst", productStyle.gst || '');
     formData.append("categoryId", productStyle.categoryId.toString());
     formData.append("locationId", productStyle.locationId.toString());
     formData.append("fixDisc", (productStyle.fixDisc || 0).toString());
