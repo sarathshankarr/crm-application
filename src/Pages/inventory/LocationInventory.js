@@ -426,6 +426,7 @@ const styles = StyleSheet.create({
   headerText4: {
     flex: 1,
     textAlign: 'center',
+    color:"#000"
   },
   listContainer: {
     paddingHorizontal: 20,
