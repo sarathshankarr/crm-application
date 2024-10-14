@@ -1,6 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Workspace
    version = "1.0">
+   <Group
+      location = "group:"
+      name = "CRMAPP">
+      <FileRef
+         location = "group:CRMAPP/AppDelegate.mm">
+      </FileRef>
+      <FileRef
+         location = "group:CRMAPP/Images.xcassets">
+      </FileRef>
+      <FileRef
+         location = "group:CRMAPP/Info.plist">
+      </FileRef>
+      <FileRef
+         location = "group:CRMAPP/LaunchScreen.storyboard">
+      </FileRef>
+      <FileRef
+         location = "group:CRMAPP/main.m">
+      </FileRef>
+      <FileRef
+         location = "group:CRMAPP/PrivacyInfo.xcprivacy">
+      </FileRef>
+      <FileRef
+         location = "group:CRMAPP/PrivacyInfo.xcprivacy">
+      </FileRef>
+      <FileRef
+         location = "group:CRMAPP/AppDelegate.h">
+      </FileRef>
+   </Group>
    <FileRef
       location = "group:CRMAPP.xcodeproj">
    </FileRef>

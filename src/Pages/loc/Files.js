@@ -12,6 +12,7 @@ import {
   PermissionsAndroid,
   Alert,
   Modal,
+  SafeAreaView,
 } from 'react-native';
 import axios from 'axios';
 import {API} from '../../config/apiConfig';
@@ -219,7 +220,7 @@ const Files = ({route}) => {
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
           <Image
@@ -438,7 +439,7 @@ const Files = ({route}) => {
           </View>
         </Modal>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 };
 

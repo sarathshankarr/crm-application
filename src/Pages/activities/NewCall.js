@@ -10,6 +10,7 @@ import {
   Keyboard,
   Alert,
   Switch,
+  SafeAreaView,
 } from 'react-native';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 // import CheckBox from 'react-native-check-box';
@@ -923,6 +924,8 @@ const NewCall = () => {
         }
     }
   return (
+    <SafeAreaView style={{flex:1,backgroundColor:'#fff'}}> 
+
     <ScrollView  style={{flex:1, backgroundColor:'#ffffff'}}>
 
     <View style={{flex: 1, backgroundColor: '#fff'}}>
@@ -1324,6 +1327,7 @@ const NewCall = () => {
       />
     </View>
     </ScrollView>
+    </SafeAreaView>
   );
 };
 

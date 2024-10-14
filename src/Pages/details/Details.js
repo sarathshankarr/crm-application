@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Dimensions,
   ActivityIndicator,
+  SafeAreaView,
 } from 'react-native';
 import { useDispatch } from 'react-redux';
 import { addItemToCart } from '../../redux/actions/Actions';
@@ -97,7 +98,7 @@ const Details = ({ route }) => {
   
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollView}>
       {loading ? (
           <ActivityIndicator size="small" color="#0000ff" /> // Show ActivityIndicator when loading
@@ -151,7 +152,7 @@ const Details = ({ route }) => {
         closeModal={() => setModalVisible(false)}
         selectedItem={selectedItem}
       />
-    </View>
+    </SafeAreaView>
   );
 };
 

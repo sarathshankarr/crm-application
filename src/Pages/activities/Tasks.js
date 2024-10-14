@@ -12,6 +12,7 @@ import {
   RefreshControl,
   ScrollView,
   Alert,
+  SafeAreaView,
 } from 'react-native';
 import axios from 'axios';
 import {API} from '../../config/apiConfig';
@@ -404,7 +405,7 @@ const Tasks = () => {
   );
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <View style={styles.content}>
         <View style={styles.searchContainer}>
           <TextInput
@@ -479,7 +480,7 @@ const Tasks = () => {
           }
         />
       )}
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -497,20 +498,20 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   searchContainer: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    // borderWidth: 1,
-    borderRadius: 5,
-    flex: 1,
-    marginRight: 10,
-    borderRadius: 30,
-    backgroundColor: 'white',
-    elevation: 5,
-    paddingHorizontal: 15,
+    backgroundColor: 'lightgray',
+    borderRadius: 15,
+    marginHorizontal: 10,
   },
   searchButton: {
-    marginLeft: 'auto',
     flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 7,
+    backgroundColor: '#e6e6e6',
+    borderRadius: 15,
   },
   searchInput: {
     flex: 1,

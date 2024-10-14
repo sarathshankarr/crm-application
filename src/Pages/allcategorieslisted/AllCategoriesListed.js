@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Text, View, Image, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator } from 'react-native';
+import { Text, View, Image, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, SafeAreaView } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { addItemToCart } from '../../redux/actions/Actions';
 import ModalComponent from '../../components/ModelComponent';
@@ -144,7 +144,7 @@ const AllCategoriesListed = ({ navigation, route }) => {
   }
 
   return (
-    <View style={{ backgroundColor: "#fff", flex: 1 }}>
+    <SafeAreaView style={{ backgroundColor: "#fff", flex: 1 }}>
       {selectedDetails.length === 0 ? (
         <View style={styles.noProductsContainer}>
           <Text style={styles.noProductsText}>There are no products available.</Text>
@@ -163,7 +163,7 @@ const AllCategoriesListed = ({ navigation, route }) => {
         closeModal={() => setModalVisible(false)}
         selectedItem={selectedItem}
       />
-    </View>
+    </SafeAreaView>
   );
 };
 

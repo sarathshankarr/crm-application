@@ -448,19 +448,9 @@ const Packorders = () => {
         </View>
 
         <TouchableOpacity
-          style={style.searchIconContainer}
+          style={style.searchButton}
           onPress={handleSearch}>
-          <Text
-            style={{
-              color: '#fff',
-              borderWidth: 1,
-              paddingHorizontal: 10,
-              paddingVertical: 6,
-              borderRadius: 25,
-              // height: 40,
-              alignItems: 'center',
-              backgroundColor:'#1f74ba'
-            }}>
+          <Text style={style.searchButtonText}>
             Search
           </Text>
         </TouchableOpacity>
@@ -657,6 +647,17 @@ const style = StyleSheet.create({
     backgroundColor: '#e6e6e6',
     borderRadius: 15,
   },
+  searchButton: {
+    backgroundColor: '#1F74BA',
+    borderRadius: 25,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    elevation: 3,
+  },
+  searchButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
   searchInput: {
     flex: 1,
     height: 40,
@@ -666,10 +667,6 @@ const style = StyleSheet.create({
   },
   searchInputActive: {
     color: '#000',
-  },
-  searchButton: {
-    marginLeft: 'auto',
-    flexDirection: 'row',
   },
   image: {
     height: 20,

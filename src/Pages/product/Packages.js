@@ -11,6 +11,7 @@ import {
   ScrollView,
   RefreshControl,
   Modal,
+  SafeAreaView,
 } from 'react-native';
 import {API} from '../../config/apiConfig';
 import {useSelector} from 'react-redux';
@@ -346,7 +347,7 @@ const Packages = ({navigation}) => {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <View
         style={{
           flexDirection: 'row',
@@ -439,7 +440,7 @@ const Packages = ({navigation}) => {
           </View>
         </View>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 };
 

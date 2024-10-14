@@ -138,7 +138,7 @@
 
 
 import React, { useState, useRef, useCallback } from 'react';
-import { View, TouchableOpacity, Image, StyleSheet, Dimensions, Animated, Text } from 'react-native';
+import { View, TouchableOpacity, Image, StyleSheet, Dimensions, Animated, Text, SafeAreaView } from 'react-native';
 import { useSelector } from 'react-redux';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import NotificationModal from './NotificationModal';
@@ -276,7 +276,7 @@ const CommenHeaderHomeScreen = ({
   ];
 
   return (
-    <View style={styles.header}>
+    <SafeAreaView style={styles.header}>
       {showDrawerButton && (
         <TouchableOpacity onPress={() => navigation.openDrawer()}>
           <Image
@@ -339,7 +339,7 @@ const CommenHeaderHomeScreen = ({
         slideAnim={slideAnim}
         notifications={notification}
       />
-    </View>
+    </SafeAreaView>
   );
 };
 

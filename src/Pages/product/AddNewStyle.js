@@ -1,6 +1,7 @@
 import React from 'react';
 import {
   Image,
+  SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -42,7 +43,7 @@ const AddNewStyle = ({ route }) => {
   const navigation = useNavigation();
   const styleDetails = route?.params?.Style;
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <View style={{
         flexDirection: 'row',
         alignItems: 'center',
@@ -77,7 +78,7 @@ const AddNewStyle = ({ route }) => {
         <Tab.Screen name="Basic Info" component={NewStyleDetail} initialParams={{ styleDetails }} />
         <Tab.Screen name="Product Images" component={UploadProductImage}  initialParams={{ styleDetails }}/>
       </Tab.Navigator>
-    </View>
+    </SafeAreaView>
   );
 };
 
