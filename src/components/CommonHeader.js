@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   iconWrapper: {
-    marginHorizontal: 5,
+    marginRight:15
   },
   locationimg: {
     height: 20,
@@ -262,7 +262,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#E12948',
     color: 'white',
     borderRadius: 10,
-    paddingHorizontal: 5,
+    paddingHorizontal: 3,
     fontSize: 12,
   },
   menuimg: {

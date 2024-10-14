@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   Image,
+  SafeAreaView,
 } from 'react-native';
 import axios from 'axios';
 import {useSelector} from 'react-redux';
@@ -357,7 +358,7 @@ const DistributorOrder = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <View style={{flexDirection: 'row'}}>
           <TouchableOpacity onPress={handleGoBack}>
@@ -421,7 +422,7 @@ const DistributorOrder = () => {
         <Text style={styles.summaryText}>Total GST: {totals.totalGst}</Text>
         <Text style={styles.summaryText}>Total Cost: {totals.totalCost}</Text>
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 

@@ -358,7 +358,7 @@ const styles = StyleSheet.create({
     marginRight: 5,
   },
   iconWrapper: {
-    marginHorizontal: 5,
+    marginRight:10
   },
   locationimg: {
     height: 22,
@@ -384,7 +384,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#E12948',
     color: 'white',
     borderRadius: 10,
-    paddingHorizontal: 5,
+    paddingHorizontal: 3,
     fontSize: 12,
   },
   menuimg: {

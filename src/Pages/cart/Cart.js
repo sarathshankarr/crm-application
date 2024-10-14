@@ -1668,7 +1668,7 @@ const Cart = () => {
                   width: 30,
                   justifyContent: 'center',
                   alignItems: 'center',
-                  marginRight: 10,
+                  marginRight: 15,
                   marginTop: 5,
                 }}
                 source={require('../../../assets/plus.png')}
