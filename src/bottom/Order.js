@@ -1032,7 +1032,7 @@ const Order = () => {
             onChangeText={handleSearchInputChange}
           />
 
-          <TouchableOpacity style={style.searchButton} onPress={toggleDropdown}>
+          <TouchableOpacity style={style.dropdownButton} onPress={toggleDropdown}>
             <Text style={{ color: '#000' }}>
               {selectedSearchOption || 'Select'}
             </Text>
@@ -1045,19 +1045,9 @@ const Order = () => {
 
 
         <TouchableOpacity
-          style={style.searchIconContainer}
+          style={style.searchButton}
           onPress={handleSearch}>
-          <Text
-            style={{
-              color: '#fff',
-              borderWidth: 1,
-              paddingHorizontal: 17,
-              paddingVertical: 7,
-              borderRadius: 25,
-              // height: 40,
-              alignItems: 'center',
-              backgroundColor:'#1f74ba'
-            }}>
+          <Text style={style.searchButtonText}>
             Search
           </Text>
         </TouchableOpacity>
@@ -1264,14 +1254,6 @@ const style = StyleSheet.create({
   searchInputActive: {
     color: '#000',
   },
-  searchButton: {
-            flexDirection: 'row',
-      alignItems: 'center',
-      paddingVertical: 10,
-      paddingHorizontal: 7,
-      backgroundColor: '#e6e6e6',
-      borderRadius: 15,
-  },
   image: {
       width: 15,
       height: 15,
@@ -1286,6 +1268,25 @@ const style = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     padding: 5,
+  },
+  dropdownButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    backgroundColor: '#e6e6e6',
+    borderRadius: 15,
+  },
+  searchButton: {
+    backgroundColor: '#1F74BA',
+    borderRadius: 25,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    elevation: 3,
+  },
+  searchButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
   },
   dropdownContent1: {
     elevation: 5,

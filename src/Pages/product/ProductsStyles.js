@@ -15,6 +15,7 @@ import {
   Alert,
   useColorScheme,
   RefreshControl,
+  SafeAreaView,
 } from 'react-native';
 import {RadioGroup} from 'react-native-radio-buttons-group';
 import {API} from '../../config/apiConfig';
@@ -754,7 +755,7 @@ const ProductsStyles = ({route}) => {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <View style={styles.head1}>
         <TouchableOpacity onPress={handleGoBack}>
           <Image
@@ -1000,7 +1001,7 @@ const ProductsStyles = ({route}) => {
           </View>
         </View>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 };
 

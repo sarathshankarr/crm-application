@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl, Image, TextInput, ScrollView, Alert } from 'react-native';
+import { StyleSheet, Text, View, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl, Image, TextInput, ScrollView, Alert, SafeAreaView } from 'react-native';
 import { API } from '../../config/apiConfig';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
@@ -73,9 +73,8 @@ const DistributorGrn = () => {
       setHasMoreTasks(true); // Reset hasMoreTasks for new fetch
     }
 
-    const apiUrl = `${global?.userData?.productURL}${
-      API.GET_DISTRIBUTOR_GRN_LL
-    }/${customFrom}/${customTo}/${companyId}`;
+    const apiUrl = `${global?.userData?.productURL}${API.GET_DISTRIBUTOR_GRN_LL
+      }/${customFrom}/${customTo}/${companyId}`;
 
     console.log('getAllOrders A ', customFrom, customTo);
 
@@ -377,7 +376,7 @@ const DistributorGrn = () => {
   //     Alert.alert('Please select an option from the dropdown before searching.');
   //     return;
   //   }
-   
+
   //   if (searchQuery.trim().length > 0 && searchKey > 0) {
   //     searchAPI(true, 0, 15);
   //     setFrom(0);
@@ -388,56 +387,44 @@ const DistributorGrn = () => {
 
   const handleSearchInputChange = query => {
     setSearchQuery(query);
-      if (query.trim().length === 0) {
-        console.log("inside the handleSearchInputChange");
+    if (query.trim().length === 0) {
+      console.log("inside the handleSearchInputChange");
       onRefresh(true);
     }
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
 
-      <View style={{ flexDirection: 'row', justifyContent:'space-between' }}>
-        <View style={styles.searchContainer}>
-          <View style={styles.searchInputContainer}>
-            <TextInput
-              style={[styles.searchInput, { color: '#000' }]}
-              value={searchQuery}
-              // onChangeText={text => {
-              //   setSearchQuery(text);
-              // }}
-              onChangeText={handleSearchInputChange}
-              placeholder="Search"
-              placeholderTextColor="#000"
-            />
-          </View>
-          <TouchableOpacity
-            style={styles.searchButton}
-            onPress={toggleDropdown}>
-            <Text style={{ color: "#000" }}>{searchKey ? selectedSearchOption : 'Select'}</Text>
-            <Image
-              style={styles.image}
-              source={require('../../../assets/dropdown.png')}
-            />
-          </TouchableOpacity>
+      <View style={styles.searchContainer}>
+        <View style={styles.searchInputContainer}>
+          <TextInput
+            style={[styles.searchInput, { color: '#000' }]}
+            value={searchQuery}
+            // onChangeText={text => {
+            //   setSearchQuery(text);
+            // }}
+            onChangeText={handleSearchInputChange}
+            placeholder="Search"
+            placeholderTextColor="#000"
+          />
+      
+        <TouchableOpacity
+          style={styles.dropdownButton}
+          onPress={toggleDropdown}>
+          <Text style={{ color: "#000" }}>{searchKey ? selectedSearchOption : 'Select'}</Text>
+          <Image
+            style={styles.image}
+            source={require('../../../assets/dropdown.png')}
+          />
+        </TouchableOpacity>
         </View>
-        <TouchableOpacity style={styles.searchIconContainer} onPress={handleSearch}>
-          <Text
-            style={{
-              color: '#000',
-              // borderWidth: 1,
-              marginHorizontal: 5,
-              paddingHorizontal: 10,
-              paddingVertical: 10,
-              borderRadius: 10,
-              backgroundColor: '#fff',
-              elevation: 5,
-            }}>
+        <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
+        <Text style={styles.searchButtonText}>
             Search
           </Text>
         </TouchableOpacity>
       </View>
-
       {dropdownVisible && (
         <View style={styles.dropdownContent1}>
           <ScrollView>
@@ -477,22 +464,22 @@ const DistributorGrn = () => {
         //   ListFooterComponent={loadingMore ? <ActivityIndicator size="small" color="#0000ff" /> : null}
         // />
         <FlatList
-        data={filteredOrdersList}
-        renderItem={renderOrderItem}
-        keyExtractor={(item, index) => `${item.id}-${index}`}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-        onEndReached={loadMoreTasks} // Load more when scrolled to the end
-        onEndReachedThreshold={0.2} // Adjust this value to control when to load more
-        ListFooterComponent={
-          loadingMore ? (
-            <ActivityIndicator size="small" color="#0000ff" />
-          ) : null
-        }
-      />
+          data={filteredOrdersList}
+          renderItem={renderOrderItem}
+          keyExtractor={(item, index) => `${item.id}-${index}`}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+          onEndReached={loadMoreTasks} // Load more when scrolled to the end
+          onEndReachedThreshold={0.2} // Adjust this value to control when to load more
+          ListFooterComponent={
+            loadingMore ? (
+              <ActivityIndicator size="small" color="#0000ff" />
+            ) : null
+          }
+        />
       )}
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -554,19 +541,8 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    marginTop: 5,
-    marginBottom: 10,
-    // borderWidth:1,
-    // borderRadius: 30,
-    borderTopLeftRadius: 30,
-    borderBottomLeftRadius: 30,
-
-    marginHorizontal: 10,
-    // backgroundColor:'#f1e8e6',
-    backgroundColor: 'white',
-    elevation: 5,
-    width: '70%'
+    paddingHorizontal: 10,
+    marginVertical: 10,
   },
   searchInput: {
     flex: 1,
@@ -578,12 +554,24 @@ const styles = StyleSheet.create({
   searchInputActive: {
     color: '#000',
   },
-  searchButton: {
-    marginLeft: 'auto',
+  dropdownButton: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    // borderLeftWidth: 1,
-
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 7,
+    backgroundColor: '#e6e6e6',
+    borderRadius: 15,
+  },
+  searchButton: {
+    backgroundColor: '#1F74BA',
+    borderRadius: 25,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    elevation: 3,
+  },
+  searchButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
   },
   image: {
     height: 20,
@@ -594,7 +582,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    // backgroundColor: 'lightgray',
+    backgroundColor: 'lightgray',
     borderRadius: 15,
     marginHorizontal: 10,
   },

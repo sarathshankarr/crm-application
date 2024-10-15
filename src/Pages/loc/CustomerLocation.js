@@ -493,6 +493,7 @@ import {
   Switch,
   ScrollView,
   Linking,
+  SafeAreaView,
 } from 'react-native';
 import Geolocation from 'react-native-geolocation-service';
 import axios from 'axios';
@@ -889,6 +890,8 @@ const CustomerLocation = ({navigation}) => {
   
 
   return (
+    <SafeAreaView style={{flex:1,backgroundColor:'#fff'}}> 
+
     <ScrollView style={styles.Container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
@@ -985,6 +988,7 @@ const CustomerLocation = ({navigation}) => {
         </ScrollView>
       )}
     </ScrollView>
+    </SafeAreaView>
   );
 };
 

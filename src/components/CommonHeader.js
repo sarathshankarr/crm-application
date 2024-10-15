@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { View, TouchableOpacity, Image, Text, StyleSheet, Animated, Dimensions } from 'react-native';
+import { View, TouchableOpacity, Image, Text, StyleSheet, Animated, Dimensions, SafeAreaView } from 'react-native';
 import { useSelector } from 'react-redux';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import NotificationModal from './NotificationModal';
@@ -142,7 +142,7 @@ const CommonHeader = ({
   };
 
   return (
-    <View style={styles.header}>
+    <SafeAreaView style={styles.header}>
       {showDrawerButton ? (
         <TouchableOpacity onPress={() => navigation.openDrawer()}>
           <Image
@@ -214,7 +214,7 @@ const CommonHeader = ({
         slideAnim={slideAnim}
         notifications={notifications} // Make sure you pass fetched notifications here
       />
-    </View>
+    </SafeAreaView>
   );
 };
 // #1F74BA
@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   iconWrapper: {
-    marginHorizontal: 5,
+    marginRight:15
   },
   locationimg: {
     height: 20,
@@ -262,7 +262,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#E12948',
     color: 'white',
     borderRadius: 10,
-    paddingHorizontal: 5,
+    paddingHorizontal: 3,
     fontSize: 12,
   },
   menuimg: {

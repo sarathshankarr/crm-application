@@ -20,6 +20,7 @@ import {API} from '../../config/apiConfig';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {formatDateIntoDMY} from '../../Helper/Helper';
 import CustomCheckBox from '../../components/CheckBox';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const NewTask = () => {
   const dispatch = useDispatch(); // Get dispatch function from useDispatch hook
@@ -862,6 +863,7 @@ const NewTask = () => {
   );
 
   return (
+    <SafeAreaView style={{flex:1,backgroundColor:'#fff'}}> 
     <ScrollView style={{flex: 1, backgroundColor: '#ffffff'}}>
       <View style={{flex: 1, backgroundColor: '#fff'}}>
         <View style={styles.header}>
@@ -1246,6 +1248,7 @@ const NewTask = () => {
         />
       </View>
     </ScrollView>
+    </SafeAreaView>
   );
 };
 

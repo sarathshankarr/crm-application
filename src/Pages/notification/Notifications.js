@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  SafeAreaView,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import {useSelector} from 'react-redux';
@@ -124,7 +125,7 @@ const Notifications = () => {
   );
 
   return (
-    <View style={{flex: 1, backgroundColor: '#fff'}}>
+    <SafeAreaView style={{flex: 1, backgroundColor: '#fff'}}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => handleBacktton()}>
           <Image
@@ -182,7 +183,7 @@ const Notifications = () => {
           />
         </View>
       )}
-    </View>
+    </SafeAreaView>
   );
 };
 

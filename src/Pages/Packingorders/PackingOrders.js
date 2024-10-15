@@ -10,6 +10,7 @@ import {
   Alert,
   Platform,
   PermissionsAndroid,
+  SafeAreaView,
 } from 'react-native';
 import axios from 'axios';
 import { API } from '../../config/apiConfig';
@@ -221,7 +222,7 @@ const PackingOrders = () => {
   // }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <TouchableOpacity style={{ backgroundColor: "#f0f0f0", }} onPress={handleGoBack}>
         <Image
           style={{ height: 25, width: 25, marginHorizontal: 10, marginVertical: 5 }}
@@ -246,7 +247,7 @@ const PackingOrders = () => {
         />
       )
       }
-    </View>
+    </SafeAreaView>
   );
 };
 

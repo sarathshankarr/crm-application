@@ -12,6 +12,7 @@ import {
   TouchableOpacity,
   View,
   Alert,
+  SafeAreaView,
 } from 'react-native';
 import {RadioButton} from 'react-native-radio-buttons-group';
 import {API} from '../../config/apiConfig';
@@ -750,7 +751,7 @@ const TaskDetails = ({route}) => {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
           <Image
@@ -1114,7 +1115,7 @@ const TaskDetails = ({route}) => {
           <Text style={{color: '#000', alignSelf: 'center'}}>Update</Text>
         </TouchableOpacity>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 };
 

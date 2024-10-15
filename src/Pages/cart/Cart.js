@@ -14,6 +14,7 @@ import {
   View,
   ActivityIndicator,
   Switch,
+  SafeAreaView,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import {
@@ -1338,7 +1339,7 @@ const Cart = () => {
       style={{ flex: 1, backgroundColor: '#fff' }}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : -500}>
-      <View style={{ flex: 1, backgroundColor: '#fff' }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
         <View style={{ marginVertical: 10, backgroundColor: '#fff' }}>
           {/* <View style={{marginHorizontal: 10, marginVertical: 2}}>
             <Text style={{color: '#000', fontWeight: 'bold'}}>Customers</Text>
@@ -1667,7 +1668,7 @@ const Cart = () => {
                   width: 30,
                   justifyContent: 'center',
                   alignItems: 'center',
-                  marginRight: 10,
+                  marginRight: 15,
                   marginTop: 5,
                 }}
                 source={require('../../../assets/plus.png')}
@@ -2463,7 +2464,7 @@ const Cart = () => {
             </Modal>
           </View>
         </View>
-      </View>
+      </SafeAreaView>
     </KeyboardAvoidingView>
   );
 };

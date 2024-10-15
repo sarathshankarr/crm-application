@@ -10,6 +10,7 @@ import {
   TextInput,
   ActivityIndicator,
   Alert,
+  SafeAreaView,
 } from 'react-native';
 import {API} from '../../config/apiConfig';
 import axios from 'axios';
@@ -386,7 +387,7 @@ const PackingConformation = ({route}) => {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <View style={{flexDirection: 'row', backgroundColor: '#f0f0f0'}}>
         <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
           <Image
@@ -570,7 +571,7 @@ const PackingConformation = ({route}) => {
           </View>
         )}
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 };
 

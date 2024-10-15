@@ -1,6 +1,7 @@
 import React from 'react';
 import {
   Image,
+  SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -50,12 +51,12 @@ const Activities = () => {
     const navigation = useNavigation();
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <Tab.Navigator tabBar={props => <CustomTabBar {...props}  navigation={navigation}/>}>
         <Tab.Screen name="Tasks" component={Tasks} />
         <Tab.Screen name="Calls" component={Call} />
       </Tab.Navigator>
-    </View>
+    </SafeAreaView>
   );
 };
 
