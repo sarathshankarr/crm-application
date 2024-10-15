@@ -11,6 +11,7 @@ import {
     Keyboard,
     ScrollView,
     KeyboardAvoidingView,
+    SafeAreaView,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
@@ -75,7 +76,7 @@ const MailConfirmation = () => {
             console.log("API URL ====  >", apiUrl);
             const response = await axios.post(apiUrl, reqBody);
             setLoading(false);
-            
+
             console.log('API Response:', response?.data?.message);
             const res = response?.data?.message;
 
@@ -95,13 +96,14 @@ const MailConfirmation = () => {
 
 
     return (
-        <KeyboardAvoidingView
+
+        <SafeAreaView
             style={{ flex: 1 }}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'} // Adjust behavior based on the platform
+            keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0} // Adjust this offset if necessary
         >
             <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-                <View style={styles.container}>
+                <SafeAreaView style={styles.container}>
                     <View style={styles.imageContainer}>
                         <Image
                             style={{ height: 103, width: 103, marginTop: 30 }}
@@ -165,9 +167,10 @@ const MailConfirmation = () => {
                             All rights with Codeverse Technologies
                         </Text>
                     </View>
-                </View>
+                </SafeAreaView>
             </ScrollView>
-        </KeyboardAvoidingView>
+        </SafeAreaView>
+
     );
 };
 
@@ -190,12 +193,13 @@ const styles = StyleSheet.create({
         marginBottom: 6,
         borderRadius: 5,
         paddingHorizontal: 10,
+        paddingVertical: Platform.OS === 'ios' ? 8 : 0,
         marginVertical: 10,
         // backgroundColor: '#D9D9D947',
         borderWidth: 2,
         borderColor: '#D9D9D9',
     },
-   
+
 
     formContainer: {
         width: '100%',
@@ -218,7 +222,7 @@ const styles = StyleSheet.create({
         width: '100%',
         marginBottom: 10,
     },
-    
+
     button: {
         width: '100%',
         height: 50,
@@ -226,7 +230,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         borderRadius: 5,
-        marginTop:15,
+        marginTop: 15,
     },
     buttonText: {
         fontSize: 18,

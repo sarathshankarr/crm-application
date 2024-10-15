@@ -844,7 +844,7 @@ const Cart = () => {
       const itemGst = (itemTotalPrice * gstPercentage) / 100;
       return acc + itemGst; // Sum GST
     }, 0).toFixed(2);
-    
+
 
     // Calculate total amount
     const totalAmount = (parseFloat(totalPrice) + parseFloat(totalGst)).toFixed(2); // Total amount formatted to 2 decimal places
@@ -877,7 +877,13 @@ const Cart = () => {
         availQty: item.quantity.toString(),
         // price: item.price.toString(),
         price: isEnabled ? item?.retailerPrice?.toString() : item?.dealerPrice?.toString() || item?.price?.toString(),
-        gross: ((parseFloat(isEnabled ? item?.retailerPrice : item?.dealerPrice) * 1.05) * parseInt(item?.quantity || 1)).toString(),
+        gross: (
+          parseFloat(isEnabled ? item?.retailerPrice || 0 : item?.dealerPrice || 0) * 
+          (1 + (parseFloat(gstValues) || 0) / 100) * 
+          (parseInt(item?.quantity) || 1)
+        ).toString(),        
+        // gross: ((parseFloat(isEnabled ? item?.retailerPrice : item?.dealerPrice) * 1.05) * parseInt(item?.quantity || 1)).toString(),
+        // gross: ((parseFloat(isEnabled ? item?.retailerPrice : item?.dealerPrice) * (parseFloat( 1 + parseFloat(gstValues)/100))) * parseInt(item?.quantity || 1)).toString(),
         // gross: parseFloat((parseFloat(isEnabled ? item?.retailerPrice?.toString() : item?.dealerPrice?.toString()) + parseFloat(item.gst.toString())) * parseInt(item.quantity))?.toString(),
         // gross: (parseFloat(isEnabled ? item?.retailerPrice : item?.dealerPrice) || item?.price) * parseInt(item.quantity),
         discountPercentage: '0',
@@ -1168,7 +1174,7 @@ const Cart = () => {
     const itemGst = (itemTotalPrice * gstPercentage) / 100;
     return acc + itemGst; // Sum GST
   }, 0).toFixed(2);
-  
+
   // Calculate total amount
   const totalAmount = (parseFloat(totalPrice) + parseFloat(totalGst)).toFixed(2); // Total amount formatted to 2 decimal places
 
@@ -1906,12 +1912,22 @@ const Cart = () => {
                           source={require('../../../assets/add1.png')}
                         />
                       </TouchableOpacity>
-                      <View style={{ flex: 0.4, marginLeft: 10, borderBottomWidth: 1, borderColor: "#000" }}>
+                      {/* <View style={{ flex: 0.4, marginLeft: 10, borderBottomWidth: 1, borderColor: "#000" }}>
                         <TextInput
                           style={{ color: '#000', alignSelf: "center" }}
                           value={isEnabled ? item?.retailerPrice?.toString() : item?.dealerPrice?.toString() || item?.price?.toString()}
                           // value={item.price}
                           onChangeText={text => handlePriceChange(index, text)}
+                          keyboardType="numeric"
+                        />
+                      </View> */}
+                      <View style={{ flex: 0.4, marginLeft: 10, borderBottomWidth: 1, borderColor: "#000" }}>
+                        <TextInput
+                          style={{ color: '#000', alignSelf: "center" }}
+                          value={isEnabled
+                            ? item?.retailerPrice?.toString() || ''  // If retailerPrice is available, show it, else show empty string
+                            : item?.dealerPrice?.toString() || ''}  // Show dealerPrice if isEnabled is false, fallback to price
+                          onChangeText={text => handlePriceChange(index, text)}  // Call handlePriceChange on text change
                           keyboardType="numeric"
                         />
                       </View>

@@ -11,6 +11,7 @@ import {
     Keyboard,
     ScrollView,
     KeyboardAvoidingView,
+    SafeAreaView,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { API } from '../../config/apiConfig';
@@ -171,7 +172,7 @@ const EnterOtp = ({ route, ...props }) => {
     }
 
     return (
-        <KeyboardAvoidingView
+        <SafeAreaView
             style={{ flex: 1 }}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
@@ -237,7 +238,7 @@ const EnterOtp = ({ route, ...props }) => {
                     </View>
                 </View>
             </ScrollView>
-        </KeyboardAvoidingView>
+        </SafeAreaView>
     );
 };
 
@@ -261,8 +262,10 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         marginVertical: 20,
+        
     },
     otpInput: {
+        paddingVertical: Platform.OS === 'ios' ? 10 : 0,
         borderWidth: 2,
         borderColor: 'gray',
         textAlign: 'center',
@@ -270,6 +273,7 @@ const styles = StyleSheet.create({
         width: 40,
         marginHorizontal: 5,
         borderRadius: 10,
+        color:"#000"
     },
     resendButton: {
         marginVertical: 10,

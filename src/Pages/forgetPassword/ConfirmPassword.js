@@ -11,6 +11,7 @@ import {
     Keyboard,
     ScrollView,
     KeyboardAvoidingView,
+    SafeAreaView,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
@@ -95,7 +96,7 @@ const ConfirmPassword = ({ route, ...props }) => {
     }
 
     return (
-        <KeyboardAvoidingView
+        <SafeAreaView
             style={{ flex: 1 }}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'} // Adjust behavior based on the platform
             keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0} // Adjust this offset if necessary
@@ -173,7 +174,7 @@ const ConfirmPassword = ({ route, ...props }) => {
                     </View>
                 </View>
             </ScrollView>
-        </KeyboardAvoidingView>
+        </SafeAreaView>
     );
 };
 
@@ -227,6 +228,7 @@ const styles = StyleSheet.create({
         height: '100%',
         color: 'black',
         fontSize: 16,
+        paddingVertical: Platform.OS === 'ios' ? 10 : 0,
     },
     rowContainer: {
         flexDirection: 'row',

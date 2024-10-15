@@ -538,6 +538,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 6,
     borderRadius: 5,
+    paddingVertical: Platform.OS === 'ios' ? 8 : 0,
     paddingHorizontal: 10,
     marginVertical: 10,
     // backgroundColor: '#D9D9D947',

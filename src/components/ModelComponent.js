@@ -55,6 +55,7 @@ const ModalComponent = ({
   const cartItems = useSelector(state => state.cartItems);
 
   const textInputStyle = {
+    paddingVertical: Platform.OS === 'ios' ? 8 : 0,
     borderWidth: 1,
     borderColor: '#000',
     borderRadius: 5,
