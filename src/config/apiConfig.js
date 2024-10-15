@@ -106,8 +106,10 @@ export const API = {
   GET_ALL_PRODUCT_PUBLISH_LAZY:'erpportal/api/style/getAllStyleLazy',
   SEARCH_ALL_PRODUCT_PUBLISH:'erpportal/api/filter/getStyleProductDataForLazyLoad',
   GET_ALL_IMAGES:'erpportal/api/style/getImgBasedOnId',
-  GET_ALL_IMAGES_PACKAGE:'erpportal/api/package'
-
+  GET_ALL_IMAGES_PACKAGE:'erpportal/api/package',
+  REQUEST_OTP:'erpportal/api/users/requestOtp',
+  CONFIRM_OTP:'erpportal/api/users/confirmOtp',
+  RESET_PASSWORD:'erpportal/api/users/resetPassword',
 };
 
 export const USER_ID = 'adminClientId';

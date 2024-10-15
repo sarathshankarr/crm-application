@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Login from '../Pages/Login/Login';
 import Splash from '../Pages/Splash';
 import Details from '../Pages/details/Details';
@@ -42,6 +42,9 @@ import DistributorInventory from '../Pages/inventory/DistributorInventory';
 import Attendence from '../Pages/attendence/Attendence';
 import Packages from '../Pages/product/Packages';
 import PackageDetail from '../Pages/product/PackageDetail';
+import MailConfirmation from '../Pages/forgetPassword/MailConfirmation';
+import ConfirmPassword from '../Pages/forgetPassword/ConfirmPassword';
+import EnterOtp from '../Pages/forgetPassword/EnterOtp';
 
 const Stack = createNativeStackNavigator();
 
@@ -51,22 +54,22 @@ const Routes = () => {
       <Stack.Screen
         name="Splash"
         component={Splash}
-        options={{headerShown: false}}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="Login"
         component={Login}
-        options={{headerShown: false}}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="Main"
         component={Main}
-        options={{headerShown: false}}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="Details"
         component={Details}
-        options={({navigation}) => ({
+        options={({ navigation }) => ({
           header: () => (
             <CommonHeader
               navigation={navigation}
@@ -82,7 +85,7 @@ const Routes = () => {
       <Stack.Screen
         name="Cart"
         component={Cart}
-        options={({navigation}) => ({
+        options={({ navigation }) => ({
           header: () => (
             <CommonHeader
               navigation={navigation}
@@ -96,12 +99,12 @@ const Routes = () => {
       <Stack.Screen
         name="Profile"
         component={Profile}
-        options={{headerShown: true}}
+        options={{ headerShown: true }}
       />
       <Stack.Screen
         name="AllCategoriesListed"
         component={AllCategoriesListed}
-        options={({route, navigation}) => ({
+        options={({ route, navigation }) => ({
           header: () => (
             <CommonHeader
               navigation={navigation}
@@ -117,7 +120,7 @@ const Routes = () => {
       <Stack.Screen
         name="NewCategoryUi"
         component={NewCategoryUi}
-        options={({route, navigation}) => ({
+        options={({ route, navigation }) => ({
           header: () => (
             <CommonHeader
               navigation={navigation}
@@ -133,155 +136,155 @@ const Routes = () => {
       <Stack.Screen
         name="Add Note"
         component={AddNote}
-        options={{headerShown: true}}
+        options={{ headerShown: true }}
       />
       <Stack.Screen
         name="LoaderComponent"
         component={LoaderComponent}
-        options={{headerShown: true}}
+        options={{ headerShown: true }}
       />
       <Stack.Screen
         name="CustomDropDown"
         component={CustomDropDown}
-        options={{headerShown: true}}
+        options={{ headerShown: true }}
       />
       <Stack.Screen
         name="ProductInventory"
         component={ProductInventory}
-        options={{headerShown: true}}
+        options={{ headerShown: true }}
       />
       <Stack.Screen
         name="LocationInventory"
         component={LocationInventory}
-        options={{headerShown: true}}
+        options={{ headerShown: true }}
       />
       <Stack.Screen
         name="SignUp"
         component={SignUp}
-        options={{headerShown: false}}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="ImageSlider"
         component={ImageSlider}
-        options={{headerShown: false}}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="CommenHeaderHomeScreen"
         component={CommenHeaderHomeScreen}
-        options={{headerShown: false}}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="PackingOrders"
         component={PackingOrders}
-        options={{headerShown: false}}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="Distributor GRN"
         component={DistributorGrn}
-        options={{headerShown: true}}
+        options={{ headerShown: true }}
       />
       <Stack.Screen
         name="DistributorOrder"
         component={DistributorOrder}
-        options={{headerShown: false}}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="ModalScreen"
         component={ModalScreen}
-        options={{headerShown: false}}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="Activities"
         component={Activities}
-        options={{headerShown: false}}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="NewTask"
         component={NewTask}
-        options={{headerShown: false}}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="NewCall"
         component={NewCall}
-        options={{headerShown: false}}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="StyleDetails"
         component={NewStyleDetail}
-        options={{headerShown: false}}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="UploadProductImage"
         component={UploadProductImage}
-        options={{headerShown: false}}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="CustomCheckBox"
         component={CustomCheckBox}
-        options={{headerShown: false}}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="CustomerLocation"
         component={CustomerLocation}
-        options={{headerShown: false}}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="ProductPackagePublish"
         component={ProductPackagePublish}
-        options={{headerShown: false}}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="ProductsStyles"
         component={ProductsStyles}
-        options={{headerShown: false}}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="AddNewStyle"
         component={AddNewStyle}
-        options={({navigation}) => ({
+        options={({ navigation }) => ({
           // header: () => (
           //   <CommonHeader navigation={navigation} title="New Style" />
           // ),
           headerBackVisible: true,
-          headerShown:false,
+          headerShown: false,
         })}
       />
-       <Stack.Screen
+      <Stack.Screen
         name="TaskDetails"
         component={TaskDetails}
-        options={{headerShown: false}}
+        options={{ headerShown: false }}
       />
-       <Stack.Screen
+      <Stack.Screen
         name="Packing orders"
         component={Packorders}
-        options={{headerShown: true}}
+        options={{ headerShown: true }}
       />
-          <Stack.Screen
+      <Stack.Screen
         name="PackingConformation"
         component={PackingConformation}
-        options={{headerShown: false}}
+        options={{ headerShown: false }}
       />
-           <Stack.Screen
+      <Stack.Screen
         name="CustomCheckBoxStatus"
         component={CustomCheckBoxStatus}
-        options={{headerShown: false}}
+        options={{ headerShown: false }}
       />
-           <Stack.Screen
+      <Stack.Screen
         name="Files"
         component={Files}
-        options={{headerShown: false}}
+        options={{ headerShown: false }}
       />
-       <Stack.Screen
+      <Stack.Screen
         name="Notifications"
         component={Notifications}
         options={{ headerShown: false }}
       />
-       <Stack.Screen
+      <Stack.Screen
         name="DistributorInventory"
         component={DistributorInventory}
         options={{ headerShown: true }}
       />
-       <Stack.Screen
+      <Stack.Screen
         name="Attendence"
         component={Attendence}
         options={{ headerShown: true }}
@@ -291,10 +294,10 @@ const Routes = () => {
         component={Packages}
         options={{ headerShown: true }}
       />
-        <Stack.Screen
+      <Stack.Screen
         name="PackageDetail"
         component={PackageDetail}
-        options={({route, navigation}) => ({
+        options={({ route, navigation }) => ({
           header: () => (
             <CommonHeader
               navigation={navigation}
@@ -306,6 +309,22 @@ const Routes = () => {
           ),
           headerBackVisible: true,
         })}
+      />
+
+      <Stack.Screen
+        name="MailConfirmation"
+        component={MailConfirmation}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="ConfirmPassword"
+        component={ConfirmPassword}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="EnterOtp"
+        component={EnterOtp}
+        options={{ headerShown: false }}
       />
     </Stack.Navigator>
   );

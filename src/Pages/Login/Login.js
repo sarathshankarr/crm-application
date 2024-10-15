@@ -42,7 +42,7 @@ const Login = () => {
   const [isChecked, setIsChecked] = useState(false);
   const [usernameSuggestions, setUsernameSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
-const onlineStatus=useOnlineStatus();
+  const onlineStatus = useOnlineStatus();
 
   useEffect(() => {
     const loadStoredCredentials = async () => {
@@ -115,11 +115,11 @@ const onlineStatus=useOnlineStatus();
 
   const getCustomerUrl = async () => {
 
-    if(!onlineStatus){
+    if (!onlineStatus) {
       Alert.alert('No Internet !', 'Please Check your Internet Connection');
       return;
     }
-  
+
     setLoading(true);
     handleEmptyInputs();
     try {
@@ -351,7 +351,10 @@ const onlineStatus=useOnlineStatus();
   };
 
   const handleForgotPassword = () => {
-    Alert.alert('Forgot password clicked');
+    // Alert.alert('Forgot password clicked');
+    navigation.navigate('MailConfirmation');
+    // navigation.navigate('EnterOtp');
+    // navigation.navigate('ConfirmPassword');
   };
   const handleCheckBoxToggle = () => {
     setIsChecked(!isChecked);
@@ -360,125 +363,128 @@ const onlineStatus=useOnlineStatus();
   return (
     // <KeyboardAwareScrollView contentContainerStyle={{ flexGrow: 1 }}>
     <SafeAreaView
-    style={{ flex: 1 }}
-    behavior={Platform.OS === 'ios' ? 'padding' : 'height'} // Adjust behavior based on the platform
-    keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0} // Adjust this offset if necessary
-  >
-    <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-    <View style={styles.container}>
-      <View style={styles.imageContainer}>
-        <Image
-          style={{ height: 103, width: 103, marginTop: 30 }}
-          source={require('../../../assets/loginbg.png')}
-        />
-      </View>
-      <View style={styles.formContainer}>
-        <Text style={styles.title}>Login to Your Account</Text>
-        <View
-          style={[
-            styles.inputContainer,
-            errorMsg?.includes('no_Code') && styles.inputContainerError,
-          ]}>
-          <TextInput
-            style={styles.input}
-            placeholder="Code"
-            placeholderTextColor="#000"
-            onChangeText={text => setCode(text)}
-            value={code}
-          />
-          <Image
-            source={require('../../../assets/code-lock.png')}
-            style={styles.inputImage}
-          />
-        </View>
-
-        {errorMsg?.includes('no_Code') && (
-          <Text style={styles.errorText}>Code is required</Text>
-        )}
-
-        <View
-          style={[
-            styles.inputContainer,
-            errorMsg?.includes('no_Username') && styles.inputContainerError,
-          ]}>
-          <TextInput
-            style={styles.input}
-            placeholder="Username"
-            placeholderTextColor="#000"
-            onChangeText={handleUsernameChange}
-            value={username}
-          />
-
-          <Image
-            source={require('../../../assets/email.png')}
-            style={styles.inputImage}
-          />
-        </View>
-
-        {errorMsg?.includes('no_Username') && (
-          <Text style={styles.errorText}>Username is required</Text>
-        )}
-        {showSuggestions && (
-          <ScrollView style={styles.suggestionsContainer}>
-            {usernameSuggestions.map((suggestion, index) => (
-              <TouchableOpacity
-                key={index}
-                onPress={() => handleSuggestionClick(suggestion)}
-                style={styles.suggestionItem}>
-                <Text style={{ color: "#000" }}>{suggestion.username}</Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        )}
-
-        <View
-          style={[
-            styles.inputContainer,
-            errorMsg?.includes('no_Password') && styles.inputContainerError,
-          ]}>
-          <TextInput
-            style={styles.input}
-            placeholder="Password"
-            placeholderTextColor="#000"
-            secureTextEntry={!showPassword} // Toggle secureTextEntry based on state
-            onChangeText={text => setPassword(text)}
-            value={password}
-          />
-          <TouchableOpacity onPress={togglePasswordVisibility}>
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'} // Adjust behavior based on the platform
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0} // Adjust this offset if necessary
+    >
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+        <View style={styles.container}>
+          <View style={styles.imageContainer}>
             <Image
-              source={require('../../../assets/lock.png')}
-              style={styles.inputImage}
+              style={{ height: 103, width: 103, marginTop: 30 }}
+              source={require('../../../assets/loginbg.png')}
             />
-          </TouchableOpacity>
-        </View>
-        {errorMsg?.includes('no_Password') && (
-          <Text style={styles.errorText}>Password is required</Text>
-        )}
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          {/* <CheckBox onClick={handleCheckBoxToggle} isChecked={isChecked} /> */}
+          </View>
+          <View style={styles.formContainer}>
+            <Text style={styles.title}>Login to Your Account</Text>
+            <View
+              style={[
+                styles.inputContainer,
+                errorMsg?.includes('no_Code') && styles.inputContainerError,
+              ]}>
+              <TextInput
+                style={styles.input}
+                placeholder="Code"
+                placeholderTextColor="#000"
+                onChangeText={text => setCode(text)}
+                value={code}
+              />
+              <Image
+                source={require('../../../assets/code-lock.png')}
+                style={styles.inputImage}
+              />
+            </View>
+
+            {errorMsg?.includes('no_Code') && (
+              <Text style={styles.errorText}>Code is required</Text>
+            )}
+
+            <View
+              style={[
+                styles.inputContainer,
+                errorMsg?.includes('no_Username') && styles.inputContainerError,
+              ]}>
+              <TextInput
+                style={styles.input}
+                placeholder="Username"
+                placeholderTextColor="#000"
+                onChangeText={handleUsernameChange}
+                value={username}
+              />
+
+              <Image
+                source={require('../../../assets/email.png')}
+                style={styles.inputImage}
+              />
+            </View>
+
+            {errorMsg?.includes('no_Username') && (
+              <Text style={styles.errorText}>Username is required</Text>
+            )}
+            {showSuggestions && (
+              <ScrollView style={styles.suggestionsContainer}>
+                {usernameSuggestions.map((suggestion, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    onPress={() => handleSuggestionClick(suggestion)}
+                    style={styles.suggestionItem}>
+                    <Text style={{ color: "#000" }}>{suggestion.username}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            )}
+
+            <View
+              style={[
+                styles.inputContainer,
+                errorMsg?.includes('no_Password') && styles.inputContainerError,
+              ]}>
+              <TextInput
+                style={styles.input}
+                placeholder="Password"
+                placeholderTextColor="#000"
+                secureTextEntry={!showPassword} // Toggle secureTextEntry based on state
+                onChangeText={text => setPassword(text)}
+                value={password}
+              />
+              <TouchableOpacity onPress={togglePasswordVisibility}>
+                <Image
+                  source={showPassword ? require('../../../assets/password.png') : require('../../../assets/lock.png')}
+                  style={styles.inputImage}
+                />
+              </TouchableOpacity>
+            </View>
+            {errorMsg?.includes('no_Password') && (
+              <Text style={styles.errorText}>Password is required</Text>
+            )}
+            {/* <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <CustomCheckBox isChecked={isChecked} onToggle={handleCheckBoxToggle} />
           <Text style={{ padding: 5, color: '#000', color: "#000" }}>Remember Me</Text>
-        </View>
-        <View style={styles.rowContainer}>
-          {/* <TouchableOpacity onPress={handleForgotPassword}>
-            <Text style={styles.text}>Forgot Password?</Text>
-          </TouchableOpacity> */}
-        </View>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={getCustomerUrl}
-          disabled={loading}>
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.buttonText}>Login</Text>
-          )}
-        </TouchableOpacity>
-        <View style={styles.line} />
-        {/* <View>
+        </View> */}
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginBottom: 15 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <CustomCheckBox isChecked={isChecked} onToggle={handleCheckBoxToggle} />
+                <Text style={{ padding: 5, color: '#000' }}>Remember Me</Text>
+              </View>
+              <TouchableOpacity onPress={handleForgotPassword}>
+                <Text style={{ padding: 5, color: '#000' }}>Forgot Password?</Text>
+              </TouchableOpacity>
+            </View>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={getCustomerUrl}
+              disabled={loading}>
+              {loading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.buttonText}>Login</Text>
+              )}
+            </TouchableOpacity>
+            <View style={styles.line} />
+            {/* <View>
           <Text style={styles.signintext}>Or sign in with</Text>
         </View> */}
-        {/* <View
+            {/* <View
           style={{
             flexDirection: 'row',
             justifyContent: 'center',
@@ -498,17 +504,17 @@ const onlineStatus=useOnlineStatus();
               source={require('../../../assets/Facebook.png')}></Image></TouchableOpacity>
           </View>
         </View> */}
-      </View>
-      <View style={{ justifyContent: 'flex-end', flex: 1, marginVertical: 10 }}>
-        {/* <TouchableOpacity onPress={goingToSignUp}>
+          </View>
+          <View style={{ justifyContent: 'flex-end', flex: 1, marginVertical: 10 }}>
+            {/* <TouchableOpacity onPress={goingToSignUp}>
                 <Text style={{textAlign:'center'}}>Don’t have an account? Sign Up</Text>
         </TouchableOpacity> */}
-        <Text style={{ textAlign: 'center', color: "#000" }}>
-          All rights with Codeverse Technologies
-        </Text>
-      </View>
-    </View>
-    </ScrollView>
+            <Text style={{ textAlign: 'center', color: "#000" }}>
+              All rights with Codeverse Technologies
+            </Text>
+          </View>
+        </View>
+      </ScrollView>
     </SafeAreaView>
     // </KeyboardAwareScrollView>
   );
