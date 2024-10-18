@@ -375,6 +375,7 @@ const TaskDetails = ({route}) => {
     ) {
       Alert.alert(
         // `Distance travelled: ${distance.includes('km') ? parseFloat(distance) * 1000 : parseFloat(distance)} meters`,
+        'Warning', 
         'You must be within 100 meters of the destination to upload a selfie',
       );
       return;
@@ -904,8 +905,8 @@ const TaskDetails = ({route}) => {
                   : parseFloat(distance)) > 100
               ) {
                 Alert.alert(
-                  'You must be within 100 meters of the destination to Punch In or Punch Out',
-                );
+                  'Warning',  // This is the header/title of the alert
+                  'You must be within 100 meters of the destination to Punch In or Punch Out',                );
                 return;
               }
 

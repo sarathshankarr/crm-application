@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   Text,
@@ -13,8 +13,8 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import Geolocation from 'react-native-geolocation-service';
-import {useSelector} from 'react-redux';
-import {API} from '../../config/apiConfig';
+import { useSelector } from 'react-redux';
+import { API } from '../../config/apiConfig';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -26,7 +26,7 @@ const Attendance = () => {
   const [signInTime, setSignInTime] = useState('');
   const [signInDay, setSignInDay] = useState('');
   const [signInDate, setSignInDate] = useState('');
-  const [signInLocation, setSignInLocation] = useState({lat: null, long: null});
+  const [signInLocation, setSignInLocation] = useState({ lat: null, long: null });
 
   const [signOutTime, setSignOutTime] = useState('');
   const [signOutDay, setSignOutDay] = useState('');
@@ -81,7 +81,7 @@ const Attendance = () => {
         second: '2-digit',
       });
       setCurrentTime(timeString);
-      const dayString = now.toLocaleDateString('en-US', {weekday: 'long'});
+      const dayString = now.toLocaleDateString('en-US', { weekday: 'long' });
       setCurrentDay(dayString);
     }, 1000); // Update every second
 
@@ -92,6 +92,20 @@ const Attendance = () => {
     requestLocationPermission();
     getPunchInPunchOut();
   }, []);
+  const getLocationWithRetries = async (retries = 3) => {
+    for (let i = 0; i < retries; i++) {
+      try {
+        const location = await getLocation();
+        if (location.lat && location.long) {
+          return location; // Successfully got location
+        }
+      } catch (error) {
+        console.log(`Retry ${i + 1}: Failed to get location, retrying...`);
+      }
+    }
+    throw new Error('Unable to retrieve location after retries.');
+  };
+    
 
   useEffect(() => {
     setCurrentDate(getCurrentDate());
@@ -129,15 +143,15 @@ const Attendance = () => {
     return new Promise((resolve, reject) => {
       Geolocation.getCurrentPosition(
         position => {
-          const {latitude, longitude} = position.coords;
-          resolve({lat: latitude, long: longitude});
+          const { latitude, longitude } = position.coords;
+          resolve({ lat: latitude, long: longitude });
         },
         error => {
           console.error('Error getting location:', error);
           Alert.alert('Error', 'Could not get current location.');
           reject(error);
         },
-        {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000},
+        { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 },
       );
     });
   };
@@ -174,51 +188,137 @@ const Attendance = () => {
     return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`; // Format YYYY-MM-DDTHH:MM:SS
   };
 
+  // const handleSignToggle = async () => {
+  //   if (loading) return; // Prevent multiple clicks
+
+  //   setLoading(true); // Start loading
+  //   const now = new Date();
+  //   const currentDateTime = formatDateTime(now);
+  //   const day = now.toLocaleDateString('en-US', { weekday: 'long' });
+
+  //   try {
+  //     const location = await getLocation();
+  //     if (!isSignedIn) {
+  //       setSignInTime(extractTime(currentDateTime));
+  //       setSignInDay(day);
+  //       setSignInDate(currentDateTime.split('T')[0]);
+  //       setSignInLocation(location);
+  //     } else {
+  //       setSignOutTime(extractTime(currentDateTime));
+  //       setSignOutDay(day);
+  //       setSignOutDate(currentDateTime.split('T')[0]);
+  //       setSignOutLocation(location);
+  //     }
+
+  //     await PunchInPunchOut(); // Await API call
+
+  //     setIsSignedIn(prevState => !prevState);
+  //   } catch (error) {
+  //     console.error('Error:', error);
+  //     Alert.alert('Error', 'Could not get current location.');
+  //   } finally {
+  //     setLoading(false); // Stop loading after request is done
+  //   }
+  // };
+
+  // const PunchInPunchOut = async () => {
+  //   const now = new Date();
+  //   const formattedDateTime = formatDateTime(now);
+  //   const formattedDate = formattedDateTime.split('T')[0];
+  //   const location = isSignedIn ? signInLocation : signOutLocation;
+
+  //   const apiUrl = `${global?.userData?.productURL}${API.PUNCH_IN_PUNCH_OUT}`;
+
+  //   const payload = isSignedIn
+  //     ? {
+  //       employeeId: userId,
+  //       punchOut: formattedDateTime,
+  //       punch_out_latitude: location.lat,
+  //       punch_out_longitude: location.long,
+  //       date: formattedDate,
+  //       companyId: companyId,
+  //     }
+  //     : {
+  //       employeeId: userId,
+  //       punchIn: formattedDateTime,
+  //       punch_in_latitude: location.lat,
+  //       punch_in_longitude: location.long,
+  //       date: formattedDate,
+  //       companyId: companyId,
+  //     };
+
+  //   console.log('payload==================>', payload);
+
+  //   try {
+  //     const response = await axios.put(apiUrl, payload, {
+  //       headers: {
+  //         Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+  //         'Content-Type': 'application/json',
+  //       },
+  //     });
+
+  //     console.log('Response:', response.data);
+  //   } catch (error) {
+  //     console.error('Error:', error);
+  //     Alert.alert('Error', 'Failed to punch in/out. Please try again.');
+  //   }
+  // };
+  
+  
+
   const handleSignToggle = async () => {
-    if (loading) return; // Prevent multiple clicks
-
-    setLoading(true); // Start loading
-    const now = new Date();
-    const currentDateTime = formatDateTime(now);
-    const day = now.toLocaleDateString('en-US', {weekday: 'long'});
-
+    if (loading) return;
+  
+    setLoading(true);
     try {
-      const location = await getLocation();
+      // Fetch location with retries, ensure location is available
+      const location = await getLocationWithRetries(3);
+      if (!location || !location.lat || !location.long) {
+        throw new Error('Unable to retrieve location. Please try again.');
+      }
+  
+      const now = new Date();
+      const currentDateTime = formatDateTime(now); // E.g. '2024-10-18T12:00:00'
+      const day = now.toLocaleDateString('en-US', { weekday: 'long' });
+  
+      // If signing in
       if (!isSignedIn) {
+        // Set state before punch-in
+        setSignInLocation(location);
         setSignInTime(extractTime(currentDateTime));
         setSignInDay(day);
         setSignInDate(currentDateTime.split('T')[0]);
-        setSignInLocation(location);
       } else {
+        // Set state before punch-out
+        setSignOutLocation(location);
         setSignOutTime(extractTime(currentDateTime));
         setSignOutDay(day);
         setSignOutDate(currentDateTime.split('T')[0]);
-        setSignOutLocation(location);
       }
-
-      await PunchInPunchOut(); // Await API call
-
+  
+      // Punch-in/out after ensuring location is set
+      await PunchInPunchOut(location, currentDateTime, day);
+      console.log('Location:', location);
+      console.log('Sign-In Time:', currentDateTime);
+  
+      // Toggle sign-in state after punch-in/out success
       setIsSignedIn(prevState => !prevState);
     } catch (error) {
-      console.error('Error:', error);
-      Alert.alert('Error', 'Could not get current location.');
+      Alert.alert('Error', error.message || 'Failed to punch in/out. Please try again.');
     } finally {
-      setLoading(false); // Stop loading after request is done
+      setLoading(false);
     }
   };
-
-  const PunchInPunchOut = async () => {
-    const now = new Date();
-    const formattedDateTime = formatDateTime(now);
-    const formattedDate = formattedDateTime.split('T')[0];
-    const location = isSignedIn ? signInLocation : signOutLocation;
-
+  
+  const PunchInPunchOut = async (location, currentDateTime, day) => {
+    const formattedDate = currentDateTime.split('T')[0];
+  
     const apiUrl = `${global?.userData?.productURL}${API.PUNCH_IN_PUNCH_OUT}`;
-
+  
     const payload = isSignedIn
       ? {
           employeeId: userId,
-          punchOut: formattedDateTime,
+          punchOut: currentDateTime,
           punch_out_latitude: location.lat,
           punch_out_longitude: location.long,
           date: formattedDate,
@@ -226,15 +326,15 @@ const Attendance = () => {
         }
       : {
           employeeId: userId,
-          punchIn: formattedDateTime,
+          punchIn: currentDateTime,
           punch_in_latitude: location.lat,
           punch_in_longitude: location.long,
           date: formattedDate,
           companyId: companyId,
         };
-
+  
     console.log('payload==================>', payload);
-
+  
     try {
       const response = await axios.put(apiUrl, payload, {
         headers: {
@@ -242,13 +342,14 @@ const Attendance = () => {
           'Content-Type': 'application/json',
         },
       });
-
+  
       console.log('Response:', response.data);
     } catch (error) {
       console.error('Error:', error);
       Alert.alert('Error', 'Failed to punch in/out. Please try again.');
     }
   };
+  
   const getPunchInPunchOut = async () => {
     const formattedDate = getCurrentDate();
     const apiUrl = `${global?.userData?.productURL}${API.GET_PUNCH_IN_PUNCH_OUT}/${userId}/${formattedDate}`;
@@ -269,7 +370,7 @@ const Attendance = () => {
       const latestRecord = response.data[0];
       setIsSignedIn(latestRecord?.loggedStts === 0);
       setSignInTime(
-        latestRecord.punchIn ? extractTime(latestRecord.punchIn) : '',
+        latestRecord?.punchIn ? extractTime(latestRecord?.punchIn) : '',
       );
       setSignInDay(
         new Date(latestRecord?.punchIn).toLocaleDateString('en-US', {
@@ -277,22 +378,22 @@ const Attendance = () => {
         }) || '',
       );
       setSignInDate(
-        new Date(latestRecord.punchIn).toISOString().split('T')[0] || '',
+        new Date(latestRecord?.punchIn).toISOString().split('T')[0] || '',
       );
       setSignInLocation({
-        lat: latestRecord.punch_in_latitude,
-        long: latestRecord.punch_in_longitude,
+        lat: latestRecord?.punch_in_latitude,
+        long: latestRecord?.punch_in_longitude,
       });
       setSignOutTime(
-        latestRecord.punchOut ? extractTime(latestRecord.punchOut) : '',
+        latestRecord?.punchOut ? extractTime(latestRecord?.punchOut) : '',
       );
       setSignOutDay(
-        new Date(latestRecord.punchOut).toLocaleDateString('en-US', {
+        new Date(latestRecord?.punchOut).toLocaleDateString('en-US', {
           weekday: 'long',
         }) || '',
       );
       setSignOutDate(
-        new Date(latestRecord.punchOut).toISOString().split('T')[0] || '',
+        new Date(latestRecord?.punchOut).toISOString().split('T')[0] || '',
       );
       setSignOutLocation({
         lat: latestRecord.punch_out_latitude,
@@ -339,9 +440,9 @@ const Attendance = () => {
           </View>
         </View>
 
-        <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
           <TouchableOpacity style={styles.SwipesButton} onPress={openModal}>
-            <Text style={{color: '#fff', fontSize: 15}}>View Swipes</Text>
+            <Text style={{ color: '#fff', fontSize: 15 }}>View Swipes</Text>
           </TouchableOpacity>
           {/* <TouchableOpacity
             style={styles.signOutButton}
@@ -351,14 +452,14 @@ const Attendance = () => {
             </Text>
           </TouchableOpacity> */}
           <TouchableOpacity
-            style={[styles.signOutButton, loading ? {opacity: 0.5} : {}]}
+            style={[styles.signOutButton, loading ? { opacity: 0.5 } : {}]}
             onPress={handleSignToggle}
             disabled={loading} // Disable button while loading
           >
             {loading ? (
               <ActivityIndicator color="#fff" /> // Show spinner during loading
             ) : (
-              <Text style={{color: '#fff', fontSize: 15}}>
+              <Text style={{ color: '#fff', fontSize: 15 }}>
                 {isSignedIn ? 'Punch Out' : 'Punch In'}
               </Text>
             )}
@@ -386,20 +487,24 @@ const Attendance = () => {
               <Text style={styles.modalContent}>Punch In Time: </Text>
               <Text style={styles.modalContent}>Punch Out Time:</Text>
             </View>
-            <FlatList
-              data={punchRecords}
-              keyExtractor={(item, index) => index.toString()}
-              renderItem={({item}) => (
-                <View style={styles.recordContainer}>
-                  <Text style={{color: '#000', fontWeight: '500'}}>
-                    {item.punchIn ? extractTime(item.punchIn) : 'N/A'}
-                  </Text>
-                  <Text style={{color: '#000', fontWeight: '500'}}>
-                    {item.punchOut ? extractTime(item.punchOut) : 'N/A'}
-                  </Text>
-                </View>
-              )}
-            />
+            {punchRecords.length === 0 ? (
+              <Text style={styles.noCategoriesText}>Sorry, no results found!</Text>
+            ) : (
+              <FlatList
+                data={punchRecords}
+                keyExtractor={(item, index) => index.toString()}
+                renderItem={({ item }) => (
+                  <View style={styles.recordContainer}>
+                    <Text style={{ color: '#000', fontWeight: '500' }}>
+                      {item?.punchIn ? extractTime(item?.punchIn) : 'N/A'}
+                    </Text>
+                    <Text style={{ color: '#000', fontWeight: '500' }}>
+                      {item?.punchOut ? extractTime(item?.punchOut) : 'N/A'}
+                    </Text>
+                  </View>
+                )}
+              />
+            )}
             <Pressable style={styles.closeButton} onPress={closeModal}>
               <Text style={styles.closeButtonText}>Close</Text>
             </Pressable>
@@ -435,7 +540,7 @@ const styles = StyleSheet.create({
     marginVertical: 20,
     padding: 20,
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: 1},
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.2,
     shadowRadius: 1.41,
     elevation: 2,
@@ -559,6 +664,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginHorizontal: 10,
     marginVertical: 2,
+  },
+  noCategoriesText: {
+    textAlign: 'center',
+    marginTop: 20,
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#000000',
   },
 });
 
