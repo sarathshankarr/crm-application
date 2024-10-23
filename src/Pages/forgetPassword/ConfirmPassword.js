@@ -15,7 +15,13 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
-import { API } from '../../config/apiConfig';
+import { API, USER_ID, USER_PASSWORD } from '../../config/apiConfig';
+import { isValidString } from '../../Helper/Helper';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { encode as base64Encode } from 'base-64';
+import { useDispatch } from 'react-redux';
+import { setLoggedInUser, setUserRole } from '../../redux/actions/Actions';
+
 
 
 const ConfirmPassword = ({ route, ...props }) => {
@@ -30,6 +36,10 @@ const ConfirmPassword = ({ route, ...props }) => {
     const [otpStr, setotpStr] = useState('');
     const [showPassword1, setshowPassword1] = useState(true);
     const [showPassword2, setshowPassword2] = useState(true);
+    const dispatch = useDispatch();
+    const [code, setCode] = useState('');
+
+
 
 
     useEffect(() => {
@@ -39,6 +49,7 @@ const ConfirmPassword = ({ route, ...props }) => {
             setEmail(route.params?.email);
             setotpStr(route.params?.otp);
             setUrl(route.params?.url);
+            setCode(route.params?.serverCode);
         }
 
     }, []);
@@ -65,6 +76,7 @@ const ConfirmPassword = ({ route, ...props }) => {
             emailId: email,
             otp: otpStr,
             password: newPassword,
+            linkType: 2,
         };
 
         try {
@@ -77,8 +89,9 @@ const ConfirmPassword = ({ route, ...props }) => {
             const res = response?.data?.message;
 
             if (res === "success") {
-                Alert.alert('Alert', 'New password set successfully. Please log in again.');
-                navigation.navigate('Login');
+                Alert.alert('Alert', 'New password set successfully. Please wait Logging in...');
+                handleRedirect(url);
+                // navigation.navigate('Login');
 
             } else if (res === "mismatch") {
                 Alert.alert('Invalid OTP', 'The OTP you entered is incorrect.');
@@ -94,6 +107,182 @@ const ConfirmPassword = ({ route, ...props }) => {
             Alert.alert('Alert', 'Woof! There seems to be a problem. Please try after sometime.');
         }
     }
+
+    const handleRedirect = async (productURL) => {
+
+        console.log("Started of redirect");
+        console.log("Start process productURL ===> ", productURL)
+
+        setLoading(true);
+        const postData = new URLSearchParams();
+        postData.append('username', email);
+        postData.append('grant_type', 'password');
+        postData.append('password', newPassword);
+        const credentials = base64Encode(`${USER_ID}:${USER_PASSWORD}`);
+
+        const headers = {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            Authorization: `Basic ${credentials}`,
+        };
+        console.log("call api for login ")
+        try {
+            const response = await axios.post(
+                productURL + API.LOGIN,
+                postData.toString(),
+                {
+                    headers,
+                },
+            );
+            if (isValidString(response.data)) {
+                console.log("validated response now call 3 fxns")
+                let data = { token: response.data, productURL: productURL };
+                await saveToken(data);
+                await getUsers(response.data, productURL);
+
+                LoginAudit(data);
+
+                navigation.reset({
+                    index: 0,
+                    routes: [{ name: 'Main' }],
+                });
+            } else {
+                console.log('Response:', JSON.stringify(response.data));
+            }
+        } catch (error) {
+            if (error?.response?.data?.error_description) {
+                Alert.alert(
+                    'crm.codeverse.co.says',
+                    error.response.data.error_description,
+                );
+            }
+        } finally {
+            setLoading(false);
+            Keyboard.dismiss();
+        }
+    };
+
+    const saveToken = async data => {
+        console.log("saveToken==========>");
+        const username = email;
+        const password = newPassword;
+
+
+        try {
+            console.log('Saving token:', JSON.stringify(data));
+            await AsyncStorage.setItem('userdata', JSON.stringify(data));
+            await AsyncStorage.setItem('loggedIn', 'true');
+            global.userData = data; // Ensure global userData is updated
+            console.log('globaluserData', global.userData);
+            if (true) {
+                const existingCredentials =
+                    JSON.parse(await AsyncStorage.getItem('credentials')) || [];
+
+                const filteredCredentials = existingCredentials.filter(
+                    (cred) => !(cred.username === username && cred.code === code)
+                );
+
+                const newCredential = { username, password, code };
+                filteredCredentials.push(newCredential);
+                console.log('Added new or updated credential');
+
+                await AsyncStorage.setItem(
+                    'credentials',
+                    JSON.stringify(filteredCredentials)
+                );
+
+            } else {
+                await AsyncStorage.removeItem('username');
+                await AsyncStorage.removeItem('password');
+                await AsyncStorage.removeItem('code');
+            }
+        } catch (error) {
+            console.error('Error saving token:', error);
+        }
+    };
+
+    const getUsers = async (userData, productURL) => {
+        console.log('getUsers userData:', userData);
+        const apiUrl = `${productURL}${API.ADD_USERS}/${userData.userId}`; // Update API URL to include dynamic
+        console.log('apurl', apiUrl);
+        try {
+            const response = await axios.get(apiUrl, {
+                headers: { Authorization: `Bearer ${userData.access_token}` },
+            });
+            const loggedInUser = response.data.response.users[0]; // Since response is expected to have only one user with given
+            if (loggedInUser) {
+                console.log('Logged in user:', loggedInUser);
+                dispatch(setLoggedInUser(loggedInUser));
+                dispatch(setUserRole(loggedInUser.role));
+                await saveUserDataToStorage(loggedInUser);
+                // const roles = loggedInUser.role;
+                // let roleName = '';
+                // let roleId = '';
+                // for (const role of roles) {
+                //   const name = role.role;
+                //   if (name) {
+                //     if (
+                //       name === 'admin' ||
+                //       name === 'Distributor' ||
+                //       name === 'Retailer'
+                //     ) {
+                //       roleName = name;
+                //       roleId = role.id;
+                //       break;
+                //     }
+                //   }
+                // }
+                // if (roleName && roleId) {
+                //   await saveRoleToStorage({roleName, roleId});
+                // } 
+                // else {
+                //   Alert.alert(
+                //     'Unauthorized role',
+                //     'You do not have access to this application.',
+                //   );
+                // }
+            } else {
+                Alert.alert('No user data found', 'Failed to fetch user data.');
+            }
+        } catch (error) {
+            console.error('Error fetching user data:', error);
+            Alert.alert(
+                'Failed to fetch user data',
+                'An error occurred while fetching user data.',
+            );
+        }
+    };
+
+    const saveUserDataToStorage = async userData => {
+        try {
+            await AsyncStorage.setItem('userData', JSON.stringify(userData));
+        } catch (error) {
+            console.error('Error saving user data:', error);
+        }
+    };
+
+    const LoginAudit = () => {
+        const globalUserData = global?.userData;
+
+        // Extract userId and companyId from global user data
+        const userId = globalUserData?.token?.userId;
+        const companyId = globalUserData?.token?.companyId;
+
+        const apiUrl = `${global?.userData?.productURL}${API.LOGINAUDIT}/${userId}/${companyId}/${0}/${2}`;
+        console.log('Constructed API URL:', apiUrl);
+        axios
+            .get(apiUrl, {
+                headers: {
+                    Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+                },
+            })
+            .then(response => {
+                console.log('Logged in user:', response.data);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            })
+
+    };
 
     return (
         <SafeAreaView
@@ -228,7 +417,7 @@ const styles = StyleSheet.create({
         height: '100%',
         color: 'black',
         fontSize: 16,
-        paddingVertical: Platform.OS === 'ios' ? 10 : 0,
+        paddingVertical: Platform.OS === 'ios' ? 10 : 10,
     },
     rowContainer: {
         flexDirection: 'row',

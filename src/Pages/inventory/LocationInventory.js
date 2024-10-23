@@ -296,7 +296,7 @@ const LocationInventory = () => {
         <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
           <Text
             style={{
-              color: '#000',
+              color: '#fff',
             }}>
             Search
           </Text>

@@ -428,7 +428,7 @@ const Tasks = () => {
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity onPress={handleSearch}>
+        <TouchableOpacity onPress={handleSearch} style={{backgroundColor:'lightgray', elevation:5, borderRadius:30, padding:5}}>
           <Image
             style={styles.searchIcon}
             source={require('../../../assets/search.png')}
@@ -436,7 +436,7 @@ const Tasks = () => {
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.addButton} onPress={handleAdd}>
-          <Text style={styles.addButtonText}>Add Task</Text>
+          <Text style={styles.addButtonText}>Add</Text>
         </TouchableOpacity>
       </View>
       {dropdownVisible && (
@@ -494,7 +494,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 10,
+    paddingHorizontal: 5,
     marginVertical: 10,
   },
   searchContainer: {
@@ -521,18 +521,17 @@ const styles = StyleSheet.create({
     color: '#000000',
   },
   image: {
-    height: 20,
-    width: 20,
+    height: 15,
+    width: 10,
     marginLeft: 10,
     marginRight: 10,
   },
   searchIcon: {
     width: 25,
     height: 25,
-    marginHorizontal: 5, // Add margin to properly separate icon from input
   },
   addButton: {
-    paddingHorizontal: 30,
+    paddingHorizontal: 15,
     padding: 10,
     backgroundColor: '#1F74BA',
     borderRadius: 5,
