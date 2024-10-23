@@ -805,6 +805,7 @@ const CustomerLocation = ({navigation}) => {
     // Navigate to TaskDetails with the task details
     navigation.navigate('TaskDetails', {
       task: task,
+      customerName:task.customerName,
       locationName: task.locationName,
       state: task.state,
       status: task.status,

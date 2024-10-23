@@ -182,9 +182,9 @@ const Tasks = () => {
   const searchOption = [
     {label: 'Task Name', value: 1},
     {label: 'Date', value: 2},
-    {label: 'Rel To', value: 3},
+    {label: 'Related To', value: 3},
     {label: 'Status', value: 4},
-    {label: 'Desc', value: 5},
+    {label: 'Description', value: 5},
   ];
 
   useEffect(() => {

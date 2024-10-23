@@ -157,9 +157,9 @@ const Call = () => {
   };
 
   const searchOptions = [
-    { label: 'Dis/Ret', value: 1 },
+    { label: 'Distributor/Retailer', value: 1 },
     { label: 'Date', value: 2 },
-    { label: 'Rel To', value: 3 },
+    { label: 'Related To', value: 3 },
     { label: 'Status', value: 4 },
   ];
 

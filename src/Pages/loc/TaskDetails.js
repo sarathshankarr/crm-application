@@ -25,6 +25,7 @@ import DocumentPicker from 'react-native-document-picker';
 
 const TaskDetails = ({route}) => {
   const {
+    customerName,
     locationName,
     state,
     status,
@@ -154,6 +155,7 @@ const TaskDetails = ({route}) => {
           id: task.id,
           label: task.taskName,
           value: task.id,
+          customerName:task.customerName || '',
           locationName: task.locationName || '', // Default to empty string if not available
           state: task.state || '',
           houseNo: task.houseNo || '',
@@ -246,6 +248,7 @@ const TaskDetails = ({route}) => {
     const {
       houseNo = '',
       street = '',
+      customerName = '',
       locationName = '',
       locality = '',
       cityOrTown = '',
@@ -257,6 +260,7 @@ const TaskDetails = ({route}) => {
     const addressParts = [
       houseNo,
       street,
+      customerName,
       locationName,
       locality,
       cityOrTown,
@@ -265,7 +269,7 @@ const TaskDetails = ({route}) => {
       pincode,
     ];
     const address = addressParts.filter(part => part.trim()).join(', ');
-
+    console.log("address",address)
     return address;
   };
 
@@ -278,6 +282,7 @@ const TaskDetails = ({route}) => {
     try {
       const response = await axios.get(url);
       const data = response.data;
+      console.log("added name",response.data)
 
       if (data.status === 'OK') {
         const location = data.results[0].geometry.location;
