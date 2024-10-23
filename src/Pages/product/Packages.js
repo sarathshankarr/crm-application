@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -13,14 +13,14 @@ import {
   Modal,
   SafeAreaView,
 } from 'react-native';
-import {API} from '../../config/apiConfig';
-import {useSelector} from 'react-redux';
+import { API } from '../../config/apiConfig';
+import { useSelector } from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-import {debounce} from 'lodash';
+import { debounce } from 'lodash';
 import ImageSlider from '../../components/ImageSlider';
 
-const Packages = ({navigation}) => {
+const Packages = ({ navigation }) => {
   const selectedCompany = useSelector(state => state.selectedCompany);
   const [initialSelectedCompany, setInitialSelectedCompany] = useState(null);
   const [packagesList, setPackagesList] = useState([]);
@@ -69,9 +69,8 @@ const Packages = ({navigation}) => {
   }, []);
 
   const getAllImages = packageId => {
-    const apiUrl = `${global?.userData?.productURL}${
-      API.GET_ALL_IMAGES_PACKAGE
-    }/${packageId}/${0}`;
+    const apiUrl = `${global?.userData?.productURL}${API.GET_ALL_IMAGES_PACKAGE
+      }/${packageId}/${0}`;
     console.log('apiUrl=====>', apiUrl);
     setImageLoading(true); // Set loading to true before API call
     axios
@@ -98,10 +97,10 @@ const Packages = ({navigation}) => {
       });
   };
 
-  const renderImage = ({item}) => {
+  const renderImage = ({ item }) => {
     return (
       <Image
-        source={{uri: item}}
+        source={{ uri: item }}
         style={styles.imageInModal}
         resizeMode="contain"
       />
@@ -296,14 +295,14 @@ const Packages = ({navigation}) => {
   };
 
   const searchOption = [
-    {label: 'Package Name', value: 1},
-    {label: 'Dealer Price', value: 2},
-    {label: 'Retailer Price', value: 3},
-    {label: 'MRP', value: 4},
+    { label: 'Package Name', value: 1 },
+    { label: 'Dealer Price', value: 2 },
+    { label: 'Retailer Price', value: 3 },
+    { label: 'MRP', value: 4 },
   ];
 
-  const renderProductItem = ({item}) => {
-    const {packageName, imageUrls, packageId} = item;
+  const renderProductItem = ({ item }) => {
+    const { packageName, imageUrls, packageId } = item;
     const handleViewImages = async () => {
       setIsModalVisible(true); // Show modal immediately
       // Fetch images in the background
@@ -320,7 +319,7 @@ const Packages = ({navigation}) => {
         }}>
         <View style={styles.productImageContainer}>
           {imageUrls && imageUrls.length > 0 ? (
-            <Image style={styles.productImage} source={{uri: imageUrls[0]}} />
+            <Image style={styles.productImage} source={{ uri: imageUrls[0] }} />
           ) : (
             <Image
               style={styles.productImage}
@@ -334,10 +333,10 @@ const Packages = ({navigation}) => {
           </View>
         </View>
         <TouchableOpacity onPress={handleViewImages}>
-          <View style={{flexDirection:"row",marginVertical:2}}>
-            <Text style={{color:"#000",fontWeight:"500"}}>View Images</Text>
+          <View style={{ flexDirection: "row", marginVertical: 2 }}>
+            <Text style={{ color: "#000", fontWeight: "500" }}>View Images</Text>
             <Image
-              style={{height:25, width: 25,marginHorizontal:5}}
+              style={{ height: 25, width: 25, marginHorizontal: 5 }}
               source={require('../../../assets/view.png')}
             />
           </View>
@@ -367,7 +366,7 @@ const Packages = ({navigation}) => {
           <TouchableOpacity
             style={styles.dropdownButton}
             onPress={toggleDropdown}>
-            <Text style={{color: '#000'}}>
+            <Text style={{ color: '#000' }}>
               {selectedSearchOption || 'Select'}
             </Text>
             <Image
@@ -388,7 +387,7 @@ const Packages = ({navigation}) => {
                 style={styles.dropdownOption}
                 key={index}
                 onPress={() => handleDropdownSelect(option)}>
-                <Text style={{color: '#000'}}>{option.label}</Text>
+                <Text style={{ color: '#000' }}>{option.label}</Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
@@ -427,15 +426,25 @@ const Packages = ({navigation}) => {
               <ImageSlider imageUrls={imageUrls} />
             ) : (
               <Image
-                style={{height: '90%'}}
-                resizeMode="contain"
+                style={{ height: '90%' , alignSelf:'center', marginTop:10}}
+                resizeMode="center"
                 source={require('../../../assets/NewNoImage.jpg')}
               />
             )}
-            <TouchableOpacity
+            {/* <TouchableOpacity
               style={styles.closeButton}
               onPress={() => setIsModalVisible(false)}>
               <Text style={styles.closeButtonText}>Close</Text>
+            </TouchableOpacity> */}
+            <TouchableOpacity
+              style={styles.closeIconContainer}
+              onPress={() => setIsModalVisible(false)}
+            >
+              <Image
+                style={styles.closeIcon}
+                resizeMode="contain"
+                source={require('../../../assets/close.png')}
+              />
             </TouchableOpacity>
           </View>
         </View>
@@ -497,7 +506,7 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     paddingLeft: 10,
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 5,
     elevation: 4,
@@ -563,13 +572,25 @@ const styles = StyleSheet.create({
   modalContainer: {
     marginVertical: 120,
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    // justifyContent: 'center',
+    // alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.8)',
   },
-
+  closeIconContainer: {
+    position: 'absolute',
+    top: 0,
+    right: 5,
+    backgroundColor: '#fff',
+    borderRadius: 30,
+    padding: 10,
+  },
+  closeIcon: {
+    width: 30,
+    height: 30,
+  },
   modalContent: {
     marginVertical: 50,
+    position:'relative'
   },
   modalImage: {
     width: 300,

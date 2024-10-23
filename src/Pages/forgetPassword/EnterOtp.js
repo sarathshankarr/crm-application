@@ -27,6 +27,8 @@ const EnterOtp = ({ route, ...props }) => {
     const [email, setEmail] = useState('');
     const [url, setUrl] = useState('');
     const [selection, setSelection] = useState({ start: 0, end: 1 });
+    const [code, setCode] = useState('');
+
 
 
     const inputRefs = useRef([]);
@@ -38,6 +40,7 @@ const EnterOtp = ({ route, ...props }) => {
 
             setEmail(route.params?.email);
             setUrl(route.params?.serverId);
+            setCode(route.params?.serverCode);
         }
 
     }, []);
@@ -73,7 +76,7 @@ const EnterOtp = ({ route, ...props }) => {
 
             if (res === "success") {
                 // Alert.alert('Alert', 'The OTP has been successfully sent to the registered email address.');
-                navigation.navigate('ConfirmPassword', { email: email, otp: otpStr, url: url });
+                navigation.navigate('ConfirmPassword', { email: email, otp: otpStr, url: url , serverCode:code});
 
             } else if (res === "mismatch") {
                 Alert.alert('Invalid OTP', 'The OTP you entered is incorrect.');
@@ -265,7 +268,7 @@ const styles = StyleSheet.create({
         
     },
     otpInput: {
-        paddingVertical: Platform.OS === 'ios' ? 10 : 0,
+        paddingVertical: Platform.OS === 'ios' ? 10 : 10,
         borderWidth: 2,
         borderColor: 'gray',
         textAlign: 'center',

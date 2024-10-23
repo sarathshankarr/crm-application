@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   FlatList,
   StyleSheet,
@@ -12,17 +12,17 @@ import {
   Alert,
 } from 'react-native';
 import axios from 'axios';
-import {API} from '../../config/apiConfig';
-import {useNavigation} from '@react-navigation/native';
-import {useDispatch, useSelector} from 'react-redux'; // Import these for Redux actions
+import { API } from '../../config/apiConfig';
+import { useNavigation } from '@react-navigation/native';
+import { useDispatch, useSelector } from 'react-redux'; // Import these for Redux actions
 import {
   addItemToCart,
   setSourceScreen,
   updateCartItem,
 } from '../../redux/actions/Actions';
 
-const PackageDetail = ({route}) => {
-  const {packageId} = route.params;
+const PackageDetail = ({ route }) => {
+  const { packageId } = route.params;
   const [stylesData, setStylesData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalData, setModalData] = useState(null);
@@ -62,9 +62,8 @@ const PackageDetail = ({route}) => {
   };
 
   const getAllPackagesModel = async () => {
-    const apiUrl = `${global?.userData?.productURL}${
-      API.GET_PACKAGES_MODEL
-    }/${packageId}/${2}`;
+    const apiUrl = `${global?.userData?.productURL}${API.GET_PACKAGES_MODEL
+      }/${packageId}/${2}`;
     try {
       const response = await axios.get(apiUrl, {
         headers: {
@@ -86,7 +85,7 @@ const PackageDetail = ({route}) => {
     await getAllPackagesModel();  // Fetch data before showing the modal
     setModalVisible(true);  // Open the modal only after data has been fetched
   };
-  
+
 
   useEffect(() => {
     getAllPackages();  // This fetches packages on screen load
@@ -113,11 +112,11 @@ const PackageDetail = ({route}) => {
 
       if (parseInt(inputValue, 10) > 0) {
         const itemBaseDetails = {
-          packageId:item.packageId,
+          packageId: item.packageId,
           styleId: item.styleId,
           styleName: item.styleName,
           colorName: item.colorName,
-          colorId:item.colorId,
+          colorId: item.colorId,
           sizeDesc: item.size,
           quantity: inputValue,
           dealerPrice: modalData?.dealerPrice,
@@ -156,23 +155,22 @@ const PackageDetail = ({route}) => {
     return Object.values(inputValues).some(value => parseInt(value, 10) > 0);
   };
 
-  const renderSizeItem = ({item}) => (
+  const renderSizeItem = ({ item }) => (
     <View style={styles.sizeItem}>
       <Text style={styles.txt}>Size: {item.sizeDesc}</Text>
       <Text style={styles.txt}>Available Qty: {item.qty}</Text>
     </View>
   );
 
-  const renderStyleItem = ({item}) => {
-    const {styleName, imageUrls, sizeList} = item;
+  const renderStyleItem = ({ item }) => {
+    const { styleName, imageUrls, sizeList } = item;
     const imageUrl = imageUrls && imageUrls.length > 0 ? imageUrls[0] : null;
 
     return (
       <View style={styles.styleContainer}>
-        <Text style={styles.styleName}>{styleName}</Text>
         <View style={styles.imageContainer}>
           {imageUrl ? (
-            <Image style={styles.styleImage} source={{uri: imageUrl}} />
+            <Image style={styles.styleImage} source={{ uri: imageUrl }} />
           ) : (
             <Image
               style={styles.styleImage}
@@ -181,6 +179,13 @@ const PackageDetail = ({route}) => {
             />
           )}
         </View>
+        {/* <Text style={styles.styleName}>{styleName}</Text> */}
+        <View style={styles.packageNameOverlay}>
+            <Text style={styles.packageNameText}>{styleName}</Text>
+          </View>
+
+  
+
         <View style={styles.sizeListContainer}>
           <FlatList
             data={sizeList}
@@ -197,8 +202,8 @@ const PackageDetail = ({route}) => {
     );
   };
 
-  const renderProductItem = ({item}) => {
-    const {styleList} = item;
+  const renderProductItem = ({ item }) => {
+    const { styleList } = item;
 
     return (
       <TouchableOpacity style={styles.productItem}>
@@ -224,17 +229,24 @@ const PackageDetail = ({route}) => {
 
   return (
     <View style={styles.container}>
-      <FlatList
-        data={stylesData}
-        renderItem={renderProductItem}
-        keyExtractor={item => item.packageId.toString()}
-        numColumns={1}
-      />
-      <View>
+      {console.log("stylesData.length===> ", stylesData && stylesData[0]?.styleList && stylesData[0]?.styleList?.length === 0)}
+      {stylesData && stylesData[0]?.styleList && stylesData[0]?.styleList?.length === 0 ? (
+        <View style={{ marginTop: 20 }}>
+          <Text style={{ marginTop: 20, color: '#000', textAlign: 'center', fontWeight: "bold", fontSize: 18 }}>No results found</Text>
+        </View>
+      ) :
+        (<FlatList
+          data={stylesData}
+          renderItem={renderProductItem}
+          keyExtractor={item => item.packageId.toString()}
+          numColumns={1}
+        />)
+      }
+      {stylesData && stylesData[0]?.styleList && stylesData[0]?.styleList?.length !== 0 ? <View>
         <TouchableOpacity style={styles.addqtyheader} onPress={openModal}>
-          <Text style={{color: '#000'}}>ADD QTY</Text>
+          <Text style={{ color: '#fff' }}>ADD QTY</Text>
         </TouchableOpacity>
-      </View>
+      </View> : null}
       <Modal
         animationType="slide"
         transparent={true}
@@ -258,8 +270,8 @@ const PackageDetail = ({route}) => {
               ))}
             </View>
             {modalData &&
-            modalData.lineItems &&
-            modalData.lineItems.length > 0 ? (
+              modalData.lineItems &&
+              modalData.lineItems.length > 0 ? (
               modalData.lineItems.map((item, index) => (
                 <View key={index} style={styles.itemRow}>
                   <Text style={styles.stylenametxt}>{item.styleName}</Text>
@@ -306,7 +318,7 @@ const PackageDetail = ({route}) => {
                 disabled={!isSaveButtonEnabled()}
                 style={[
                   styles.closeButton,
-                  {backgroundColor: isSaveButtonEnabled() ? '#F09120' : 'gray'},
+                  { backgroundColor: isSaveButtonEnabled() ? '#F09120' : 'gray' },
                 ]}>
                 <Text style={styles.closeButtonText}>Save</Text>
               </TouchableOpacity>
@@ -328,13 +340,20 @@ const styles = StyleSheet.create({
   },
   styleContainer: {
     flex: 1,
+    backgroundColor: '#fff',
+    elevation: 5,
+    borderRadius:10,
+    margin:2
   },
   styleName: {
     fontSize: 16,
     fontWeight: 'bold',
-    textAlign: 'center',
-    color: '#000',
+    textAlign: 'left',
+    color: '100%',
     marginVertical: 3,
+    width: 'auto',
+    // elevation:'2',
+    backgroundColor: 'lightgray',
   },
   imageContainer: {
     alignItems: 'center',
@@ -342,6 +361,7 @@ const styles = StyleSheet.create({
   },
   sizeItem: {
     marginLeft: 10,
+    // position:'absolute'
   },
   txt: {
     color: '#000',
@@ -372,7 +392,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 30,
     paddingVertical: 15,
     borderRadius: 10,
-    backgroundColor:"#F09120"
+    backgroundColor: "#F09120"
   },
   modalContainer: {
     flex: 1,
@@ -415,6 +435,16 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     width: '100%',
     marginTop: 20,
+  },
+  packageNameOverlay: {
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', 
+    padding: 5,
+    width:'100%',
+  },
+  packageNameText: {
+    color: '#fff',
+    fontSize: 16,
+    textAlign: 'left',
   },
 });
 

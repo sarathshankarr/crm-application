@@ -1,5 +1,5 @@
-import React, {useState, useEffect} from 'react';
-import {useFocusEffect, useNavigation} from '@react-navigation/native';
+import React, { useState, useEffect } from 'react';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import {
   StyleSheet,
   Text,
@@ -15,10 +15,10 @@ import {
   SafeAreaView,
 } from 'react-native';
 import axios from 'axios';
-import {API} from '../../config/apiConfig';
-import {formatDateIntoDMY} from '../../Helper/Helper';
+import { API } from '../../config/apiConfig';
+import { formatDateIntoDMY } from '../../Helper/Helper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {useSelector} from 'react-redux';
+import { useSelector } from 'react-redux';
 
 const Call = () => {
   const navigation = useNavigation();
@@ -27,7 +27,7 @@ const Call = () => {
   const [filteredCalls, setFilteredCalls] = useState([]);
   const [hasMoreCalls, setHasMoreCalls] = useState(true);
   const [initialSelectedCompany, setInitialSelectedCompany] = useState(null);
-  
+
   const [tasks, setTasks] = useState([]);
 
   const [refreshing, setRefreshing] = useState(false);
@@ -40,7 +40,7 @@ const Call = () => {
   const [selectedSearchOption, setSelectedSearchOption] = useState(null);
   const [searchKey, setSearchKey] = useState(null);
   const [dropdownVisible, setDropdownVisible] = useState(false);
-  const [filterFlag, setFilterFlag]=useState(false);
+  const [filterFlag, setFilterFlag] = useState(false);
 
   const selectedCompany = useSelector(state => state.selectedCompany);
 
@@ -71,12 +71,12 @@ const Call = () => {
     const apiUrl = `${global?.userData?.productURL}${API.GET_ALL_CALL_SEARCH}`;
     const requestBody = {
       searchKey: searchKey,
-    searchValue: searchQuery,
-    from: customFrom,
-    to: customTo,
-    t_company_id: companyId,
-    customerId: 0,
-    customerType: 0,
+      searchValue: searchQuery,
+      from: customFrom,
+      to: customTo,
+      t_company_id: companyId,
+      customerId: 0,
+      customerType: 0,
     };
 
     console.log('gettasksearch==> ', customFrom, customTo);
@@ -157,10 +157,10 @@ const Call = () => {
   };
 
   const searchOptions = [
-    {label: 'Dis/Ret', value: 1},
-    {label: 'Date', value: 2},
-    {label: 'Rel To', value: 3},
-    {label: 'Status', value: 4},
+    { label: 'Dis/Ret', value: 1 },
+    { label: 'Date', value: 2 },
+    { label: 'Rel To', value: 3 },
+    { label: 'Status', value: 4 },
   ];
 
   useEffect(() => {
@@ -193,11 +193,11 @@ const Call = () => {
         },
       });
 
-      
+
       const newTasks = response.data;
       // console.log("response.data",response.data)
       if (reset) {
-        setTasks(newTasks); 
+        setTasks(newTasks);
       } else {
         setTasks((prevTasks) => [...(prevTasks || []), ...newTasks]);
       }
@@ -258,15 +258,15 @@ const Call = () => {
     // setShowSearchInput(false);
     setSelectedSearchOption('');
     setHasMoreTasks(true);
-    
+
     await getAllOrders(true, 0, 20);
     setRefreshing(false);
   };
 
 
- 
 
-  
+
+
   // useEffect(() => {
   //   const unsubscribe = navigation.addListener('focus', () => {
   //     console.log("Screen focused, clearing search");
@@ -274,10 +274,10 @@ const Call = () => {
   //     setSelectedSearchOption(null);
   //     setSearchKey(null);
   //     setDropdownVisible(false);
-  
+
   //     getAllOrders(true); // Re-fetch tasks, if necessary
   //   });
-  
+
   //   return unsubscribe;
   // }, [navigation]);
 
@@ -289,7 +289,7 @@ const Call = () => {
     });
     return unsubscribe;
   }, [navigation]);
-  
+
 
   const fetchCallById = callId => {
     navigation.navigate('NewCall', {
@@ -298,7 +298,7 @@ const Call = () => {
   };
 
   const handleAdd = () => {
-    navigation.navigate('NewCall', {call: {}});
+    navigation.navigate('NewCall', { call: {} });
   };
 
   const renderItem = ({ item }) => (
@@ -321,7 +321,7 @@ const Call = () => {
             onChangeText={handleSearchInputChange}
           />
           <TouchableOpacity style={styles.searchButton} onPress={toggleDropdown}>
-            <Text style={{color: '#000'}}>{selectedSearchOption || 'Select'}</Text>
+            <Text style={{ color: '#000' }}>{selectedSearchOption || 'Select'}</Text>
             <Image
               style={styles.image}
               source={require('../../../assets/dropdown.png')}
@@ -329,7 +329,7 @@ const Call = () => {
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity onPress={handleSearch}>
+        <TouchableOpacity onPress={handleSearch} style={{ backgroundColor: 'lightgray', elevation: 5, borderRadius: 30, padding: 5 }}>
           <Image
             style={styles.searchIcon}
             source={require('../../../assets/search.png')}
@@ -337,7 +337,17 @@ const Call = () => {
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.addButton} onPress={handleAdd}>
-          <Text style={styles.addButtonText}>Add Call</Text>
+          <Text style={styles.addButtonText}>Add</Text>
+          {/* <Image
+            style={{
+              height: 30,
+              width: 30,
+              justifyContent: 'center',
+              alignItems: 'center',
+
+            }}
+            source={require('../../../assets/plus.png')}
+          /> */}
         </TouchableOpacity>
       </View>
 
@@ -349,7 +359,7 @@ const Call = () => {
                 style={styles.dropdownOption}
                 key={index}
                 onPress={() => handleDropdownSelect(option)}>
-                <Text style={{color: '#000'}}>{option.label}</Text>
+                <Text style={{ color: '#000' }}>{option.label}</Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
@@ -380,20 +390,20 @@ const Call = () => {
         //   ListFooterComponent={loadingMore ? <ActivityIndicator size="small" color="#0000ff" /> : null}
         // />
         <FlatList
-        data={tasks}
-        renderItem={renderItem}
-        keyExtractor={(item, index) => `${item.id}-${index}`}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-        onEndReached={loadMoreTasks} // Load more when scrolled to the end
-        onEndReachedThreshold={0.2} // Adjust this value to control when to load more
-        ListFooterComponent={
-          loadingMore ? (
-            <ActivityIndicator size="small" color="#0000ff" />
-          ) : null
-        }
-      />
+          data={tasks}
+          renderItem={renderItem}
+          keyExtractor={(item, index) => `${item.id}-${index}`}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+          onEndReached={loadMoreTasks} // Load more when scrolled to the end
+          onEndReachedThreshold={0.2} // Adjust this value to control when to load more
+          ListFooterComponent={
+            loadingMore ? (
+              <ActivityIndicator size="small" color="#0000ff" />
+            ) : null
+          }
+        />
       )}
     </SafeAreaView>
   );
@@ -412,9 +422,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexWrap: 'wrap',
     width: '100%',
-    paddingHorizontal: 10,
+    paddingHorizontal: 5,
     marginVertical: 10,
-    
+
   },
   searchContainer: {
     flex: 1,
@@ -444,11 +454,12 @@ const styles = StyleSheet.create({
     height: 25,
   },
   addButton: {
-    paddingHorizontal: 30,
+    paddingHorizontal: 15,
     marginLeft: 10,
     padding: 10,
     backgroundColor: '#1F74BA',
     borderRadius: 5,
+
   },
   addButtonText: {
     color: '#fff',
@@ -471,24 +482,24 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 16,
     marginLeft: 10,
-    color:"#000",
-    flex:0.8
+    color: "#000",
+    flex: 0.8
   },
   headerText1: {
     fontWeight: 'bold',
     fontSize: 16,
-    marginRight:10,
-    color:"#000",
-    flex:0.7
+    marginRight: 10,
+    color: "#000",
+    flex: 0.7
 
   },
   headerText2: {
     fontWeight: 'bold',
     fontSize: 16,
-    color:"#000",
-    flex:0.7
+    color: "#000",
+    flex: 0.7
 
-  
+
   },
   callItem: {
     flexDirection: 'row',
@@ -509,8 +520,8 @@ const styles = StyleSheet.create({
     padding: 5,
   },
   image: {
-    height: 20,
-    width: 20,
+    height: 15,
+    width: 10,
     marginLeft: 10,
     marginRight: 10,
   },

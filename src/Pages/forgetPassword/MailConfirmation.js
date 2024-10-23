@@ -82,7 +82,7 @@ const MailConfirmation = () => {
 
             if (res === "success") {
                 Alert.alert('Alert', 'The OTP has been successfully sent to the registered email address.');
-                navigation.navigate('EnterOtp', { email: email, serverId: serverUrl });
+                navigation.navigate('EnterOtp', { email: email, serverId: serverUrl , serverCode:code });
             } else if (res === "not found") {
                 Alert.alert('Alert', 'The provided email address is not found in the system.');
             } else if (res === "error") {

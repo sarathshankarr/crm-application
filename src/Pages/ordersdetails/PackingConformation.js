@@ -1,5 +1,5 @@
-import {useNavigation} from '@react-navigation/native';
-import React, {useState, useEffect} from 'react';
+import { useNavigation } from '@react-navigation/native';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   Text,
@@ -12,16 +12,16 @@ import {
   Alert,
   SafeAreaView,
 } from 'react-native';
-import {API} from '../../config/apiConfig';
+import { API } from '../../config/apiConfig';
 import axios from 'axios';
 import CustomCheckBox from '../../components/CheckBox';
-import {useSelector} from 'react-redux';
+import { useSelector } from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomCheckBoxStatus from '../../components/CustomCheckBoxStatus';
 
-const PackingConformation = ({route}) => {
+const PackingConformation = ({ route }) => {
   const navigation = useNavigation();
-  const {orderId} = route.params;
+  const { orderId } = route.params;
   const [loading, setLoading] = useState(true);
   const [order, setOrder] = useState(null);
   const [statusOptions, setStatusOptions] = useState([]);
@@ -38,6 +38,9 @@ const PackingConformation = ({route}) => {
 
   const [initialSelectedCompany, setInitialSelectedCompany] = useState(null);
   const selectedCompany = useSelector(state => state.selectedCompany);
+  const compFlag = useSelector(state => state.selectedCompany.comp_flag);
+  const wo_creation_flag = useSelector(state => state.selectedCompany.wo_creation_flag);
+  // console.log("flags used ==> ",compFlag, wo_creation_flag );
 
   useEffect(() => {
     const fetchInitialSelectedCompany = async () => {
@@ -148,13 +151,13 @@ const PackingConformation = ({route}) => {
     setDropdownVisible(false); // Hide dropdown
   };
 
-  const OrderDetailRow = ({label, value}) => (
-    <View style={{flexDirection: 'row', justifyContent: 'flex-end'}}>
-      <Text style={{width: 200, textAlign: 'right', color: '#000'}}>
+  const OrderDetailRow = ({ label, value }) => (
+    <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+      <Text style={{ width: 200, textAlign: 'right', color: '#000' }}>
         {label}
       </Text>
-      <Text style={{width: 40, textAlign: 'center', color: '#000'}}>:</Text>
-      <Text style={{flex: 1, textAlign: 'right', color: '#000'}}>{value}</Text>
+      <Text style={{ width: 40, textAlign: 'center', color: '#000' }}>:</Text>
+      <Text style={{ flex: 1, textAlign: 'right', color: '#000' }}>{value}</Text>
     </View>
   );
 
@@ -172,7 +175,7 @@ const PackingConformation = ({route}) => {
 
   const updateStatusForNonCanceledItems = status => {
     setSelectedItems(prevSelectedItems => {
-      const updatedItems = {...prevSelectedItems};
+      const updatedItems = { ...prevSelectedItems };
 
       order?.orderLineItems.forEach(item => {
         // Only update items that are not manually canceled and are not already confirmed
@@ -190,7 +193,7 @@ const PackingConformation = ({route}) => {
 
   const updateStatusForNonCanceledWhenCancelled = status => {
     setSelectedItems(prevSelectedItems => {
-      const updatedItems = {...prevSelectedItems};
+      const updatedItems = { ...prevSelectedItems };
 
       order?.orderLineItems.forEach(item => {
         // Only update items that are not manually canceled and are not already canceled
@@ -212,10 +215,10 @@ const PackingConformation = ({route}) => {
       setTriggerUpdate(true);
       return;
     }
-  
+
     // Check if any items are selected
     const anySelected = Object.values(selectedItems).some(item => item === true);
-  
+
     // If no items are selected, show the alert
     if (!anySelected) {
       Alert.alert(
@@ -247,7 +250,7 @@ const PackingConformation = ({route}) => {
       setTriggerUpdate(true);
     }
   };
-  
+
 
   // useEffect to handle order update when triggerUpdate changes
   useEffect(() => {
@@ -259,6 +262,35 @@ const PackingConformation = ({route}) => {
 
   // console.log("Orders list ==> ",order)
   const updateDisOrder = () => {
+
+    // const stylListData = [];
+    // let styleData = "";
+
+    // let styleQtyData = {
+    //   styleId: 0,
+    //   sizeId: 0,
+    //   availQty: 0,
+    //   locationId: order?.customerLocation || 0,
+    // };
+
+    // if (compFlag === 0 && wo_creation_flag === 1) {
+    //   order?.orderLineItems?.forEach((lineItem) => {
+    //     if (lineItem.statusFlag === 1) {
+    //       if (lineItem.qty > lineItem.availQty) {
+    //         styleQtyData = {
+    //           styleId: lineItem.cedgeStyleId,
+    //           sizeId: lineItem.sizeId,
+    //           availQty: lineItem.qty - lineItem.availQty,
+    //           locationId: order?.customerLocation || 0,
+    //         };
+    //         stylListData.push(styleQtyData);
+
+    //         styleData += `${lineItem.styleName} (${lineItem.colorName}) - ${lineItem.size}\n`;
+    //       }
+    //     }
+    //   });
+    // }
+
     const requestData = {
       orderId: order?.orderId || 0,
       totalGst: order?.totalGst || 0,
@@ -271,7 +303,10 @@ const PackingConformation = ({route}) => {
       updateStatus: selectedStatus || '',
       appComments: comments,
       customerLocation: order?.customerLocation,
-      d_pkg_flag: order.d_pkg_flag ? order.d_pkg_flag: 0,
+      d_pkg_flag: order.d_pkg_flag ? order.d_pkg_flag : 0,
+
+      // styleQtyData: stylListData,
+
       orderLineItems: order?.orderLineItems.map(item => {
         const isManuallyCanceled = item.statusFlag === 2;
         return {
@@ -288,9 +323,11 @@ const PackingConformation = ({route}) => {
           gstAmnt: item.gstAmnt,
           discountPercentageThird: item.discountPercentageThird,
           statusFlag: item.statusFlag,
-          styleId:item?.styleId,
+          styleId: item?.styleId,
           size: item?.size,
-          poId:item?.poId ? item?.poId:0,
+          poId: item?.poId ? item?.poId : 0,
+          availQty: item.availQty ? item.availQty : 0,
+          cedgeStyleId: item?.cedgeStyleId ? item?.cedgeStyleId : 0,
           sttsFlag: isManuallyCanceled
             ? false
             : selectedItems[item.orderLineitemId] || false,
@@ -321,7 +358,7 @@ const PackingConformation = ({route}) => {
       });
   };
 
-  const renderOrderLineItem = ({item}) => {
+  const renderOrderLineItem = ({ item }) => {
     // Function to determine the checkbox color based on statusFlag
     const getCheckboxColor = statusFlag => {
       if (statusFlag === 2) {
@@ -359,11 +396,11 @@ const PackingConformation = ({route}) => {
           <Text style={styles.orderqtytxt}>Qty: {item?.qty}</Text>
           <Text style={styles.ordertotaltxt}>Total: {item?.gross}</Text>
         </View>
-        <View style={{flexDirection: 'row'}}>
-          <View style={{marginVertical: 8,flex:1.3}}>
+        <View style={{ flexDirection: 'row' }}>
+          <View style={{ marginVertical: 8, flex: 1.3 }}>
             <Text style={styles.sizetxt}>Size : {item?.size}</Text>
           </View>
-          <View style={{marginVertical: 8,flex:1}}>
+          <View style={{ marginVertical: 8, flex: 1 }}>
             <Text style={styles.colortxt}>Color : {item?.colorName}</Text>
           </View>
         </View>
@@ -371,13 +408,13 @@ const PackingConformation = ({route}) => {
         <View>
           <Text style={styles.sizetxt}>Price : {item?.unitPrice}</Text>
         </View>
-        <View style={{flexDirection: 'row', marginTop: 3}}>
+        <View style={{ flexDirection: 'row', marginTop: 3 }}>
           <Text style={styles.sizedistxt}>Disc Amnt : {item?.discAmnt}</Text>
           <Text style={styles.Fixedtxt}>
             Disc 1 : {item.discountPercentage}
           </Text>
         </View>
-        <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
           <Text style={styles.sizegrosstxt}>Gross : {grosss} </Text>
           <Text style={styles.sizegsttxt}>GST : {item?.gst}</Text>
           <Text style={styles.sizegstAmnttxt}>GST AMT : {item?.gstAmnt}</Text>
@@ -388,14 +425,14 @@ const PackingConformation = ({route}) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={{flexDirection: 'row', backgroundColor: '#f0f0f0'}}>
+      <View style={{ flexDirection: 'row', backgroundColor: '#f0f0f0' }}>
         <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
           <Image
-            style={{height: 25, width: 25, marginRight: 8}}
+            style={{ height: 25, width: 25, marginRight: 8 }}
             source={require('../../../assets/back_arrow.png')}
           />
         </TouchableOpacity>
-        <View style={{flex: 1}}>
+        <View style={{ flex: 1 }}>
           <Text
             style={{
               justifyContent: 'center',
@@ -420,20 +457,20 @@ const PackingConformation = ({route}) => {
             Total Qty : {order?.totalQty}
           </Text>
         </View>
-        <View style={{marginVertical: 25, marginLeft: 10}}>
+        <View style={{ marginVertical: 25, marginLeft: 10 }}>
           <Text style={styles.Productdettext}>Product Details</Text>
         </View>
 
         {loading ? (
           <View
-            style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+            style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
             <ActivityIndicator size="large" color="#000" />
           </View>
         ) : (
           <View>
             {order?.orderLineItems?.map(item => (
               <View key={item.orderLineitemId.toString()}>
-                {renderOrderLineItem({item})}
+                {renderOrderLineItem({ item })}
               </View>
             ))}
             <View
@@ -466,10 +503,10 @@ const PackingConformation = ({route}) => {
                     marginTop: 20,
                   }}>
                   <Text
-                    style={{color: '#000', marginLeft: 10, marginRight: 50}}>
+                    style={{ color: '#000', marginLeft: 10, marginRight: 50 }}>
                     Remarks:
                   </Text>
-                  <View style={{flex: 1, marginLeft: 10, marginHorizontal: 30}}>
+                  <View style={{ flex: 1, marginLeft: 10, marginHorizontal: 30 }}>
                     {/* <TextInput
                     style={{
                       color: '#000',
@@ -503,7 +540,7 @@ const PackingConformation = ({route}) => {
                     marginTop: 20,
                   }}>
                   <View style={{}}>
-                    <Text style={{color: '#000', marginLeft: 6}}>
+                    <Text style={{ color: '#000', marginLeft: 6 }}>
                       Status :{' '}
                     </Text>
                   </View>
@@ -537,7 +574,7 @@ const PackingConformation = ({route}) => {
                           style={[
                             styles.dropdownOption,
                             selectedStatus === option.stts &&
-                              styles.selectedOption,
+                            styles.selectedOption,
                           ]}
                           onPress={() => handleDropdownSelectStatus(option)}>
                           <Text style={styles.dropdownOptionText}>
@@ -561,7 +598,7 @@ const PackingConformation = ({route}) => {
                       paddingVertical: 10,
                       backgroundColor: '#F09120',
                     }}>
-                    <Text style={{color: '#000', alignSelf: 'center'}}>
+                    <Text style={{ color: '#000', alignSelf: 'center' }}>
                       Update Order Status
                     </Text>
                   </TouchableOpacity>
