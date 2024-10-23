@@ -581,6 +581,7 @@ const CustomerLocation = ({navigation}) => {
           label: task.taskName,
           value: task.id,
           locationName: task.locationName || '',
+          customerName:task.customerName || '',
           state: task.state || '',
           houseNo: task.houseNo || '',
           street: task.street || '',
@@ -673,6 +674,7 @@ const CustomerLocation = ({navigation}) => {
   const createAddressString = task => {
 
     const {
+      customerName = '',
       houseNo = '',
       street = '',
       locationName = '',
@@ -684,6 +686,7 @@ const CustomerLocation = ({navigation}) => {
     } = task;
 
     const addressParts = [
+      customerName,
       houseNo,
       street,
       locationName,
@@ -694,6 +697,7 @@ const CustomerLocation = ({navigation}) => {
       pincode,
     ];
     const address = addressParts.filter(part => part.trim()).join(', ');
+    console.log("address",address)
 
     return address;
   };
@@ -707,6 +711,7 @@ const CustomerLocation = ({navigation}) => {
     try {
       const response = await axios.get(url);
       const data = response.data;
+      console.log("added name",response.data)
 
       if (data.status === 'OK') {
         const location = data.results[0].geometry.location;
@@ -892,7 +897,6 @@ const CustomerLocation = ({navigation}) => {
   return (
     <SafeAreaView style={{flex:1,backgroundColor:'#fff'}}> 
 
-    <ScrollView style={styles.Container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
           <Image
@@ -926,6 +930,7 @@ const CustomerLocation = ({navigation}) => {
           All Visits
         </Text>
       </View>
+      <ScrollView style={styles.Container}>
       {loading ? (
         <ActivityIndicator
           style={{justifyContent: 'center', alignItems: 'center'}}

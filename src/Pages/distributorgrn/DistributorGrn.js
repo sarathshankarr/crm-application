@@ -466,7 +466,7 @@ const DistributorGrn = () => {
         <FlatList
           data={filteredOrdersList}
           renderItem={renderOrderItem}
-          keyExtractor={(item, index) => `${item.id}-${index}`}
+          keyExtractor={(item, index) => `${item?.id}-${index}`}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }

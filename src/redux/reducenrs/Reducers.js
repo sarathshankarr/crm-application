@@ -27,7 +27,7 @@ const initialState = {
   },
   notes: [],
   noteSaved: false,
-  userRole: null,
+  userRole: [],
   loggedInUser: null,
   selectedCompany: null,
   categoryIds: [],
