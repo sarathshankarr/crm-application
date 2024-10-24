@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   TouchableOpacity,
@@ -8,22 +8,22 @@ import {
   ScrollView,
   FlatList,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { useSelector, useDispatch } from 'react-redux';
-import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
+import {useNavigation} from '@react-navigation/native';
+import {useSelector, useDispatch} from 'react-redux';
+import {createMaterialTopTabNavigator} from '@react-navigation/material-top-tabs';
 import HomeCategories from '../Pages/catogiries/HomeCategories';
 import HomeAllProducts from '../Pages/catogiries/HomeAllProducts';
-import { setLoggedInUser } from '../redux/actions/Actions';
+import {setLoggedInUser} from '../redux/actions/Actions';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { SET_SELECTED_COMPANY } from '../redux/ActionTypes';
+import {SET_SELECTED_COMPANY} from '../redux/ActionTypes';
 import CommenHeaderHomeScreen from '../components/CommenHeaderHomeScreen';
-import { API } from '../config/apiConfig';
+import {API} from '../config/apiConfig';
 import axios from 'axios';
 import NewCategoryUi from '../Pages/newCategoriesUi/NewCategoryUi';
 
 const Tab = createMaterialTopTabNavigator();
 
-const CustomTabBar = ({ state, descriptors, route }) => {
+const CustomTabBar = ({state, descriptors, route}) => {
   const navigation = useNavigation();
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState(null);
@@ -42,7 +42,7 @@ const CustomTabBar = ({ state, descriptors, route }) => {
             const initialCompany = userData.compList[0];
             setSelectedCompany(initialCompany);
             setCompanyLogo(initialCompany.companyLogo);
-            dispatch({ type: SET_SELECTED_COMPANY, payload: initialCompany });
+            dispatch({type: SET_SELECTED_COMPANY, payload: initialCompany});
           }
         }
       } catch (error) {
@@ -61,7 +61,7 @@ const CustomTabBar = ({ state, descriptors, route }) => {
     setSelectedCompany(company);
     setCompanyLogo(company.companyLogo);
     setDropdownVisible(false);
-    dispatch({ type: SET_SELECTED_COMPANY, payload: company });
+    dispatch({type: SET_SELECTED_COMPANY, payload: company});
   };
 
   const toggleDropdown = () => {
@@ -106,13 +106,13 @@ const CustomTabBar = ({ state, descriptors, route }) => {
   };
 
   return (
-    <View style={{ backgroundColor: '#fff',zIndex:1}}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 10 }}>
+    <View style={{backgroundColor: '#fff', zIndex: 1}}>
+      <View style={[styles.container, {zIndex: 100}]}>
         <TouchableOpacity onPress={() => navigation.openDrawer()}>
           <Image
             resizeMode="contain"
             source={require('../../assets/menu.png')}
-            style={{ height: 30, width: 30, marginHorizontal: 5 }}
+            style={{height: 30, width: 30, marginHorizontal: 5}}
           />
         </TouchableOpacity>
         <TouchableOpacity
@@ -128,15 +128,17 @@ const CustomTabBar = ({ state, descriptors, route }) => {
             marginLeft: 12,
           }}>
           <Image
-            source={{ uri: `data:image/png;base64,${companyLogo}` }}
-            style={{ height: 35, width: 50 }}
+            source={{uri: `data:image/png;base64,${companyLogo}`}}
+            style={{height: 35, width: 50}}
           />
-          <Text style={{ fontWeight: '600', marginLeft: 5,color:"#000"}}>{companyName}</Text>
+          <Text style={{fontWeight: '600', marginLeft: 5, color: '#000'}}>
+            {companyName}
+          </Text>
           {loggedInUser &&
             loggedInUser.compList &&
             loggedInUser.compList.length > 1 && (
               <Image
-                style={{ height: 10, width: 15, marginLeft: 5 }}
+                style={{height: 10, width: 15, marginLeft: 5}}
                 source={require('../../assets/dropdown.png')}
               />
             )}
@@ -146,10 +148,10 @@ const CustomTabBar = ({ state, descriptors, route }) => {
           loggedInUser.compList &&
           loggedInUser.compList.length > 1 && (
             <View style={styles.dropdownContainer}>
-             <FlatList
+              <FlatList
                 data={loggedInUser.compList}
                 keyExtractor={(item, index) => index.toString()}
-                renderItem={({ item }) => (
+                renderItem={({item}) => (
                   <TouchableOpacity
                     onPress={() => handleCompanySelect(item)}
                     style={{
@@ -163,7 +165,7 @@ const CustomTabBar = ({ state, descriptors, route }) => {
                       style={{
                         fontWeight: '600',
                         marginHorizontal: 15,
-                        color: "#000"
+                        color: '#000',
                       }}>
                       {item.companyName}
                     </Text>
@@ -236,6 +238,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#fff',
   },
+  container: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 10,
+  },
   dropdownContainer: {
     position: 'absolute',
     top: 40,
@@ -261,8 +268,6 @@ function Home() {
 
 export default Home;
 
-
-
 // import React, { useState, useEffect } from 'react';
 // import {
 //   View,
@@ -287,7 +292,7 @@ export default Home;
 //   const [dropdownVisible, setDropdownVisible] = useState(false);
 //   const [selectedCompany, setSelectedCompany] = useState(null);
 //   const [companyLogo, setCompanyLogo] = useState(null);
-  
+
 //   const loggedInUser = useSelector(state => state.loggedInUser);
 //   const dispatch = useDispatch();
 
@@ -464,5 +469,3 @@ export default Home;
 // });
 
 // export default Home;
-
-

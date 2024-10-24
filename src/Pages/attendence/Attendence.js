@@ -557,7 +557,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderRadius: 75,
-    paddingVertical: 55,
+    paddingVertical: 60,
     paddingHorizontal: 12,
   },
   shiftDetails: {
