@@ -1,5 +1,5 @@
-import {useFocusEffect, useNavigation} from '@react-navigation/native';
-import React, {useEffect, useState} from 'react';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import React, { useEffect, useState } from 'react';
 import {
   Image,
   PermissionsAndroid,
@@ -14,16 +14,17 @@ import {
   Alert,
   SafeAreaView,
 } from 'react-native';
-import {RadioButton} from 'react-native-radio-buttons-group';
-import {API} from '../../config/apiConfig';
+import { RadioButton } from 'react-native-radio-buttons-group';
+import { API } from '../../config/apiConfig';
 import axios from 'axios';
 import Geolocation from 'react-native-geolocation-service';
-import {useSelector} from 'react-redux';
+import { useSelector } from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ImagePicker from 'react-native-image-crop-picker';
 import DocumentPicker from 'react-native-document-picker';
+import CustomCheckBox from '../../components/CheckBox';
 
-const TaskDetails = ({route}) => {
+const TaskDetails = ({ route }) => {
   const {
     customerName,
     locationName,
@@ -38,6 +39,7 @@ const TaskDetails = ({route}) => {
     traveledDistance,
     checkIn,
     checkOut,
+    locId
   } = route.params;
 
   const navigation = useNavigation();
@@ -48,8 +50,7 @@ const TaskDetails = ({route}) => {
   const [selectedStatusOption, setSelectedStatusOption] = useState('');
   const userData = useSelector(state => state.loggedInUser);
   const userId = userData?.userId;
-  const isAdmin =
-    userData?.role?.some(roleObj => roleObj.role === 'admin') || false;
+  userData?.role?.some(roleObj => roleObj.role === 'admin') || false;
   const [mLat, setMLat] = useState(null);
   const [mLong, setMLong] = useState(null);
   const [tasks, setTasks] = useState([]);
@@ -76,12 +77,14 @@ const TaskDetails = ({route}) => {
 
   const [isSignedIn, setIsSignedIn] = useState(false); // Initialize the state
 
+  const [isChecked, setIsChecked] = useState(false);
+
   const selectedCompany = useSelector(state => state.selectedCompany);
   const goToFiles = id => {
-    navigation.navigate('Files', {id}); // Pass the id as a parameter
+    navigation.navigate('Files', { id }); // Pass the id as a parameter
   };
 
-  useEffect(() => {}, []);
+  useEffect(() => { }, []);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -155,7 +158,7 @@ const TaskDetails = ({route}) => {
           id: task.id,
           label: task.taskName,
           value: task.id,
-          customerName:task.customerName || '',
+          customerName: task.customerName || '',
           locationName: task.locationName || '', // Default to empty string if not available
           state: task.state || '',
           houseNo: task.houseNo || '',
@@ -169,6 +172,7 @@ const TaskDetails = ({route}) => {
           desc: task.desc || '',
           checkIn: checkIn || '',
           checkOut: checkOut || '',
+          locId: locId || ''
         }));
         setTasks(taskOptions);
         setFilteredTasks(taskOptions);
@@ -239,38 +243,137 @@ const TaskDetails = ({route}) => {
             reject(error);
           }
         },
-        {enableHighAccuracy: true, timeout: 30000, maximumAge: 1000}, // Increase timeout to 30 seconds
+        { enableHighAccuracy: true, timeout: 30000, maximumAge: 1000 }, // Increase timeout to 30 seconds
       );
     });
   };
 
+
+  const handleCheckBoxPress = () => {
+    if (isChecked) {
+      // Uncheck it
+      setIsChecked(false);
+      AddNewLocation(0); // Call API with flag 0 (canceled)
+    } else {
+      // Show confirmation alert when checking the box
+      Alert.alert(
+        'Confirm Location Update',
+        'Are you sure you want to update the current location?',
+        [
+          {
+            text: 'Cancel',
+            style: 'cancel',
+            onPress: () => {
+              setIsChecked(false);
+            },
+          },
+          {
+            text: 'OK',
+            onPress: async () => {
+              setIsChecked(true);
+              const location = await getLocationcurrent();  // Get current location
+              if (location) {
+                AddNewLocation(1, location);  // Call API with flag 1 (confirmed) and location
+                navigation.navigate('CustomerLocation');
+              }
+            },
+          },
+        ],
+      );
+    }
+  };
+
+  const AddNewLocation = async (flag, location) => {
+    try {
+      // Ensure the location object has latitude and longitude
+      const { latitude, longitude } = location;
+
+      const apiUrl = `${global?.userData?.productURL}${API.ADD_NEW_LOCATION}/${locId}/${latitude}/${longitude}/${isChecked ? 0 : 1}`;
+
+      console.log('API URL:', apiUrl);
+
+      const token = global?.userData?.token?.access_token;
+
+      if (!token) {
+        throw new Error('Authorization token is missing');
+      }
+
+      const response = await axios.put(
+        apiUrl,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      console.log('Location updated successfully:', response.data);
+    } catch (error) {
+      if (error.response?.status === 401) {
+        console.error('Unauthorized - Token might be expired:', error);
+      } else {
+        console.error('Error updating location:', error);
+      }
+    }
+  };
+
+  // Fetch location using Geolocation API
+  const getLocationcurrent = () => {
+    return new Promise((resolve, reject) => {
+      Geolocation.getCurrentPosition(
+        position => {
+          const { latitude, longitude } = position.coords;
+          resolve({ latitude, longitude });
+        },
+        error => {
+          console.error('Error fetching location:', error);
+          reject(error);
+        },
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+      );
+    });
+  };
+
+
+
   const createAddressString = task => {
     const {
+      customerName = '',
       houseNo = '',
       street = '',
-      customerName = '',
       locationName = '',
       locality = '',
       cityOrTown = '',
       state = '',
       country = '',
       pincode = '',
+      changedLocation = '',
+      changedLocFlag = 0
     } = task;
 
-    const addressParts = [
-      houseNo,
-      street,
-      customerName,
-      locationName,
-      locality,
-      cityOrTown,
-      state,
-      country,
-      pincode,
-    ];
-    const address = addressParts.filter(part => part.trim()).join(', ');
-    console.log("address",address)
-    return address;
+    // If changedLocFlag is 1, use changedLocation; otherwise, construct the full address
+    let finalLocation = '';
+
+    if (changedLocFlag === 1) {
+      finalLocation = changedLocation;
+    } else {
+      finalLocation = [
+        customerName,
+        houseNo,
+        street,
+        locationName,
+        locality,
+        cityOrTown,
+        state,
+        country,
+        pincode
+      ].filter(part => part.trim()).join(', ');
+    }
+
+    console.log("Address:", finalLocation);
+
+    return finalLocation;
   };
 
   const geocodeAddress = async address => {
@@ -282,7 +385,7 @@ const TaskDetails = ({route}) => {
     try {
       const response = await axios.get(url);
       const data = response.data;
-      console.log("added name",response.data)
+      console.log("added name", response.data)
 
       if (data.status === 'OK') {
         const location = data.results[0].geometry.location;
@@ -380,7 +483,7 @@ const TaskDetails = ({route}) => {
     ) {
       Alert.alert(
         // `Distance travelled: ${distance.includes('km') ? parseFloat(distance) * 1000 : parseFloat(distance)} meters`,
-        'Warning', 
+        'Warning',
         'You must be within 100 meters of the destination to upload a selfie',
       );
       return;
@@ -491,7 +594,7 @@ const TaskDetails = ({route}) => {
       })
       .then(response => {
         Alert.alert('Success', 'added successfully.', [
-          {text: 'OK', onPress: () => navigation.navigate('CustomerLocation')}, // Navigate to Location screen on OK
+          { text: 'OK', onPress: () => navigation.navigate('CustomerLocation') }, // Navigate to Location screen on OK
         ]);
       })
       .catch(error => {
@@ -604,7 +707,7 @@ const TaskDetails = ({route}) => {
       });
 
       // Extract selfie image name from response
-      const {selfieImageName, imageUrls, pdfUrls} = response.data;
+      const { selfieImageName, imageUrls, pdfUrls } = response.data;
       // Update state based on API response
       setSelfieImageName(selfieImageName);
       setImageUrls(imageUrls);
@@ -619,37 +722,36 @@ const TaskDetails = ({route}) => {
     }, []),
   );
 
-  const getRoadDistance = async (startLat, startLong, endLat, endLong) => {
-    const apiKey = 'AIzaSyBSKRShklVy5gBNSQzNSTwpXu6l2h8415M';
-    const url = `https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&origins=${startLat},${startLong}&destinations=${endLat},${endLong}&key=${apiKey}`;
+  // const getRoadDistance = async (startLat, startLong, endLat, endLong) => {
+  //   const apiKey = 'AIzaSyBSKRShklVy5gBNSQzNSTwpXu6l2h8415M';
+  //   const url = `https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&origins=${startLat},${startLong}&destinations=${endLat},${endLong}&key=${apiKey}`;
 
-    try {
-      const response = await axios.get(url);
-      const data = response.data;
+  //   try {
+  //     const response = await axios.get(url);
+  //     const data = response.data;
 
-      if (data.status === 'OK' && data.rows[0].elements[0].status === 'OK') {
-        const distance = data.rows[0].elements[0].distance.text;
-        console.log(`Distance fetched: ${distance}`);
-        return distance;
-      } else {
-        console.error(
-          'Distance Matrix API error:',
-          data.error_message || 'Unknown error',
-        );
-        Alert.alert(
-          'Error',
-          `Unable to calculate road distance: ${
-            data.error_message || 'Unknown error'
-          }`,
-        );
-        return null;
-      }
-    } catch (error) {
-      console.error('Distance Matrix request error:', error);
-      Alert.alert('Error', 'Unable to calculate road distance');
-      return null;
-    }
-  };
+  //     if (data.status === 'OK' && data.rows[0].elements[0].status === 'OK') {
+  //       const distance = data.rows[0].elements[0].distance.text;
+  //       console.log(`Distance fetched: ${distance}`);
+  //       return distance;
+  //     } else {
+  //       console.error(
+  //         'Distance Matrix API error:',
+  //         data.error_message || 'Unknown error',
+  //       );
+  //       Alert.alert(
+  //         'Error',
+  //         `Unable to calculate road distance: ${data.error_message || 'Unknown error'
+  //         }`,
+  //       );
+  //       return null;
+  //     }
+  //   } catch (error) {
+  //     console.error('Distance Matrix request error:', error);
+  //     Alert.alert('Error', 'Unable to calculate road distance');
+  //     return null;
+  //   }
+  // };
 
   const trackDistance = async () => {
     try {
@@ -717,25 +819,25 @@ const TaskDetails = ({route}) => {
 
     const payload = isSignedIn
       ? {
-          id: id,
-          checkOut: formattedDateTime,
-          check_out_latitude: mLat,
-          check_out_longitude: mLong,
-          type: 1,
-          userId: userId,
-          t_company_id: companyId,
-          taskName: label,
-        }
+        id: id,
+        checkOut: formattedDateTime,
+        check_out_latitude: mLat,
+        check_out_longitude: mLong,
+        type: 1,
+        userId: userId,
+        t_company_id: companyId,
+        taskName: label,
+      }
       : {
-          id: id,
-          checkIn: formattedDateTime,
-          check_in_latitude: mLat,
-          check_in_longitude: mLong,
-          type: 0,
-          userId: userId,
-          t_company_id: companyId,
-          taskName: label,
-        };
+        id: id,
+        checkIn: formattedDateTime,
+        check_in_latitude: mLat,
+        check_in_longitude: mLong,
+        type: 0,
+        userId: userId,
+        t_company_id: companyId,
+        taskName: label,
+      };
 
     console.log('payload==============>', payload);
 
@@ -774,9 +876,14 @@ const TaskDetails = ({route}) => {
             <Text style={styles.txt}>Visited Files</Text>
           </TouchableOpacity>
         </View>
-        {/* <View style={styles.sectionHeader}>
-          <Text style={styles.sectionHeaderText}>Visits</Text>
-        </View> */}
+        <View style={{ marginHorizontal: 10, flexDirection: 'row', alignItems: 'center', marginVertical: 10 }}>
+          {task.changedLocFlag === 0 && (
+            <CustomCheckBox isChecked={isChecked} onToggle={handleCheckBoxPress} />
+          )}
+           {task.changedLocFlag === 0 && (
+          <Text style={{ fontWeight: 'bold', marginHorizontal: 5, color: '#000' }}>Changed the Current Location</Text>
+           )}
+        </View>
         <View style={styles.dateContainer}>
           <Text style={styles.dateText}>{dueDateStr}</Text>
         </View>
@@ -787,10 +894,22 @@ const TaskDetails = ({route}) => {
               onPress={() => handleRadioButtonPress(id)}
             />
           </TouchableOpacity>
-          <View style={styles.taskDetails}>
+          {/* <View style={styles.taskDetails}>
             <Text style={styles.dropdownItemText}>{label}</Text>
             <Text style={styles.loctxt}>{locationName}</Text>
             <Text style={styles.statetxt}>{state}</Text>
+          </View> */}
+
+          <View style={styles.taskDetails}>
+            <Text style={styles.dropdownItemText}>{task.label}</Text>
+
+            {/* Conditionally render the location */}
+            {task.changedLocFlag === 1 ? (
+              <Text style={styles.loctxt}>{task.changedLocation}</Text>
+            ) : (
+              <Text style={styles.loctxt}>{task.locationName}, {'\n'}{task.state}</Text>
+            )}
+
           </View>
           <TouchableOpacity onPress={() => handleTaskSelect(task)}>
             <Image
@@ -834,35 +953,16 @@ const TaskDetails = ({route}) => {
           {/* Left side: Check In and Check Out */}
           <View>
             {checkIn ? (
-              <Text style={{color: '#000', marginLeft: 10, fontWeight: 'bold'}}>
+              <Text style={{ color: '#000', marginLeft: 10, fontWeight: 'bold' }}>
                 Check In : {formatDateTime(new Date(checkIn), 'date')} ({formatDateTime(new Date(checkIn), 'time')})
               </Text>
             ) : null}
             {checkOut ? (
-              <Text style={{color: '#000', marginLeft: 10, fontWeight: 'bold'}}>
+              <Text style={{ color: '#000', marginLeft: 10, fontWeight: 'bold' }}>
                 Check Out : {formatDateTime(new Date(checkOut), 'date')} ({formatDateTime(new Date(checkOut), 'time')})
               </Text>
             ) : null}
           </View>
-          {/* <View>
-            {checkIn ? (
-              <Text
-                style={{
-                  color: '#000',
-                  marginRight: 5,
-                  fontWeight: 'bold',
-                }}>
-              {formatDateTime(new Date(checkIn), 'time')}
-              </Text>
-            ) : null}
-            {checkOut ? (
-              <Text style={{color: '#000', fontWeight: 'bold'}}>
-                {formatDateTime(new Date(checkOut), 'time')}
-              </Text>
-            ) : null}
-          </View> */}
-
-          {/* Right side: Distance and Traveled Distance */}
           <View>
             <Text
               style={{
@@ -877,9 +977,8 @@ const TaskDetails = ({route}) => {
                 color: '#000',
                 textAlign: 'right',
                 marginRight: 10,
-              }}>{`Travelled Dis : ${
-              traveledDistance || traveleDis
-            }`}</Text>
+              }}>{`Travelled Dis : ${traveledDistance || traveleDis
+                }`}</Text>
           </View>
         </View>
 
@@ -893,7 +992,7 @@ const TaskDetails = ({route}) => {
             style={[
               styles.signOutButton,
               // Disable the button if checkIn and checkOut values are not null or undefined
-              checkIn && checkOut ? {backgroundColor: '#d3d3d3'} : null, // Grey out the button if disabled
+              checkIn && checkOut ? { backgroundColor: '#d3d3d3' } : null, // Grey out the button if disabled
             ]}
             onPress={() => {
               // If both checkIn and checkOut values are present, disable the action
@@ -911,7 +1010,7 @@ const TaskDetails = ({route}) => {
               ) {
                 Alert.alert(
                   'Warning',  // This is the header/title of the alert
-                  'You must be within 100 meters of the destination to Punch In or Punch Out',                );
+                  'You must be within 100 meters of the destination to Punch In or Punch Out',);
                 return;
               }
 
@@ -920,47 +1019,16 @@ const TaskDetails = ({route}) => {
             }}
             disabled={!!checkIn && !!checkOut} // Use double negation to cast strings to booleans
           >
-            <Text style={{color: '#000', fontSize: 15}}>
+            <Text style={{ color: '#000', fontSize: 15 }}>
               {isSignedIn ? 'Check Out' : 'Check In'}
             </Text>
           </TouchableOpacity>
-          {/* {!(checkIn && checkOut) && (
-  <TouchableOpacity
-    style={[
-      styles.signOutButton,
-      // Add a different style for when the button is enabled
-    ]}
-    onPress={() => {
-      // Check if both checkIn and checkOut values are present
-      if (checkIn && checkOut) {
-        Alert.alert('You have already checked in and checked out');
-        return;
-      }
-
-      // Check if the user is within 100 meters
-      if (parseFloat(distance) * 1000 >= 100) {
-        Alert.alert(
-          'You must be within 100 meters of the destination to Punch In or Punch Out',
-        );
-        return;
-      }
-
-      // Call PunchInPunchOut function if within range
-      PunchInPunchOut();
-    }}
-  >
-    <Text style={{color: '#000', fontSize: 15}}>
-      {isSignedIn ? 'Check Out' : 'Check In'}
-    </Text>
-  </TouchableOpacity>
-)} */}
-
           <View style={styles.switchContainer}>
             <TouchableOpacity
               onPress={handleShipDropdownClickStatus}
               style={[
                 styles.dropdownButton,
-                {backgroundColor: editStatus ? '#fff' : '#dedede'},
+                { backgroundColor: editStatus ? '#fff' : '#dedede' },
               ]}>
               <Text style={styles.dropdownText}>
                 {selectedStatusOption || status || 'Status'}
@@ -985,7 +1053,7 @@ const TaskDetails = ({route}) => {
                       style={[
                         styles.dropdownOption,
                         selectedStatusOption === option &&
-                          styles.selectedOption,
+                        styles.selectedOption,
                       ]}
                       onPress={() => handleDropdownSelectStatus(option)}>
                       <Text style={styles.dropdownOptionText}>{option}</Text>
@@ -1001,7 +1069,7 @@ const TaskDetails = ({route}) => {
               style={styles.uploadimg}
               onPress={handleTakeSelfie}>
               <Image
-                style={{height: 80, width: 80}}
+                style={{ height: 80, width: 80 }}
                 source={require('../../../assets/uploadsel.png')}
               />
               <Text
@@ -1056,7 +1124,7 @@ const TaskDetails = ({route}) => {
           <ScrollView horizontal style={styles.imagePreviewContainer}>
             {selfieImages.map((image, index) => (
               <View key={index} style={styles.imageContainer}>
-                <Image source={{uri: image.uri}} style={styles.imagePreview} />
+                <Image source={{ uri: image.uri }} style={styles.imagePreview} />
                 <TouchableOpacity
                   style={styles.removeButton}
                   onPress={() => removeImage(index, 'selfie')}>
@@ -1070,7 +1138,7 @@ const TaskDetails = ({route}) => {
           <ScrollView horizontal style={styles.imagePreviewContainer}>
             {galleryImages.map((image, index) => (
               <View key={index} style={styles.imageContainer}>
-                <Image source={{uri: image.uri}} style={styles.imagePreview} />
+                <Image source={{ uri: image.uri }} style={styles.imagePreview} />
                 <TouchableOpacity
                   style={styles.removeButton}
                   onPress={() => removeImage(index, 'gallery')}>
@@ -1118,7 +1186,7 @@ const TaskDetails = ({route}) => {
           }}
           disabled={loadingg} // Disable button when loading
         >
-          <Text style={{color: '#000', alignSelf: 'center'}}>Update</Text>
+          <Text style={{ color: '#000', alignSelf: 'center' }}>Update</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
@@ -1326,6 +1394,7 @@ const styles = StyleSheet.create({
   },
   textInput: {
     color: '#000',
+    marginLeft: 10
   },
   uploadimg: {
     alignItems: 'center',
