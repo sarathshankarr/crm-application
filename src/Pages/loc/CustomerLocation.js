@@ -479,7 +479,7 @@
 
 // export default CustomerLocation;
 
-import React, {useEffect, useState} from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   Text,
   TouchableOpacity,
@@ -494,16 +494,17 @@ import {
   ScrollView,
   Linking,
   SafeAreaView,
+  RefreshControl,
 } from 'react-native';
 import Geolocation from 'react-native-geolocation-service';
 import axios from 'axios';
-import {useSelector} from 'react-redux';
+import { useSelector } from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {useFocusEffect} from '@react-navigation/native';
-import {API} from '../../config/apiConfig';
-import {RadioButton} from 'react-native-radio-buttons-group';
+import { useFocusEffect } from '@react-navigation/native';
+import { API } from '../../config/apiConfig';
+import { RadioButton } from 'react-native-radio-buttons-group';
 
-const CustomerLocation = ({navigation}) => {
+const CustomerLocation = ({ navigation }) => {
   const userData = useSelector(state => state.loggedInUser);
   const [mLat, setMLat] = useState(null);
   const [mLong, setMLong] = useState(null);
@@ -522,19 +523,39 @@ const CustomerLocation = ({navigation}) => {
   const [selectedTaskId, setSelectedTaskId] = useState(null);
   const [previousLocation, setPreviousLocation] = useState(null);
 
+
+  const [refreshing, setRefreshing] = useState(false);
+
   const selectedCompany = useSelector(state => state.selectedCompany);
+
+  // useFocusEffect(
+  //   React.useCallback(() => {
+  //     const initialize = async () => {
+  //       await requestLocationPermission();
+  //       await getLocation();
+  //       getTasksAccUser();
+  //     };
+
+  //     initialize();
+  //   }, []),
+  // );
 
   useFocusEffect(
     React.useCallback(() => {
       const initialize = async () => {
-        await requestLocationPermission();
-        await getLocation();
-        getTasksAccUser();
+        try {
+          await requestLocationPermission();
+          await getLocation();
+          await getTasksAccUser();
+        } catch (error) {
+          console.error('Error during initialization:', error);
+        }
       };
 
       initialize();
-    }, []),
+    }, [])
   );
+
 
   useEffect(() => {
     const fetchInitialSelectedCompany = async () => {
@@ -581,7 +602,7 @@ const CustomerLocation = ({navigation}) => {
           label: task.taskName,
           value: task.id,
           locationName: task.locationName || '',
-          customerName:task.customerName || '',
+          customerName: task.customerName || '',
           state: task.state || '',
           houseNo: task.houseNo || '',
           street: task.street || '',
@@ -592,14 +613,17 @@ const CustomerLocation = ({navigation}) => {
           status: task.status || '',
           dueDateStr: task.dueDateStr || '',
           desc: task.desc || '',
-          checkIn: task.checkIn || null,    
+          checkIn: task.checkIn || null,
           checkOut: task.checkOut || null,
+          locId: task.locId || null,
+          changedLocation: task.changedLocation || null,
+          changedLocFlag: task.changedLocFlag || 0
         }));
-        console.log('Response:', response.data);
+        console.log('Response:', response.data[0]);
         setTasks(taskOptions);
         setFilteredTasks(taskOptions); // This sets both tasks and filteredTasks
       })
-      
+
       .catch(error => {
         console.error(
           'Error fetching tasks:',
@@ -608,8 +632,13 @@ const CustomerLocation = ({navigation}) => {
       })
       .finally(() => {
         setLoading(false);
+        setRefreshing(false);
       });
   };
+
+  const onRefresh = useCallback(() => {
+    getTasksAccUser();
+  }, []);
 
   const requestLocationPermission = async () => {
     if (Platform.OS === 'ios') {
@@ -666,13 +695,44 @@ const CustomerLocation = ({navigation}) => {
             reject(error);
           }
         },
-        {enableHighAccuracy: true, timeout: 30000, maximumAge: 1000}, // Increase timeout to 30 seconds
+        { enableHighAccuracy: true, timeout: 30000, maximumAge: 1000 }, // Increase timeout to 30 seconds
       );
     });
   };
 
-  const createAddressString = task => {
+  // const createAddressString = task => {
 
+  //   const {
+  //     customerName = '',
+  //     houseNo = '',
+  //     street = '',
+  //     locationName = '',
+  //     locality = '',
+  //     cityOrTown = '',
+  //     state = '',
+  //     country = '',
+  //     pincode = '',
+  //   } = task;
+
+  //   const addressParts = [
+  //     customerName,
+  //     houseNo,
+  //     street,
+  //     locationName,
+  //     locality,
+  //     cityOrTown,
+  //     state,
+  //     country,
+  //     pincode,
+  //   ];
+  //   const address = addressParts.filter(part => part.trim()).join(', ');
+  //   console.log("address",address)
+
+  //   return address;
+  // };
+
+
+  const createAddressString = task => {
     const {
       customerName = '',
       houseNo = '',
@@ -683,24 +743,35 @@ const CustomerLocation = ({navigation}) => {
       state = '',
       country = '',
       pincode = '',
+      changedLocation = '',
+      changedLocFlag = 0
     } = task;
 
-    const addressParts = [
-      customerName,
-      houseNo,
-      street,
-      locationName,
-      locality,
-      cityOrTown,
-      state,
-      country,
-      pincode,
-    ];
-    const address = addressParts.filter(part => part.trim()).join(', ');
-    console.log("address",address)
+    // If changedLocFlag is 1, use changedLocation; otherwise, construct the full address
+    let finalLocation = '';
 
-    return address;
+    if (changedLocFlag === 1) {
+      finalLocation = changedLocation;
+    } else {
+      finalLocation = [
+        customerName,
+        houseNo,
+        street,
+        locationName,
+        locality,
+        cityOrTown,
+        state,
+        country,
+        pincode
+      ].filter(part => part.trim()).join(', ');
+    }
+
+    console.log("Address:", finalLocation);
+
+    return finalLocation;
   };
+
+
 
   const geocodeAddress = async address => {
     const apiKey = 'AIzaSyBSKRShklVy5gBNSQzNSTwpXu6l2h8415M';
@@ -711,7 +782,7 @@ const CustomerLocation = ({navigation}) => {
     try {
       const response = await axios.get(url);
       const data = response.data;
-      console.log("added name",response.data)
+      console.log("added name", response.data)
 
       if (data.status === 'OK') {
         const location = data.results[0].geometry.location;
@@ -767,10 +838,10 @@ const CustomerLocation = ({navigation}) => {
         return distance;
       } else {
         console.error('Distance Matrix API error:', data.error_message);
-        Alert.alert(
-          'Error',
-          `Unable to calculate road distance: ${data.error_message}`,
-        );
+        // Alert.alert(
+        //   'Error',
+        //   `Unable to calculate road distance: ${data.error_message}`,
+        // );
         return null;
       }
     } catch (error) {
@@ -805,7 +876,7 @@ const CustomerLocation = ({navigation}) => {
     // Navigate to TaskDetails with the task details
     navigation.navigate('TaskDetails', {
       task: task,
-      customerName:task.customerName,
+      customerName: task.customerName,
       locationName: task.locationName,
       state: task.state,
       status: task.status,
@@ -815,8 +886,11 @@ const CustomerLocation = ({navigation}) => {
       desc: task.desc,
       distance: roadDistance || '0 km',
       traveledDistance: traveledDistance,
-      checkIn:task.checkIn,
-    checkOut :task.checkOut,
+      checkIn: task.checkIn,
+      checkOut: task.checkOut,
+      locId: task.locId,
+      changedLocFlag: task.changedLocFlag,
+      changedLocation: task.changedLocation
     });
 
     // Reset switch state for the task
@@ -858,7 +932,7 @@ const CustomerLocation = ({navigation}) => {
     try {
       // Get the current location
       const currentPosition = await getLocation();
-  
+
       if (previousLocation) {
         // Get road distance using the Google Maps API
         const distance = await getRoadDistance(
@@ -867,20 +941,20 @@ const CustomerLocation = ({navigation}) => {
           currentPosition.coords.latitude,
           currentPosition.coords.longitude
         );
-  
+
         // Parse and accumulate the distance
         if (distance) {
           const currentDistance = parseFloat(distance.replace(' km', '')) || 0;
           const existingDistance = parseFloat(traveledDistance.replace(' km', '')) || 0;
-          
+
           // Calculate the new accumulated distance
           const newDistance = currentDistance + existingDistance;
-  
+
           // Update the traveled distance state
           setTraveledDistance(`${newDistance.toFixed(2)} km`);
         }
       }
-  
+
       // Update the previous location for the next calculation
       setPreviousLocation({
         latitude: currentPosition.coords.latitude,
@@ -892,16 +966,16 @@ const CustomerLocation = ({navigation}) => {
       setTraveledDistance(traveledDistance);
     }
   };
-  
-  
+
+
 
   return (
-    <SafeAreaView style={{flex:1,backgroundColor:'#fff'}}> 
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
 
       <View style={styles.header}>
         <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
           <Image
-            style={{height: 25, width: 25}}
+            style={{ height: 25, width: 25 }}
             source={require('../../../assets/back_arrow.png')}
           />
         </TouchableOpacity>
@@ -931,30 +1005,36 @@ const CustomerLocation = ({navigation}) => {
           All Visits
         </Text>
       </View>
-      <ScrollView style={styles.Container}>
-      {loading ? (
-        <ActivityIndicator
-          style={{justifyContent: 'center', alignItems: 'center'}}
-          size="large"
-          color="#390050"
-        />
-      ) : filteredTasks.length === 0 ? (
-        <Text style={styles.noResultsText}>Sorry, no results found!</Text>
-      ) : (
-        <ScrollView style={styles.Content}>
-          {filteredTasks.map(task => (
+      <ScrollView
+        style={styles.Container}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh}
+            tintColor="#390050"
+          />
+
+        }
+      >
+        {loading ? (
+          <ActivityIndicator
+            style={{ justifyContent: 'center', alignItems: 'center' }}
+            size="large"
+            color="#390050"
+          />
+        ) : filteredTasks.length === 0 ? (
+          <Text style={styles.noResultsText}>Sorry, no results found!</Text>
+        ) : (
+          filteredTasks.map(task => (
             <View key={task.value}>
-              <View
-                style={{position: 'absolute', right: 0, top: 10, right: 15}}>
+              <View style={{ position: 'absolute', right: 0, top: 10, right: 15 }}>
                 {selectedTaskId === task.id && distance && (
                   <View>
-                    <Text style={{color: '#000'}}>{distance}</Text>
+                    <Text style={{ color: '#000' }}>{distance}</Text>
                   </View>
                 )}
               </View>
               <View>
-                <View style={{marginHorizontal: 10, marginVertical: 5}}>
-                  <Text style={{color: '#000', fontWeight: 'bold'}}>
+                <View style={{ marginHorizontal: 10, marginVertical: 5 }}>
+                  <Text style={{ color: '#000', fontWeight: 'bold' }}>
                     {task.dueDateStr}
                   </Text>
                 </View>
@@ -969,10 +1049,14 @@ const CustomerLocation = ({navigation}) => {
                     />
                     <View style={styles.taskDetails}>
                       <Text style={styles.dropdownItemText}>{task.label}</Text>
-                      <Text style={styles.loctxt}>{task.locationName}</Text>
-                      <Text style={styles.statetxt}>{task.state}</Text>
+                      {task.changedLocFlag === 1 ? (
+                        <Text style={styles.loctxt}>{task.changedLocation}</Text>
+                      ) : (
+                        <Text style={styles.loctxt}>{task.locationName}, {'\n'}{task.state}</Text>
+                      )}
                     </View>
-                    <View style={{flex: 0.6}}>
+
+                    <View style={{ flex: 0.5 }}>
                       <TouchableOpacity onPress={() => handleTaskSelect(task)}>
                         <Image
                           style={styles.locatioimg}
@@ -980,20 +1064,20 @@ const CustomerLocation = ({navigation}) => {
                         />
                       </TouchableOpacity>
                     </View>
-                    <View style={{flex: 0.6}}>
+                    <View style={{ flex: 0.6 }}>
                       <Text style={styles.statustxt}>{task.status}</Text>
                     </View>
                   </View>
                 </TouchableOpacity>
-                <Text style={{color: '#000',marginLeft:10}}>
+                <Text style={{ color: '#000', marginLeft: 10 }}>
                   Distance Traveled: {traveledDistance}
                 </Text>
               </View>
             </View>
-          ))}
-        </ScrollView>
-      )}
-    </ScrollView>
+          ))
+        )}
+      </ScrollView>
+
     </SafeAreaView>
   );
 };
