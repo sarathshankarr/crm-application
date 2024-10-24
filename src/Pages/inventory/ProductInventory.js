@@ -256,7 +256,7 @@ const ProductInventory = () => {
         <View style={{ flex: 3 }}>
           <Text style={styles.itemText1}>{item.styleName}</Text>
           <Text style={styles.itemText1}>
-            <Text style={{ color: '#000', fontWeight: 500 }}>{'SKU  :  '}</Text>
+            <Text style={{color: '#000', fontWeight: 500}}>{'SKU  :  '}</Text>
             {item.gsCode}
           </Text>
         </View>
@@ -422,6 +422,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingVertical: 10,
+    paddingHorizontal: 20,
+
   },
   itemText: {
     flex: 1,

@@ -12,7 +12,7 @@ const CustomCheckBoxStatus = ({ isChecked, onToggle, disabled, borderColor }) =>
       ]}
     >
       {isChecked && (
-        <View style={styles.checkboxTick} />
+        <View style={[styles.checkboxTick, {backgroundColor:borderColor }]} />
       )}
     </TouchableOpacity>
   );
@@ -30,7 +30,6 @@ const styles = StyleSheet.create({
   checkboxTick: {
     width: 10,
     height: 10,
-    backgroundColor: 'black', // Tick color
   },
 });
 

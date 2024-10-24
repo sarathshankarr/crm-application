@@ -383,7 +383,7 @@ const PackingConformation = ({ route }) => {
           }}>
           <CustomCheckBoxStatus
             isChecked={
-              !!selectedItems[item.orderLineitemId] || checkboxColor === 'green'
+              !!selectedItems[item.orderLineitemId] || checkboxColor === 'green' || checkboxColor === 'red'
             } // Check if either condition is true
             onToggle={() =>
               handleCheckboxToggle(item.orderLineitemId, item?.statusFlag)
@@ -586,7 +586,7 @@ const PackingConformation = ({ route }) => {
                   </View>
                 )}
 
-                <View>
+                {/* <View>
                   <TouchableOpacity
                     onPress={handleUpdateOrderStatus}
                     style={{
@@ -602,12 +602,29 @@ const PackingConformation = ({ route }) => {
                       Update Order Status
                     </Text>
                   </TouchableOpacity>
-                </View>
+                </View> */}
               </>
             )}
           </View>
         )}
       </ScrollView>
+         {/* <View> */}
+         <TouchableOpacity
+                    onPress={handleUpdateOrderStatus}
+                    style={{
+                      borderWidth: 1,
+                      marginTop: 50,
+                      marginBottom: 50,
+                      marginHorizontal: 20,
+                      borderRadius: 10,
+                      paddingVertical: 10,
+                      backgroundColor: '#F09120',
+                    }}>
+                    <Text style={{ color: '#000', alignSelf: 'center' }}>
+                      Update Order Status
+                    </Text>
+                  </TouchableOpacity>
+                {/* </View> */}
     </SafeAreaView>
   );
 };
