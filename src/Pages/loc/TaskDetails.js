@@ -249,7 +249,7 @@ const TaskDetails = ({ route }) => {
   };
 
 
-  const handleCheckBoxPress = () => {
+  const handleCheckBoxPress = async() => {
     if (isChecked) {
       // Uncheck it
       setIsChecked(false);
@@ -273,8 +273,8 @@ const TaskDetails = ({ route }) => {
               setIsChecked(true);
               const location = await getLocationcurrent();  // Get current location
               if (location) {
-                AddNewLocation(1, location);  // Call API with flag 1 (confirmed) and location
-                navigation.navigate('CustomerLocation');
+                await AddNewLocation(1, location);  // Call API with flag 1 (confirmed) and location
+                await navigation.navigate('CustomerLocation');
               }
             },
           },

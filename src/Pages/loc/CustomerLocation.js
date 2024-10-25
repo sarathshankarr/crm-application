@@ -544,8 +544,11 @@ const CustomerLocation = ({ navigation }) => {
     React.useCallback(() => {
       const initialize = async () => {
         try {
+          console.log("called requestLocationPermission=================>");
           await requestLocationPermission();
+          console.log("called getLocation ===================>");
           await getLocation();
+          console.log("called getTasksAccUser=====================> ");
           await getTasksAccUser();
         } catch (error) {
           console.error('Error during initialization:', error);
@@ -619,7 +622,7 @@ const CustomerLocation = ({ navigation }) => {
           changedLocation: task.changedLocation || null,
           changedLocFlag: task.changedLocFlag || 0
         }));
-        console.log('Response:', response.data[0]);
+        // console.log('Response:', response.data[0]);
         setTasks(taskOptions);
         setFilteredTasks(taskOptions); // This sets both tasks and filteredTasks
       })
