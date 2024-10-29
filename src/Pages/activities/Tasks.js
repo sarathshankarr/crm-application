@@ -142,6 +142,7 @@ const Tasks = () => {
     setSelectedSearchOption(option.label);
     setSearchKey(option.value);
     setDropdownVisible(false);
+    setSearchQuery(''); 
   };
 
   const toggleDropdown = () => {

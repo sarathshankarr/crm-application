@@ -21,6 +21,7 @@ import CommenHeaderHomeScreen from '../components/CommenHeaderHomeScreen';
 import {API} from '../config/apiConfig';
 import axios from 'axios';
 import NewCategoryUi from '../Pages/newCategoriesUi/NewCategoryUi';
+import FastImage from 'react-native-fast-image';
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -59,11 +60,12 @@ const CustomTabBar = ({state, descriptors, route}) => {
   };
 
   const handleCompanySelect = company => {
-    setSelectedCompany(company);
-    setCompanyLogo(company.companyLogo);
+    setSelectedCompany({ ...company }); // Create a new object reference
+    setCompanyLogo(company.companyLogo); // Set the company logo
     setDropdownVisible(false);
-    dispatch({type: SET_SELECTED_COMPANY, payload: company});
+    dispatch({ type: SET_SELECTED_COMPANY, payload: company });
   };
+  
 
   const toggleDropdown = () => {
     if (
@@ -103,6 +105,7 @@ const CustomTabBar = ({state, descriptors, route}) => {
       })
       .catch(error => {
         console.error('Error:', error);
+        setCompanyLogo(null);
       });
   };
 
@@ -125,21 +128,25 @@ const CustomTabBar = ({state, descriptors, route}) => {
             flexDirection: 'row',
             justifyContent: 'space-between',
             alignItems: 'center',
-      marginLeft:5
-            
+            marginLeft: 5,
           }}>
-          <Image
-            source={{uri: `data:image/png;base64,${companyLogo}`}}
+          <FastImage
+            source={
+              companyLogo
+                ? {uri: `data:image/png;base64,${companyLogo}`}
+                : require('../../assets/NewNoImage.jpg')
+            }
             style={{height: 35, width: 50}}
           />
-          <Text style={{fontWeight: '600', color: '#000',flex:1,marginLeft:5}}>
+          <Text
+            style={{fontWeight: '600', color: '#000', flex: 1, marginLeft: 5}}>
             {companyName}
           </Text>
           {loggedInUser &&
             loggedInUser.compList &&
             loggedInUser.compList.length > 1 && (
               <Image
-                style={{height: 10, width: 15,marginRight:5}}
+                style={{height: 10, width: 15, marginRight: 5}}
                 source={require('../../assets/dropdown.png')}
               />
             )}
@@ -151,8 +158,7 @@ const CustomTabBar = ({state, descriptors, route}) => {
           onRequestClose={() => setDropdownVisible(false)}>
           <TouchableOpacity
             style={styles.modalBackground}
-            onPress={() => setDropdownVisible(false)}
-          >
+            onPress={() => setDropdownVisible(false)}>
             <View style={styles.modalContent}>
               <FlatList
                 data={loggedInUser?.compList}

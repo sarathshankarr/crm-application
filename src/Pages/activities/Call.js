@@ -118,6 +118,7 @@ const Call = () => {
     setSelectedSearchOption(option.label);
     setSearchKey(option.value);
     setDropdownVisible(false);
+    setSearchQuery(''); 
   };
 
 

@@ -7,6 +7,7 @@ import {
   Dimensions,
   Image,
 } from 'react-native';
+import FastImage from 'react-native-fast-image';
 
 const {width, height} = Dimensions.get('window');
 const cardWidth = width - 20;
@@ -28,7 +29,7 @@ const ImageSlider = ({imageUrls}) => {
         )}>
         {imageUrls.map((url, index) => (
           <View key={index} style={styles.card}>
-            <Image source={{uri: url}} style={styles.image} />
+            <FastImage source={{uri: url}} style={styles.image} />
           </View>
         ))}
       </ScrollView>

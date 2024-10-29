@@ -6,6 +6,7 @@ import ModalComponent from '../../components/ModelComponent';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { API } from '../../config/apiConfig';
+import FastImage from 'react-native-fast-image';
 
 
 const AllCategoriesListed = ({ navigation, route }) => {
@@ -108,7 +109,7 @@ const AllCategoriesListed = ({ navigation, route }) => {
     <TouchableOpacity style={styles.productItem} onPress={() => navigateToDetails(item)}>
       <View style={styles.touchableContent}>
         <View style={styles.productImageContainer}>
-          <Image
+          <FastImage
             style={styles.productImage}
             source={item.imageUrls && item.imageUrls.length > 0 ? { uri: item.imageUrls[0] } : require('../../../assets/NewNoImage.jpg')}
             onError={(error) => console.error('Error loading image:', error)}

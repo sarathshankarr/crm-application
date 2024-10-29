@@ -24,6 +24,7 @@ import {API} from '../../config/apiConfig';
 import axios from 'axios';
 import {useSelector} from 'react-redux';
 import {RefreshControl} from 'react-native';
+import FastImage from 'react-native-fast-image';
 
 class ProductItem extends PureComponent {
   render() {
@@ -43,7 +44,7 @@ class ProductItem extends PureComponent {
         }>
         <View style={styles.productImageContainer}>
           {item.imageUrls && item.imageUrls.length > 0 ? (
-            <Image
+            <FastImage
               style={styles.productImage}
               source={{uri: item.imageUrls[0]}}
             />
@@ -107,6 +108,9 @@ const HomeAllProducts = ({navigation}) => {
   const [stopLoad, setStopLoad] = useState(false);
   const [searchFilterFlag, setSearchFilterFlag] = useState(false);
 
+  const [minPrice, setMinPrice] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
+
   const selectedCompany = useSelector(state => state.selectedCompany);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -144,6 +148,8 @@ const HomeAllProducts = ({navigation}) => {
     setPageNo(1);
     setSearchKey(0);
     setSearchQuery('');
+    setMinPrice(''); // Reset min price
+    setMaxPrice(''); // Reset max price
     setSelectedSearchOption('');
     setSearchFilterFlag(false);
     if (companyId) {
@@ -164,6 +170,8 @@ const HomeAllProducts = ({navigation}) => {
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
       setSearchQuery('');
+      setMinPrice(''); // Reset min price
+      setMaxPrice(''); // Reset max price
       setShowSearchInput(false);
       // setSelectedSearchOption(null);
       setDropdownVisible(false);
@@ -186,7 +194,7 @@ const HomeAllProducts = ({navigation}) => {
     return unsubscribe;
   }, [navigation, companyId]);
 
-  const searchAPI = async (reset = false, page = 1) => {
+  const searchAPI = async (reset = false, page = 1, searchQuery = '') => {
     const apiUrl = `${global?.userData?.productURL}${API.SEARCH_ALL_PRODUCTS}`;
     let requestBody = {
       pageNo: reset ? 1 : String(page),
@@ -312,14 +320,30 @@ const HomeAllProducts = ({navigation}) => {
       );
       return;
     }
-    if (searchQuery?.trim()?.length === 0) {
+
+    // Check if searchQuery is empty and if both minPrice and maxPrice are empty
+    if (searchQuery?.trim()?.length === 0 && !minPrice && !maxPrice) {
       return;
     }
 
     setSearchFilterFlag(true);
     setPageNo(1);
     setStopLoad(false); // Start loading
-    searchAPI(true, 1);
+
+    // Construct the searchValue based on minPrice and maxPrice
+    let searchValue = '';
+    if (minPrice && maxPrice) {
+      searchValue = `${minPrice}-${maxPrice}`; // For example, "10-20"
+    } else if (minPrice) {
+      searchValue = `${minPrice}-`; // For example, "10-"
+    } else if (maxPrice) {
+      searchValue = `-${maxPrice}`; // For example, "-20"
+    } else {
+      searchValue = searchQuery; // Fallback to searchQuery
+    }
+
+    // Update request body with searchValue
+    searchAPI(true, 1, searchValue);
   };
 
   const handleScroll = event => {
@@ -342,6 +366,9 @@ const HomeAllProducts = ({navigation}) => {
     setSelectedSearchOption(option.label);
     setSearchKey(option.value);
     setDropdownVisible(false);
+    setSearchQuery('');  // Clear search query
+    setMinPrice('');     // Clear min price
+    setMaxPrice('');     // Clear max price
     // console.log("handleDropdownSelect");
   };
 
@@ -382,11 +409,17 @@ const HomeAllProducts = ({navigation}) => {
                 placeholder="Min"
                 placeholderTextColor="#000"
                 style={styles.minMaxInput}
+                value={minPrice}
+                onChangeText={setMinPrice}
+                keyboardType="numeric" // Optional: To show numeric keyboard
               />
               <TextInput
                 placeholder="Max"
                 placeholderTextColor="#000"
                 style={styles.MaxInput}
+                value={maxPrice}
+                onChangeText={setMaxPrice}
+                keyboardType="numeric" // Optional: To show numeric keyboard
               />
             </View>
           )}
@@ -613,24 +646,25 @@ const styles = StyleSheet.create({
   minMaxInput: {
     borderRightWidth: 1,
     padding: 5,
-    marginHorizontal: 5,
     width: 50,
     borderRadius: 10,
     width: 80,
-    marginRight: 14,
-    marginLeft:14
+    color:"#000",
+    marginHorizontal:10
   },
   MaxInput: {
     borderRightWidth: 1,
     padding: 5,
-    marginHorizontal: 5,
     width: 50,
     borderRadius: 10,
     width: 80,
+    color:"#000",
+    marginHorizontal:10
   },
   minMaxContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    flex:1
   },
 });
 

@@ -17,6 +17,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSelector } from 'react-redux';
 import { API } from '../../config/apiConfig';
 import axios from 'axios';
+import FastImage from 'react-native-fast-image';
 
 const HomeCategories = ({ navigation }) => {
   const [selectedDetails, setSelectedDetails] = useState([]);
@@ -122,6 +123,7 @@ const HomeCategories = ({ navigation }) => {
       setSelectedSearchOption(option.label);
       setSearchKey(option.value);
       setDropdownVisible(false);
+      setSearchQuery(''); 
     };
   
     const toggleDropdown = () => {
@@ -326,7 +328,7 @@ const HomeCategories = ({ navigation }) => {
         }}>
         <View style={styles.productImageContainer}>
           {imageUrls && imageUrls.length > 0 ? (
-            <Image style={styles.productImage} source={{ uri: imageUrls[0] }} />
+            <FastImage style={styles.productImage} source={{ uri: imageUrls[0] }} />
           ) : (
             <Image
               style={styles.productImage}

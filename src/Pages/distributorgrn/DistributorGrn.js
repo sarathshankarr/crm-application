@@ -244,6 +244,7 @@ const DistributorGrn = () => {
     setSelectedSearchOption(option.label);
     setSearchKey(option.value);
     setDropdownVisible(false);
+    setSearchQuery(''); 
   };
 
   const toggleDropdown = () => {
@@ -576,7 +577,8 @@ const styles = StyleSheet.create({
   image: {
     height: 20,
     width: 20,
-    alignSelf: 'center'
+    alignSelf: 'center',
+    marginLeft:5
   },
   searchInputContainer: {
     flex: 1,
