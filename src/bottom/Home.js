@@ -7,6 +7,7 @@ import {
   Image,
   ScrollView,
   FlatList,
+  Modal,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import {useSelector, useDispatch} from 'react-redux';
@@ -124,32 +125,37 @@ const CustomTabBar = ({state, descriptors, route}) => {
             flexDirection: 'row',
             justifyContent: 'space-between',
             alignItems: 'center',
-            paddingRight: 15,
-            marginLeft: 12,
+      marginLeft:5
+            
           }}>
           <Image
             source={{uri: `data:image/png;base64,${companyLogo}`}}
             style={{height: 35, width: 50}}
           />
-          <Text style={{fontWeight: '600', marginLeft: 5, color: '#000'}}>
+          <Text style={{fontWeight: '600', color: '#000',flex:1,marginLeft:5}}>
             {companyName}
           </Text>
           {loggedInUser &&
             loggedInUser.compList &&
             loggedInUser.compList.length > 1 && (
               <Image
-                style={{height: 10, width: 15, marginLeft: 5}}
+                style={{height: 10, width: 15,marginRight:5}}
                 source={require('../../assets/dropdown.png')}
               />
             )}
         </TouchableOpacity>
-        {dropdownVisible &&
-          loggedInUser &&
-          loggedInUser.compList &&
-          loggedInUser.compList.length > 1 && (
-            <View style={styles.dropdownContainer}>
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={dropdownVisible}
+          onRequestClose={() => setDropdownVisible(false)}>
+          <TouchableOpacity
+            style={styles.modalBackground}
+            onPress={() => setDropdownVisible(false)}
+          >
+            <View style={styles.modalContent}>
               <FlatList
-                data={loggedInUser.compList}
+                data={loggedInUser?.compList}
                 keyExtractor={(item, index) => index.toString()}
                 renderItem={({item}) => (
                   <TouchableOpacity
@@ -173,7 +179,9 @@ const CustomTabBar = ({state, descriptors, route}) => {
                 )}
               />
             </View>
-          )}
+          </TouchableOpacity>
+        </Modal>
+
         <CommenHeaderHomeScreen
           navigation={navigation}
           showMessageIcon={true}
@@ -254,6 +262,34 @@ const styles = StyleSheet.create({
     width: '50%',
     borderRadius: 10,
     zIndex: 1000,
+  },
+  modalContainer: {
+    flex: 1,
+    top: 50,
+    alignItems: 'center',
+    maxHeight: 150,
+  },
+  modalContent: {
+    width: '70%',
+    backgroundColor: 'white',
+    borderRadius: 10,
+    elevation: 5,
+    marginTop: 50,
+  },
+  modalBackground: {
+    maxHeight: 160,
+    flex: 1,
+    alignItems: 'center',
+  },
+  modalItem: {
+    height: 35,
+    justifyContent: 'center',
+    borderBottomWidth: 0.5,
+    borderColor: '#8e8e8e',
+  },
+  modalItemText: {
+    fontWeight: '600',
+    color: '#000',
   },
 });
 

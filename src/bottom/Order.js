@@ -625,7 +625,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const Order = () => {
   const [orders, setOrders] = useState([]);
   const [pageNo, setPageNo] = useState(1);
-  const [pageSize, setPageSize] = useState(20);
+  const [pageSize, setPageSize] = useState(10);
   const [initialSelectedCompany, setInitialSelectedCompany] = useState(null);
   const [loading, setLoading] = useState(false);
   const [firstLoad, setFirstLoad] = useState(true);
@@ -639,7 +639,7 @@ const Order = () => {
 
   const [refreshing, setRefreshing] = useState(false);
   const [from, setFrom] = useState(0);
-  const [to, setTo] = useState(20);
+  const [to, setTo] = useState(10);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMoreTasks, setHasMoreTasks] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -691,11 +691,11 @@ const Order = () => {
       setSearchQuery('');
       setShowSearchInput(false);
       setDropdownVisible(false);
-      setSelectedSearchOption(null);
+      // setSelectedSearchOption(null);
       // Reset orders and fetch new data
       setFrom(0); // Reset the starting index
-      setTo(20); // Reset the ending index
-      getAllOrders(true, 0, 20); // Fetch the first 20 orders
+      setTo(10); // Reset the ending index
+      getAllOrders(true, 0, 10); // Fetch the first 20 orders
       setFilterFlag(false);
     });
     return unsubscribe;
@@ -704,7 +704,7 @@ const Order = () => {
 
   useEffect(() => {
     if (companyId) {
-      getAllOrders(true, 0, 20);
+      getAllOrders(true, 0, 10);
     }
   }, [companyId]);
 
@@ -730,7 +730,7 @@ const Order = () => {
 
     if (reset) {
       setFrom(0); // Reset pagination
-      setTo(20);
+      setTo(10);
       setHasMoreTasks(true); // Reset hasMoreTasks for new fetch
     }
 
@@ -753,7 +753,7 @@ const Order = () => {
         setOrders((prevTasks) => [...(prevTasks || []), ...newTasks]);
       }
 
-      if (newTasks.length < 20) {
+      if (newTasks.length < 10) {
         setHasMoreTasks(false);
       }
     } catch (error) {
@@ -771,7 +771,7 @@ const Order = () => {
 
     setLoadingMore(true);
     const newFrom = to + 1;
-    const newTo = to + 20;
+    const newTo = to + 10;
     setFrom(newFrom);
     setTo(newTo);
 
@@ -803,7 +803,7 @@ const Order = () => {
   const onRefresh = async () => {
     setRefreshing(true);
     setFrom(0);
-    setTo(20);
+    setTo(10);
     setSearchKey(0);
     setFilterFlag(false);
 
@@ -812,7 +812,7 @@ const Order = () => {
     setSelectedSearchOption('');
     setHasMoreTasks(true);
     
-    await getAllOrders(true, 0, 20);
+    await getAllOrders(true, 0, 10);
     setRefreshing(false);
   };
 
@@ -887,15 +887,15 @@ const Order = () => {
 
     setFilterFlag(true);
     setFrom(0);
-    setTo(20);
+    setTo(10);
 
-    gettasksearch(true, 0, 20); 
+    gettasksearch(true, 0, 10); 
   };
 
   const handleSearchInputChange = query => {
     setSearchQuery(query);
     if (query.trim() === '') {
-      getAllOrders(true, 0, 20);
+      getAllOrders(true, 0, 10);
     }
   };
   const searchOption = [

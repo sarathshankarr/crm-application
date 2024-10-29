@@ -302,6 +302,9 @@ const Packages = ({ navigation }) => {
   ];
 
   const renderProductItem = ({ item }) => {
+    if (!item) {
+      return null; // Skip rendering if item is null
+    }
     const { packageName, imageUrls, packageId } = item;
     const handleViewImages = async () => {
       setIsModalVisible(true); // Show modal immediately
@@ -387,7 +390,7 @@ const Packages = ({ navigation }) => {
                 style={styles.dropdownOption}
                 key={index}
                 onPress={() => handleDropdownSelect(option)}>
-                <Text style={{ color: '#000' }}>{option.label}</Text>
+                <Text style={{ color: '#000' }}>{option?.label}</Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
@@ -395,13 +398,13 @@ const Packages = ({ navigation }) => {
       )}
       {loading ? (
         <ActivityIndicator size="large" color="#0000ff" />
-      ) : stylesData.length === 0 ? (
+      ) : (stylesData.length === 0 || stylesData.every(item => item === null)) ? (
         <Text style={styles.noCategoriesText}>Sorry, no results found!</Text>
       ) : (
         <FlatList
           data={stylesData}
           renderItem={renderProductItem}
-          keyExtractor={(item, index) => `${item.packageId}-${index}`}
+          keyExtractor={(item, index) => `${item?.packageId}-${index}`}
           numColumns={2}
           columnWrapperStyle={styles.row}
           refreshControl={

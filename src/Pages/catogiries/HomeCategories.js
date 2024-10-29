@@ -181,7 +181,7 @@ const HomeCategories = ({ navigation }) => {
       setSearchQuery('');
       setShowSearchInput(false);
       setDropdownVisible(false);
-      setSelectedSearchOption(null);
+      // setSelectedSearchOption(null);
       
       // Reset pagination
       setFrom(0);

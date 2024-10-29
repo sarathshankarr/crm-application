@@ -18,16 +18,16 @@ import {
   Alert,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { PRODUCT_DETAILS } from '../../components/ProductDetails';
+import {PRODUCT_DETAILS} from '../../components/ProductDetails';
 import ModalComponent from '../../components/ModelComponent';
-import { API } from '../../config/apiConfig';
+import {API} from '../../config/apiConfig';
 import axios from 'axios';
-import { useSelector } from 'react-redux';
-import { RefreshControl } from 'react-native';
+import {useSelector} from 'react-redux';
+import {RefreshControl} from 'react-native';
 
 class ProductItem extends PureComponent {
   render() {
-    const { item, navigation, openModal } = this.props;
+    const {item, navigation, openModal} = this.props;
     return (
       <TouchableOpacity
         style={styles.productItem}
@@ -45,7 +45,7 @@ class ProductItem extends PureComponent {
           {item.imageUrls && item.imageUrls.length > 0 ? (
             <Image
               style={styles.productImage}
-              source={{ uri: item.imageUrls[0] }}
+              source={{uri: item.imageUrls[0]}}
             />
           ) : (
             <Image
@@ -56,28 +56,28 @@ class ProductItem extends PureComponent {
           <Text
             style={[
               styles.productName,
-              { backgroundColor: 'rgba(0, 0, 0, 0.2)' },
+              {backgroundColor: 'rgba(0, 0, 0, 0.2)'},
             ]}>
             {item.styleName}
           </Text>
         </View>
 
         <View style={styles.additionalDetailsContainer}>
-          <Text style={{ color: '#000' }} numberOfLines={1} ellipsizeMode="tail">
+          <Text style={{color: '#000'}} numberOfLines={1} ellipsizeMode="tail">
             Color Name: {item.colorName}
           </Text>
           <View style={styles.notesContainer}>
             <Text
-              style={{ color: '#000' }}
+              style={{color: '#000'}}
               numberOfLines={1}
               ellipsizeMode="tail">
               Description: {item.styleDesc}
             </Text>
-            <Text style={{ color: '#000' }}>Price: {item.mrp}</Text>
+            <Text style={{color: '#000'}}>Price: {item.mrp}</Text>
             <TouchableOpacity
               onPress={() => openModal(item)}
               style={styles.buttonqty}>
-              <Text style={{ color: '#ffffff' }}>ADD QTY</Text>
+              <Text style={{color: '#ffffff'}}>ADD QTY</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -86,7 +86,7 @@ class ProductItem extends PureComponent {
   }
 }
 
-const HomeAllProducts = ({ navigation }) => {
+const HomeAllProducts = ({navigation}) => {
   const [showSearchInput, setShowSearchInput] = useState(false);
   const [selectedDetails, setSelectedDetails] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
@@ -105,12 +105,10 @@ const HomeAllProducts = ({ navigation }) => {
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [selectedSearchOption, setSelectedSearchOption] = useState('');
   const [stopLoad, setStopLoad] = useState(false);
-  const [searchFilterFlag, setSearchFilterFlag] = useState(false)
+  const [searchFilterFlag, setSearchFilterFlag] = useState(false);
 
   const selectedCompany = useSelector(state => state.selectedCompany);
   const [refreshing, setRefreshing] = useState(false);
-
-
 
   useEffect(() => {
     const fetchInitialSelectedCompany = async () => {
@@ -141,7 +139,7 @@ const HomeAllProducts = ({ navigation }) => {
   }, [companyId]);
 
   const onRefresh = async () => {
-    console.log("Refreshing in prod ..........")
+    console.log('Refreshing in prod ..........');
     setRefreshing(true);
     setPageNo(1);
     setSearchKey(0);
@@ -153,7 +151,6 @@ const HomeAllProducts = ({ navigation }) => {
     }
     setRefreshing(false);
   };
-
 
   // useEffect(() => {
   //   const unsubscribe = navigation.addListener('focus', () => {
@@ -168,42 +165,40 @@ const HomeAllProducts = ({ navigation }) => {
     const unsubscribe = navigation.addListener('focus', () => {
       setSearchQuery('');
       setShowSearchInput(false);
-      setSelectedSearchOption(null);
+      // setSelectedSearchOption(null);
       setDropdownVisible(false);
-      setPageNo(1); 
+      setPageNo(1);
       setIsLoading(true); // Ensure loading state is set before fetching
-      
+
       if (companyId) {
         getAllProducts(companyId, true, 0).finally(() => {
           setIsLoading(false); // Set loading to false after fetch completes
         });
       }
-  
+
       setSearchFilterFlag(false);
-      
+
       // Scroll to the top when coming back to this screen
       if (flatListRef.current) {
-        flatListRef.current.scrollToOffset({ offset: 0, animated: false });
+        flatListRef.current.scrollToOffset({offset: 0, animated: false});
       }
     });
     return unsubscribe;
   }, [navigation, companyId]);
-  
-  
 
   const searchAPI = async (reset = false, page = 1) => {
     const apiUrl = `${global?.userData?.productURL}${API.SEARCH_ALL_PRODUCTS}`;
     let requestBody = {
-      "pageNo": reset ? 1 : String(page),
-      "pageSize": '15',
-      "categoryId": "",
-      "companyId": companyId,
-      "searchKey": searchKey,
-      "searchValue": searchQuery,
-    }
-  
-    console.log("searchAPI===> ", apiUrl, requestBody);
-  
+      pageNo: reset ? 1 : String(page),
+      pageSize: '15',
+      categoryId: '',
+      companyId: companyId,
+      searchKey: searchKey,
+      searchValue: searchQuery,
+    };
+
+    console.log('searchAPI===> ', apiUrl, requestBody);
+
     try {
       setIsLoading(true);
       const response = await axios.post(apiUrl, requestBody, {
@@ -212,21 +207,21 @@ const HomeAllProducts = ({ navigation }) => {
           Authorization: `Bearer ${global?.userData?.token?.access_token}`,
         },
       });
-  
-      console.log("response data==> ", response?.data);
+
+      console.log('response data==> ', response?.data);
       const fetchedData = response?.data?.content || [];
-      setSelectedDetails((prevDetails) =>
-        reset ? fetchedData : [...prevDetails, ...fetchedData]
+      setSelectedDetails(prevDetails =>
+        reset ? fetchedData : [...prevDetails, ...fetchedData],
       );
       setTotalPages(response.data?.totalPages);
     } catch (error) {
       console.error('Error:', error);
     } finally {
       setIsLoading(false);
-      setStopLoad(true);  // Stop loading once the search is completed
+      setStopLoad(true); // Stop loading once the search is completed
     }
   };
-  
+
   const getAllProducts = async (companyId, reset = false, page = 1) => {
     setIsLoading(true);
     setStopLoad(false);
@@ -243,7 +238,7 @@ const HomeAllProducts = ({ navigation }) => {
         companyId: companyId,
       };
 
-      console.log("fetch products ==> ", requestData?.pageNo);
+      console.log('fetch products ==> ', requestData?.pageNo);
       const response = await axios.post(apiUrl, requestData, {
         headers: {
           Authorization: `Bearer ${global?.userData?.token?.access_token}`,
@@ -288,61 +283,59 @@ const HomeAllProducts = ({ navigation }) => {
   };
 
   const renderProductItem = useCallback(
-    ({ item }) => (
+    ({item}) => (
       <ProductItem item={item} navigation={navigation} openModal={openModal} />
     ),
     [navigation],
   );
 
-
-
   const handleEndReached = () => {
     if (stopLoad || isFetching) return;
-    console.log("handleEndReached", pageNo, totalPages);
+    console.log('handleEndReached', pageNo, totalPages);
     if (searchFilterFlag) {
       if (pageNo < totalPages) {
-        searchAPI(false, pageNo + 1 );
+        searchAPI(false, pageNo + 1);
         setPageNo(prevPage => prevPage + 1);
       }
     } else {
       if (pageNo < totalPages) {
         setPageNo(prevPage => prevPage + 1);
-        getAllProducts(companyId, false, pageNo + 1)
+        getAllProducts(companyId, false, pageNo + 1);
       }
     }
   };
 
   const handleSearch = () => {
     if (searchKey === 0) {
-      Alert.alert('Please select an option from the dropdown before searching.');
+      Alert.alert(
+        'Please select an option from the dropdown before searching.',
+      );
       return;
     }
     if (searchQuery?.trim()?.length === 0) {
       return;
     }
-  
+
     setSearchFilterFlag(true);
     setPageNo(1);
-    setStopLoad(false);  // Start loading
+    setStopLoad(false); // Start loading
     searchAPI(true, 1);
   };
-  
+
   const handleScroll = event => {
     setScrollPosition(event.nativeEvent.contentOffset.y);
   };
 
-
   const searchOption = [
     // { label: 'Select', value: 0 },
-    { label: 'Style Name', value: 1 },
-    { label: 'Color', value: 2 },
-    { label: 'Price', value: 3 },
-    { label: 'MRP', value: 4 },
-    { label: 'Size', value: 5 },
-    { label: 'Type', value: 6 },
-    { label: 'Fabric Quality', value:  7},
-    { label: 'GSM', value:  8},
-
+    {label: 'Style Name', value: 1},
+    {label: 'Color', value: 2},
+    {label: 'Price', value: 3},
+    {label: 'MRP', value: 4},
+    {label: 'Size', value: 5},
+    {label: 'Type', value: 6},
+    {label: 'Fabric Quality', value: 7},
+    {label: 'GSM', value: 8},
   ];
 
   const handleDropdownSelect = option => {
@@ -358,27 +351,50 @@ const HomeAllProducts = ({ navigation }) => {
 
   const handleSearchInputChange = query => {
     setSearchQuery(query);
-      if (query.trim() === '') {
+    if (query.trim() === '') {
       onRefresh();
     }
   };
 
-
   return (
     <View style={styles.container}>
-
-
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 10, marginVertical: 10 }}>
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          paddingHorizontal: 10,
+          marginVertical: 10,
+        }}>
         <View style={styles.searchContainer}>
-          <TextInput
-            style={styles.searchInput}
-            value={searchQuery}
-            onChangeText={handleSearchInputChange}
-            placeholder="Search"
-            placeholderTextColor="#888"
-          />
-          <TouchableOpacity style={styles.dropdownButton} onPress={toggleDropdown}>
-            <Text style={{ color: "#000", marginRight: 5 }}>
+          {searchKey !== 3 && searchKey !== 4 && (
+            <TextInput
+              style={styles.searchInput}
+              value={searchQuery}
+              onChangeText={handleSearchInputChange}
+              placeholder="Search"
+              placeholderTextColor="#888"
+            />
+          )}
+          {(searchKey === 3 || searchKey === 4) && (
+            <View style={styles.minMaxContainer}>
+              <TextInput
+                placeholder="Min"
+                placeholderTextColor="#000"
+                style={styles.minMaxInput}
+              />
+              <TextInput
+                placeholder="Max"
+                placeholderTextColor="#000"
+                style={styles.MaxInput}
+              />
+            </View>
+          )}
+
+          <TouchableOpacity
+            style={styles.dropdownButton}
+            onPress={toggleDropdown}>
+            <Text style={{color: '#000', marginRight: 5}}>
               {searchKey ? selectedSearchOption : 'Select'}
             </Text>
             <Image
@@ -396,8 +412,11 @@ const HomeAllProducts = ({ navigation }) => {
         <View style={styles.dropdownContent1}>
           <ScrollView>
             {searchOption.map((option, index) => (
-              <TouchableOpacity style={styles.dropdownOption} key={`${option.value}_${index}`} onPress={() => handleDropdownSelect(option)}>
-                <Text style={{ color: '#000' }}>{option.label}</Text>
+              <TouchableOpacity
+                style={styles.dropdownOption}
+                key={`${option.value}_${index}`}
+                onPress={() => handleDropdownSelect(option)}>
+                <Text style={{color: '#000'}}>{option.label}</Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
@@ -406,11 +425,11 @@ const HomeAllProducts = ({ navigation }) => {
 
       {isLoading && selectedDetails?.length === 0 ? (
         <ActivityIndicator
-          style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
+          style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}
           size="large"
           color="#390050"
         />
-      ) : (selectedDetails?.length === 0) ? (
+      ) : selectedDetails?.length === 0 ? (
         <Text style={styles.noCategoriesText}>Sorry, no results found!</Text>
       ) : (
         <FlatList
@@ -478,7 +497,7 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     paddingLeft: 10,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.1,
     shadowRadius: 5,
     elevation: 4,
@@ -538,7 +557,7 @@ const styles = StyleSheet.create({
   },
   productList: {
     paddingTop: 10,
-    paddingBottom: 70
+    paddingBottom: 70,
   },
   productItem: {
     flex: 1,
@@ -590,6 +609,28 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     padding: 5,
+  },
+  minMaxInput: {
+    borderRightWidth: 1,
+    padding: 5,
+    marginHorizontal: 5,
+    width: 50,
+    borderRadius: 10,
+    width: 80,
+    marginRight: 14,
+    marginLeft:14
+  },
+  MaxInput: {
+    borderRightWidth: 1,
+    padding: 5,
+    marginHorizontal: 5,
+    width: 50,
+    borderRadius: 10,
+    width: 80,
+  },
+  minMaxContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 });
 

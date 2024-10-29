@@ -445,10 +445,10 @@ const DistributorGrn = () => {
         <Text style={styles.dateText}>Order Date</Text>
       </View>
       {loading ? (
-        <ActivityIndicator size="large" color="#0000ff" style={styles.activityIndicator} />
-      ) : filteredOrdersList.length === 0 ? (
-        <Text style={styles.noResultsText}>Sorry, no results found!</Text>
-      ) : (
+      <ActivityIndicator size="large" color="#0000ff" style={styles.activityIndicator} />
+    ) : (filteredOrdersList.length === 0 || filteredOrdersList.every(item => item === null)) ? (
+      <Text style={styles.noResultsText}>Sorry, no results found!</Text>
+    ) : (
         // <FlatList
         //   data={filteredOrdersList}
         //   renderItem={renderOrderItem}

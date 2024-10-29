@@ -368,7 +368,7 @@ const Categories = ({ navigation }) => {
       setSearchQuery('');
       setShowSearchInput(false);
       setDropdownVisible(false);
-      setSelectedSearchOption(null);
+      // setSelectedSearchOption(null);
       // Reset orders and fetch new data
       setFrom(0); // Reset the starting index
       setTo(15); // Reset the ending index

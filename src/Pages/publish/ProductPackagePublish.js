@@ -135,7 +135,6 @@ const ProductPackagePublish = () => {
     }
 
     selectedId === '1' ? getisValidDistributors() : getisValidCustomer();
-    toggleModal();
   };
   const getisValidCustomer = async () => {
     const apiUrl = `${global?.userData?.productURL}${API.VALIDATIONCUSTOMER}/${inputValues.firstName}/${companyId}`;

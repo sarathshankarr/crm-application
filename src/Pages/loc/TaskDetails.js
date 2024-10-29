@@ -468,29 +468,87 @@ const TaskDetails = ({ route }) => {
     setShipFromToClickedStatus(false);
   };
 
-  const handleTakeSelfie = () => {
-    // if ((parseFloat(distance) * 1000) > 100) {
-    //   Alert.alert(
-    //     // 'You must be within 100 meters of the destination to upload a selfie',
-    //     `Distance travelled : ${parseFloat(distance) * 1000}`,
-    //   );
-    //   return;
-    // }
+  // const handleTakeSelfie = () => {
+  //   // if ((parseFloat(distance) * 1000) > 100) {
+  //   //   Alert.alert(
+  //   //     // 'You must be within 100 meters of the destination to upload a selfie',
+  //   //     `Distance travelled : ${parseFloat(distance) * 1000}`,
+  //   //   );
+  //   //   return;
+  //   // }
+  //   if (
+  //     (distance.includes('km')
+  //       ? parseFloat(distance) * 1000
+  //       : parseFloat(distance)) > 100
+  //   ) {
+  //     Alert.alert(
+  //       // `Distance travelled: ${distance.includes('km') ? parseFloat(distance) * 1000 : parseFloat(distance)} meters`,
+  //       'Warning',
+  //       'You must be within 100 meters of the destination to upload a selfie',
+  //     );
+  //     return;
+  //   }
+
+  //   const MAX_SELFIES = 1;
+
+  //   if (selfieImages.length >= MAX_SELFIES) {
+  //     Alert.alert(
+  //       'Limit Reached',
+  //       `You can only upload up to ${MAX_SELFIES} selfies.`,
+  //     );
+  //     return;
+  //   }
+
+  //   ImagePicker.openCamera({
+  //     cropping: true,
+  //     mediaType: 'photo',
+  //     compressImageQuality: 0.8,
+  //   })
+  //     .then(image => {
+  //       const newSelfie = {
+  //         uri: image.path,
+  //         width: image.width,
+  //         height: image.height,
+  //         mime: image.mime,
+  //       };
+
+  //       if (selfieImages.length + 1 > MAX_SELFIES) {
+  //         Alert.alert(
+  //           'Limit Exceeded',
+  //           `You can only upload up to ${MAX_SELFIES} selfies.`,
+  //         );
+  //         return;
+  //       }
+
+  //       setSelfieImages(prevImages => [...prevImages, newSelfie]);
+  //     })
+  //     .catch(error => {
+  //       if (error.code === 'E_PICKER_CANCELLED') {
+  //       } else {
+  //         console.error('Image capture error:', error);
+  //         Alert.alert('Error', 'Failed to capture image.');
+  //       }
+  //     });
+  // };
+
+
+
+  const handleTakeSelfie = async () => {
+    // Check distance logic
     if (
       (distance.includes('km')
         ? parseFloat(distance) * 1000
         : parseFloat(distance)) > 100
     ) {
       Alert.alert(
-        // `Distance travelled: ${distance.includes('km') ? parseFloat(distance) * 1000 : parseFloat(distance)} meters`,
         'Warning',
         'You must be within 100 meters of the destination to upload a selfie',
       );
       return;
     }
-
+  
     const MAX_SELFIES = 1;
-
+  
     if (selfieImages.length >= MAX_SELFIES) {
       Alert.alert(
         'Limit Reached',
@@ -498,39 +556,44 @@ const TaskDetails = ({ route }) => {
       );
       return;
     }
-
-    ImagePicker.openCamera({
-      cropping: true,
-      mediaType: 'photo',
-      compressImageQuality: 0.8,
-    })
-      .then(image => {
-        const newSelfie = {
-          uri: image.path,
-          width: image.width,
-          height: image.height,
-          mime: image.mime,
-        };
-
-        if (selfieImages.length + 1 > MAX_SELFIES) {
-          Alert.alert(
-            'Limit Exceeded',
-            `You can only upload up to ${MAX_SELFIES} selfies.`,
-          );
-          return;
-        }
-
-        setSelfieImages(prevImages => [...prevImages, newSelfie]);
-      })
-      .catch(error => {
-        if (error.code === 'E_PICKER_CANCELLED') {
-        } else {
-          console.error('Image capture error:', error);
-          Alert.alert('Error', 'Failed to capture image.');
-        }
+  
+    try {
+      // Open the camera
+      const image = await ImagePicker.openCamera({
+        cropping: true,
+        mediaType: 'photo',
+        compressImageQuality: 0.8,
+        useFrontCamera: true,  // Use front camera for selfie
       });
+  
+      const newSelfie = {
+        uri: image.path, 
+        width: image.width,
+        height: image.height,
+        mime: image.mime,
+      };
+  
+      if (selfieImages.length + 1 > MAX_SELFIES) {
+        Alert.alert(
+          'Limit Exceeded',
+          `You can only upload up to ${MAX_SELFIES} selfies.`,
+        );
+        return;
+      }
+  
+      setSelfieImages(prevImages => [...prevImages, newSelfie]);
+    } catch (error) {
+      // Handle specific error cases
+      if (error.code === 'E_PICKER_CANCELLED') {
+        // User canceled image capture
+      } else {
+        console.error('Image capture error:', error);
+        Alert.alert('Error', 'Failed to capture image.');
+      }
+    }
   };
 
+  
   const removeImage = (index, imageType) => {
     if (imageType === 'selfie') {
       setSelfieImages(selfieImages.filter((_, i) => i !== index));

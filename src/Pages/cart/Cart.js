@@ -276,7 +276,6 @@ const Cart = () => {
     }
 
     isEnabled ? getisValidCustomer() : getisValidDistributors();
-    toggleModal();
   };
 
   useEffect(() => {
