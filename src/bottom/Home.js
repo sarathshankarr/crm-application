@@ -60,12 +60,11 @@ const CustomTabBar = ({state, descriptors, route}) => {
   };
 
   const handleCompanySelect = company => {
-    setSelectedCompany({ ...company }); // Create a new object reference
+    setSelectedCompany({...company}); // Create a new object reference
     setCompanyLogo(company.companyLogo); // Set the company logo
     setDropdownVisible(false);
-    dispatch({ type: SET_SELECTED_COMPANY, payload: company });
+    dispatch({type: SET_SELECTED_COMPANY, payload: company});
   };
-  
 
   const toggleDropdown = () => {
     if (
@@ -146,7 +145,11 @@ const CustomTabBar = ({state, descriptors, route}) => {
             loggedInUser.compList &&
             loggedInUser.compList.length > 1 && (
               <Image
-                style={{height: 10, width: 15, marginRight: 5}}
+                style={{
+                  height: 10,
+                  width: 15,
+                  marginRight: Platform.OS === 'ios' ? 30 : 5,
+                }}
                 source={require('../../assets/dropdown.png')}
               />
             )}
@@ -280,10 +283,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderRadius: 10,
     elevation: 5,
-    marginTop: 50,
+    marginTop: Platform.OS === 'ios' ? 105 : 50,
+    position: 'absolute',
+    maxHeight: 130,
   },
   modalBackground: {
-    maxHeight: 160,
     flex: 1,
     alignItems: 'center',
   },

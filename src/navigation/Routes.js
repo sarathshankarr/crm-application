@@ -45,6 +45,7 @@ import PackageDetail from '../Pages/product/PackageDetail';
 import MailConfirmation from '../Pages/forgetPassword/MailConfirmation';
 import ConfirmPassword from '../Pages/forgetPassword/ConfirmPassword';
 import EnterOtp from '../Pages/forgetPassword/EnterOtp';
+import ImageSliderPackages from '../components/ImageSliderPackages';
 
 const Stack = createNativeStackNavigator();
 
@@ -324,6 +325,11 @@ const Routes = () => {
       <Stack.Screen
         name="EnterOtp"
         component={EnterOtp}
+        options={{ headerShown: false }}
+      />
+       <Stack.Screen
+        name="ImageSliderPackages"
+        component={ImageSliderPackages}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

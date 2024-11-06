@@ -1,44 +1,71 @@
-import React, {useRef} from 'react';
+import React, { useRef, useState } from 'react';
 import {
   StyleSheet,
   View,
   ScrollView,
   Animated,
   Dimensions,
-  Image,
 } from 'react-native';
 import FastImage from 'react-native-fast-image';
 
-const {width, height} = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 const cardWidth = width - 20;
 const cardMargin = (width - cardWidth) / 2;
 
-const ImageSlider = ({imageUrls}) => {
-  const animate = useRef(new Animated.Value(0)).current;
+const ImageSlider = ({ fullImageUrls }) => {
+  const scrollX = useRef(new Animated.Value(0)).current;
 
   return (
-    <View style={styles.container}>
+    <View style={styles.sliderContainer}>
       <ScrollView
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
-        decelerationRate="fast"
         onScroll={Animated.event(
-          [{nativeEvent: {contentOffset: {x: animate}}}],
-          {useNativeDriver: false},
-        )}>
-        {imageUrls.map((url, index) => (
-          <View key={index} style={styles.card}>
-            <FastImage source={{uri: url}} style={styles.image} />
+          [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+          { useNativeDriver: false },
+        )}
+        scrollEventThrottle={16}
+      >
+        {fullImageUrls?.length > 0 ? (
+          fullImageUrls.map((url, index) => (
+            <View key={index} style={styles.card}>
+              <FastImage 
+                source={{ uri: url }} 
+                style={styles.image}
+                resizeMode={FastImage.resizeMode.contain}
+                onLoadStart={() => {
+                  // Optionally show a placeholder while loading
+                  console.log('Image loading started');
+                }}
+                onLoad={() => {
+                  // Handle the image load success if needed
+                  console.log('Image loaded:', url);
+                }}
+              />
+            </View>
+          ))
+        ) : (
+          <View style={styles.card}>
+            <FastImage 
+              source={require('../../assets/NewNoImage.jpg')} // Placeholder image
+              style={styles.image}
+              resizeMode={FastImage.resizeMode.contain}
+            />
           </View>
-        ))}
+        )}
       </ScrollView>
 
       <View style={styles.indicator}>
-        {imageUrls.map((_, i) => {
-          const translateX = animate.interpolate({
-            inputRange: [-width + i * width, width * i, width + i * width],
-            outputRange: [-20, 0, 20],
+        {fullImageUrls?.map((_, i) => {
+          const translateX = scrollX.interpolate({
+            inputRange: [
+              (i - 1) * width,
+              i * width,
+              (i + 1) * width,
+            ],
+            outputRange: [0, 10, 0],
+            extrapolate: 'clamp',
           });
 
           return (
@@ -46,7 +73,7 @@ const ImageSlider = ({imageUrls}) => {
               <Animated.View
                 style={[
                   styles.animatedDot,
-                  {transform: [{translateX: translateX}]},
+                  { transform: [{ translateX }] },
                 ]}
               />
             </View>
@@ -57,8 +84,9 @@ const ImageSlider = ({imageUrls}) => {
   );
 };
 
+
 const styles = StyleSheet.create({
-  container: {
+  sliderContainer: {
     marginVertical: height / 50,
   },
   card: {
@@ -72,7 +100,6 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     resizeMode: 'contain',
-    marginTop:40
   },
   indicator: {
     flexDirection: 'row',
@@ -83,7 +110,7 @@ const styles = StyleSheet.create({
   dot: {
     height: 10,
     width: 10,
-    backgroundColor: '#fff',
+    backgroundColor: '#F09120',
     borderRadius: 5,
     marginHorizontal: 5,
     overflow: 'hidden',
@@ -91,9 +118,10 @@ const styles = StyleSheet.create({
   animatedDot: {
     height: 10,
     width: 10,
-    backgroundColor: 'green',
+    backgroundColor: 'gray',
     position: 'absolute',
   },
 });
 
 export default ImageSlider;
+

@@ -240,6 +240,7 @@ const PackingConformation = ({ route }) => {
                 updateStatusForNonCanceledItems(selectedStatus);
               }
               setTriggerUpdate(true);
+              navigation.goBack();
             },
           },
         ],

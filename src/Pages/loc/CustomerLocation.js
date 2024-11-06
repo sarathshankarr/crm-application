@@ -620,7 +620,9 @@ const CustomerLocation = ({ navigation }) => {
           checkOut: task.checkOut || null,
           locId: task.locId || null,
           changedLocation: task.changedLocation || null,
-          changedLocFlag: task.changedLocFlag || 0
+          changedLocFlag: task.changedLocFlag || 0,
+          changed_loc_latitude:task.changed_loc_latitude || null,
+          changed_loc_longitude:task.changed_loc_longitude || null
         }));
         // console.log('Response:', response.data[0]);
         setTasks(taskOptions);
@@ -735,6 +737,45 @@ const CustomerLocation = ({ navigation }) => {
   // };
 
 
+  // const createAddressString = task => {
+  //   const {
+  //     customerName = '',
+  //     houseNo = '',
+  //     street = '',
+  //     locationName = '',
+  //     locality = '',
+  //     cityOrTown = '',
+  //     state = '',
+  //     country = '',
+  //     pincode = '',
+  //     changedLocation = '',
+  //     changedLocFlag = 0
+  //   } = task;
+
+  //   // If changedLocFlag is 1, use changedLocation; otherwise, construct the full address
+  //   let finalLocation = '';
+
+  //   if (changedLocFlag === 1) {
+  //     finalLocation = changedLocation;
+  //   } else {
+  //     finalLocation = [
+  //       customerName,
+  //       houseNo,
+  //       street,
+  //       locationName,
+  //       locality,
+  //       cityOrTown,
+  //       state,
+  //       country,
+  //       pincode
+  //     ].filter(part => part.trim()).join(', ');
+  //   }
+
+  //   console.log("Address:", finalLocation);
+
+  //   return finalLocation;
+  // };
+
   const createAddressString = task => {
     const {
       customerName = '',
@@ -747,14 +788,21 @@ const CustomerLocation = ({ navigation }) => {
       country = '',
       pincode = '',
       changedLocation = '',
-      changedLocFlag = 0
+      changedLocFlag = 0,
+      changed_loc_latitude = null,
+      changed_loc_longitude = null
     } = task;
-
-    // If changedLocFlag is 1, use changedLocation; otherwise, construct the full address
+  
+    // If changedLocFlag is 1, use the coordinates; otherwise, construct the full address
     let finalLocation = '';
-
+  
     if (changedLocFlag === 1) {
-      finalLocation = changedLocation;
+      if (changed_loc_latitude !== null && changed_loc_longitude !== null) {
+        finalLocation = ` ${changed_loc_latitude}, ${changed_loc_longitude}`;
+      } else {
+        // Fallback if latitude/longitude are missing
+        finalLocation = 'Location coordinates not available';
+      }
     } else {
       finalLocation = [
         customerName,
@@ -768,13 +816,12 @@ const CustomerLocation = ({ navigation }) => {
         pincode
       ].filter(part => part.trim()).join(', ');
     }
-
+  
     console.log("Address:", finalLocation);
-
+  
     return finalLocation;
   };
-
-
+  
 
   const geocodeAddress = async address => {
     const apiKey = 'AIzaSyBSKRShklVy5gBNSQzNSTwpXu6l2h8415M';

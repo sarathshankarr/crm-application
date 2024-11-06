@@ -337,6 +337,46 @@ const TaskDetails = ({ route }) => {
 
 
 
+  // const createAddressString = task => {
+  //   const {
+  //     customerName = '',
+  //     houseNo = '',
+  //     street = '',
+  //     locationName = '',
+  //     locality = '',
+  //     cityOrTown = '',
+  //     state = '',
+  //     country = '',
+  //     pincode = '',
+  //     changedLocation = '',
+  //     changedLocFlag = 0
+  //   } = task;
+
+  //   // If changedLocFlag is 1, use changedLocation; otherwise, construct the full address
+  //   let finalLocation = '';
+
+  //   if (changedLocFlag === 1) {
+  //     finalLocation = changedLocation;
+  //   } else {
+  //     finalLocation = [
+  //       customerName,
+  //       houseNo,
+  //       street,
+  //       locationName,
+  //       locality,
+  //       cityOrTown,
+  //       state,
+  //       country,
+  //       pincode
+  //     ].filter(part => part.trim()).join(', ');
+  //   }
+
+  //   console.log("Address:", finalLocation);
+
+  //   return finalLocation;
+  // };
+
+  
   const createAddressString = task => {
     const {
       customerName = '',
@@ -349,14 +389,21 @@ const TaskDetails = ({ route }) => {
       country = '',
       pincode = '',
       changedLocation = '',
-      changedLocFlag = 0
+      changedLocFlag = 0,
+      changed_loc_latitude = null,
+      changed_loc_longitude = null
     } = task;
-
-    // If changedLocFlag is 1, use changedLocation; otherwise, construct the full address
+  
+    // If changedLocFlag is 1, use the coordinates; otherwise, construct the full address
     let finalLocation = '';
-
+  
     if (changedLocFlag === 1) {
-      finalLocation = changedLocation;
+      if (changed_loc_latitude !== null && changed_loc_longitude !== null) {
+        finalLocation = ` ${changed_loc_latitude}, ${changed_loc_longitude}`;
+      } else {
+        // Fallback if latitude/longitude are missing
+        finalLocation = 'Location coordinates not available';
+      }
     } else {
       finalLocation = [
         customerName,
@@ -370,9 +417,9 @@ const TaskDetails = ({ route }) => {
         pincode
       ].filter(part => part.trim()).join(', ');
     }
-
+  
     console.log("Address:", finalLocation);
-
+  
     return finalLocation;
   };
 
@@ -875,6 +922,51 @@ const TaskDetails = ({ route }) => {
     }
   }, [checkIn, checkOut]);
 
+  // const PunchInPunchOut = async () => {
+  //   const apiUrl = `${global?.userData?.productURL}${API.CHECK_IN_CHECK_OUT}`;
+  //   const now = new Date();
+  //   const formattedDateTime = formatDateTime(now, 'full');
+
+  //   const payload = isSignedIn
+  //     ? {
+  //       id: id,
+  //       checkOut: formattedDateTime,
+  //       check_out_latitude: mLat,
+  //       check_out_longitude: mLong,
+  //       type: 1,
+  //       userId: userId,
+  //       t_company_id: companyId,
+  //       taskName: label,
+  //     }
+  //     : {
+  //       id: id,
+  //       checkIn: formattedDateTime,
+  //       check_in_latitude: mLat,
+  //       check_in_longitude: mLong,
+  //       type: 0,
+  //       userId: userId,
+  //       t_company_id: companyId,
+  //       taskName: label,
+  //     };
+
+  //   console.log('payload==============>', payload);
+
+  //   try {
+  //     const response = await axios.put(apiUrl, payload, {
+  //       headers: {
+  //         Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+  //         'Content-Type': 'application/json',
+  //       },
+  //     });
+
+  //     console.log('Response:', response.data);
+  //     // Optionally handle the response and update the state
+  //     setIsSignedIn(!isSignedIn); // Toggle the signed-in state
+  //   } catch (error) {
+  //     console.error('Error:', error);
+  //     Alert.alert('Error', 'Failed to punch in/out. Please try again.');
+  //   }
+  // };
   const PunchInPunchOut = async () => {
     const apiUrl = `${global?.userData?.productURL}${API.CHECK_IN_CHECK_OUT}`;
     const now = new Date();
@@ -882,25 +974,25 @@ const TaskDetails = ({ route }) => {
 
     const payload = isSignedIn
       ? {
-        id: id,
-        checkOut: formattedDateTime,
-        check_out_latitude: mLat,
-        check_out_longitude: mLong,
-        type: 1,
-        userId: userId,
-        t_company_id: companyId,
-        taskName: label,
-      }
+          id: id,
+          checkOut: formattedDateTime,
+          check_out_latitude: mLat,
+          check_out_longitude: mLong,
+          type: 1,
+          userId: userId,
+          t_company_id: companyId,
+          taskName: label,
+        }
       : {
-        id: id,
-        checkIn: formattedDateTime,
-        check_in_latitude: mLat,
-        check_in_longitude: mLong,
-        type: 0,
-        userId: userId,
-        t_company_id: companyId,
-        taskName: label,
-      };
+          id: id,
+          checkIn: formattedDateTime,
+          check_in_latitude: mLat,
+          check_in_longitude: mLong,
+          type: 0,
+          userId: userId,
+          t_company_id: companyId,
+          taskName: label,
+        };
 
     console.log('payload==============>', payload);
 
@@ -913,13 +1005,34 @@ const TaskDetails = ({ route }) => {
       });
 
       console.log('Response:', response.data);
-      // Optionally handle the response and update the state
-      setIsSignedIn(!isSignedIn); // Toggle the signed-in state
+
+      // Toggle the signed-in state (Check-in or Check-out)
+      setIsSignedIn(!isSignedIn);
+
+      // Reload the page after check-in/out is successful
+      navigation.replace('TaskDetails', {
+        customerName,
+        locationName,
+        state,
+        status,
+        dueDateStr,
+        label,
+        id,
+        desc,
+        task,
+        distance,
+        traveledDistance,
+        checkIn: payload.checkIn || checkIn,
+        checkOut: payload.checkOut || checkOut,
+        locId,
+      });
+
     } catch (error) {
       console.error('Error:', error);
       Alert.alert('Error', 'Failed to punch in/out. Please try again.');
     }
   };
+
 
   return (
     <SafeAreaView style={styles.container}>

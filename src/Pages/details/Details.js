@@ -39,7 +39,8 @@ const Details = ({ route }) => {
   const [loading, setLoading] = useState(false);
   const [imageUrls, setImageUrls] = useState([]); // New state for image URLs
   const [stylesData, setStylesData] = useState([]);
-  
+  const [fullImageUrls, setFullImageUrls] = useState([]);
+
   const openModal = item => {
     if (item && item.styleId) {
       setSelectedItem(item);
@@ -62,6 +63,7 @@ const Details = ({ route }) => {
   },[])
 
  
+ 
   const getAllImages = () => {
     setLoading(true);
     const apiUrl = `${global?.userData?.productURL}${API.GET_ALL_IMAGES}/${item.styleId}`;
@@ -74,13 +76,13 @@ const Details = ({ route }) => {
       })
       .then(response => {
         if (response?.data?.response?.stylesList?.length > 0) {
-          // Assuming the first style contains the relevant images
           const fetchedStyle = response?.data?.response?.stylesList[0];
           
-          // Check if imageUrls array exists
-          if (fetchedStyle.imageUrls && fetchedStyle?.imageUrls?.length > 0) {
-            // Set image URLs directly from API response
-            setImageUrls(fetchedStyle?.imageUrls);
+          if (fetchedStyle.imageUrls && fetchedStyle.imageUrls.length > 0) {
+            // Load the first image immediately
+            setImageUrls([fetchedStyle.imageUrls[0]]);
+            setFullImageUrls(fetchedStyle.imageUrls);
+            console.log("Initial image URL loaded:", fetchedStyle.imageUrls[0]); 
           } else {
             console.error("No imageUrls found in the response.");
           }
@@ -94,17 +96,19 @@ const Details = ({ route }) => {
       .finally(() => {
         setLoading(false);
       });
-  };
+};
+
+
   
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollView}>
-      {loading ? (
-          <ActivityIndicator size="small" color="#0000ff" /> // Show ActivityIndicator when loading
-        ) : (
-          <ImageSlider imageUrls={imageUrls.length > 0 ? imageUrls : []} />
-        )}
+       {loading ? (
+        <ActivityIndicator size="large" color="#0000ff" />
+      ) : (
+        <ImageSlider fullImageUrls={fullImageUrls} />
+      )}
         <View style={styles.tagsContainer}>
           <Text style={styles.detailLabel}>Style Name</Text>
           <Text style={styles.detailValue}>{item.styleName}</Text>

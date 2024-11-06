@@ -1933,7 +1933,7 @@ const Cart = () => {
                       <View style={{ flex: 0.2, marginLeft: 30, borderBottomWidth: 1, borderColor: "#000" }}>
                         <TextInput
                           style={{ color: '#000', alignSelf: "center" }}
-                          value={gstValues[index] !== undefined ? gstValues[index] : item.gst.toString()} // Using gstValues if edited, otherwise item.gst
+                          value={gstValues[index] !== undefined ? gstValues[index] : item?.gst?.toString()} // Using gstValues if edited, otherwise item.gst
                           onChangeText={text => handleGstChange(index, text)} // Update gstValues state
                           keyboardType="numeric" // Numeric input
                         />

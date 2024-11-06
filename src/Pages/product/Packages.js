@@ -18,7 +18,7 @@ import { useSelector } from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { debounce } from 'lodash';
-import ImageSlider from '../../components/ImageSlider';
+import ImageSliderPackages from '../../components/ImageSlider';
 
 const Packages = ({ navigation }) => {
   const selectedCompany = useSelector(state => state.selectedCompany);
@@ -427,7 +427,7 @@ const Packages = ({ navigation }) => {
             {imageLoading ? ( // Show ActivityIndicator while loading images
               <ActivityIndicator size="large" color="#0000ff" />
             ) : imageUrls.length > 0 ? ( // Check if imageUrls is not empty
-              <ImageSlider imageUrls={imageUrls} />
+              <ImageSliderPackages imageUrls={imageUrls} />
             ) : (
               <Image
                 style={{ height: '90%' , alignSelf:'center', marginTop:10}}
