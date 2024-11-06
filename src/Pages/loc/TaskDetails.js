@@ -78,6 +78,11 @@ const TaskDetails = ({ route }) => {
   const [isSignedIn, setIsSignedIn] = useState(false); // Initialize the state
 
   const [isChecked, setIsChecked] = useState(false);
+  const loginuser = useSelector(state => state.loggedInUser);
+
+  const isAdmin = loginuser?.role?.some(role => role.role.toLowerCase() === 'admin');
+  const isDistributor = loginuser?.role?.some(role => role.role.toLowerCase() === 'distributor');
+
 
   const selectedCompany = useSelector(state => state.selectedCompany);
   const goToFiles = id => {
