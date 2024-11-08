@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { View, StyleSheet, Modal, Text } from 'react-native';
 import Animated, { Easing, useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import Svg, { Path, Circle } from 'react-native-svg';
+import { formatDateIntoDMY } from '../Helper/Helper';
 
 const TickAnimationModal = ({ isVisible, onClose, punchStatus, currentTime, currentDate, currentDay }) => {
   const rotation = useSharedValue(0); // Controls tick rotation
@@ -58,7 +59,7 @@ const TickAnimationModal = ({ isVisible, onClose, punchStatus, currentTime, curr
           </View>
           {/* Display current date and time */}
           <View style={{flexDirection:"row",justifyContent:"space-between",marginVertical:5}}>
-          <Text style={styles.dateText}>{`${currentDate}`}</Text>
+          <Text style={styles.dateText}>{`${formatDateIntoDMY(currentDate)}`}</Text>
           <Text style={styles.timeText}>{currentTime}</Text>
           </View>
           <View style={{marginVertical:10}}>

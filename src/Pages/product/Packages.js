@@ -581,6 +581,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.8)',
   },
   closeIconContainer: {
+    borderWidth:2,
+    borderColor:"#000",
     position: 'absolute',
     top: 0,
     right: 5,

@@ -545,7 +545,7 @@ const Packorders = () => {
               <TouchableOpacity
                 style={style.closeButton}
                 onPress={() => setSelectedOrder(null)}>
-                <Text style={{color: '#fff'}}>Close</Text>
+                <Text style={{color: '#fff',paddingHorizontal:15}}>Close</Text>
               </TouchableOpacity>
             </View>
           </View>

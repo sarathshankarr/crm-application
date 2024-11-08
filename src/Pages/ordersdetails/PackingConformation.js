@@ -769,6 +769,7 @@ const styles = StyleSheet.create({
   },
   selectedOption: {
     backgroundColor: '#ddd',
+    borderRadius:10
   },
   scrollView: {
     maxHeight: 100, // Adjust height as needed

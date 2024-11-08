@@ -170,11 +170,11 @@ const PackageDetail = ({ route }) => {
       <View style={styles.styleContainer}>
         <View style={styles.imageContainer}>
           {imageUrl ? (
-            <Image style={styles.styleImage} source={{ uri: imageUrl }} />
+            <Image style={styles.styleImage} source={{ uri: imageUrl }} resizeMode="cover" />
           ) : (
             <Image
               style={styles.styleImage}
-              resizeMode="contain"
+              resizeMode="cover"
               source={require('../../../assets/NewNoImage.jpg')}
             />
           )}
@@ -380,6 +380,7 @@ const styles = StyleSheet.create({
     width: 180,
     height: 180,
     marginBottom: 5,
+    resizeMode:"cover"
   },
   innerFlatList: {
     flexDirection: 'row',
