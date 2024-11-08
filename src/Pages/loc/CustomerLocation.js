@@ -1047,7 +1047,7 @@ const CustomerLocation = ({ navigation }) => {
         }}>
         <Text
           style={{
-            color: '#000',
+            color: '#fff',
             fontWeight: 'bold',
             marginLeft: 10,
             fontSize: 17,

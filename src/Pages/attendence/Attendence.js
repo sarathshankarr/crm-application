@@ -17,6 +17,7 @@ import { useSelector } from 'react-redux';
 import { API } from '../../config/apiConfig';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { formatDateIntoDMY } from '../../Helper/Helper';
 
 const Attendance = () => {
   const userData = useSelector(state => state.loggedInUser);
@@ -435,7 +436,7 @@ const Attendance = () => {
             </Text>
             <Text style={styles.dateText}>
               {/* {isSignedIn ? signInDate : signOutDate} */}
-              {currentDate}
+              {formatDateIntoDMY(currentDate)}
             </Text>
           </View>
         </View>
@@ -475,7 +476,7 @@ const Attendance = () => {
           <View style={styles.modalContainer}>
             <View style={styles.swipeshead}>
               <Text style={styles.modalTitle}>Swipes</Text>
-              <Text style={styles.datetxt}>Date: {currentDate}</Text>
+              <Text style={styles.datetxt}>Date: {formatDateIntoDMY(currentDate)}</Text>
             </View>
 
             <View
@@ -484,8 +485,8 @@ const Attendance = () => {
                 justifyContent: 'space-between',
                 backgroundColor: 'lightgray',
               }}>
-              <Text style={styles.modalContent}>Punch In Time: </Text>
-              <Text style={styles.modalContent}>Punch Out Time:</Text>
+              <Text style={styles.modalContentpunchin}>Punch In Time </Text>
+              <Text style={styles.modalContentpunchout}>Punch Out Time</Text>
             </View>
             {punchRecords.length === 0 ? (
               <Text style={styles.noCategoriesText}>Sorry, no results found!</Text>
@@ -495,10 +496,10 @@ const Attendance = () => {
                 keyExtractor={(item, index) => index.toString()}
                 renderItem={({ item }) => (
                   <View style={styles.recordContainer}>
-                    <Text style={{ color: '#000', fontWeight: '500' }}>
+                    <Text style={{ color: '#000', fontWeight: '500',marginLeft:10}}>
                       {item?.punchIn ? extractTime(item?.punchIn) : 'N/A'}
                     </Text>
-                    <Text style={{ color: '#000', fontWeight: '500' }}>
+                    <Text style={{ color: '#000', fontWeight: '500',flex:0.5,marginRight:20}}>
                       {item?.punchOut ? extractTime(item?.punchOut) : 'N/A'}
                     </Text>
                   </View>
@@ -639,13 +640,21 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
   },
 
-  modalContent: {
+  modalContentpunchin: {
     fontSize: 16,
     marginVertical: 5,
     color: '#000',
     fontWeight: 'bold',
-    marginHorizontal: 10,
+    marginHorizontal:10,
     marginVertical: 5,
+  },
+  modalContentpunchout:{
+    fontSize: 16,
+    marginVertical: 5,
+    color: '#000',
+    fontWeight: 'bold',
+    marginVertical: 5,
+    marginRight:40
   },
   closeButton: {
     backgroundColor: '#dc3545',
@@ -661,10 +670,9 @@ const styles = StyleSheet.create({
   },
   recordContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginHorizontal: 10,
     marginVertical: 2,
-  },
+    justifyContent:"space-between",
+    },
   noCategoriesText: {
     textAlign: 'center',
     marginTop: 20,

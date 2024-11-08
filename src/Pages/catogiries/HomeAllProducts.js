@@ -270,7 +270,6 @@ const HomeAllProducts = ({navigation}) => {
       console.error('Error:', error);
     } finally {
       setIsLoading(false);
-      setStopLoad(true);
     }
   };
 

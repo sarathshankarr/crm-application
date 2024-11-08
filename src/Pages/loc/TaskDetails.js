@@ -23,6 +23,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import ImagePicker from 'react-native-image-crop-picker';
 import DocumentPicker from 'react-native-document-picker';
 import CustomCheckBox from '../../components/CheckBox';
+import { formatDateIntoDMY } from '../../Helper/Helper';
 
 const TaskDetails = ({ route }) => {
   const {
@@ -721,9 +722,64 @@ const TaskDetails = ({ route }) => {
       });
   };
 
+  // const handleDocumentPicker = async () => {
+  //   const MAX_DOCUMENT = 3;
+
+  //   if (documents.length >= MAX_DOCUMENT) {
+  //     Alert.alert(
+  //       'Limit Reached',
+  //       `You can only upload up to ${MAX_DOCUMENT} documents.`,
+  //     );
+  //     return;
+  //   }
+
+  //   try {
+  //     const res = await DocumentPicker.pick({
+  //       type: [
+  //         DocumentPicker.types.pdf,
+  //         DocumentPicker.types.doc,
+  //         DocumentPicker.types.docx,
+  //         DocumentPicker.types.allFiles,
+  //       ],
+  //     });
+
+  //     // Handle multiple document selections if res is an array
+  //     if (Array.isArray(res)) {
+  //       const newDocuments = [...documents, ...res];
+
+  //       if (newDocuments.length > MAX_DOCUMENT) {
+  //         Alert.alert(
+  //           'Limit Exceeded',
+  //           `You can only upload up to ${MAX_DOCUMENT} documents.`,
+  //         );
+  //         return;
+  //       }
+
+  //       setDocuments(newDocuments);
+  //     } else {
+  //       // Handle single document selection
+  //       if (documents.length + 1 > MAX_DOCUMENT) {
+  //         Alert.alert(
+  //           'Limit Exceeded',
+  //           `You can only upload up to ${MAX_DOCUMENT} documents.`,
+  //         );
+  //         return;
+  //       }
+
+  //       setDocuments(prevDocuments => [...prevDocuments, res]);
+  //     }
+  //   } catch (error) {
+  //     if (DocumentPicker.isCancel(error)) {
+  //     } else {
+  //       console.error('Error picking document:', error);
+  //     }
+  //   }
+  // };
+
   const handleDocumentPicker = async () => {
     const MAX_DOCUMENT = 3;
-
+    const SUPPORTED_TYPES = ['pdf', 'doc', 'docx'];
+  
     if (documents.length >= MAX_DOCUMENT) {
       Alert.alert(
         'Limit Reached',
@@ -731,7 +787,7 @@ const TaskDetails = ({ route }) => {
       );
       return;
     }
-
+  
     try {
       const res = await DocumentPicker.pick({
         type: [
@@ -741,40 +797,45 @@ const TaskDetails = ({ route }) => {
           DocumentPicker.types.allFiles,
         ],
       });
-
-      // Handle multiple document selections if res is an array
-      if (Array.isArray(res)) {
-        const newDocuments = [...documents, ...res];
-
-        if (newDocuments.length > MAX_DOCUMENT) {
+  
+      // Process the selected documents
+      const selectedDocs = Array.isArray(res) ? res : [res];
+  
+      for (let doc of selectedDocs) {
+        const fileType = doc.name?.split('.').pop()?.toLowerCase();
+  
+        // Check if the file type is supported
+        if (!fileType || !SUPPORTED_TYPES.includes(fileType)) {
           Alert.alert(
-            'Limit Exceeded',
-            `You can only upload up to ${MAX_DOCUMENT} documents.`,
+            'Unsupported File',
+            `The file ${doc.name} is not a supported type. Please upload a PDF, DOC, or DOCX file.`,
           );
-          return;
+          return; // Skip adding unsupported files
         }
-
-        setDocuments(newDocuments);
-      } else {
-        // Handle single document selection
-        if (documents.length + 1 > MAX_DOCUMENT) {
-          Alert.alert(
-            'Limit Exceeded',
-            `You can only upload up to ${MAX_DOCUMENT} documents.`,
-          );
-          return;
-        }
-
-        setDocuments(prevDocuments => [...prevDocuments, res]);
       }
+  
+      // Check if adding these documents exceeds the limit
+      const newDocuments = [...documents, ...selectedDocs];
+      if (newDocuments.length > MAX_DOCUMENT) {
+        Alert.alert(
+          'Limit Exceeded',
+          `You can only upload up to ${MAX_DOCUMENT} documents.`,
+        );
+        return;
+      }
+  
+      // Add documents to state if all files are supported and within limit
+      setDocuments(newDocuments);
     } catch (error) {
       if (DocumentPicker.isCancel(error)) {
+        // User canceled the document picker
       } else {
         console.error('Error picking document:', error);
       }
     }
   };
 
+  
   const handleImagePicker = () => {
     const MAX_IMAGES = 3;
 
@@ -1053,7 +1114,7 @@ const TaskDetails = ({ route }) => {
       <ScrollView>
         <View style={styles.navTabs}>
           <Text style={styles.txt}>Visits</Text>
-          <TouchableOpacity onPress={() => goToFiles(id)}>
+          <TouchableOpacity style={styles.visitsheader} onPress={() => goToFiles(id)}>
             <Text style={styles.txt}>Visited Files</Text>
           </TouchableOpacity>
         </View>
@@ -1135,12 +1196,12 @@ const TaskDetails = ({ route }) => {
           <View>
             {checkIn ? (
               <Text style={{ color: '#000', marginLeft: 10, fontWeight: 'bold' }}>
-                Check In : {formatDateTime(new Date(checkIn), 'date')} ({formatDateTime(new Date(checkIn), 'time')})
+                Check In : {formatDateIntoDMY(formatDateTime(new Date(checkIn), 'date'))} ({formatDateTime(new Date(checkIn), 'time')})
               </Text>
             ) : null}
             {checkOut ? (
               <Text style={{ color: '#000', marginLeft: 10, fontWeight: 'bold' }}>
-                Check Out : {formatDateTime(new Date(checkOut), 'date')} ({formatDateTime(new Date(checkOut), 'time')})
+                Check Out : {formatDateIntoDMY(formatDateTime(new Date(checkOut), 'date'))} ({formatDateTime(new Date(checkOut), 'time')})
               </Text>
             ) : null}
           </View>
@@ -1405,9 +1466,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#f0f0f0',
     marginVertical: 5,
   },
+  visitsheader:{
+    borderWidth:1,
+    marginRight:8,
+    paddingVertical:3,
+    borderRadius:10,
+    backgroundColor:"lightgray",
+  },
   txt: {
     color: '#000',
-    fontWeight: 'bold',
+    fontWeight:"400",
     fontSize: 18,
     marginHorizontal: 10,
   },
@@ -1527,10 +1595,10 @@ const styles = StyleSheet.create({
   },
   dropdownContainer: {
     position: 'absolute',
-    top: 36, // Adjust this value based on the height of your dropdown button
+    top: 47, // Adjust this value based on the height of your dropdown button
     right: 0,
     marginRight: 8,
-    width: '51%',
+    width: '45%',
     backgroundColor: 'white',
     borderWidth: 0.5,
     borderRadius: 10,
@@ -1548,6 +1616,7 @@ const styles = StyleSheet.create({
   },
   selectedOption: {
     backgroundColor: '#f0f0f0',
+    borderRadius:10
   },
   dropdownOptionText: {
     color: '#000',
