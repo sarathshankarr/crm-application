@@ -1160,7 +1160,7 @@ const Attendance = () => {
           <LinearGradient
             colors={
               isMorning
-                ? ['#e0f7fa', 'transparent']
+                ? ['#8be1f8', 'transparent']
                 : ['#cb65a4', 'transparent']
             }
             style={styles.gradientOverlay}
