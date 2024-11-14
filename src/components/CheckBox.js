@@ -16,15 +16,15 @@ const CustomCheckBox = ({ isChecked, onToggle }) => {
 
 const styles = StyleSheet.create({
   checkBoxContainer: {
-    width: 20,
-    height: 20,
+    width: 25,
+    height: 25,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 5,
   },
   checkbox: {
-    width: 20,
-    height: 20,
+    width: 24,
+    height: 24,
   },
 });
 

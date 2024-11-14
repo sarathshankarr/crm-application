@@ -109,6 +109,43 @@ const PackingOrders = () => {
     }
   };
 
+  // const getInvoice = async (orderId, pId) => {
+  //   const apiUrl = `${global?.userData?.productURL}${API.ADD_GENERATED_PDF}/${orderId}/P/${pId}/I`;
+  //   try {
+  //     const response = await axios.post(
+  //       apiUrl,
+  //       {},
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+  //           'Content-Type': 'application/json',
+  //         },
+  //       },
+  //     );
+  //     const pdfBase64 = response.data.body;
+
+  //     if (Platform.OS === 'android') {
+  //       const hasPermission = await requestStoragePermission();
+  //       if (!hasPermission) {
+  //         Alert.alert(
+  //           'Permission Denied',
+  //           'Storage permission is required to save the PDF.',
+  //         );
+  //         return;
+  //       }
+  //     }
+
+  //     pdfPath = `${ReactNativeBlobUtil.fs.dirs.DownloadDir}/Invoice_${orderId}_${pId}.pdf`;
+
+  //     await ReactNativeBlobUtil.fs.writeFile(pdfPath, pdfBase64, 'base64');
+  //     Alert.alert('PDF Downloaded', `PDF saved successfully at ${pdfPath}`);
+  //   } catch (error) {
+  //     console.error('Error generating or saving PDF:', error);
+  //     Alert.alert('Error', `Failed to generate or save PDF: ${error.message}`);
+  //   }
+  // };
+
+
   const getInvoice = async (orderId, pId) => {
     const apiUrl = `${global?.userData?.productURL}${API.ADD_GENERATED_PDF}/${orderId}/P/${pId}/I`;
     try {
@@ -123,7 +160,7 @@ const PackingOrders = () => {
         },
       );
       const pdfBase64 = response.data.body;
-
+  
       if (Platform.OS === 'android') {
         const hasPermission = await requestStoragePermission();
         if (!hasPermission) {
@@ -134,9 +171,12 @@ const PackingOrders = () => {
           return;
         }
       }
-
-      pdfPath = `${ReactNativeBlobUtil.fs.dirs.DownloadDir}/Invoice_${orderId}_${pId}.pdf`;
-
+  
+      const pdfPath =
+        Platform.OS === 'android'
+          ? `${ReactNativeBlobUtil.fs.dirs.DownloadDir}/Invoice_${orderId}_${pId}.pdf`
+          : `${ReactNativeBlobUtil.fs.dirs.DocumentDir}/Invoice_${orderId}_${pId}.pdf`;
+  
       await ReactNativeBlobUtil.fs.writeFile(pdfPath, pdfBase64, 'base64');
       Alert.alert('PDF Downloaded', `PDF saved successfully at ${pdfPath}`);
     } catch (error) {
@@ -144,6 +184,43 @@ const PackingOrders = () => {
       Alert.alert('Error', `Failed to generate or save PDF: ${error.message}`);
     }
   };
+  
+  // const getPackingList = async (orderId, pId) => {
+  //   const apiUrl = `${global?.userData?.productURL}${API.ADD_GENERATED_PDF}/${orderId}/P/${pId}/P`;
+  //   try {
+  //     const response = await axios.post(
+  //       apiUrl,
+  //       {},
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+  //           'Content-Type': 'application/json',
+  //         },
+  //       },
+  //     );
+  //     const pdfBase64 = response.data.body;
+
+  //     if (Platform.OS === 'android') {
+  //       const hasPermission = await requestStoragePermission();
+  //       if (!hasPermission) {
+  //         Alert.alert(
+  //           'Permission Denied',
+  //           'Storage permission is required to save the PDF.',
+  //         );
+  //         return;
+  //       }
+  //     }
+
+  //     pdfPath = `${ReactNativeBlobUtil.fs.dirs.DownloadDir}/Pakinglist_${orderId}_${pId}.pdf`;
+
+  //     await ReactNativeBlobUtil.fs.writeFile(pdfPath, pdfBase64, 'base64');
+  //     Alert.alert('PDF Downloaded', `PDF saved successfully at ${pdfPath}`);
+  //   } catch (error) {
+  //     console.error('Error generating or saving PDF:', error);
+  //     Alert.alert('Error', `Failed to generate or save PDF: ${error.message}`);
+  //   }
+  // };
+
 
   const getPackingList = async (orderId, pId) => {
     const apiUrl = `${global?.userData?.productURL}${API.ADD_GENERATED_PDF}/${orderId}/P/${pId}/P`;
@@ -159,20 +236,9 @@ const PackingOrders = () => {
         },
       );
       const pdfBase64 = response.data.body;
-
-      if (Platform.OS === 'android') {
-        const hasPermission = await requestStoragePermission();
-        if (!hasPermission) {
-          Alert.alert(
-            'Permission Denied',
-            'Storage permission is required to save the PDF.',
-          );
-          return;
-        }
-      }
-
-      pdfPath = `${ReactNativeBlobUtil.fs.dirs.DownloadDir}/Pakinglist_${orderId}_${pId}.pdf`;
-
+  
+      pdfPath = `${ReactNativeBlobUtil.fs.dirs.DocumentDir}/Pakinglist_${orderId}_${pId}.pdf`;
+  
       await ReactNativeBlobUtil.fs.writeFile(pdfPath, pdfBase64, 'base64');
       Alert.alert('PDF Downloaded', `PDF saved successfully at ${pdfPath}`);
     } catch (error) {
@@ -181,6 +247,7 @@ const PackingOrders = () => {
     }
   };
 
+  
   const renderOrder = ({ item }) => (
     <View style={{ borderBottomWidth: 1, borderBottomColor: '#ccc' }}>
 

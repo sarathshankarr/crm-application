@@ -450,7 +450,7 @@ const Login = () => {
               <TouchableOpacity onPress={togglePasswordVisibility}>
                 <Image
                   source={showPassword ? require('../../../assets/password.png') : require('../../../assets/lock.png')}
-                  style={styles.inputImage}
+                  style={styles.inputImagee}
                 />
               </TouchableOpacity>
             </View>
@@ -461,13 +461,13 @@ const Login = () => {
           <CustomCheckBox isChecked={isChecked} onToggle={handleCheckBoxToggle} />
           <Text style={{ padding: 5, color: '#000', color: "#000" }}>Remember Me</Text>
         </View> */}
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginBottom: 15 }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginBottom: 15,marginTop:10}}>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <CustomCheckBox isChecked={isChecked} onToggle={handleCheckBoxToggle} />
-                <Text style={{ padding: 5, color: '#000' }}>Remember Me</Text>
+                <Text style={{ padding: 5, color: '#000',fontSize:15,fontWeight:"500"}}>Remember Me</Text>
               </View>
               <TouchableOpacity onPress={handleForgotPassword}>
-                <Text style={{ padding: 5, color: '#000' }}>Forgot Password?</Text>
+                <Text style={{ padding: 5, color: '#000',fontSize:16,fontWeight:"500" }}>Forgot Password?</Text>
               </TouchableOpacity>
             </View>
             <TouchableOpacity
@@ -554,8 +554,13 @@ const styles = StyleSheet.create({
     marginTop: 30,
   },
   inputImage: {
-    width: 24,
-    height: 24,
+    width: 29,
+    height: 29,
+    marginRight: 10,
+  },
+  inputImagee:{
+    width: 29,
+    height: 29,
     marginRight: 10,
   },
   input: {

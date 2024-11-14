@@ -43,6 +43,14 @@
 	<string>We need access to your photo library to upload photos.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>We need access to save photos to your library.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>We need access to your location to provide location-based services in the app.</string>
+
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>We need access to your location to provide location-based services in the app.</string>
+
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>We need access to your location to provide location-based services in the app.</string>
 
 	<key>UIFileSharingEnabled</key>
 	<true/>
