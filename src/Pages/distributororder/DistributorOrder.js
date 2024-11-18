@@ -444,6 +444,7 @@ const styles = StyleSheet.create({
   headerText1: {
     fontWeight: 'bold',
     color: '#000',
+    marginTop:3
   },
   headerText2: {
     fontWeight: 'bold',

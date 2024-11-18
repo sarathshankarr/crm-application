@@ -104,6 +104,7 @@ const Cart = () => {
     borderRadius: 5,
     flex: 0.4,
     color: '#000', // Default text color
+    textAlign:"center"
   };
 
   useEffect(() => {
@@ -1857,7 +1858,7 @@ const Cart = () => {
                             <View style={{ flex: 0.4, marginLeft: 30 }}>
                               <Text style={{ color: '#000' }}>GST</Text>
                             </View>
-                            <View style={{ flex: 0.5, marginLeft: 10, marginRight: 10 }}>
+                            <View style={{ flex: 0.5, marginLeft: 5, marginRight: 8,}}>
                               <Text style={{ color: '#000' }}>GROSS PRICE</Text>
                             </View>
                             <TouchableOpacity
@@ -1966,11 +1967,12 @@ const Cart = () => {
                             backgroundColor: 'lightgray',
                             paddingVertical: 10,
                             borderRadius: 20,
+                            flex:1
                           }}>
-                          <View style={{ flex: 1, marginLeft: 20 }}>
+                          <View style={{ flex: 1.5, marginLeft: 18 }}>
                             <Text style={{ color: '#000' }}>Total</Text>
                           </View>
-                          <View style={{ flex: 1.5 }}>
+                          <View style={{ flex: 2.1,marginLeft:10 }}>
                             <Text style={{ color: '#000' }}>
                               {' '}
                               {calculateTotalQty(item.styleId, item.colorId)}
@@ -1979,7 +1981,7 @@ const Cart = () => {
                           {/* <View style={{ flex: 1 }}>
                           <Text style={{color:"#000"}}>Total Set: {calculateTotalItems(item.styleId, item.colorId)}</Text>
                         </View> */}
-                          <View style={{ flex: 0.9 }}>
+                          <View style={{ flex: 1.5,marginLeft:110 }}>
                             <Text style={{ color: '#000' }}>
                               {calculateTotalPrice(item.styleId, item.colorId)}
                             </Text>
@@ -2044,24 +2046,29 @@ const Cart = () => {
         </ScrollView>
 
         <View style={{ backgroundColor: '#faf7f6', borderTopWidth: 1 }}>
-          <View style={style.bottomContainer}>
-            <View style={style.row}>
-              <Text style={style.label1}>Total Qty</Text>
-              <Text style={style.value}>: {totalQty}</Text>
-            </View>
-            <View style={style.row}>
-              <Text style={style.label2}>Total Items</Text>
-              <Text style={style.value2}>: {totalItems}</Text>
-            </View>
-            <View style={style.row}>
-              <Text style={style.label3}>Total Gst</Text>
-              <Text style={style.value3}>: {totalGst}</Text>
-            </View>
-            <View style={style.row}>
-              <Text style={style.label3}>Total Amt</Text>
-              <Text style={style.value3}>: {totalAmount}</Text>
-            </View>
-          </View>
+        <View style={style.bottomContainer}>
+  <View style={style.row}>
+    <Text style={style.label1}>Total Qty</Text>
+    <Text style={style.colon}>:</Text>
+    <Text style={style.value}>{totalQty}</Text>
+  </View>
+  <View style={style.row}>
+    <Text style={style.label2}>Total Items</Text>
+    <Text style={style.colon}>:</Text>
+    <Text style={style.value2}>{totalItems}</Text>
+  </View>
+  <View style={style.row}>
+    <Text style={style.label3}>Total Gst</Text>
+    <Text style={style.colon}>:</Text>
+    <Text style={style.value3}>{totalGst}</Text>
+  </View>
+  <View style={style.row}>
+    <Text style={style.label3}>Total Amt</Text>
+    <Text style={style.colon}>:</Text>
+    <Text style={style.value3}>{totalAmount}</Text>
+  </View>
+</View>
+
 
           <TouchableOpacity
             onPress={PlaceAddOrder}
@@ -2522,33 +2529,56 @@ const style = StyleSheet.create({
     marginLeft: 10,
   },
   bottomContainer: {
-    alignItems: 'flex-start',
-    paddingVertical: 3,
-    backgroundColor: '#faf7f6',
-    alignSelf: 'center',
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 5,
-  },
-  label1: {
-    color: "#000"
-  },
-  label2: {
-    color: "#000"
+  alignItems: 'flex-start',
+  paddingVertical: 3,
+  backgroundColor: '#faf7f6',
+  alignSelf: 'center',
+},
 
-  },
-  label3: {
-    color: "#000"
-  },
+row: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  marginBottom: 5,
+},
+
+label1: {
+  color: "#000",
+  minWidth: 100, // Adjust width for alignment
+},
+
+label2: {
+  color: "#000",
+  minWidth: 100, // Adjust width for alignment
+},
+
+label3: {
+  color: "#000",
+  minWidth: 100, // Adjust width for alignment
+},
+
+colon: {
+  marginLeft: 5,  // Space between label and colon
+},
+
+value: {
+  marginLeft: 5, // Space between colon and value
+},
+
+value2: {
+  marginLeft: 5, // Space between colon and value
+},
+
+value3: {
+  marginLeft: 5, // Space between colon and value
+},
+
   value: {
-    marginLeft: 35,
+    marginLeft: 30,
     color: "#000",
     marginRight: 5
   },
   value2: {
-    marginLeft: 20,
+    marginLeft: 30,
     color: "#000",
     marginRight: 5
   },

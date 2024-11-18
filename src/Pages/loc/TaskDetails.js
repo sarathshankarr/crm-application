@@ -1311,13 +1311,13 @@ const TaskDetails = ({ route }) => {
               style={styles.uploadimg}
               onPress={handleTakeSelfie}>
               <Image
-                style={{ height: 80, width: 80 }}
+                style={{ height: 65, width: 65 }}
                 source={require('../../../assets/uploadsel.png')}
               />
               <Text
                 style={{
                   textAlign: 'center',
-                  marginVertical: 20,
+                  marginVertical: 15,
                   fontWeight: 'bold',
                   color: '#000',
                 }}>
@@ -1335,7 +1335,7 @@ const TaskDetails = ({ route }) => {
               <Text
                 style={{
                   textAlign: 'center',
-                  marginVertical: 20,
+                  marginVertical: 15,
                   fontWeight: 'bold',
                   color: '#000',
                 }}>
@@ -1353,7 +1353,7 @@ const TaskDetails = ({ route }) => {
               <Text
                 style={{
                   textAlign: 'center',
-                  marginVertical: 20,
+                  marginVertical: 15,
                   fontWeight: 'bold',
                   color: '#000',
                 }}>
@@ -1418,7 +1418,7 @@ const TaskDetails = ({ route }) => {
           onPress={handleSave}
           style={{
             borderWidth: 1,
-            marginTop: 15,
+            marginTop: 5,
             marginBottom: 50,
             marginHorizontal: 20,
             borderRadius: 10,
@@ -1603,6 +1603,8 @@ const styles = StyleSheet.create({
     borderWidth: 0.5,
     borderRadius: 10,
     zIndex: 10, // Ensure the dropdown appears above other elements
+    elevation: 10,
+   
   },
   scrollView: {
     minHeight: 70,
@@ -1613,6 +1615,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
+    marginBottom:12
   },
   selectedOption: {
     backgroundColor: '#f0f0f0',
@@ -1626,7 +1629,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginHorizontal: 30,
-    marginTop: 50,
+    marginTop: 70,
   },
   uploadselimg: {
     height: 60,
@@ -1645,9 +1648,6 @@ const styles = StyleSheet.create({
   textInput: {
     color: '#000',
     marginLeft: 10
-  },
-  uploadimg: {
-    alignItems: 'center',
   },
   imagePreviewContainer: {
     flexDirection: 'row',
@@ -1717,8 +1717,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   uploadanyimg: {
-    width: 70,
-    height: 70,
+    width: 65,
+    height: 65,
     marginLeft: 10,
   },
   documentItem: {

@@ -1931,18 +1931,15 @@ const NewStyleDetail = ({ route }) => {
                       key={index}
                       style={{
                         width: '90%',
-                        height: 50,
+                        height: 40,
                         //  justifyContent: 'fle',
                         borderBottomWidth: 0.5,
                         borderColor: '#8e8e8e',
+                        ...(Platform.OS === 'ios' && { paddingTop: 8,marginLeft:8}), 
                       }}
                       onPress={() => handleSelectCategory(item)}>
                       <Text
-                        style={{
-                          fontWeight: '600',
-                          marginHorizontal: 15,
-                          color: '#000',
-                        }}>
+                        style={style.itemcattxt}>
                         {item?.category}
                       </Text>
                     </TouchableOpacity>
@@ -2055,7 +2052,7 @@ const NewStyleDetail = ({ route }) => {
             <TouchableOpacity
               style={{
                 width: '90%',
-                height: 50,
+                height: 37,
                 borderRadius: 10,
                 borderWidth: 0.5,
                 alignSelf: 'center',
@@ -2933,7 +2930,7 @@ const NewStyleDetail = ({ route }) => {
                   <TouchableOpacity
                     style={{
                       width: '90%',
-                      height: 50,
+                      height: 37,
                       borderRadius: 10,
                       borderWidth: 0.5,
                       alignSelf: 'center',
@@ -3104,7 +3101,7 @@ const NewStyleDetail = ({ route }) => {
             <TouchableOpacity
               style={{
                 width: '90%',
-                height: 50,
+                height: 37,
                 borderRadius: 10,
                 borderWidth: 0.5,
                 alignSelf: 'center',
@@ -3614,7 +3611,7 @@ const NewStyleDetail = ({ route }) => {
                     <TouchableOpacity
                       style={{
                         width: '90%',
-                        height: 50,
+                        height: 37,
                         borderRadius: 10,
                         borderWidth: 0.5,
                         alignSelf: 'center',
@@ -4086,7 +4083,7 @@ const style = StyleSheet.create({
   },
   container3: {
     width: '90%',
-    height: 50,
+    height: 37,
     borderRadius: 10,
     borderWidth: 0.5,
     alignSelf: 'center',
@@ -4108,6 +4105,11 @@ const style = StyleSheet.create({
     fontSize: 16,
     color: '#000',
     fontWeight: '600',
+  },
+  itemcattxt:{
+    fontWeight: '600',
+    marginHorizontal: 15,
+    color: '#000',
   },
   modalContainerr: {
     flex: 1,
@@ -4171,6 +4173,7 @@ const style = StyleSheet.create({
     fontSize: 16,
     paddingHorizontal: 10,
     color: '#000000',
+    ...(Platform.OS === 'ios' && { marginVertical: 7 }), 
   },
 
   container: {
@@ -4209,7 +4212,7 @@ const style = StyleSheet.create({
   },
   dropdownButton: {
     width: '90%',
-    height: 50,
+    height: 37,
     borderRadius: 10,
     borderWidth: 0.5,
     alignSelf: 'center',

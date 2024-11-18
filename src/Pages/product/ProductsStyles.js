@@ -2437,6 +2437,9 @@ const styles = StyleSheet.create({
     marginVertical: 8,
     marginHorizontal: 10,
   },
+  searchInput1:{
+    ...(Platform.OS === 'ios' && { marginVertical: 7,marginLeft:10 }), 
+  },
   noDataText: {
     textAlign: 'center',
     marginTop: 20,

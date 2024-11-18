@@ -501,11 +501,11 @@ const HomeAllProducts = ({navigation}) => {
               colors={['#000', '#689F38']}
             />
           }
-          ListFooterComponent={
-            !stopLoad ? (
-              <ActivityIndicator size="small" color="#0000ff" />
-            ) : null
-          }
+          // ListFooterComponent={
+          //   !stopLoad ? (
+          //     <ActivityIndicator size="small" color="#0000ff" />
+          //   ) : null
+          // }
         />
       )}
 

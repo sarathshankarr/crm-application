@@ -1384,6 +1384,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     paddingHorizontal: 10,
     color: '#000000',
+    ...(Platform.OS === 'ios' && { marginVertical: 7 }), 
   },
   datecontainer: {
     flexDirection: 'row',

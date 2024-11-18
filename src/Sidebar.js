@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   Image,
   StyleSheet,
@@ -9,15 +9,15 @@ import {
   ScrollView,
   SafeAreaView,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import {useNavigation} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ImagePicker from 'react-native-image-crop-picker';
-import { API } from './config/apiConfig';
+import {API} from './config/apiConfig';
 import axios from 'axios';
-import { useDispatch, useSelector } from 'react-redux';
-import { CLEAR_CART } from './redux/ActionTypes';
+import {useDispatch, useSelector} from 'react-redux';
+import {CLEAR_CART} from './redux/ActionTypes';
 
-const Sidebar = ({ navigation, route }) => {
+const Sidebar = ({navigation, route}) => {
   const userRole = useSelector(state => state.userRole) || '';
   const [modalVisible, setModalVisible] = useState(false);
   const [image, setImage] = useState(require('../assets/profile.png'));
@@ -32,14 +32,18 @@ const Sidebar = ({ navigation, route }) => {
   const dispatch = useDispatch();
   const loginuser = useSelector(state => state.loggedInUser);
   // console.log('loginuser============>', loginuser);
-  const isAdmin = loginuser?.role?.some(role => role.role.toLowerCase() === 'admin');
-  const isDistributor = loginuser?.role?.some(role => role.role.toLowerCase() === 'distributor');
-  
+  const isAdmin = loginuser?.role?.some(
+    role => role.role.toLowerCase() === 'admin',
+  );
+  const isDistributor = loginuser?.role?.some(
+    role => role.role.toLowerCase() === 'distributor',
+  );
+
   // console.log('isAdmin============>', isAdmin);
   // console.log('isDistributor============>', isDistributor);
   // console.log('userRole==========>', userRole);
   useEffect(() => {
-    const { params } = route ?? {};
+    const {params} = route ?? {};
     if (params && params.userData) {
       setUserData(params.userData);
     } else {
@@ -77,7 +81,7 @@ const Sidebar = ({ navigation, route }) => {
           // Navigate to login screen
           navigation.reset({
             index: 0,
-            routes: [{ name: 'Login' }],
+            routes: [{name: 'Login'}],
           });
         } else {
           console.error('Account not inactive. Could not delete.');
@@ -106,7 +110,6 @@ const Sidebar = ({ navigation, route }) => {
   // const toggleDropdownOrder = () => {
   //   setdropdownVisibleOrder(!dropdownVisibleOrder);
   // };
-
 
   const toggleDropdown = () => {
     setDropdownVisible(!dropdownVisible);
@@ -147,7 +150,6 @@ const Sidebar = ({ navigation, route }) => {
     setDropdownVisiblePublish(false);
     setDropdownVisibleProduct(false);
   };
-
 
   const goToHome = () => {
     navigation.navigate('Home');
@@ -209,7 +211,7 @@ const Sidebar = ({ navigation, route }) => {
       compressImageQuality: 0.7,
     })
       .then(image => {
-        setImage({ uri: image.path });
+        setImage({uri: image.path});
         setModalVisible(false);
       })
       .catch(error => {
@@ -225,7 +227,7 @@ const Sidebar = ({ navigation, route }) => {
       compressImageQuality: 0.7,
     })
       .then(image => {
-        setImage({ uri: image.path });
+        setImage({uri: image.path});
         setModalVisible(false);
       })
       .catch(error => {
@@ -239,15 +241,16 @@ const Sidebar = ({ navigation, route }) => {
     const userId = globalUserData?.token?.userId;
     const companyId = globalUserData?.token?.companyId;
 
-    const apiUrl = `${global?.userData?.productURL}${API.LOGINAUDIT
-      }/${userId}/${companyId}/${1}/${2}`;
+    const apiUrl = `${global?.userData?.productURL}${
+      API.LOGINAUDIT
+    }/${userId}/${companyId}/${1}/${2}`;
     axios
       .get(apiUrl, {
         headers: {
           Authorization: `Bearer ${global?.userData?.token?.access_token}`,
         },
       })
-      .then(response => { })
+      .then(response => {})
       .catch(error => {
         console.error('Error:', error);
       });
@@ -261,12 +264,12 @@ const Sidebar = ({ navigation, route }) => {
       await AsyncStorage.removeItem('userRoleId'); // Remove the user role ID from AsyncStorage
       await AsyncStorage.removeItem('loggedInUser'); // Remove the logged-in user data from AsyncStorage
       await AsyncStorage.removeItem('selectedCompany'); // Remove the logged-in user data from AsyncStorage
-      dispatch({ type: CLEAR_CART });
+      dispatch({type: CLEAR_CART});
 
       navigation.closeDrawer(); // Close the drawer
       navigation.reset({
         index: 0,
-        routes: [{ name: 'Login' }],
+        routes: [{name: 'Login'}],
       });
     } catch (error) {
       console.error('Error clearing user data:', error);
@@ -276,12 +279,12 @@ const Sidebar = ({ navigation, route }) => {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <View style={{ backgroundColor: '#1F74BA' }}>
+        <View style={{backgroundColor: '#1F74BA'}}>
           <View style={styles.header}>
             <TouchableOpacity onPress={() => setModalVisible(true)}>
-              <Image style={[styles.img, { borderRadius: 30 }]} source={image} />
+              <Image style={[styles.img, {borderRadius: 30}]} source={image} />
             </TouchableOpacity>
-            <Text style={{ color: '#fff', fontSize: 20 }}>Profile</Text>
+            <Text style={{color: '#fff', fontSize: 20}}>Profile</Text>
           </View>
           <View>
             {userData && (
@@ -308,7 +311,7 @@ const Sidebar = ({ navigation, route }) => {
           />
           <Text style={styles.categoriestxt}>Categories</Text>
         </TouchableOpacity>
-        {isAdmin && !isDistributor && (
+        {!isDistributor && (
           <TouchableOpacity
             style={styles.inventoryhead}
             onPress={toggleDropdownfourth}>
@@ -317,10 +320,10 @@ const Sidebar = ({ navigation, route }) => {
               source={require('../assets/box.png')}
             />
             <Text style={styles.ordertxt}>Products</Text>
-            <View style={{ marginLeft: 'auto' }}>
+            <View style={{marginLeft: 'auto'}}>
               <Image
                 source={require('../assets/dropdown.png')}
-                style={{ width: 20, height: 20 }}
+                style={{width: 20, height: 20}}
               />
             </View>
           </TouchableOpacity>
@@ -355,10 +358,10 @@ const Sidebar = ({ navigation, route }) => {
             source={require('../assets/orderr.png')}
           />
           <Text style={styles.ordertxt}>Orders and Returns</Text>
-          <View style={{ marginLeft: 'auto' }}>
+          <View style={{marginLeft: 'auto'}}>
             <Image
               source={require('../assets/dropdown.png')}
-              style={{ width: 20, height: 20 }}
+              style={{width: 20, height: 20}}
             />
           </View>
         </TouchableOpacity>
@@ -389,35 +392,41 @@ const Sidebar = ({ navigation, route }) => {
             source={require('../assets/inventory.png')}
           />
           <Text style={styles.ordertxt}>Inventory</Text>
-          <View style={{ marginLeft: 'auto' }}>
+          <View style={{marginLeft: 'auto'}}>
             <Image
               source={require('../assets/dropdown.png')}
-              style={{ width: 20, height: 20 }}
+              style={{width: 20, height: 20}}
             />
           </View>
         </TouchableOpacity>
 
         {dropdownVisible && (
           <View style={styles.dropdown}>
-            {isAdmin && !isDistributor && (<TouchableOpacity
-              style={styles.inventoryhead}
-              onPress={() => goToProductInventory('Product Inventory')}>
-              <Image
-                style={styles.prodimg}
-                source={require('../assets/product-management.png')}
-              />
-              <Text style={styles.dropdownItem}>Product Inventory</Text>
-            </TouchableOpacity>
+            {!isDistributor && (
+              <TouchableOpacity
+                style={styles.inventoryhead}
+                onPress={() => goToProductInventory('Product Inventory')}>
+                <Image
+                  style={styles.prodimg}
+                  source={require('../assets/product-management.png')}
+                />
+                <Text style={styles.dropdownItem}>Product Inventory</Text>
+              </TouchableOpacity>
             )}
-            {isAdmin && !isDistributor && (<TouchableOpacity
-              style={styles.inventoryhead}
-              onPress={() => goToLocationInventory('Location Wise Inventory')}>
-              <Image
-                style={styles.prodimg}
-                source={require('../assets/locationinv.png')}
-              />
-              <Text style={styles.dropdownItemm}>Location Wise Inventory</Text>
-            </TouchableOpacity>
+            {!isDistributor && (
+              <TouchableOpacity
+                style={styles.inventoryhead}
+                onPress={() =>
+                  goToLocationInventory('Location Wise Inventory')
+                }>
+                <Image
+                  style={styles.prodimg}
+                  source={require('../assets/locationinv.png')}
+                />
+                <Text style={styles.dropdownItemm}>
+                  Location Wise Inventory
+                </Text>
+              </TouchableOpacity>
             )}
 
             <TouchableOpacity
@@ -440,7 +449,7 @@ const Sidebar = ({ navigation, route }) => {
           />
           <Text style={styles.ordertxt}>Distributor GRN</Text>
         </TouchableOpacity>
-        {isAdmin && !isDistributor && (
+        {!isDistributor && (
           <TouchableOpacity
             style={styles.inventoryhead}
             onPress={toggleDropdownSecond}>
@@ -449,10 +458,10 @@ const Sidebar = ({ navigation, route }) => {
               source={require('../assets/activity.png')}
             />
             <Text style={styles.ordertxt}>Campaign Management</Text>
-            <View style={{ marginLeft: 'auto' }}>
+            <View style={{marginLeft: 'auto'}}>
               <Image
                 source={require('../assets/dropdown.png')}
-                style={{ width: 20, height: 20 }}
+                style={{width: 20, height: 20}}
               />
             </View>
           </TouchableOpacity>
@@ -502,7 +511,7 @@ const Sidebar = ({ navigation, route }) => {
           </View>
         )} */}
 
-        {isAdmin && !isDistributor && (
+        {!isDistributor && (
           <TouchableOpacity
             onPress={goToCustomerLocation}
             style={styles.inventoryhead}>
@@ -513,8 +522,10 @@ const Sidebar = ({ navigation, route }) => {
             <Text style={styles.ordertxt}>Location Task</Text>
           </TouchableOpacity>
         )}
-        {isAdmin && !isDistributor && (
-          <TouchableOpacity onPress={goToAttendence} style={styles.inventoryhead}>
+        {!isDistributor && (
+          <TouchableOpacity
+            onPress={goToAttendence}
+            style={styles.inventoryhead}>
             <Image
               style={styles.locimg}
               source={require('../assets/attendence.png')}
@@ -530,7 +541,7 @@ const Sidebar = ({ navigation, route }) => {
             resizeMode="contain"
             style={[
               styles.logoutimg,
-              { tintColor: '#fff', height: 20, width: 20 },
+              {tintColor: '#fff', height: 20, width: 20},
             ]}
             source={require('../assets/logout.png')}
           />
@@ -540,7 +551,7 @@ const Sidebar = ({ navigation, route }) => {
           style={styles.orderhead1}
           onPress={() => setDeleteModalVisible(true)}>
           <Image
-            style={{ height: 25, width: 25, tintColor: 'red' }}
+            style={{height: 25, width: 25, tintColor: 'red'}}
             source={require('../assets/delete.png')}
           />
           <Text
@@ -576,7 +587,7 @@ const Sidebar = ({ navigation, route }) => {
             <TouchableOpacity
               style={styles.modalCancelButton}
               onPress={() => setModalVisible(false)}>
-              <Text style={{ color: 'white' }}>Cancel</Text>
+              <Text style={{color: 'white'}}>Cancel</Text>
             </TouchableOpacity>
           </View>
         </View>

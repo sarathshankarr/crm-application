@@ -62,6 +62,7 @@ const ModalComponent = ({
     flex: 0.4,
     color: isDarkTheme ? '#fff' : '#000',
     marginTop: 4,
+    textAlign: 'center',
   };
 
   useEffect(() => {

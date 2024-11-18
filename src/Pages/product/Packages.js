@@ -18,7 +18,7 @@ import { useSelector } from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { debounce } from 'lodash';
-import ImageSliderPackages from '../../components/ImageSlider';
+import ImageSliderPackages from '../../components/ImageSliderPackages';
 
 const Packages = ({ navigation }) => {
   const selectedCompany = useSelector(state => state.selectedCompany);

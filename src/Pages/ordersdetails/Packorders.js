@@ -477,8 +477,8 @@ const Packorders = () => {
           color="#390050"
           style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}
         />
-      ) : orders.length === 0 ? (
-        <Text style={style.noCategoriesText}>Sorry, no results found! </Text>
+      ) : orders.length === 0 || orders.every(order => order === null) ? (
+        <Text style={style.noCategoriesText}>Sorry, no results found!</Text>
       ) : (
         <FlatList
         data={orders}

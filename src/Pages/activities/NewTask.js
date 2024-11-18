@@ -1024,8 +1024,8 @@ const NewTask = () => {
         </Text>
         <View style={styles.datecontainer}>
           <TouchableOpacity onPress={showDatePickerDue}>
-            <View style={{paddingVertical: 6}}>
-              <Text style={{marginLeft: 10, color: '#000'}}>
+            <View>
+              <Text style={styles.datetxt}>
                 {selectedDateDue !== 'Due Date'
                   ? formatDateIntoDMY(selectedDateDue)
                   : selectedDateDue}
@@ -1307,6 +1307,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     paddingHorizontal: 10,
     color: '#000000',
+    ...(Platform.OS === 'ios' && { marginVertical: 7 }), // Only apply for iOS
   },
   datecontainer: {
     flexDirection: 'row',
@@ -1315,6 +1316,12 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     borderWidth: 1,
     borderRadius: 5,
+  },
+  datetxt:{
+    fontSize: 16,
+    color: '#000000',
+    ...(Platform.OS === 'ios' && { marginVertical: 7 }), // Only apply for iOS
+    marginLeft:10
   },
   dateIcon: {
     width: 25,
