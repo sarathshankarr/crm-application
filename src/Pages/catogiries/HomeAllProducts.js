@@ -455,6 +455,18 @@ const HomeAllProducts = ({navigation}) => {
           </ScrollView>
         </View>
       )}
+      {/* <View style={{}}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            {searchOption.map((option, index) => (
+              <TouchableOpacity
+                style={styles.dropdownOption}
+                key={`${option.value}_${index}`}
+                onPress={() => handleDropdownSelect(option)}>
+                <Text style={{color: '#000', backgroundColor:'#fff', padding:10, paddingHorizontal:20, borderRadius:20, elevation:5 }}>{option.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View> */}
 
       {isLoading && selectedDetails?.length === 0 ? (
         <ActivityIndicator

@@ -159,9 +159,21 @@ const PackingConformation = ({route}) => {
         {label}
       </Text>
       <Text style={{width: 40, textAlign: 'center', color: '#000',marginLeft:10}}>:</Text>
-      <Text style={{flex: 1, textAlign: 'right', color: '#000',marginRight:10}}>{value}</Text>
+      <Text style={{width: 44, textAlign: 'right', color: '#000',marginRight:10}}>{value}</Text>
     </View>
   );
+
+  const OrderRow = ({label, value}) => (
+    <View style={{flexDirection: 'row'}}>
+      <Text style={{width: 45, color: '#000',marginLeft:5,marginVertical:5,marginLeft:10}}>
+        {label}
+      </Text>
+      <Text style={{width: 15, color: '#000',marginLeft:10,marginVertical:5}}>:</Text>
+      <Text style={{flex: 1,  color: '#000',marginRight:10,marginVertical:5}}>{value}</Text>
+    </View>
+  );
+
+
 
   // Function to handle checkbox toggle
 
@@ -307,7 +319,10 @@ const PackingConformation = ({route}) => {
       appComments: comments,
       customerLocation: order?.customerLocation,
       d_pkg_flag: order.d_pkg_flag ? order.d_pkg_flag : 0,
-
+      roundOff: order?.roundOff ? order?.roundOff : 0, 
+      gOtherExp: order?.gOtherExp ? order?.gOtherExp : 0,
+      gTranspExp: order?.gTranspExp ? order?.gTranspExp : 0,
+      
       // styleQtyData: stylListData,
 
       orderLineItems: order?.orderLineItems.map(item => {
@@ -379,10 +394,42 @@ const PackingConformation = ({route}) => {
     return (
       <View style={styles.orderItem}>
 
-        <View>
-          
+        <View style={{flexDirection:"row",marginLeft:10,marginBottom:10}}>
+        <CustomCheckBoxStatus
+            isChecked={
+              !!selectedItems[item.orderLineitemId] ||
+              checkboxColor === 'green' ||
+              checkboxColor === 'red'
+            } // Check if either condition is true
+            onToggle={() =>
+              handleCheckboxToggle(item.orderLineitemId, item?.statusFlag)
+            }
+            disabled={item.statusFlag !== 0} // Disable if statusFlag is not 0
+            borderColor={checkboxColor} // Pass the color to change the border color
+          />
+
+          <Text style={styles.orderstylenametxt}>{item?.styleName}</Text>
         </View>
-        <View
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+        <View style={{ flex: 1.2, alignItems: 'flex-start' }}>
+        <OrderRow label="Size" value= {item?.size} />
+        <OrderRow label="Price" value= {item?.unitPrice} />
+        <OrderRow label="Dis Amnt" value=  {item?.discAmnt} />
+        <OrderRow label="Gross" value={grosss} />
+
+        </View>
+        <View style={{ flex: 1, alignItems: 'center' }}>
+        <OrderRow label="Qty" value=  {item?.qty} />
+        <OrderRow label="Disc 1" value= {item.discountPercentage} />
+        <OrderRow label="GST" value= {item?.gst} />
+        </View>
+        <View style={{ flex: 1.2, alignItems: 'flex-end' }}>
+        <OrderRow label="Total" value=  {item?.gross} />
+        <OrderRow label="Color" value= {item?.colorName}/>
+        <OrderRow label="GST AMT " value= {item?.gstAmnt} />
+        </View>
+        </View>
+        {/* <View
           style={{
             flexDirection: 'row',
             justifyContent: 'space-between',
@@ -404,17 +451,17 @@ const PackingConformation = ({route}) => {
           <Text style={styles.orderstylenametxt}>{item?.styleName}</Text>
           <Text style={styles.orderqtytxt}>   Qty    : {item?.qty}</Text>
           <Text style={styles.ordertotaltxt}>Total  : {item?.gross}</Text>
-        </View>
-        <View style={{flexDirection: 'row',marginBottom:5}}>
+        </View> */}
+        {/* <View style={{flexDirection: 'row',marginBottom:5}}>
           <View style={{marginVertical: 8, flex: 1.3}}>
             <Text style={styles.sizetxt}>Size         : {item?.size}</Text>
           </View>
           <View style={{marginVertical: 5, flex: 1}}>
             <Text style={styles.colortxt}>Color : {item?.colorName}</Text>
           </View>
-        </View>
+        </View> */}
 
-        <View>
+        {/* <View>
           <Text style={styles.sizetxt}>Price        : {item?.unitPrice}</Text>
         </View>
         <View style={{flexDirection: 'row', marginTop: 8,marginBottom:5}}>
@@ -425,7 +472,7 @@ const PackingConformation = ({route}) => {
           <Text style={styles.sizegrosstxt}>Gross       : {grosss} </Text>
           <Text style={styles.sizegsttxt}>     GST    : {item?.gst}</Text>
           <Text style={styles.sizegstAmnttxt}>GST AMT : {item?.gstAmnt}</Text>
-        </View>
+        </View> */}
       </View>
     );
   };

@@ -902,7 +902,7 @@ const Cart = () => {
         closeFlag: 0,
         statusFlag: 0,
         poId: 0,
-
+        orgPrice:isEnabled ? item?.retailerPrice?.toString() : item?.dealerPrice?.toString() || item?.price?.toString(),
       })),
       comments: comments,
       customerType: customerType,
@@ -929,7 +929,9 @@ const Cart = () => {
       d_pkg_flag: d_pkg_flag,
       // companyLocId: selectedCompanyLocationId,
       linkType: 3,
-      currentCreditLimit: 0.00
+      currentCreditLimit: 0.00,
+      orderType: 0,
+      roundOff:0,
     };
 
     console.log("Req body ===> ", requestData);
@@ -2029,6 +2031,7 @@ const Cart = () => {
             <TextInput
               style={{
                 marginLeft: 10,
+                marginTop:Platform.OS === 'ios' ? 10 : 0,
                 color: isDarkTheme ? '#fff' : 'black', // Change text color based on theme
               }}
               placeholder="Enter comments"

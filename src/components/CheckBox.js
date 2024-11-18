@@ -23,8 +23,9 @@ const styles = StyleSheet.create({
     marginRight: 5,
   },
   checkbox: {
-    width: 24,
-    height: 24,
+    backgroundColor:'lightgray',
+    width: 25,
+    height: 25,
   },
 });
 

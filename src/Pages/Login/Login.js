@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   Alert,
   Image,
@@ -13,21 +13,21 @@ import {
   KeyboardAvoidingView,
   SafeAreaView,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { useDispatch } from 'react-redux';
-import { encode as base64Encode } from 'base-64';
+import {useNavigation} from '@react-navigation/native';
+import {useDispatch} from 'react-redux';
+import {encode as base64Encode} from 'base-64';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { isValidString } from '../../Helper/Helper';
+import {isValidString} from '../../Helper/Helper';
 import {
   API,
   CUSTOMER_URL,
   USER_ID,
   USER_PASSWORD,
 } from '../../config/apiConfig';
-import { setLoggedInUser, setUserRole } from '../../redux/actions/Actions';
+import {setLoggedInUser, setUserRole} from '../../redux/actions/Actions';
 import CustomCheckBox from '../../components/CheckBox';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import useOnlineStatus from '../../utils/hooks/online/useOnlineStatus';
 
 const Login = () => {
@@ -114,7 +114,6 @@ const Login = () => {
   }, []);
 
   const getCustomerUrl = async () => {
-
     if (!onlineStatus) {
       Alert.alert('No Internet !', 'Please Check your Internet Connection');
       return;
@@ -135,8 +134,14 @@ const Login = () => {
       setLoading(false);
       if (error.response && error.response.status === 400) {
         Alert.alert('Invalid Code', 'Please enter a valid customer code.');
-      } else if (error.response && (error.response.status === 502 || error.response.status === 404)) {
-        Alert.alert('Alert', 'Woof! There seems to be a problem. Please try after sometime.');
+      } else if (
+        error.response &&
+        (error.response.status === 502 || error.response.status === 404)
+      ) {
+        Alert.alert(
+          'Alert',
+          'Woof! There seems to be a problem. Please try after sometime.',
+        );
       } else {
         Alert.alert('Alert', 'please Enter the code.');
       }
@@ -150,7 +155,9 @@ const Login = () => {
     const userId = globalUserData?.token?.userId;
     const companyId = globalUserData?.token?.companyId;
 
-    const apiUrl = `${global?.userData?.productURL}${API.LOGINAUDIT}/${userId}/${companyId}/${0}/${2}`;
+    const apiUrl = `${global?.userData?.productURL}${
+      API.LOGINAUDIT
+    }/${userId}/${companyId}/${0}/${2}`;
     console.log('Constructed API URL:', apiUrl);
     axios
       .get(apiUrl, {
@@ -163,8 +170,7 @@ const Login = () => {
       })
       .catch(error => {
         console.error('Error:', error);
-      })
-
+      });
   };
 
   const handleEmptyInputs = () => {
@@ -194,18 +200,12 @@ const Login = () => {
 
   const handleLogin = async productURL => {
     if (!username) {
-      Alert.alert(
-        'crm.codeverse.co.says',
-        'Please enter a username',
-      );
+      Alert.alert('crm.codeverse.co.says', 'Please enter a username');
       return;
     }
 
     if (!password) {
-      Alert.alert(
-        'crm.codeverse.co.says',
-        'Please enter a password',
-      );
+      Alert.alert('crm.codeverse.co.says', 'Please enter a password');
       return;
     }
     setLoading(true);
@@ -229,7 +229,7 @@ const Login = () => {
         },
       );
       if (isValidString(response.data)) {
-        let data = { token: response.data, productURL: productURL };
+        let data = {token: response.data, productURL: productURL};
         await saveToken(data);
         await getUsers(response.data, productURL);
 
@@ -237,7 +237,7 @@ const Login = () => {
 
         navigation.reset({
           index: 0,
-          routes: [{ name: 'Main' }],
+          routes: [{name: 'Main'}],
         });
       } else {
         console.log('Response:', JSON.stringify(response.data));
@@ -265,7 +265,7 @@ const Login = () => {
       if (isChecked) {
         const existingCredentials =
           JSON.parse(await AsyncStorage.getItem('credentials')) || [];
-        const newCredential = { username, password, code };
+        const newCredential = {username, password, code};
         const updatedCredentials = [...existingCredentials, newCredential];
         await AsyncStorage.setItem(
           'credentials',
@@ -287,7 +287,7 @@ const Login = () => {
     console.log('apurl', apiUrl);
     try {
       const response = await axios.get(apiUrl, {
-        headers: { Authorization: `Bearer ${userData.access_token}` },
+        headers: {Authorization: `Bearer ${userData.access_token}`},
       });
       const loggedInUser = response.data.response.users[0]; // Since response is expected to have only one user with given
       if (loggedInUser) {
@@ -314,7 +314,7 @@ const Login = () => {
         // }
         // if (roleName && roleId) {
         //   await saveRoleToStorage({roleName, roleId});
-        // } 
+        // }
         // else {
         //   Alert.alert(
         //     'Unauthorized role',
@@ -341,7 +341,7 @@ const Login = () => {
     }
   };
 
-  const saveRoleToStorage = async ({ roleName, roleId }) => {
+  const saveRoleToStorage = async ({roleName, roleId}) => {
     try {
       await AsyncStorage.setItem('userRole', roleName);
       await AsyncStorage.setItem('userRoleId', roleId.toString());
@@ -363,15 +363,15 @@ const Login = () => {
   return (
     // <KeyboardAwareScrollView contentContainerStyle={{ flexGrow: 1 }}>
     <SafeAreaView
-      style={{ flex: 1 }}
+      style={{flex: 1}}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'} // Adjust behavior based on the platform
       keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0} // Adjust this offset if necessary
     >
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+      <ScrollView contentContainerStyle={{flexGrow: 1}}>
         <View style={styles.container}>
           <View style={styles.imageContainer}>
             <Image
-              style={{ height: 103, width: 103, marginTop: 30 }}
+              style={{height: 103, width: 103, marginTop: 30}}
               source={require('../../../assets/loghighcon.png')}
             />
           </View>
@@ -389,10 +389,18 @@ const Login = () => {
                 onChangeText={text => setCode(text)}
                 value={code}
               />
-              <Image
-                source={require('../../../assets/code-lock.png')}
-                style={styles.inputImage}
-              />
+              <View
+                style={{
+                  backgroundColor: '#F5F5F5',
+                  borderRadius: 10,
+                  paddingHorizontal: 9,
+                  paddingVertical: 2,
+                }}>
+                <Image
+                  source={require('../../../assets/code-lock.png')}
+                  style={styles.inputImage}
+                />
+              </View>
             </View>
 
             {errorMsg?.includes('no_Code') && (
@@ -411,11 +419,18 @@ const Login = () => {
                 onChangeText={handleUsernameChange}
                 value={username}
               />
-
-              <Image
-                source={require('../../../assets/email.png')}
-                style={styles.inputImage}
-              />
+              <View
+                style={{
+                  backgroundColor: '#F5F5F5',
+                  borderRadius: 10,
+                  paddingHorizontal: 10,
+                  paddingVertical: 1,
+                }}>
+                <Image
+                  source={require('../../../assets/email.png')}
+                  style={styles.inputImage}
+                />
+              </View>
             </View>
 
             {errorMsg?.includes('no_Username') && (
@@ -428,7 +443,7 @@ const Login = () => {
                     key={index}
                     onPress={() => handleSuggestionClick(suggestion)}
                     style={styles.suggestionItem}>
-                    <Text style={{ color: "#000" }}>{suggestion.username}</Text>
+                    <Text style={{color: '#000'}}>{suggestion.username}</Text>
                   </TouchableOpacity>
                 ))}
               </ScrollView>
@@ -447,9 +462,20 @@ const Login = () => {
                 onChangeText={text => setPassword(text)}
                 value={password}
               />
-              <TouchableOpacity onPress={togglePasswordVisibility}>
+              <TouchableOpacity
+                style={{
+                  backgroundColor: '#F5F5F5',
+                  borderRadius: 10,
+                  paddingHorizontal: 10,
+                  paddingVertical: 1,
+                }}
+                onPress={togglePasswordVisibility}>
                 <Image
-                  source={showPassword ? require('../../../assets/password.png') : require('../../../assets/lock.png')}
+                  source={
+                    showPassword
+                      ? require('../../../assets/password.png')
+                      : require('../../../assets/lock.png')
+                  }
                   style={styles.inputImagee}
                 />
               </TouchableOpacity>
@@ -461,13 +487,44 @@ const Login = () => {
           <CustomCheckBox isChecked={isChecked} onToggle={handleCheckBoxToggle} />
           <Text style={{ padding: 5, color: '#000', color: "#000" }}>Remember Me</Text>
         </View> */}
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginBottom: 15,marginTop:10}}>
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <CustomCheckBox isChecked={isChecked} onToggle={handleCheckBoxToggle} />
-                <Text style={{ padding: 5, color: '#000',fontSize:15,fontWeight:"500"}}>Remember Me</Text>
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                width: '100%',
+                marginBottom: 15,
+                marginTop: 10,
+              }}>
+              <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                <CustomCheckBox
+                  isChecked={isChecked}
+                  onToggle={handleCheckBoxToggle}
+                />
+                <TouchableOpacity>
+                  <Text
+                    style={{
+                      padding: 5,
+                      color: '#000',
+                      fontSize: 17,
+                      fontWeight: '500',
+                    }}>
+                    Remember Me
+                  </Text>
+                </TouchableOpacity>
               </View>
-              <TouchableOpacity onPress={handleForgotPassword}>
-                <Text style={{ padding: 5, color: '#000',fontSize:16,fontWeight:"500" }}>Forgot Password?</Text>
+              <TouchableOpacity
+                style={{backgroundColor: '#F5F5F5', borderRadius: 10}}
+                onPress={handleForgotPassword}>
+                <Text
+                  style={{
+                    padding: 5,
+                    color: '#000',
+                    fontSize: 17,
+                    fontWeight: '500',
+                  }}>
+                  Forgot Password?
+                </Text>
               </TouchableOpacity>
             </View>
             <TouchableOpacity
@@ -505,11 +562,12 @@ const Login = () => {
           </View>
         </View> */}
           </View>
-          <View style={{ justifyContent: 'flex-end', flex: 1, marginVertical: 10 }}>
+          <View
+            style={{justifyContent: 'flex-end', flex: 1, marginVertical: 10}}>
             {/* <TouchableOpacity onPress={goingToSignUp}>
                 <Text style={{textAlign:'center'}}>Don’t have an account? Sign Up</Text>
         </TouchableOpacity> */}
-            <Text style={{ textAlign: 'center', color: "#000" }}>
+            <Text style={{textAlign: 'center', color: '#000'}}>
               All rights with Codeverse Technologies
             </Text>
           </View>
@@ -554,14 +612,12 @@ const styles = StyleSheet.create({
     marginTop: 30,
   },
   inputImage: {
-    width: 29,
-    height: 29,
-    marginRight: 10,
+    width: 28,
+    height: 28,
   },
-  inputImagee:{
+  inputImagee: {
     width: 29,
     height: 29,
-    marginRight: 10,
   },
   input: {
     flex: 1,
