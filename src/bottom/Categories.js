@@ -781,6 +781,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 5,
     zIndex: 1,
     alignSelf: 'center',
+    borderColor: 'lightgray', // Optional: Adds subtle border (for effect)
+    borderWidth: 1,
   },
   dropdownOption: {
     paddingVertical: 10,

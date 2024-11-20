@@ -195,6 +195,7 @@ const styles = StyleSheet.create({
   },
   list: {
     paddingBottom: 16,
+    marginTop:10
   },
   menuimg: {
     height: 30,

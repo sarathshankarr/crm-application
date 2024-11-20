@@ -1460,6 +1460,9 @@ const styles = StyleSheet.create({
     width: '90%',
     backgroundColor: '#fff',
     borderRadius: 10,
+    borderColor: 'lightgray', // Optional: Adds subtle border (for effect)
+    borderWidth: 1,
+    marginTop:5
   },
   searchInput: {
     // borderWidth: 1,

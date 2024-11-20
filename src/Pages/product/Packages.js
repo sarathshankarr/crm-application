@@ -560,12 +560,18 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   dropdownContent1: {
-    elevation: 5,
-    alignSelf: 'center',
+    position: 'absolute',
+    top: 57,
     width: '90%',
     backgroundColor: '#fff',
     borderRadius: 10,
-    marginTop: 5,
+    elevation: 5,
+    paddingVertical: 10,
+    paddingHorizontal: 5,
+    zIndex: 1,
+    alignSelf: 'center',
+    borderColor: 'lightgray', // Optional: Adds subtle border (for effect)
+    borderWidth: 1,
   },
   dropdownOption: {
     paddingHorizontal: 10,

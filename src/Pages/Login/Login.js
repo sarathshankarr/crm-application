@@ -568,7 +568,7 @@ const Login = () => {
                 <Text style={{textAlign:'center'}}>Don’t have an account? Sign Up</Text>
         </TouchableOpacity> */}
             <Text style={{textAlign: 'center', color: '#000'}}>
-              All rights with Codeverse Technologies
+              All rights with Codeverse Technologies 1.0
             </Text>
           </View>
         </View>

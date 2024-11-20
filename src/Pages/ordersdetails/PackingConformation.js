@@ -159,7 +159,7 @@ const PackingConformation = ({route}) => {
         {label}
       </Text>
       <Text style={{width: 40, textAlign: 'center', color: '#000',marginLeft:10}}>:</Text>
-      <Text style={{width: 44, textAlign: 'right', color: '#000',marginRight:10}}>{value}</Text>
+      <Text style={{width: 100, textAlign: 'right', color: '#000',marginRight:10}}>{value}</Text>
     </View>
   );
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   Alert,
   FlatList,
@@ -16,7 +16,7 @@ import {
   Switch,
   SafeAreaView,
 } from 'react-native';
-import { useDispatch, useSelector } from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import {
   addToPending,
   removeFromCart,
@@ -26,9 +26,9 @@ import {
 } from '../../redux/actions/Actions';
 import Clipboard from '@react-native-clipboard/clipboard';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
-import { useNavigation } from '@react-navigation/native';
+import {useNavigation} from '@react-navigation/native';
 import ModalComponent from '../../components/ModelComponent';
-import { API } from '../../config/apiConfig';
+import {API} from '../../config/apiConfig';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -45,7 +45,7 @@ const Cart = () => {
 
   const [inputValuess, setInputValuess] = useState({});
   const cartItems = useSelector(state => state.cartItems);
-  console.log("cartItems=====>", cartItems)
+  console.log('cartItems=====>', cartItems);
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [selatedDate, setSelectedDate] = useState('Expected delivery date');
   const [modalVisible, setModalVisible] = useState(false);
@@ -82,7 +82,8 @@ const Cart = () => {
   const [showCompanyLocationList, setShowCompanyLocationList] = useState(false);
   const [editCompanyLocation, setEditCompanyLocation] = useState(true);
   const [locationCompanyList, setLocationCompanyList] = useState([]);
-  const [filteredCompanyLocationList, setFilteredCompanyLocationList] = useState([]);
+  const [filteredCompanyLocationList, setFilteredCompanyLocationList] =
+    useState([]);
   const [selectedCompanyLocation, setSelectedCompanyLocation] = useState('');
   const [selectedCompanyLocationId, setSelectedCompanyLocationId] = useState(0);
   const [gstValues, setGstValues] = useState({});
@@ -94,7 +95,6 @@ const Cart = () => {
     }));
   };
 
-
   const userData = useSelector(state => state.loggedInUser);
   const userId = userData?.userId;
 
@@ -104,7 +104,7 @@ const Cart = () => {
     borderRadius: 5,
     flex: 0.4,
     color: '#000', // Default text color
-    textAlign:"center"
+    textAlign: 'center',
   };
 
   useEffect(() => {
@@ -178,8 +178,7 @@ const Cart = () => {
     ? selectedCompany.id
     : initialSelectedCompany?.id;
 
-  useEffect(() => {
-  }, [companyId]);
+  useEffect(() => {}, [companyId]);
 
   useEffect(() => {
     // Fetch user role from AsyncStorage
@@ -235,9 +234,7 @@ const Cart = () => {
     country: '',
     pincode: '',
     locationName: '',
-    locationDescription: ''
-
-
+    locationDescription: '',
   });
 
   const [errorFields, setErrorFields] = useState([]);
@@ -252,7 +249,7 @@ const Cart = () => {
       'country',
       'pincode',
       'locationName',
-      'locationDescription'
+      'locationDescription',
     ];
     setErrorFields([]);
     const missingFields = mandatoryFields.filter(field => !inputValues[field]);
@@ -466,7 +463,7 @@ const Cart = () => {
       locationCode: '',
       locationDescription: inputValues.locationDescription,
       linkType: 3,
-      userId: userId
+      userId: userId,
     };
 
     axios
@@ -502,13 +499,12 @@ const Cart = () => {
     setComments(text);
   };
   const getLocations = () => {
-
     if (comp_flag === 0) {
       const apiUrl0 = `${global?.userData?.productURL}${API.GET_LOCATION_C0_LIST}`;
       setIsLoading(true);
       const requestData = {
-        styleName: ""
-      }
+        styleName: '',
+      };
       axios
         .post(apiUrl0, requestData, {
           headers: {
@@ -524,7 +520,6 @@ const Cart = () => {
           console.error('Error:', error);
           setIsLoading(false);
         });
-
     } else if (comp_flag === 1) {
       const apiUrl1 = `${global?.userData?.productURL}${API.GET_LOCATION_C1_LIST}${companyId}`;
       setIsLoading(true);
@@ -537,23 +532,20 @@ const Cart = () => {
         .then(response => {
           const locationList = response?.data?.response?.locationList || [];
 
-          const filteredLocationList = locationList?.filter(c =>
-            c.customerType === 2 && c.customerId === companyId
+          const filteredLocationList = locationList?.filter(
+            c => c.customerType === 2 && c.customerId === companyId,
           );
 
           setLocationCompanyList(filteredLocationList);
           setFilteredCompanyLocationList(filteredLocationList);
           setIsLoading(false);
-
         })
         .catch(error => {
           console.error('Error:', error);
           setIsLoading(false); // Set loading to false in case of error
         });
-
     }
-
-  }
+  };
 
   useEffect(() => {
     if (clicked) {
@@ -565,8 +557,7 @@ const Cart = () => {
     setSelectedShipLocation('Shipping to *');
     setSelectedLocationId('');
     setSelectedShipLocationId('');
-    setCustomerLocations([])
-
+    setCustomerLocations([]);
   }, [clicked, isEnabled]);
 
   const getCustomerLocations = customerId => {
@@ -582,14 +573,12 @@ const Cart = () => {
       customerType = 3; // Distributor
     }
 
-
     if (!customerId) {
       console.error('customerId is undefined or null');
       return;
     }
 
     const apiUrl = `${global?.userData?.productURL}${API.GET_CUSTOMER_LOCATION}/${customerId}/${customerType}/${companyId}`;
-
 
     axios
       .get(apiUrl, {
@@ -762,7 +751,6 @@ const Cart = () => {
       return;
     }
 
-
     if (!selectedShipLocationId) {
       Alert.alert('Alert', 'Please select a Shipping to location.');
       return;
@@ -780,9 +768,17 @@ const Cart = () => {
 
     setIsSubmitting(true);
 
-    const d_pkg_flag = cartItems.some(item => item.sourceScreen === 'PackageDetail') ? 1 : 0;
-    const pkg_id = cartItems.some(item => item.sourceScreen === 'PackageDetail')
-    const colorId = cartItems.some(item => item.sourceScreen === 'PackageDetail')
+    const d_pkg_flag = cartItems.some(
+      item => item.sourceScreen === 'PackageDetail',
+    )
+      ? 1
+      : 0;
+    const pkg_id = cartItems.some(
+      item => item.sourceScreen === 'PackageDetail',
+    );
+    const colorId = cartItems.some(
+      item => item.sourceScreen === 'PackageDetail',
+    )
       ? cartItems.find(item => item.sourceScreen === 'PackageDetail').colorId
       : cartItems[0]?.colorId || null; // Fallback to null if cartItems is empty
 
@@ -790,7 +786,6 @@ const Cart = () => {
     //   // Redirect to login screen or handle not logged in scenario
     //   return;
     // }
-
 
     // let roleId = ''; // Initialize roleId
 
@@ -815,8 +810,8 @@ const Cart = () => {
           ? selectedCustomerObj.customerId
           : ''
         : userRole === 'Distributor' || userRole === 'Retailer'
-          ? roleId
-          : '';
+        ? roleId
+        : '';
 
     const currentDate = new Date().toISOString().split('T')[0];
 
@@ -838,17 +833,23 @@ const Cart = () => {
     //   return acc + itemGst;
     // }, 0);
 
-    const totalGst = cartItems.reduce((acc, item, index) => {
-      const gstPercentage = parseFloat(gstValues[index] !== undefined ? gstValues[index] : item.gst); // Use updated GST if available
-      const itemTotalPrice = parseFloat(isEnabled ? item?.retailerPrice : item?.dealerPrice) * parseInt(item.quantity, 10);
-      const itemGst = (itemTotalPrice * gstPercentage) / 100;
-      return acc + itemGst; // Sum GST
-    }, 0).toFixed(2);
-
+    const totalGst = cartItems
+      .reduce((acc, item, index) => {
+        const gstPercentage = parseFloat(
+          gstValues[index] !== undefined ? gstValues[index] : item.gst,
+        ); // Use updated GST if available
+        const itemTotalPrice =
+          parseFloat(isEnabled ? item?.retailerPrice : item?.dealerPrice) *
+          parseInt(item.quantity, 10);
+        const itemGst = (itemTotalPrice * gstPercentage) / 100;
+        return acc + itemGst; // Sum GST
+      }, 0)
+      .toFixed(2);
 
     // Calculate total amount
-    const totalAmount = (parseFloat(totalPrice) + parseFloat(totalGst)).toFixed(2); // Total amount formatted to 2 decimal places
-
+    const totalAmount = (parseFloat(totalPrice) + parseFloat(totalGst)).toFixed(
+      2,
+    ); // Total amount formatted to 2 decimal places
 
     const requestData = {
       totalAmount: totalAmount,
@@ -876,12 +877,16 @@ const Cart = () => {
         gsCode: '8907536002462',
         availQty: item.quantity.toString(),
         // price: item.price.toString(),
-        price: isEnabled ? item?.retailerPrice?.toString() : item?.dealerPrice?.toString() || item?.price?.toString(),
+        price: isEnabled
+          ? item?.retailerPrice?.toString()
+          : item?.dealerPrice?.toString() || item?.price?.toString(),
         gross: (
-          parseFloat(isEnabled ? item?.retailerPrice || 0 : item?.dealerPrice || 0) * 
-          (1 + (parseFloat(gstValues) || 0) / 100) * 
+          parseFloat(
+            isEnabled ? item?.retailerPrice || 0 : item?.dealerPrice || 0,
+          ) *
+          (1 + (parseFloat(gstValues) || 0) / 100) *
           (parseInt(item?.quantity) || 1)
-        ).toString(),        
+        ).toString(),
         // gross: ((parseFloat(isEnabled ? item?.retailerPrice : item?.dealerPrice) * 1.05) * parseInt(item?.quantity || 1)).toString(),
         // gross: ((parseFloat(isEnabled ? item?.retailerPrice : item?.dealerPrice) * (parseFloat( 1 + parseFloat(gstValues)/100))) * parseInt(item?.quantity || 1)).toString(),
         // gross: parseFloat((parseFloat(isEnabled ? item?.retailerPrice?.toString() : item?.dealerPrice?.toString()) + parseFloat(item.gst.toString())) * parseInt(item.quantity))?.toString(),
@@ -889,12 +894,23 @@ const Cart = () => {
         discountPercentage: '0',
         discountAmount: '0',
         gst: gstValues[index] !== undefined ? gstValues[index] : item.gst,
-        total: (parseFloat(isEnabled ? item?.retailerPrice?.toString() : item?.dealerPrice?.toString()) || item?.price?.toString() * parseInt(item.quantity))?.toString(),
+        total: (
+          parseFloat(
+            isEnabled
+              ? item?.retailerPrice?.toString()
+              : item?.dealerPrice?.toString(),
+          ) || item?.price?.toString() * parseInt(item.quantity)
+        )?.toString(),
         itemStatus: 'OPEN',
         pcqty: '0',
         pack_qty: 0,
         sizeId: item.sizeId,
-        packageId: item.sourceScreen === 'PackageDetail' ? (item.packageId ? Number(item.packageId) : 0) : 0,
+        packageId:
+          item.sourceScreen === 'PackageDetail'
+            ? item.packageId
+              ? Number(item.packageId)
+              : 0
+            : 0,
         cedgeFlag: '0',
         cedgeStyleId: 0,
         discountPercentageSec: 0,
@@ -902,7 +918,9 @@ const Cart = () => {
         closeFlag: 0,
         statusFlag: 0,
         poId: 0,
-        orgPrice:isEnabled ? item?.retailerPrice?.toString() : item?.dealerPrice?.toString() || item?.price?.toString(),
+        orgPrice: isEnabled
+          ? item?.retailerPrice?.toString()
+          : item?.dealerPrice?.toString() || item?.price?.toString(),
       })),
       comments: comments,
       customerType: customerType,
@@ -929,15 +947,15 @@ const Cart = () => {
       d_pkg_flag: d_pkg_flag,
       // companyLocId: selectedCompanyLocationId,
       linkType: 3,
-      currentCreditLimit: 0.00,
+      currentCreditLimit: 0.0,
       orderType: 0,
-      roundOff:0,
+      roundOff: 0,
     };
 
-    console.log("Req body ===> ", requestData);
+    console.log('Req body ===> ', requestData);
     // return;
 
-    console.log("requestData:", JSON.stringify(requestData, null, 2));
+    console.log('requestData:', JSON.stringify(requestData, null, 2));
     axios
       .post(global?.userData?.productURL + API.ADD_ORDER_DATA, requestData, {
         headers: {
@@ -947,7 +965,7 @@ const Cart = () => {
       })
       .then(response => {
         // Handle success response
-        dispatch({ type: 'CLEAR_CART' });
+        dispatch({type: 'CLEAR_CART'});
         navigation.navigate('Home');
       })
       .catch(error => {
@@ -1019,21 +1037,48 @@ const Cart = () => {
     setDatePickerVisibility(false);
   };
 
-  const handleDateConfirm = date => {
-    console.warn('A date has been picked: ', date);
+  // const handleDateConfirm = date => {
+  //   console.warn('A date has been picked: ', date);
 
+  //   // Extract day, month, and year
+  //   const day = String(date.getDate()).padStart(2, '0');
+  //   const month = String(date.getMonth() + 1).padStart(2, '0'); // getMonth() returns month from 0-11
+  //   const year = date.getFullYear();
+
+  //   // Format date as DD-MM-YYYY
+  //   const formattedDate = `${day}-${month}-${year}`;
+
+  //   setSelectedDate('Expected Delivery Date: ' + formattedDate);
+  //   hideDatePicker();
+  //   setShipDate(date.toISOString().split('T')[0]);
+  // };
+
+  const handleDateConfirm = (date) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Set time to midnight for comparison
+  
+    if (date < today) {
+      // If the selected date is in the past, show an error or ignore
+      Alert.alert("Invalid Date", "Please select today's date or a future date.");
+      hideDatePicker();
+      return;
+    }
+  
+    console.warn('A date has been picked: ', date);
+  
     // Extract day, month, and year
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0'); // getMonth() returns month from 0-11
     const year = date.getFullYear();
-
+  
     // Format date as DD-MM-YYYY
     const formattedDate = `${day}-${month}-${year}`;
-
+  
     setSelectedDate('Expected Delivery Date: ' + formattedDate);
     hideDatePicker();
     setShipDate(date.toISOString().split('T')[0]);
   };
+  
 
   const handleQuantityChange = (index, text) => {
     const updatedItems = [...cartItems];
@@ -1049,7 +1094,6 @@ const Cart = () => {
     const parsedPrice = parseFloat(text);
 
     if (!isNaN(parsedPrice) || text === '') {
-
       if (isEnabled) {
         updatedItems[index].retailerPrice = text === '' ? '' : text;
       } else {
@@ -1076,7 +1120,7 @@ const Cart = () => {
   };
   const copyValueToClipboard = index => {
     const item = cartItems[index];
-    const { styleId, colorId, quantity } = item;
+    const {styleId, colorId, quantity} = item;
 
     // Check if quantity is 0 or falsy
     if (!quantity) {
@@ -1145,7 +1189,11 @@ const Cart = () => {
     let totalPrice = 0;
     for (let item of cartItems) {
       if (item.styleId === styleId && item.colorId === colorId) {
-        totalPrice += (isEnabled ? item?.retailerPrice?.toString() : item?.dealerPrice?.toString() || item?.price?.toString()) * item.quantity;
+        totalPrice +=
+          (isEnabled
+            ? item?.retailerPrice?.toString()
+            : item?.dealerPrice?.toString() || item?.price?.toString()) *
+          item.quantity;
       }
     }
     return totalPrice;
@@ -1156,35 +1204,48 @@ const Cart = () => {
   );
   const totalItems = uniqueSets.size;
   // Assuming cartItems and gstValues are defined properly
-  const totalPrice = cartItems.reduce((total, item) => {
-    // Parse price and quantity to floats and integers respectively
-    const parsedPrice = parseFloat(isEnabled ? item?.retailerPrice?.toString() : item?.dealerPrice?.toString() || item?.price?.toString());
-    const parsedQuantity = parseInt(item.quantity, 10);
+  const totalPrice = cartItems
+    .reduce((total, item) => {
+      // Parse price and quantity to floats and integers respectively
+      const parsedPrice = parseFloat(
+        isEnabled
+          ? item?.retailerPrice?.toString()
+          : item?.dealerPrice?.toString() || item?.price?.toString(),
+      );
+      const parsedQuantity = parseInt(item.quantity, 10);
 
-    // Check if parsedPrice and parsedQuantity are valid numbers
-    if (!isNaN(parsedPrice) && !isNaN(parsedQuantity)) {
-      return total + parsedPrice * parsedQuantity;
-    } else {
-      return total; // Ignore invalid items
-    }
-  }, 0).toFixed(2); // Total price formatted to 2 decimal places
+      // Check if parsedPrice and parsedQuantity are valid numbers
+      if (!isNaN(parsedPrice) && !isNaN(parsedQuantity)) {
+        return total + parsedPrice * parsedQuantity;
+      } else {
+        return total; // Ignore invalid items
+      }
+    }, 0)
+    .toFixed(2); // Total price formatted to 2 decimal places
 
   // Calculate total GST based on the totalPrice and user input (gstValues)
-  const totalGst = cartItems.reduce((acc, item, index) => {
-    const gstPercentage = parseFloat(gstValues[index] !== undefined ? gstValues[index] : item.gst); // Use updated GST if available
-    const itemTotalPrice = parseFloat(isEnabled ? item?.retailerPrice : item?.dealerPrice) * parseInt(item.quantity, 10);
-    const itemGst = (itemTotalPrice * gstPercentage) / 100;
-    return acc + itemGst; // Sum GST
-  }, 0).toFixed(2);
+  const totalGst = cartItems
+    .reduce((acc, item, index) => {
+      const gstPercentage = parseFloat(
+        gstValues[index] !== undefined ? gstValues[index] : item.gst,
+      ); // Use updated GST if available
+      const itemTotalPrice =
+        parseFloat(isEnabled ? item?.retailerPrice : item?.dealerPrice) *
+        parseInt(item.quantity, 10);
+      const itemGst = (itemTotalPrice * gstPercentage) / 100;
+      return acc + itemGst; // Sum GST
+    }, 0)
+    .toFixed(2);
 
   // Calculate total amount
-  const totalAmount = (parseFloat(totalPrice) + parseFloat(totalGst)).toFixed(2); // Total amount formatted to 2 decimal places
+  const totalAmount = (parseFloat(totalPrice) + parseFloat(totalGst)).toFixed(
+    2,
+  ); // Total amount formatted to 2 decimal places
 
   // Outputting the total values for debugging
-  console.log("Total Price:", totalPrice);
-  console.log("Total GST:", totalGst);
-  console.log("Total Amount:", totalAmount);
-
+  console.log('Total Price:', totalPrice);
+  console.log('Total GST:', totalGst);
+  console.log('Total Amount:', totalAmount);
 
   const [locationInputValues, setLocationInputValues] = useState({
     locationName: '',
@@ -1284,7 +1345,7 @@ const Cart = () => {
       companyId: companyId,
       locationType: 0,
       userId: userId,
-      linkType: 7
+      linkType: 7,
     };
 
     axios
@@ -1326,150 +1387,138 @@ const Cart = () => {
     setLocationErrorFields([]);
   };
 
-  useEffect(() => {
-  }, []); // Run only once when component mounts
+  useEffect(() => {}, []); // Run only once when component mounts
 
-
-  const handleSelectLocation = (item) => {
+  const handleSelectLocation = item => {
     setSelectedCompanyLocation(item.locationName);
     setSelectedCompanyLocationId(item.locationId);
     setShowCompanyLocationList(false);
-  }
+  };
 
   const filterLocation = text => {
-    const filtered = locationCompanyList.filter((item) => item?.locationName?.toUpperCase().includes(text?.toUpperCase()));
+    const filtered = locationCompanyList.filter(item =>
+      item?.locationName?.toUpperCase().includes(text?.toUpperCase()),
+    );
     setFilteredCompanyLocationList(filtered);
-  }
+  };
 
   const toggleSwitch = () => setIsEnabled(previousState => !previousState);
+
+  const OrderDetailRow = ({label, value}) => (
+    <View style={{flexDirection: 'row', }}>
+      <Text style={{width: 155, textAlign: 'right', color: '#000',marginVertical:3}}>
+        {label}
+      </Text>
+      <Text style={{width: 50, textAlign: 'center', color: '#000',marginLeft:20}}>:</Text>
+      <Text
+  style={{width: 80, textAlign: 'right', color: '#000'}}
+  adjustsFontSizeToFit
+  numberOfLines={1}
+>
+  {value}
+</Text>
+    </View>
+  );
+
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: '#fff' }}
+      style={{flex: 1, backgroundColor: '#fff'}}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : -500}>
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
-        <View style={{ marginVertical: 10, backgroundColor: '#fff' }}>
+      <SafeAreaView style={{flex: 1, backgroundColor: '#fff'}}>
+        <View style={{marginVertical: 10, backgroundColor: '#fff'}}>
           {/* <View style={{marginHorizontal: 10, marginVertical: 2}}>
             <Text style={{color: '#000', fontWeight: 'bold'}}>Customers</Text>
           </View> */}
           <View style={style.switchContainer}>
             <Switch
-              trackColor={{ false: '#767577', true: '#81b0ff' }}
+              trackColor={{false: '#767577', true: '#81b0ff'}}
               thumbColor={isEnabled ? '#f5dd4b' : '#f4f3f4'}
               ios_backgroundColor="#3e3e3e"
               onValueChange={toggleSwitch}
               value={isEnabled}
             />
-            <Text style={{ fontWeight: 'bold', fontSize: 15, color: '#000' }}>
+            <Text style={{fontWeight: 'bold', fontSize: 15, color: '#000',marginLeft:5}}>
               Slide For Retailer
             </Text>
           </View>
-          <View>
-            {/* {userRole &&
+        </View>
+        <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+          {/* {userRole &&
               userRole.toLowerCase &&
               userRole.toLowerCase() === 'admin' && ( */}
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <View>
-                <TouchableOpacity
-                  style={{
-                    width: '90%',
-                    height: 50,
-                    borderRadius: 10,
-                    borderWidth: 0.5,
-                    alignSelf: 'center',
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    paddingLeft: 15,
-                    paddingRight: 15,
-                  }}
-                  onPress={handleDropdownClick}>
-                  <Text style={{ fontWeight: '600', color: "#000" }}>
-                    {isEnabled ? (selectedCustomerDetails &&
+          <View>
+            <View>
+              <TouchableOpacity
+                style={{
+                  width: '90%',
+                  height: 50,
+                  borderRadius: 10,
+                  borderWidth: 0.5,
+                  alignSelf: 'center',
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  paddingLeft: 15,
+                  paddingRight: 15,
+                  marginBottom: 8,
+                }}
+                onPress={handleDropdownClick}>
+                <Text style={{fontWeight: '600', color: '#000'}}>
+                  {isEnabled
+                    ? selectedCustomerDetails &&
                       selectedCustomerDetails.length > 0
                       ? `${selectedCustomerDetails[0].firstName} ${selectedCustomerDetails[0].lastName}`
-                      : 'Retailer *') : (selectedDistributorDetails &&
-                        selectedDistributorDetails.length > 0
-                        ? `${selectedDistributorDetails[0].distributorName}`
-                        : 'Distributor *')}
-                  </Text>
+                      : 'Retailer *'
+                    : selectedDistributorDetails &&
+                      selectedDistributorDetails.length > 0
+                    ? `${selectedDistributorDetails[0].distributorName}`
+                    : 'Distributor *'}
+                </Text>
 
-                  <Image
-                    source={require('../../../assets/dropdown.png')}
-                    style={{ width: 20, height: 20 }}
-                  />
-                </TouchableOpacity>
+                <Image
+                  source={require('../../../assets/dropdown.png')}
+                  style={{width: 20, height: 20}}
+                />
+              </TouchableOpacity>
 
-                {clicked && (
-                  <View
+              {clicked && (
+                <View
+                  style={{
+                    height: 300,
+                    alignSelf: 'center',
+                    width: '90%',
+                    borderRadius: 10,
+                    zIndex: 1, // Ensure stacking order
+                    borderColor: 'gray', // Optional: Adds subtle border (for effect)
+                    borderWidth: 1, // Optional: Adds subtle border (for effect)
+                    marginBottom: 7,
+                  }}>
+                  <TextInput
                     style={{
-                      elevation: 5,
-                      height: 300,
-                      alignSelf: 'center',
-                      width: '90%',
-                      backgroundColor: '#fff',
+                      marginTop: 10,
                       borderRadius: 10,
-                    }}>
-                    <TextInput
-                      style={{
-                        marginTop: 10,
-                        borderRadius: 10,
-                        height: 40,
-                        borderColor: 'gray',
-                        borderWidth: 1,
-                        marginHorizontal: 10,
-                        paddingLeft: 10,
-                        marginBottom: 10,
-                        color: '#000000',
-                      }}
-                      placeholderTextColor="#000"
-                      placeholder="Search"
-                      value={searchQuery}
-                      onChangeText={text => setSearchQuery(text)}
-                    />
-                    {!isEnabled ? (
-                      filteredDistributors.length === 0 && !isLoading ? (
-                        <Text style={style.noCategoriesText}>
-                          Sorry, no results found!
-                        </Text>
-                      ) : (
-                        <ScrollView>
-                          {filteredDistributors.map((item, index) => (
-                            <TouchableOpacity
-                              key={index}
-                              style={{
-                                width: '100%',
-                                height: 50,
-                                justifyContent: 'center',
-                                borderBottomWidth: 0.5,
-                                borderColor: '#8e8e8e',
-                              }}
-                              onPress={() =>
-                                handleDistributorSelection(
-                                  item?.firstName,
-                                  item?.distributorName,
-                                  item?.id,
-                                )
-                              }>
-                              <Text
-                                style={{
-                                  fontWeight: '600',
-                                  marginHorizontal: 15,
-                                  color: '#000',
-                                }}>
-                                {item.firstName}
-                              </Text>
-                            </TouchableOpacity>
-                          ))}
-                        </ScrollView>
-                      )
-                    ) : filteredCustomers.length === 0 && !isLoading ? (
+                      height: 40,
+                      borderColor: 'gray',
+                      borderWidth: 1,
+                      marginHorizontal: 10,
+                      paddingLeft: 10,
+                      marginBottom: 10,
+                      color: '#000000',
+                    }}
+                    placeholderTextColor="#000"
+                    placeholder="Search"
+                    value={searchQuery}
+                    onChangeText={text => setSearchQuery(text)}
+                  />
+                  {!isEnabled ? (
+                    filteredDistributors.length === 0 && !isLoading ? (
                       <Text style={style.noCategoriesText}>
                         Sorry, no results found!
                       </Text>
                     ) : (
                       <ScrollView>
-                        {filteredCustomers.map((item, index) => (
+                        {filteredDistributors.map((item, index) => (
                           <TouchableOpacity
                             key={index}
                             style={{
@@ -1480,10 +1529,10 @@ const Cart = () => {
                               borderColor: '#8e8e8e',
                             }}
                             onPress={() =>
-                              handleCustomerSelection(
+                              handleDistributorSelection(
                                 item?.firstName,
-                                item?.lastName,
-                                item?.customerId,
+                                item?.distributorName,
+                                item?.id,
                               )
                             }>
                             <Text
@@ -1492,51 +1541,83 @@ const Cart = () => {
                                 marginHorizontal: 15,
                                 color: '#000',
                               }}>
-                              {item.firstName} {item.lastName}
+                              {item.firstName}
                             </Text>
                           </TouchableOpacity>
                         ))}
                       </ScrollView>
-                    )}
-                  </View>
-                )}
+                    )
+                  ) : filteredCustomers.length === 0 && !isLoading ? (
+                    <Text style={style.noCategoriesText}>
+                      Sorry, no results found!
+                    </Text>
+                  ) : (
+                    <ScrollView>
+                      {filteredCustomers.map((item, index) => (
+                        <TouchableOpacity
+                          key={index}
+                          style={{
+                            width: '100%',
+                            height: 50,
+                            justifyContent: 'center',
+                            borderBottomWidth: 0.5,
+                            borderColor: '#8e8e8e',
+                          }}
+                          onPress={() =>
+                            handleCustomerSelection(
+                              item?.firstName,
+                              item?.lastName,
+                              item?.customerId,
+                            )
+                          }>
+                          <Text
+                            style={{
+                              fontWeight: '600',
+                              marginHorizontal: 15,
+                              color: '#000',
+                            }}>
+                            {item.firstName} {item.lastName}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
+                  )}
+                </View>
+              )}
 
-                {isLoading && ( // Show ActivityIndicator if isLoading is true
-                  <ActivityIndicator
-                    style={{
-                      position: 'absolute',
-                      top: '50%',
-                      left: '50%',
-                      marginLeft: -20,
-                      marginTop: -20,
-                    }}
-                    size="large"
-                    color="#1F74BA"
-                  />
-                )}
-              </View>
-              <View>
-                <TouchableOpacity
-                  onPress={toggleModal}
-                  style={style.plusButton}>
-                  <Image
-                    style={{
-                      height: 30,
-                      width: 30,
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                    }}
-                    source={require('../../../assets/plus.png')}
-                  />
-                </TouchableOpacity>
-              </View>
+              {isLoading && ( // Show ActivityIndicator if isLoading is true
+                <ActivityIndicator
+                  style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    marginLeft: -20,
+                    marginTop: -20,
+                  }}
+                  size="large"
+                  color="#1F74BA"
+                />
+              )}
             </View>
-            {/* )} */}
+          </View>
+          {/* )} */}
+          <View style={{marginTop: 10, marginRight: 10}}>
+            <TouchableOpacity onPress={toggleModal} style={style.plusButton}>
+              <Image
+                style={{
+                  height: 30,
+                  width: 30,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+                source={require('../../../assets/plus.png')}
+              />
+            </TouchableOpacity>
           </View>
         </View>
 
-        <View style={{ flexDirection: 'row' }}>
-          <View style={{ flex: 1 }}>
+        <View style={{flexDirection: 'row'}}>
+          <View style={{flex: 1}}>
             <TouchableOpacity
               onPress={handleFromDropdownClick}
               style={{
@@ -1552,60 +1633,62 @@ const Cart = () => {
                 marginLeft: 18,
               }}>
               {/* <Text>{selectedLocation.locationName || 'Billing to *'}</Text> */}
-              <Text style={{ fontWeight: '600', color: "#000", }}>
+              <Text style={{fontWeight: '600', color: '#000'}}>
                 {selectedLocation.length > 0
                   ? `${selectedLocation}`
                   : 'Billing to *'}
               </Text>
               <Image
                 source={require('../../../assets/dropdown.png')}
-                style={{ width: 20, height: 20 }}
+                style={{width: 20, height: 20}}
               />
             </TouchableOpacity>
-            {fromToClicked ?
-              (customerLocations.length === 0 && !isLoading)
-                ? (
-                  <Text style={[style.noResultsLocation, { marginLeft: 15 }]}>
-                    Sorry , no results found!
-                  </Text>
-                ) : (
-                  <View
-                    style={{
-                      elevation: 5,
-                      height: 175,
-                      alignSelf: 'center',
-                      width: '85%',
-                      backgroundColor: '#fff',
-                      borderRadius: 10,
-                      marginLeft: 15,
-                    }}>
-                    {/* Here you can render your dropdown content */}
-                    <ScrollView>
-                      {customerLocations.map(location => (
-                        <TouchableOpacity
-                          key={location.locationId}
-                          style={{
-                            paddingHorizontal: 10,
-                            paddingVertical: 15,
-                            borderBottomWidth: 1,
-                            borderBottomColor: '#ccc',
-                          }}
-                          onPress={() => handleLocationSelection(location)}>
-                          <Text style={{ color: '#000' }}>
-                            {location.locationName}
-                          </Text>
-                        </TouchableOpacity>
-                      ))}
-                    </ScrollView>
-                  </View>
-                ) : null}
+            {fromToClicked ? (
+              customerLocations.length === 0 && !isLoading ? (
+                <Text style={[style.noResultsLocation, {marginLeft: 15}]}>
+                  Sorry , no results found!
+                </Text>
+              ) : (
+                <View
+                  style={{
+                    height: 175,
+                    alignSelf: 'center',
+                    width: '85%',
+                    backgroundColor: '#fff',
+                    borderRadius: 10,
+                    marginLeft: 15,
+                    borderColor: 'gray', // Optional: Adds subtle border (for effect)
+                    borderWidth: 1,
+                    marginTop: 5,
+                  }}>
+                  {/* Here you can render your dropdown content */}
+                  <ScrollView>
+                    {customerLocations.map(location => (
+                      <TouchableOpacity
+                        key={location.locationId}
+                        style={{
+                          paddingHorizontal: 10,
+                          paddingVertical: 15,
+                          borderBottomWidth: 1,
+                          borderBottomColor: '#ccc',
+                        }}
+                        onPress={() => handleLocationSelection(location)}>
+                        <Text style={{color: '#000'}}>
+                          {location.locationName}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                </View>
+              )
+            ) : null}
           </View>
 
-          <View style={{ flex: 1 }}>
+          <View style={{flex: 1}}>
             <TouchableOpacity
               onPress={handleShipDropdownClick}
               style={{
-                width: '90%',
+                width: '86%',
                 height: 50,
                 borderRadius: 10,
                 borderWidth: 0.5,
@@ -1617,56 +1700,56 @@ const Cart = () => {
                 marginLeft: 5,
               }}>
               {/* <Text>{selectedShipLocation.locationName || 'Shiping to *'}</Text> */}
-              <Text style={{ fontWeight: '600', color: "#000" }}>
+              <Text style={{fontWeight: '600', color: '#000'}}>
                 {selectedShipLocation.length > 0
                   ? `${selectedShipLocation}`
                   : 'Shipping to *'}
               </Text>
               <Image
                 source={require('../../../assets/dropdown.png')}
-                style={{ width: 20, height: 20 }}
+                style={{width: 20, height: 20}}
               />
             </TouchableOpacity>
-            {shipFromToClicked
-              && (
-                (customerLocations.length === 0 && !isLoading)
-                  ? (
-                    <Text style={[style.noResultsLocation, { marginRight: 17 }]}>
-                      Sorry , no results found!
-                    </Text>
-                  ) : (
-                    <View
-                      style={{
-                        elevation: 5,
-                        height: 175,
-                        alignSelf: 'center',
-                        width: '85%',
-                        backgroundColor: '#fff',
-                        borderRadius: 10,
-                        marginRight: 17,
-                      }}>
-                      {/* Here you can render your dropdown content */}
-                      <ScrollView>
-                        {customerLocations.map(location => (
-                          <TouchableOpacity
-                            key={location.locationId}
-                            style={{
-                              paddingHorizontal: 10,
-                              paddingVertical: 15,
-                              borderBottomWidth: 1,
-                              borderBottomColor: '#ccc',
-                            }}
-                            onPress={() => handleShipLocation(location)}>
-                            <Text style={{ color: '#000' }}>
-                              {location.locationName}
-                            </Text>
-                          </TouchableOpacity>
-                        ))}
-                      </ScrollView>
-                    </View>
-                  ))}
+            {shipFromToClicked &&
+              (customerLocations.length === 0 && !isLoading ? (
+                <Text style={[style.noResultsLocation, {marginRight: 17}]}>
+                  Sorry , no results found!
+                </Text>
+              ) : (
+                <View
+                  style={{
+                    height: 175,
+                    alignSelf: 'center',
+                    width: '85%',
+                    backgroundColor: '#fff',
+                    borderRadius: 10,
+                    marginRight: 17,
+                    borderColor: 'gray', // Optional: Adds subtle border (for effect)
+                    borderWidth: 1,
+                    marginTop: 5,
+                  }}>
+                  {/* Here you can render your dropdown content */}
+                  <ScrollView>
+                    {customerLocations.map(location => (
+                      <TouchableOpacity
+                        key={location.locationId}
+                        style={{
+                          paddingHorizontal: 10,
+                          paddingVertical: 15,
+                          borderBottomWidth: 1,
+                          borderBottomColor: '#ccc',
+                        }}
+                        onPress={() => handleShipLocation(location)}>
+                        <Text style={{color: '#000'}}>
+                          {location.locationName}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                </View>
+              ))}
           </View>
-          <View>
+          <View style={{marginRight: 10, marginTop: 5}}>
             <TouchableOpacity
               style={style.plusButton}
               onPress={() => toggleLocationModal()}>
@@ -1676,7 +1759,6 @@ const Cart = () => {
                   width: 30,
                   justifyContent: 'center',
                   alignItems: 'center',
-                  marginRight: 15,
                   marginTop: 5,
                 }}
                 source={require('../../../assets/plus.png')}
@@ -1684,7 +1766,6 @@ const Cart = () => {
             </TouchableOpacity>
           </View>
         </View>
-
 
         {/* <View style={{ flexDirection: 'row', marginTop: 10 }}>
             <TouchableOpacity
@@ -1772,16 +1853,20 @@ const Cart = () => {
               )}
             </View>
           )} */}
-        <View style={{ marginBottom: 10 }} />
+        <View style={{marginBottom: 10}} />
 
         <ScrollView style={style.container}>
           {/* <View style={style.header}>
             <Text style={style.txt}>Total Items: {cartItems.length}</Text>
           </View> */}
           {cartItems.length === 0 ? (
-            <Text style={{ marginLeft: 10, color: '#000' }}>
+            <View style={{marginVertical:50}}>
+            
+            <Image style={{alignSelf:"center", tintColor: "black"}} resizeMode="cover" source={require('../../../assets/no-cart-product.png')}/>
+            <Text style={{marginLeft: 10, color: '#000',alignSelf:"center",fontWeight:"bold",fontSize:20}}>
               No items in cart
             </Text>
+            </View>
           ) : (
             <View>
               {cartItems.map((item, index) => (
@@ -1789,93 +1874,94 @@ const Cart = () => {
                   key={`${item.styleId}-${item.colorId}-${item.sizeId}-${index}`}>
                   <View
                     key={`${item.styleId}-${item.colorId}-${item.sizeId}-${index}`}
-                    style={{ marginBottom: 20 }}>
+                    style={{marginBottom: 20}}>
                     {(index === 0 ||
                       item.styleId !== cartItems[index - 1].styleId ||
                       item.colorId !== cartItems[index - 1].colorId) && (
-                        <View style={style.itemContainer}>
-                          <View style={style.imgContainer}>
-                            {item.imageUrls && item.imageUrls.length > 0 && (
-                              <Image
-                                source={{ uri: item.imageUrls[0] }}
-                                style={{
-                                  width: 100,
-                                  height: 100,
-                                  resizeMode: 'cover',
-                                  margin: 5,
-                                }}
-                              />
-                            )}
+                      <View style={style.itemContainer}>
+                        <View style={style.imgContainer}>
+                          {item.imageUrls && item.imageUrls.length > 0 && (
+                            <Image
+                              source={{uri: item.imageUrls[0]}}
+                              style={{
+                                width: 100,
+                                height: 100,
+                                resizeMode: 'cover',
+                                margin: 5,
+                              }}
+                            />
+                          )}
 
-                            <View style={{ flex: 1 }}>
-                              <Text
-                                style={{
-                                  fontSize: 15,
-                                  fontWeight: 'bold',
-                                  marginLeft: 5,
-                                  color: '#000',
-                                }}>
-                                {item.styleName}
-                              </Text>
-                              <Text
-                                style={{
-                                  fontSize: 15,
-                                  fontWeight: 'bold',
-                                  marginLeft: 5,
-                                  color: '#000',
-                                }}>
-                                {item.styleDesc}
-                              </Text>
-                              <Text
-                                style={{
-                                  fontSize: 15,
-                                  fontWeight: 'bold',
-                                  marginLeft: 5,
-                                  color: '#000',
-                                }}>
-                                Color Name - {item.colorName}
-                              </Text>
-                            </View>
-                            <View style={style.buttonsContainer}>
-                              <TouchableOpacity onPress={() => openModal(item)}>
-                                <Image
-                                  style={style.buttonIcon}
-                                  source={require('../../../assets/edit.png')}
-                                />
-                              </TouchableOpacity>
-                            </View>
+                          <View style={{flex: 1}}>
+                            <Text
+                              style={{
+                                fontSize: 15,
+                                fontWeight: 'bold',
+                                marginLeft: 5,
+                                color: '#000',
+                              }}>
+                              {item.styleName}
+                            </Text>
+                            <Text
+                              style={{
+                                fontSize: 15,
+                                fontWeight: 'bold',
+                                marginLeft: 5,
+                                color: '#000',
+                              }}>
+                              {item.styleDesc}
+                            </Text>
+                            <Text
+                              style={{
+                                fontSize: 15,
+                                fontWeight: 'bold',
+                                marginLeft: 5,
+                                color: '#000',
+                              }}>
+                              Color Name - {item.colorName}
+                            </Text>
                           </View>
-                          <View style={style.sizehead}>
-                            <View style={{ flex: 0.5 }}>
-                              <Text style={{ color: '#000', marginLeft: 10 }}>
-                                SIZE
-                              </Text>
-                            </View>
-                            <View style={{ flex: 0.8, marginLeft: 29 }}>
-                              <Text style={{ color: '#000' }}>QUANTITY</Text>
-                            </View>
-                            <View style={{ flex: 0.5, marginLeft: 30 }}>
-                              <Text style={{ color: '#000' }}>PRICE</Text>
-                            </View>
-                            <View style={{ flex: 0.4, marginLeft: 30 }}>
-                              <Text style={{ color: '#000' }}>GST</Text>
-                            </View>
-                            <View style={{ flex: 0.5, marginLeft: 5, marginRight: 8,}}>
-                              <Text style={{ color: '#000' }}>GROSS PRICE</Text>
-                            </View>
-                            <TouchableOpacity
-                              onPress={() => copyValueToClipboard(index)}>
+                          <View style={style.buttonsContainer}>
+                            <TouchableOpacity onPress={() => openModal(item)}>
                               <Image
-                                style={{ height: 25, width: 25, marginRight: 10 }}
-                                source={require('../../../assets/copy.png')}
+                                style={style.buttonIcon}
+                                source={require('../../../assets/edit.png')}
                               />
                             </TouchableOpacity>
                           </View>
                         </View>
-                      )}
+                        <View style={style.sizehead}>
+                          <View style={{flex: 0.5}}>
+                            <Text style={{color: '#000', marginLeft: 5}}>
+                              SIZE
+                            </Text>
+                          </View>
+                          <View style={{flex: 0.8, marginLeft: 29}}>
+                            <Text style={{color: '#000'}}>QUANTITY</Text>
+                          </View>
+                          <View style={{flex: 0.5, marginLeft: 30}}>
+                            <Text style={{color: '#000'}}>PRICE</Text>
+                          </View>
+                          <View style={{flex: 0.4, marginLeft: 20}}>
+                            <Text style={{color: '#000'}}>GST</Text>
+                          </View>
+                          <View
+                            style={{flex: 0.5, marginLeft: 5, marginRight: 8}}>
+                            <Text style={{color: '#000'}}>GROSS PRICE</Text>
+                          </View>
+                          <TouchableOpacity
+                            onPress={() => copyValueToClipboard(index)}>
+                            <Image
+                              style={{height: 25, width: 25, marginRight: 8}}
+                              source={require('../../../assets/copy.png')}
+                            />
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                    )}
                     <View style={style.itemDetails}>
-                      <View style={{ flex: 0.3, }}>
-                        <Text style={{ color: '#000' }}>{item.sizeDesc}</Text>
+                      <View style={{flex: 0.3}}>
+                        <Text style={{color: '#000'}}>{item.sizeDesc}</Text>
                       </View>
                       <TouchableOpacity
                         onPress={() => handleDecrementQuantityCart(index)}>
@@ -1909,7 +1995,9 @@ const Cart = () => {
                           style={{
                             height: 20,
                             width: 20,
-                            marginHorizontal: 10,
+                            // marginHorizontal: 10,
+                            marginLeft:10,
+                            marginRight:15
                           }}
                           source={require('../../../assets/add1.png')}
                         />
@@ -1923,29 +2011,53 @@ const Cart = () => {
                           keyboardType="numeric"
                         />
                       </View> */}
-                      <View style={{ flex: 0.4, marginLeft: 10, borderBottomWidth: 1, borderColor: "#000" }}>
+                      <View
+                        style={{
+                          flex: 0.4,
+                          marginLeft: 10,
+                          borderBottomWidth: 1,
+                          borderColor: '#000',
+                        }}>
                         <TextInput
-                          style={{ color: '#000', alignSelf: "center" }}
-                          value={isEnabled
-                            ? item?.retailerPrice?.toString() || ''  // If retailerPrice is available, show it, else show empty string
-                            : item?.dealerPrice?.toString() || ''}  // Show dealerPrice if isEnabled is false, fallback to price
-                          onChangeText={text => handlePriceChange(index, text)}  // Call handlePriceChange on text change
+                          style={{color: '#000', alignSelf: 'center'}}
+                          value={
+                            isEnabled
+                              ? item?.retailerPrice?.toString() || '' // If retailerPrice is available, show it, else show empty string
+                              : item?.dealerPrice?.toString() || ''
+                          } // Show dealerPrice if isEnabled is false, fallback to price
+                          onChangeText={text => handlePriceChange(index, text)} // Call handlePriceChange on text change
                           keyboardType="numeric"
                         />
                       </View>
-                      <View style={{ flex: 0.2, marginLeft: 30, borderBottomWidth: 1, borderColor: "#000" }}>
+                      <View
+                        style={{
+                          flex: 0.2,
+                          marginLeft: 30,
+                          borderBottomWidth: 1,
+                          borderColor: '#000',
+                          
+                        }}>
                         <TextInput
-                          style={{ color: '#000', alignSelf: "center" }}
-                          value={gstValues[index] !== undefined ? gstValues[index] : item?.gst?.toString()} // Using gstValues if edited, otherwise item.gst
+                          style={{color: '#000', alignSelf: 'center',}}
+                          value={
+                            gstValues[index] !== undefined
+                              ? gstValues[index]
+                              : item?.gst?.toString()
+                          } // Using gstValues if edited, otherwise item.gst
                           onChangeText={text => handleGstChange(index, text)} // Update gstValues state
                           keyboardType="numeric" // Numeric input
                         />
                       </View>
 
-                      <View style={{ flex: 0.3, marginLeft: 30 }}>
-                        <Text style={{ color: '#000' }}>
+                      <View style={{flex: 0.3, marginLeft: 30}}>
+                        <Text style={{color: '#000'}}>
                           {(
-                            Number(isEnabled ? item?.retailerPrice?.toString() : item?.dealerPrice?.toString() || item?.price?.toString()) * Number(item.quantity)
+                            Number(
+                              isEnabled
+                                ? item?.retailerPrice?.toString()
+                                : item?.dealerPrice?.toString() ||
+                                    item?.price?.toString(),
+                            ) * Number(item.quantity)
                           ).toString()}
                         </Text>
                       </View>
@@ -1961,48 +2073,48 @@ const Cart = () => {
                   {(index === cartItems.length - 1 ||
                     item.styleId !== cartItems[index + 1]?.styleId ||
                     item.colorId !== cartItems[index + 1]?.colorId) && (
-                      <>
-                        <View
-                          style={{
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            backgroundColor: 'lightgray',
-                            paddingVertical: 10,
-                            borderRadius: 20,
-                            flex:1
-                          }}>
-                          <View style={{ flex: 1.5, marginLeft: 18 }}>
-                            <Text style={{ color: '#000' }}>Total</Text>
-                          </View>
-                          <View style={{ flex: 2.1,marginLeft:10 }}>
-                            <Text style={{ color: '#000' }}>
-                              {' '}
-                              {calculateTotalQty(item.styleId, item.colorId)}
-                            </Text>
-                          </View>
-                          {/* <View style={{ flex: 1 }}>
+                    <>
+                      <View
+                        style={{
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          backgroundColor: 'lightgray',
+                          paddingVertical: 10,
+                          borderRadius: 20,
+                          flex: 1,
+                        }}>
+                        <View style={{flex: 1.5, marginLeft: 18}}>
+                          <Text style={{color: '#000'}}>Total</Text>
+                        </View>
+                        <View style={{flex: 2.1, marginLeft: 10,marginRight:20}}>
+                          <Text style={{color: '#000'}}>
+                            {' '}
+                            {calculateTotalQty(item.styleId, item.colorId)}
+                          </Text>
+                        </View>
+                        {/* <View style={{ flex: 1 }}>
                           <Text style={{color:"#000"}}>Total Set: {calculateTotalItems(item.styleId, item.colorId)}</Text>
                         </View> */}
-                          <View style={{ flex: 1.5,marginLeft:110 }}>
-                            <Text style={{ color: '#000' }}>
-                              {calculateTotalPrice(item.styleId, item.colorId)}
-                            </Text>
-                          </View>
+                        <View style={{flex: 1.5, marginLeft: 90,marginRight:10}}>
+                          <Text style={{color: '#000'}}>
+                            {calculateTotalPrice(item.styleId, item.colorId)}
+                          </Text>
                         </View>
-                        {/* <View style={style.separatorr} /> */}
-                        <View />
-                      </>
-                    )}
+                      </View>
+                      {/* <View style={style.separatorr} /> */}
+                      <View />
+                    </>
+                  )}
                 </View>
               ))}
             </View>
           )}
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+          <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
             <TouchableOpacity
               onPress={showDatePicker}
-              style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <View style={{ paddingVertical: 10 }}>
-                <Text style={{ marginLeft: 10, color: '#000' }}>
+              style={{flexDirection: 'row', alignItems: 'center'}}>
+              <View style={{paddingVertical: 10}}>
+                <Text style={{marginLeft: 10, color: '#000'}}>
                   {selatedDate}
                 </Text>
               </View>
@@ -2031,7 +2143,7 @@ const Cart = () => {
             <TextInput
               style={{
                 marginLeft: 10,
-                marginTop:Platform.OS === 'ios' ? 10 : 0,
+                marginTop: Platform.OS === 'ios' ? 10 : 0,
                 color: isDarkTheme ? '#fff' : 'black', // Change text color based on theme
               }}
               placeholder="Enter comments"
@@ -2048,31 +2160,45 @@ const Cart = () => {
             }}></View>
         </ScrollView>
 
-        <View style={{ backgroundColor: '#faf7f6', borderTopWidth: 1 }}>
-        <View style={style.bottomContainer}>
-  <View style={style.row}>
-    <Text style={style.label1}>Total Qty</Text>
-    <Text style={style.colon}>:</Text>
-    <Text style={style.value}>{totalQty}</Text>
-  </View>
-  <View style={style.row}>
-    <Text style={style.label2}>Total Items</Text>
-    <Text style={style.colon}>:</Text>
-    <Text style={style.value2}>{totalItems}</Text>
-  </View>
-  <View style={style.row}>
-    <Text style={style.label3}>Total Gst</Text>
-    <Text style={style.colon}>:</Text>
-    <Text style={style.value3}>{totalGst}</Text>
-  </View>
-  <View style={style.row}>
-    <Text style={style.label3}>Total Amt</Text>
-    <Text style={style.colon}>:</Text>
-    <Text style={style.value3}>{totalAmount}</Text>
-  </View>
-</View>
-
-
+        <View style={{backgroundColor: '#faf7f6', borderTopWidth: 1}}>
+          {/* <View style={style.bottomContainer}>
+            <View style={style.row}>
+              <Text style={style.label1}>Total Qty</Text>
+              <Text style={style.colon}>:</Text>
+              <Text style={style.value}>{totalQty}</Text>
+            </View>
+            <View style={style.row}>
+              <Text style={style.label2}>Total Items</Text>
+              <Text style={style.colon}>:</Text>
+              <Text style={style.value2}>{totalItems}</Text>
+            </View>
+            <View style={style.row}>
+              <Text style={style.label3}>Total Gst</Text>
+              <Text style={style.colon}>:</Text>
+              <Text style={style.value3}>{totalGst}</Text>
+            </View>
+            <View style={style.row}>
+              <Text style={style.label3}>Total Amt</Text>
+              <Text style={style.colon}>:</Text>
+              <Text style={style.value3}>{totalAmount}</Text>
+            </View>
+          </View> */}
+          
+          <View
+              style={{
+                marginHorizontal: 15,
+                marginBottom: 15,
+                marginVertical:25
+              }}>
+              <OrderDetailRow label="Total Qty" value={totalQty} />
+              <OrderDetailRow label="Total Items" value={totalItems} />
+              <OrderDetailRow label="Total Gst" value={totalGst} />
+              <OrderDetailRow
+                label="Total Amt"
+                value={totalAmount}
+              />
+             
+            </View>
           <TouchableOpacity
             onPress={PlaceAddOrder}
             disabled={isSubmitting} // Disable button when submitting
@@ -2110,33 +2236,38 @@ const Cart = () => {
             }}>
             <View style={style.modalContainerr}>
               <View style={style.modalContentt}>
-                <View style={{
-                  backgroundColor: '#1F74BA',
-                  borderRadius: 10,
-                  marginHorizontal: 10,
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  marginTop: 10,
-                  paddingVertical: 5,
-                  width: '100%',
-                  justifyContent: 'space-between',
-                  marginBottom: 15,
-                }}>
-                  <Text style={[style.modalTitle, { textAlign: 'center', flex: 1 }]}>{isEnabled ? "Retailer Details" : "Distributor Details"}</Text>
-                  <TouchableOpacity onPress={handleCloseModalDisRet} style={{ alignSelf: 'flex-end' }} >
+                <View
+                  style={{
+                    backgroundColor: '#1F74BA',
+                    borderRadius: 10,
+                    marginHorizontal: 10,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    marginTop: 10,
+                    paddingVertical: 5,
+                    width: '100%',
+                    justifyContent: 'space-between',
+                    marginBottom: 15,
+                  }}>
+                  <Text
+                    style={[style.modalTitle, {textAlign: 'center', flex: 1}]}>
+                    {isEnabled ? 'Retailer Details' : 'Distributor Details'}
+                  </Text>
+                  <TouchableOpacity
+                    onPress={handleCloseModalDisRet}
+                    style={{alignSelf: 'flex-end'}}>
                     <Image
-                      style={{ height: 30, width: 30, marginRight: 5 }}
+                      style={{height: 30, width: 30, marginRight: 5}}
                       source={require('../../../assets/close.png')}
                     />
                   </TouchableOpacity>
                 </View>
 
-                <ScrollView style={{ width: '100%', height: '65%' }}>
-
+                <ScrollView style={{width: '100%', height: '65%'}}>
                   <TextInput
                     style={[
                       style.input,
-                      { color: '#000' },
+                      {color: '#000'},
                       errorFields.includes('firstName')
                         ? style.errorBorder
                         : null,
@@ -2146,7 +2277,7 @@ const Cart = () => {
                     }
                     placeholderTextColor="#000"
                     onChangeText={text =>
-                      setInputValues({ ...inputValues, firstName: text })
+                      setInputValues({...inputValues, firstName: text})
                     }
                     value={inputValues.firstName}
                   />
@@ -2161,7 +2292,7 @@ const Cart = () => {
                   <TextInput
                     style={[
                       style.input,
-                      { color: '#000' },
+                      {color: '#000'},
                       errorFields.includes('phoneNumber')
                         ? style.errorBorder
                         : null,
@@ -2169,19 +2300,21 @@ const Cart = () => {
                     placeholder="Phone Number *"
                     placeholderTextColor="#000"
                     onChangeText={text =>
-                      setInputValues({ ...inputValues, phoneNumber: text })
+                      setInputValues({...inputValues, phoneNumber: text})
                     }
                   />
                   {errorFields.includes('phoneNumber') && (
-                    <Text style={style.errorText}>Please Enter Phone Number</Text>
+                    <Text style={style.errorText}>
+                      Please Enter Phone Number
+                    </Text>
                   )}
 
                   <TextInput
-                    style={[style.input, { color: '#000' }]}
+                    style={[style.input, {color: '#000'}]}
                     placeholder="Whatsapp Number *"
                     placeholderTextColor="#000"
                     onChangeText={text =>
-                      setInputValues({ ...inputValues, whatsappId: text })
+                      setInputValues({...inputValues, whatsappId: text})
                     }
                   />
                   {errorFields.includes('whatsappId') && (
@@ -2192,7 +2325,7 @@ const Cart = () => {
                   <TextInput
                     style={[
                       style.input,
-                      { color: '#000' },
+                      {color: '#000'},
                       errorFields.includes('cityOrTown')
                         ? style.errorBorder
                         : null,
@@ -2200,22 +2333,24 @@ const Cart = () => {
                     placeholder="City or Town *"
                     placeholderTextColor="#000"
                     onChangeText={text =>
-                      setInputValues({ ...inputValues, cityOrTown: text })
+                      setInputValues({...inputValues, cityOrTown: text})
                     }
                   />
                   {errorFields.includes('cityOrTown') && (
-                    <Text style={style.errorText}>Please Enter City Or Town</Text>
+                    <Text style={style.errorText}>
+                      Please Enter City Or Town
+                    </Text>
                   )}
                   <TextInput
                     style={[
                       style.input,
-                      { color: '#000' },
+                      {color: '#000'},
                       errorFields.includes('state') ? style.errorBorder : null,
                     ]}
                     placeholderTextColor="#000"
                     placeholder="State *"
                     onChangeText={text =>
-                      setInputValues({ ...inputValues, state: text })
+                      setInputValues({...inputValues, state: text})
                     }
                   />
                   {errorFields.includes('state') && (
@@ -2224,13 +2359,15 @@ const Cart = () => {
                   <TextInput
                     style={[
                       style.input,
-                      { color: '#000' },
-                      errorFields.includes('country') ? style.errorBorder : null,
+                      {color: '#000'},
+                      errorFields.includes('country')
+                        ? style.errorBorder
+                        : null,
                     ]}
                     placeholderTextColor="#000"
                     placeholder="Country *"
                     onChangeText={text =>
-                      setInputValues({ ...inputValues, country: text })
+                      setInputValues({...inputValues, country: text})
                     }
                   />
                   {errorFields.includes('country') && (
@@ -2239,13 +2376,15 @@ const Cart = () => {
                   <TextInput
                     style={[
                       style.input,
-                      { color: '#000' },
-                      errorFields.includes('pincode') ? style.errorBorder : null,
+                      {color: '#000'},
+                      errorFields.includes('pincode')
+                        ? style.errorBorder
+                        : null,
                     ]}
                     placeholderTextColor="#000"
                     placeholder="Pincode *"
                     onChangeText={text =>
-                      setInputValues({ ...inputValues, pincode: text })
+                      setInputValues({...inputValues, pincode: text})
                     }
                   />
                   {errorFields.includes('pincode') && (
@@ -2254,32 +2393,43 @@ const Cart = () => {
                   <TextInput
                     style={[
                       style.input,
-                      { color: '#000' },
-                      errorFields.includes('locationName') ? style.errorBorder : null,
+                      {color: '#000'},
+                      errorFields.includes('locationName')
+                        ? style.errorBorder
+                        : null,
                     ]}
                     placeholderTextColor="#000"
                     placeholder="Location Name *"
                     onChangeText={text =>
-                      setInputValues({ ...inputValues, locationName: text })
+                      setInputValues({...inputValues, locationName: text})
                     }
                   />
                   {errorFields.includes('locationName') && (
-                    <Text style={style.errorText}>Please Enter Location Name</Text>
+                    <Text style={style.errorText}>
+                      Please Enter Location Name
+                    </Text>
                   )}
                   <TextInput
                     style={[
                       style.input,
-                      { color: '#000' },
-                      errorFields.includes('locationDescription') ? style.errorBorder : null,
+                      {color: '#000'},
+                      errorFields.includes('locationDescription')
+                        ? style.errorBorder
+                        : null,
                     ]}
                     placeholderTextColor="#000"
                     placeholder="Location Description *"
                     onChangeText={text =>
-                      setInputValues({ ...inputValues, locationDescription: text })
+                      setInputValues({
+                        ...inputValues,
+                        locationDescription: text,
+                      })
                     }
                   />
                   {errorFields.includes('locationDescription') && (
-                    <Text style={style.errorText}>Please Enter Location Description</Text>
+                    <Text style={style.errorText}>
+                      Please Enter Location Description
+                    </Text>
                   )}
                   <TouchableOpacity
                     style={style.saveButton}
@@ -2302,8 +2452,8 @@ const Cart = () => {
             mode="date"
             onConfirm={handleDateConfirm}
             onCancel={hideDatePicker}
-            date={new Date()}  // Default parameter for `date`
-            onHide={() => { }}
+            date={new Date()} // Default parameter for `date`
+            onHide={() => {}}
           />
           <View>
             <Modal
@@ -2328,20 +2478,26 @@ const Cart = () => {
                       justifyContent: 'space-between',
                       marginBottom: 15,
                     }}>
-                    <Text style={[style.modalTitle, { flex: 1, textAlign: 'center' }]}>Location Details</Text>
+                    <Text
+                      style={[
+                        style.modalTitle,
+                        {flex: 1, textAlign: 'center'},
+                      ]}>
+                      Location Details
+                    </Text>
 
                     <TouchableOpacity onPress={handleCloseModalLocation}>
                       <Image
-                        style={{ height: 30, width: 30, marginRight: 5 }}
+                        style={{height: 30, width: 30, marginRight: 5}}
                         source={require('../../../assets/close.png')}
                       />
                     </TouchableOpacity>
                   </View>
-                  <ScrollView style={{ width: '100%', height: '65%' }}>
+                  <ScrollView style={{width: '100%', height: '65%'}}>
                     <TextInput
                       style={[
                         style.input,
-                        { color: '#000' },
+                        {color: '#000'},
                         locationErrorFields.includes('locationName')
                           ? style.errorBorder
                           : null,
@@ -2365,8 +2521,10 @@ const Cart = () => {
                     <TextInput
                       style={[
                         style.input,
-                        { color: '#000' },
-                        errorFields.includes('state') ? style.errorBorder : null,
+                        {color: '#000'},
+                        errorFields.includes('state')
+                          ? style.errorBorder
+                          : null,
                         locationErrorFields.includes('phoneNumber')
                           ? style.errorBorder
                           : null,
@@ -2386,7 +2544,7 @@ const Cart = () => {
                       </Text>
                     )}
                     <TextInput
-                      style={[style.input, { color: '#000' }]}
+                      style={[style.input, {color: '#000'}]}
                       placeholder="Locality"
                       placeholderTextColor="#000"
                       onChangeText={text =>
@@ -2399,7 +2557,7 @@ const Cart = () => {
                     <TextInput
                       style={[
                         style.input,
-                        { color: '#000' },
+                        {color: '#000'},
                         locationErrorFields.includes('cityOrTown')
                           ? style.errorBorder
                           : null,
@@ -2421,7 +2579,7 @@ const Cart = () => {
                     <TextInput
                       style={[
                         style.input,
-                        { color: '#000' },
+                        {color: '#000'},
                         locationErrorFields.includes('state')
                           ? style.errorBorder
                           : null,
@@ -2441,7 +2599,7 @@ const Cart = () => {
                     <TextInput
                       style={[
                         style.input,
-                        { color: '#000' },
+                        {color: '#000'},
                         locationErrorFields.includes('pincode')
                           ? style.errorBorder
                           : null,
@@ -2461,7 +2619,7 @@ const Cart = () => {
                     <TextInput
                       style={[
                         style.input,
-                        { color: '#000' },
+                        {color: '#000'},
                         locationErrorFields.includes('country')
                           ? style.errorBorder
                           : null,
@@ -2532,63 +2690,63 @@ const style = StyleSheet.create({
     marginLeft: 10,
   },
   bottomContainer: {
-  alignItems: 'flex-start',
-  paddingVertical: 3,
-  backgroundColor: '#faf7f6',
-  alignSelf: 'center',
-},
+    alignItems: 'flex-start',
+    paddingVertical: 3,
+    backgroundColor: '#faf7f6',
+    alignSelf: 'center',
+  },
 
-row: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  marginBottom: 5,
-},
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 5,
+  },
 
-label1: {
-  color: "#000",
-  minWidth: 100, // Adjust width for alignment
-},
+  label1: {
+    color: '#000',
+    minWidth: 100, // Adjust width for alignment
+  },
 
-label2: {
-  color: "#000",
-  minWidth: 100, // Adjust width for alignment
-},
+  label2: {
+    color: '#000',
+    minWidth: 100, // Adjust width for alignment
+  },
 
-label3: {
-  color: "#000",
-  minWidth: 100, // Adjust width for alignment
-},
+  label3: {
+    color: '#000',
+    minWidth: 100, // Adjust width for alignment
+  },
 
-colon: {
-  marginLeft: 5,  // Space between label and colon
-},
+  colon: {
+    marginLeft: 5, // Space between label and colon
+  },
 
-value: {
-  marginLeft: 5, // Space between colon and value
-},
+  value: {
+    marginLeft: 5, // Space between colon and value
+  },
 
-value2: {
-  marginLeft: 5, // Space between colon and value
-},
+  value2: {
+    marginLeft: 5, // Space between colon and value
+  },
 
-value3: {
-  marginLeft: 5, // Space between colon and value
-},
+  value3: {
+    marginLeft: 5, // Space between colon and value
+  },
 
   value: {
     marginLeft: 30,
-    color: "#000",
-    marginRight: 5
+    color: '#000',
+    marginRight: 5,
   },
   value2: {
     marginLeft: 30,
-    color: "#000",
-    marginRight: 5
+    color: '#000',
+    marginRight: 5,
   },
   value3: {
     marginLeft: 30,
-    color: "#000",
-    marginRight: 5
+    color: '#000',
+    marginRight: 5,
   },
   dateIconContainer: {
     justifyContent: 'center',
@@ -2651,6 +2809,7 @@ value3: {
     width: '80%',
     alignItems: 'center',
     elevation: 5, // Add elevation for shadow on Android
+    top:10
   },
   modalTitle: {
     fontSize: 16,
@@ -2662,8 +2821,8 @@ value3: {
     borderWidth: 1,
     borderColor: 'gray',
     borderRadius: 5,
-    padding: 10,
-    marginBottom: 5,
+    padding: Platform.OS === 'ios' ? 15 : 10,
+    marginBottom: Platform.OS === 'ios' ? 10 : 5,
     width: '100%',
   },
   errorBorder: {
@@ -2684,11 +2843,7 @@ value3: {
     fontWeight: 'bold',
     textAlign: 'center',
   },
-  plusButton: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    textAlign: 'center',
-  },
+  plusButton: {},
   noCategoriesText: {
     textAlign: 'center',
     marginTop: 20,
@@ -2700,7 +2855,7 @@ value3: {
     textAlign: 'center',
     paddingTop: 15,
     fontSize: 16,
-    color: "#000",
+    color: '#000',
     fontWeight: '600',
     elevation: 5,
     height: 175,

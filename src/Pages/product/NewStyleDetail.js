@@ -1902,6 +1902,9 @@ const NewStyleDetail = ({ route }) => {
                 backgroundColor: '#fff',
                 borderRadius: 10,
                 marginBottom: 10,
+                borderColor: 'lightgray', // Optional: Adds subtle border (for effect)
+                borderWidth: 1,
+                marginTop:5
               }}>
               <TextInput
                 style={{
@@ -2083,6 +2086,9 @@ const NewStyleDetail = ({ route }) => {
                 width: '90%',
                 backgroundColor: '#fff',
                 borderRadius: 10,
+                borderColor: 'lightgray', // Optional: Adds subtle border (for effect)
+                borderWidth: 1,
+                marginTop:5
               }}>
               <TextInput
                 style={{
@@ -2299,6 +2305,9 @@ const NewStyleDetail = ({ route }) => {
                 width: '90%',
                 backgroundColor: '#fff',
                 borderRadius: 10,
+                borderColor: 'lightgray', // Optional: Adds subtle border (for effect)
+                borderWidth: 1,
+                marginTop:5
               }}>
               <View>
                 <TouchableOpacity
@@ -2436,6 +2445,9 @@ const NewStyleDetail = ({ route }) => {
                 width: '90%',
                 backgroundColor: '#fff',
                 borderRadius: 10,
+                borderColor: 'lightgray', // Optional: Adds subtle border (for effect)
+                borderWidth: 1,
+                marginTop:5
               }}>
               <TextInput
                 style={{
@@ -2534,6 +2546,9 @@ const NewStyleDetail = ({ route }) => {
                 width: '90%',
                 backgroundColor: '#fff',
                 borderRadius: 10,
+                borderColor: 'lightgray', // Optional: Adds subtle border (for effect)
+                borderWidth: 1,
+                marginTop:5
               }}>
               <TextInput
                 style={{
@@ -3133,6 +3148,9 @@ const NewStyleDetail = ({ route }) => {
                 width: '90%',
                 backgroundColor: '#fff',
                 borderRadius: 10,
+                borderColor: 'lightgray', // Optional: Adds subtle border (for effect)
+                borderWidth: 1,
+                marginTop:5
               }}>
               <TextInput
                 style={{
@@ -3226,6 +3244,9 @@ const NewStyleDetail = ({ route }) => {
                 width: '90%',
                 backgroundColor: '#fff',
                 borderRadius: 10,
+                borderColor: 'lightgray', // Optional: Adds subtle border (for effect)
+                borderWidth: 1,
+                marginTop:5
               }}>
               <TextInput
                 style={{
@@ -4230,6 +4251,9 @@ const style = StyleSheet.create({
     width: '90%',
     backgroundColor: '#fff',
     borderRadius: 10,
+    borderColor: 'lightgray', // Optional: Adds subtle border (for effect)
+    borderWidth: 1,
+    marginTop:5
   },
   searchInput: {
     marginTop: 10,

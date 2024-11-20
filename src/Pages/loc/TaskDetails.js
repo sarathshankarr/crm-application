@@ -1195,13 +1195,13 @@ const TaskDetails = ({ route }) => {
           {/* Left side: Check In and Check Out */}
           <View>
             {checkIn ? (
-              <Text style={{ color: '#000', marginLeft: 10, fontWeight: 'bold' }}>
-                Check In : {formatDateIntoDMY(formatDateTime(new Date(checkIn), 'date'))} ({formatDateTime(new Date(checkIn), 'time')})
+              <Text style={{ color: '#000', marginLeft: 5, fontWeight: 'bold' }}>
+                Check In : {formatDateIntoDMY(formatDateTime(new Date(checkIn), 'date'))}({formatDateTime(new Date(checkIn), 'time')})
               </Text>
             ) : null}
             {checkOut ? (
-              <Text style={{ color: '#000', marginLeft: 10, fontWeight: 'bold' }}>
-                Check Out : {formatDateIntoDMY(formatDateTime(new Date(checkOut), 'date'))} ({formatDateTime(new Date(checkOut), 'time')})
+              <Text style={{ color: '#000', marginLeft: 5, fontWeight: 'bold' }}>
+                Check Out : {formatDateIntoDMY(formatDateTime(new Date(checkOut), 'date'))}({formatDateTime(new Date(checkOut), 'time')})
               </Text>
             ) : null}
           </View>
@@ -1211,14 +1211,14 @@ const TaskDetails = ({ route }) => {
                 fontWeight: 'bold',
                 color: '#000',
                 textAlign: 'right',
-                marginRight: 10,
-              }}>{`Dis btw 2 Loc is : ${distance}`}</Text>
+                marginRight: 29,
+              }}>{`Dis btw 2 Loc : ${distance}`}</Text>
             <Text
               style={{
                 fontWeight: 'bold',
                 color: '#000',
                 textAlign: 'right',
-                marginRight: 10,
+                marginRight: 29,
               }}>{`Travelled Dis : ${traveledDistance || traveleDis
                 }`}</Text>
           </View>

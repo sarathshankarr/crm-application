@@ -11,10 +11,10 @@
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		18E355E32CB6761C0035DB67 /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.mm */; };
-		3073653EB9C69B3C2876779A /* libPods-CRMAPP-CRMAPPTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 06ACB3A3978CAA585F42405A /* libPods-CRMAPP-CRMAPPTests.a */; };
+		40449310171E92329E56507B /* libPods-CRMAPP-CRMAPPTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DFCC20F941A94BB8E2E231CE /* libPods-CRMAPP-CRMAPPTests.a */; };
+		4BBD08772857B4B02FFC7A71 /* libPods-CRMAPP.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F6F7347F7EE3D0CB3921A353 /* libPods-CRMAPP.a */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		C7C0268B1BF433BB354D18D4 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 9B1F30372D17AC4696FDDD13 /* PrivacyInfo.xcprivacy */; };
-		ECC13F5F7444AD436745EEF5 /* libPods-CRMAPP.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B039F1A473351F8E0F61A183 /* libPods-CRMAPP.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -31,7 +31,6 @@
 		00E356EE1AD99517003FC87E /* CRMAPPTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CRMAPPTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		00E356F11AD99517003FC87E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		00E356F21AD99517003FC87E /* CRMAPPTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CRMAPPTests.m; sourceTree = "<group>"; };
-		06ACB3A3978CAA585F42405A /* libPods-CRMAPP-CRMAPPTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-CRMAPP-CRMAPPTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07F961A680F5B00A75B9A /* CRMAPP.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CRMAPP.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FAF1A68108700A75B9A /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = CRMAPP/AppDelegate.h; sourceTree = "<group>"; };
 		13B07FB01A68108700A75B9A /* AppDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = AppDelegate.mm; path = CRMAPP/AppDelegate.mm; sourceTree = "<group>"; };
@@ -39,14 +38,15 @@
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = CRMAPP/Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = CRMAPP/main.m; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = CRMAPP/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		3A65F1E7FC9B658D8DAAE02C /* Pods-CRMAPP-CRMAPPTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CRMAPP-CRMAPPTests.debug.xcconfig"; path = "Target Support Files/Pods-CRMAPP-CRMAPPTests/Pods-CRMAPP-CRMAPPTests.debug.xcconfig"; sourceTree = "<group>"; };
-		3F61DDF039DA05554A1ED5D4 /* Pods-CRMAPP.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CRMAPP.debug.xcconfig"; path = "Target Support Files/Pods-CRMAPP/Pods-CRMAPP.debug.xcconfig"; sourceTree = "<group>"; };
-		41949BCE470EF057B04D1553 /* Pods-CRMAPP.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CRMAPP.release.xcconfig"; path = "Target Support Files/Pods-CRMAPP/Pods-CRMAPP.release.xcconfig"; sourceTree = "<group>"; };
-		679D5904F5B60345419BD101 /* Pods-CRMAPP-CRMAPPTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CRMAPP-CRMAPPTests.release.xcconfig"; path = "Target Support Files/Pods-CRMAPP-CRMAPPTests/Pods-CRMAPP-CRMAPPTests.release.xcconfig"; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = CRMAPP/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		81FE0D1CBCBD2DF0DD499027 /* Pods-CRMAPP-CRMAPPTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CRMAPP-CRMAPPTests.debug.xcconfig"; path = "Target Support Files/Pods-CRMAPP-CRMAPPTests/Pods-CRMAPP-CRMAPPTests.debug.xcconfig"; sourceTree = "<group>"; };
+		884A4E16C9A03415DF300FF2 /* Pods-CRMAPP.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CRMAPP.debug.xcconfig"; path = "Target Support Files/Pods-CRMAPP/Pods-CRMAPP.debug.xcconfig"; sourceTree = "<group>"; };
 		9B1F30372D17AC4696FDDD13 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = CRMAPP/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		B039F1A473351F8E0F61A183 /* libPods-CRMAPP.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-CRMAPP.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		9E527718C39380AD00D71A7E /* Pods-CRMAPP.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CRMAPP.release.xcconfig"; path = "Target Support Files/Pods-CRMAPP/Pods-CRMAPP.release.xcconfig"; sourceTree = "<group>"; };
+		D36CADA553CFE99D91FD4A52 /* Pods-CRMAPP-CRMAPPTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CRMAPP-CRMAPPTests.release.xcconfig"; path = "Target Support Files/Pods-CRMAPP-CRMAPPTests/Pods-CRMAPP-CRMAPPTests.release.xcconfig"; sourceTree = "<group>"; };
+		DFCC20F941A94BB8E2E231CE /* libPods-CRMAPP-CRMAPPTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-CRMAPP-CRMAPPTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		F6F7347F7EE3D0CB3921A353 /* libPods-CRMAPP.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-CRMAPP.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -54,7 +54,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3073653EB9C69B3C2876779A /* libPods-CRMAPP-CRMAPPTests.a in Frameworks */,
+				40449310171E92329E56507B /* libPods-CRMAPP-CRMAPPTests.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -62,7 +62,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				ECC13F5F7444AD436745EEF5 /* libPods-CRMAPP.a in Frameworks */,
+				4BBD08772857B4B02FFC7A71 /* libPods-CRMAPP.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -105,8 +105,8 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				B039F1A473351F8E0F61A183 /* libPods-CRMAPP.a */,
-				06ACB3A3978CAA585F42405A /* libPods-CRMAPP-CRMAPPTests.a */,
+				F6F7347F7EE3D0CB3921A353 /* libPods-CRMAPP.a */,
+				DFCC20F941A94BB8E2E231CE /* libPods-CRMAPP-CRMAPPTests.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -145,10 +145,10 @@
 		BBD78D7AC51CEA395F1C20DB /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				3F61DDF039DA05554A1ED5D4 /* Pods-CRMAPP.debug.xcconfig */,
-				41949BCE470EF057B04D1553 /* Pods-CRMAPP.release.xcconfig */,
-				3A65F1E7FC9B658D8DAAE02C /* Pods-CRMAPP-CRMAPPTests.debug.xcconfig */,
-				679D5904F5B60345419BD101 /* Pods-CRMAPP-CRMAPPTests.release.xcconfig */,
+				884A4E16C9A03415DF300FF2 /* Pods-CRMAPP.debug.xcconfig */,
+				9E527718C39380AD00D71A7E /* Pods-CRMAPP.release.xcconfig */,
+				81FE0D1CBCBD2DF0DD499027 /* Pods-CRMAPP-CRMAPPTests.debug.xcconfig */,
+				D36CADA553CFE99D91FD4A52 /* Pods-CRMAPP-CRMAPPTests.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -160,12 +160,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 00E357021AD99517003FC87E /* Build configuration list for PBXNativeTarget "CRMAPPTests" */;
 			buildPhases = (
-				19DF56B6251A1129EF75A6A3 /* [CP] Check Pods Manifest.lock */,
+				FD0BCCD4EA9FB7517676826B /* [CP] Check Pods Manifest.lock */,
 				00E356EA1AD99517003FC87E /* Sources */,
 				00E356EB1AD99517003FC87E /* Frameworks */,
 				00E356EC1AD99517003FC87E /* Resources */,
-				EDE617EA7FE38EEE694022A5 /* [CP] Embed Pods Frameworks */,
-				2D370732326B8E2F380E59E8 /* [CP] Copy Pods Resources */,
+				017585ECF9880B21F928DBA4 /* [CP] Embed Pods Frameworks */,
+				EFA4616267911962C569E2FA /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -181,13 +181,13 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "CRMAPP" */;
 			buildPhases = (
-				43C3D11C5E4858989C0302B5 /* [CP] Check Pods Manifest.lock */,
+				FF79D4A606EFE3FFB5BB80CE /* [CP] Check Pods Manifest.lock */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
-				C02DA03ECB755DD4927968D1 /* [CP] Embed Pods Frameworks */,
-				6F9C9DA2A9AC2E8D4F855C5C /* [CP] Copy Pods Resources */,
+				1EEBCF03F5CD6B16DC8C0968 /* [CP] Embed Pods Frameworks */,
+				7EBB34E4ADC3015989930504 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -271,7 +271,75 @@
 			shellPath = /bin/sh;
 			shellScript = "set -e\n\nWITH_ENVIRONMENT=\"$REACT_NATIVE_PATH/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"$REACT_NATIVE_PATH/scripts/react-native-xcode.sh\"\n\n/bin/sh -c \"$WITH_ENVIRONMENT $REACT_NATIVE_XCODE\"\n";
 		};
-		19DF56B6251A1129EF75A6A3 /* [CP] Check Pods Manifest.lock */ = {
+		017585ECF9880B21F928DBA4 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-CRMAPP-CRMAPPTests/Pods-CRMAPP-CRMAPPTests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-CRMAPP-CRMAPPTests/Pods-CRMAPP-CRMAPPTests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-CRMAPP-CRMAPPTests/Pods-CRMAPP-CRMAPPTests-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		1EEBCF03F5CD6B16DC8C0968 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-CRMAPP/Pods-CRMAPP-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-CRMAPP/Pods-CRMAPP-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-CRMAPP/Pods-CRMAPP-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		7EBB34E4ADC3015989930504 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-CRMAPP/Pods-CRMAPP-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-CRMAPP/Pods-CRMAPP-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-CRMAPP/Pods-CRMAPP-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		EFA4616267911962C569E2FA /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-CRMAPP-CRMAPPTests/Pods-CRMAPP-CRMAPPTests-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-CRMAPP-CRMAPPTests/Pods-CRMAPP-CRMAPPTests-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-CRMAPP-CRMAPPTests/Pods-CRMAPP-CRMAPPTests-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		FD0BCCD4EA9FB7517676826B /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -293,24 +361,7 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		2D370732326B8E2F380E59E8 /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-CRMAPP-CRMAPPTests/Pods-CRMAPP-CRMAPPTests-resources-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Copy Pods Resources";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-CRMAPP-CRMAPPTests/Pods-CRMAPP-CRMAPPTests-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-CRMAPP-CRMAPPTests/Pods-CRMAPP-CRMAPPTests-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		43C3D11C5E4858989C0302B5 /* [CP] Check Pods Manifest.lock */ = {
+		FF79D4A606EFE3FFB5BB80CE /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -330,57 +381,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		6F9C9DA2A9AC2E8D4F855C5C /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-CRMAPP/Pods-CRMAPP-resources-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Copy Pods Resources";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-CRMAPP/Pods-CRMAPP-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-CRMAPP/Pods-CRMAPP-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		C02DA03ECB755DD4927968D1 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-CRMAPP/Pods-CRMAPP-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-CRMAPP/Pods-CRMAPP-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-CRMAPP/Pods-CRMAPP-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		EDE617EA7FE38EEE694022A5 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-CRMAPP-CRMAPPTests/Pods-CRMAPP-CRMAPPTests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-CRMAPP-CRMAPPTests/Pods-CRMAPP-CRMAPPTests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-CRMAPP-CRMAPPTests/Pods-CRMAPP-CRMAPPTests-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -416,7 +416,7 @@
 /* Begin XCBuildConfiguration section */
 		00E356F61AD99517003FC87E /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 3A65F1E7FC9B658D8DAAE02C /* Pods-CRMAPP-CRMAPPTests.debug.xcconfig */;
+			baseConfigurationReference = 81FE0D1CBCBD2DF0DD499027 /* Pods-CRMAPP-CRMAPPTests.debug.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -443,7 +443,7 @@
 		};
 		00E356F71AD99517003FC87E /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 679D5904F5B60345419BD101 /* Pods-CRMAPP-CRMAPPTests.release.xcconfig */;
+			baseConfigurationReference = D36CADA553CFE99D91FD4A52 /* Pods-CRMAPP-CRMAPPTests.release.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				COPY_PHASE_STRIP = NO;
@@ -467,7 +467,7 @@
 		};
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 3F61DDF039DA05554A1ED5D4 /* Pods-CRMAPP.debug.xcconfig */;
+			baseConfigurationReference = 884A4E16C9A03415DF300FF2 /* Pods-CRMAPP.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -502,7 +502,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 41949BCE470EF057B04D1553 /* Pods-CRMAPP.release.xcconfig */;
+			baseConfigurationReference = 9E527718C39380AD00D71A7E /* Pods-CRMAPP.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;

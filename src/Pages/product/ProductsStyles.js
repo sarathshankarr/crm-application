@@ -2526,6 +2526,9 @@ const styles = StyleSheet.create({
     width: '90%',
     backgroundColor: '#fff',
     borderRadius: 10,
+    borderColor: 'lightgray', // Optional: Adds subtle border (for effect)
+    borderWidth: 1,
+    marginBottom:5
   },
   dropdownOption: {
     paddingHorizontal: 10,
@@ -2546,6 +2549,7 @@ const styles = StyleSheet.create({
     elevation: 4,
     flex: 1,
     marginRight: 10,
+    
   },
   searchInput: {
     flex: 1,
@@ -2575,6 +2579,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 10,
     elevation: 3,
+    
   },
   searchButtonText: {
     color: '#fff',

@@ -684,12 +684,18 @@ const style = StyleSheet.create({
     padding: 5,
   },
   dropdownContent1: {
-    elevation: 5,
-    // height: 220,
-    alignSelf: 'center',
+    position: 'absolute',
+    top: 57,
     width: '90%',
     backgroundColor: '#fff',
     borderRadius: 10,
+    elevation: 5,
+    paddingVertical: 10,
+    paddingHorizontal: 5,
+    zIndex: 1,
+    alignSelf: 'center',
+    borderColor: 'lightgray', // Optional: Adds subtle border (for effect)
+    borderWidth: 1,
   },
   dropdownOption: {
     paddingHorizontal: 10,

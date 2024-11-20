@@ -155,8 +155,6 @@ const Files = ({route}) => {
     }
   };
 
-  
-
   const downloadPDF = async (url, fileName) => {
     try {
       const hasPermission =
@@ -184,7 +182,6 @@ const Files = ({route}) => {
               : 'image/*',
         },
       }).fetch('GET', url);
-
 
       Alert.alert('Download Success', `File downloaded to: ${filePath}`);
 
@@ -255,8 +252,26 @@ const Files = ({route}) => {
                 Travelled distance: {locationDetails.distance_travelled}
               </Text>
             </View>
-
-            {locationDetails.selfieImageName && (
+            <View
+              style={{
+                marginHorizontal: 15,
+                borderWidth: 1,
+                borderRadius: 10,
+                backgroundColor: 'lightgray',
+              }}>
+              <Text
+                style={{
+                  paddingHorizontal: 10,
+                  paddingVertical: 5,
+                  alignItems: 'center',
+                  alignSelf: 'center',
+                  fontWeight: 'bold',
+                   color:"#000"
+                }}>
+                Uploaded Selfie
+              </Text>
+            </View>
+            {locationDetails.selfieImageName ? (
               <TouchableOpacity
                 onPress={() => openImageModal(locationDetails.selfieImageName)}>
                 <Image
@@ -264,22 +279,63 @@ const Files = ({route}) => {
                   style={styles.selfieImage}
                 />
               </TouchableOpacity>
+            ) : (
+              <Text style={styles.noSelfieText}>No uploaded selfie</Text>
             )}
 
+            <View
+              style={{
+                marginHorizontal: 15,
+                borderWidth: 1,
+                borderRadius: 10,
+                backgroundColor: 'lightgray',
+              }}>
+              <Text
+                style={{
+                  paddingHorizontal: 10,
+                  paddingVertical: 5,
+                  alignItems: 'center',
+                  alignSelf: 'center',
+                  fontWeight: 'bold',
+                  color:"#000"
+                }}>
+                Uploaded Images
+              </Text>
+            </View>
             {locationDetails.imageUrls &&
-              locationDetails.imageUrls.length > 0 && (
-                <View style={styles.imageContainer}>
-                  {locationDetails.imageUrls.map((url, index) => (
-                    <TouchableOpacity
-                      key={index}
-                      onPress={() => openImageModal(url)}>
-                      <Image source={{uri: url}} style={styles.image} />
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              )}
+            locationDetails.imageUrls.length > 0 ? (
+              <View style={styles.imageContainer}>
+                {locationDetails.imageUrls.map((url, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    onPress={() => openImageModal(url)}>
+                    <Image source={{uri: url}} style={styles.image} />
+                  </TouchableOpacity>
+                ))}
+              </View>
+            ) : (
+              <Text style={styles.noImagesText}>No uploaded images</Text>
+            )}
 
-            {locationDetails.pdfUrls && locationDetails.pdfUrls.length > 0 && (
+            <View
+              style={{
+                marginHorizontal: 15,
+                borderWidth: 1,
+                borderRadius: 10,
+                backgroundColor: 'lightgray',
+              }}>
+              <Text
+                style={{
+                  paddingHorizontal: 10,
+                  paddingVertical: 5,
+                  alignItems: 'center',
+                  alignSelf: 'center',
+                  fontWeight: 'bold',
+                }}>
+                Uploaded Files
+              </Text>
+            </View>
+            {/* {locationDetails.pdfUrls && locationDetails.pdfUrls.length > 0 && (
               <View style={styles.pdfContainer}>
                 {locationDetails.pdfUrls.map((url, index) => {
                   const fileExtension = url.split('.').pop().toLowerCase(); // Get the file extension
@@ -304,7 +360,7 @@ const Files = ({route}) => {
                           paddingHorizontal: 10,
                           alignItems: 'center',
                           justifyContent: 'space-between',
-                          marginTop:10
+                          marginTop: 10,
                         }}
                         onPress={() =>
                           downloadPDF(
@@ -332,7 +388,7 @@ const Files = ({route}) => {
                           paddingHorizontal: 10,
                           alignItems: 'center',
                           justifyContent: 'space-between',
-                          marginTop:10
+                          marginTop: 10,
                         }}
                         key={index}
                         onPress={() =>
@@ -361,7 +417,7 @@ const Files = ({route}) => {
                           paddingHorizontal: 10,
                           alignItems: 'center',
                           justifyContent: 'space-between',
-                          marginTop:10
+                          marginTop: 10,
                         }}
                         key={index}
                         onPress={() =>
@@ -384,6 +440,82 @@ const Files = ({route}) => {
                   }
                 })}
               </View>
+            )} */}
+            {locationDetails.pdfUrls && locationDetails.pdfUrls.length > 0 ? (
+              <View style={styles.pdfContainer}>
+                {locationDetails.pdfUrls.map((url, index) => {
+                  const fileExtension = url.split('.').pop().toLowerCase(); // Get the file extension
+
+                  if (fileExtension === 'pdf') {
+                    // Handle PDF files
+                    return (
+                      <TouchableOpacity
+                        key={index}
+                        style={styles.fileContainer}
+                        onPress={() =>
+                          downloadPDF(
+                            url,
+                            `Document_${index + 1}.${fileExtension}`,
+                          )
+                        }>
+                        <Text style={styles.pdfText}>{`PDF File ${
+                          index + 1
+                        }`}</Text>
+                        <Image
+                          style={styles.downloadIcon}
+                          source={require('../../../assets/downloads.png')}
+                        />
+                      </TouchableOpacity>
+                    );
+                  } else if (['jpg', 'jpeg', 'png'].includes(fileExtension)) {
+                    // Handle image files stored as PDFs
+                    return (
+                      <TouchableOpacity
+                        key={index}
+                        style={styles.fileContainer}
+                        onPress={() =>
+                          downloadPDF(
+                            url,
+                            `Image_${index + 1}.${fileExtension}`,
+                          )
+                        }>
+                        <Text style={styles.pdfText}>{`Image as PDF ${
+                          index + 1
+                        }`}</Text>
+                        <Image
+                          style={styles.downloadIcon}
+                          source={require('../../../assets/downloads.png')}
+                        />
+                      </TouchableOpacity>
+                    );
+                  } else if (['doc', 'docx'].includes(fileExtension)) {
+                    // Handle Word documents
+                    return (
+                      <TouchableOpacity
+                        key={index}
+                        style={styles.fileContainer}
+                        onPress={() =>
+                          downloadPDF(
+                            url,
+                            `Document_${index + 1}.${fileExtension}`,
+                          )
+                        }>
+                        <Text style={styles.pdfText}>{`Word Document ${
+                          index + 1
+                        }`}</Text>
+                        <Image
+                          style={styles.downloadIcon}
+                          source={require('../../../assets/downloads.png')}
+                        />
+                      </TouchableOpacity>
+                    );
+                  } else {
+                    return null;
+                  }
+                })}
+              </View>
+            ) : (
+              <Text style={styles.noFilesText}>No uploaded files</Text>
             )}
 
             {/* Display Additional PDF File Links */}
@@ -497,14 +629,19 @@ const styles = StyleSheet.create({
     margin: 5,
     borderRadius: 5,
   },
+  noImagesText: {
+    alignSelf: 'center',
+    marginVertical: 10,
+  },
   selfieImage: {
     width: 100,
     height: 100,
     margin: 15,
     borderRadius: 5,
   },
-  pdfContainer: {
-    margin: 15,
+  noSelfieText: {
+    alignSelf: 'center',
+    marginVertical: 10,
   },
   pdfText: {
     fontSize: 16,
@@ -513,6 +650,34 @@ const styles = StyleSheet.create({
   },
   pdfLink: {
     marginVertical: 5,
+  },
+  pdfContainer: {
+    marginTop: 10,
+    marginHorizontal: 15,
+  },
+  fileContainer: {
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 10,
+    paddingVertical: 10,
+  },
+  pdfText: {
+    fontSize: 16,
+    color: 'black',
+  },
+  downloadIcon: {
+    height: 20,
+    width: 20,
+  },
+  noFilesText: {
+    fontSize: 16,
+    color: '#000',
+    textAlign: 'center',
+    marginTop: 10,
   },
   modalOverlay: {
     flex: 1,
