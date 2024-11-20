@@ -88,12 +88,23 @@ const Cart = () => {
   const [selectedCompanyLocationId, setSelectedCompanyLocationId] = useState(0);
   const [gstValues, setGstValues] = useState({});
 
+  // const handleGstChange = (index, text) => {
+  //   setGstValues(prevValues => ({
+  //     ...prevValues,
+  //     [index]: text, // Update GST value for the specific index/item
+  //   }));
+  // };
+
   const handleGstChange = (index, text) => {
+    // If the text is empty (user removed the value), set it to '0'
+    const validGst = text.trim() === '' ? '0' : parseInt(text, 10).toString();
+  
     setGstValues(prevValues => ({
       ...prevValues,
-      [index]: text, // Update GST value for the specific index/item
+      [index]: validGst, // Update GST value for the specific index/item
     }));
   };
+  
 
   const userData = useSelector(state => state.loggedInUser);
   const userId = userData?.userId;
@@ -833,18 +844,34 @@ const Cart = () => {
     //   return acc + itemGst;
     // }, 0);
 
+    // const totalGst = cartItems
+    //   .reduce((acc, item, index) => {
+    //     const gstPercentage = parseFloat(
+    //       gstValues[index] !== undefined ? gstValues[index] : item.gst,
+    //     ); // Use updated GST if available
+    //     const itemTotalPrice =
+    //       parseFloat(isEnabled ? item?.retailerPrice : item?.dealerPrice) *
+    //       parseInt(item.quantity, 10);
+    //     const itemGst = (itemTotalPrice * gstPercentage) / 100;
+    //     return acc + itemGst; // Sum GST
+    //   }, 0)
+    //   .toFixed(2);
+
     const totalGst = cartItems
-      .reduce((acc, item, index) => {
-        const gstPercentage = parseFloat(
-          gstValues[index] !== undefined ? gstValues[index] : item.gst,
-        ); // Use updated GST if available
-        const itemTotalPrice =
-          parseFloat(isEnabled ? item?.retailerPrice : item?.dealerPrice) *
-          parseInt(item.quantity, 10);
-        const itemGst = (itemTotalPrice * gstPercentage) / 100;
-        return acc + itemGst; // Sum GST
-      }, 0)
-      .toFixed(2);
+  .reduce((acc, item, index) => {
+    const gstPercentage = parseFloat(
+      gstValues[index] !== undefined && !isNaN(gstValues[index])
+        ? gstValues[index]
+        : item.gst
+    ); // Use gstValues if available and valid, otherwise fallback to item.gst
+    const itemTotalPrice =
+      parseFloat(isEnabled ? item?.retailerPrice : item?.dealerPrice) *
+      parseInt(item.quantity, 10);
+    const itemGst = (itemTotalPrice * gstPercentage) / 100;
+    return acc + itemGst; // Sum GST
+  }, 0)
+  .toFixed(2);
+
 
     // Calculate total amount
     const totalAmount = (parseFloat(totalPrice) + parseFloat(totalGst)).toFixed(
@@ -1089,19 +1116,41 @@ const Cart = () => {
       dispatch(updateCartItem(index, updatedItems[index]));
     }
   };
+  // const handlePriceChange = (index, text) => {
+  //   const updatedItems = [...cartItems];
+  //   const parsedPrice = parseFloat(text);
+
+  //   if (!isNaN(parsedPrice) || text === '') {
+  //     if (isEnabled) {
+  //       updatedItems[index].retailerPrice = text === '' ? '' : text;
+  //     } else {
+  //       updatedItems[index].dealerPrice = text === '' ? '' : text;
+  //     }
+  //     dispatch(updateCartItem(index, updatedItems[index]));
+  //   }
+  // };
+  
   const handlePriceChange = (index, text) => {
     const updatedItems = [...cartItems];
-    const parsedPrice = parseFloat(text);
-
+  
+    // Convert the text to an integer to remove leading zeros and then back to a string
+    const parsedPrice = parseInt(text, 10); // Removes leading zeros
+  
+    // Only update if the text is a valid number or empty
     if (!isNaN(parsedPrice) || text === '') {
+      const formattedPrice = text === '' ? '0' : parsedPrice.toString(); // Convert to string, ensure '0' if empty
+  
       if (isEnabled) {
-        updatedItems[index].retailerPrice = text === '' ? '' : text;
+        updatedItems[index].retailerPrice = formattedPrice;
       } else {
-        updatedItems[index].dealerPrice = text === '' ? '' : text;
+        updatedItems[index].dealerPrice = formattedPrice;
       }
+  
       dispatch(updateCartItem(index, updatedItems[index]));
     }
   };
+  
+  
 
   const handleIncrementQuantityCart = index => {
     const updatedItems = [...cartItems];
@@ -1238,10 +1287,16 @@ const Cart = () => {
     .toFixed(2);
 
   // Calculate total amount
-  const totalAmount = (parseFloat(totalPrice) + parseFloat(totalGst)).toFixed(
-    2,
-  ); // Total amount formatted to 2 decimal places
+  // const totalAmount = (parseFloat(totalPrice) + parseFloat(totalGst)).toFixed(
+  //   2,
+  // ); // Total amount formatted to 2 decimal places
 
+
+  const totalAmount = (
+    (parseFloat(totalPrice) || 0) + (parseFloat(totalGst) || 0)
+  ).toFixed(2); // Total amount formatted to 2 decimal places
+
+  
   // Outputting the total values for debugging
   console.log('Total Price:', totalPrice);
   console.log('Total GST:', totalGst);
