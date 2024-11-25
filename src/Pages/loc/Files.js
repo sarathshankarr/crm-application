@@ -236,7 +236,7 @@ const Files = ({route}) => {
                 <Text style={styles.text}>
                   Task Name: {locationDetails.taskName}
                 </Text>
-                <Text style={styles.text}>
+                <Text style={styles.text1}>
                   Description: {locationDetails.desc}
                 </Text>
               </View>
@@ -616,6 +616,13 @@ const styles = StyleSheet.create({
     flex: 1,
     marginVertical: 5,
     color: '#000',
+  },
+  text1:{
+    fontSize: 16,
+    flex: 1,
+    marginVertical: 5,
+    color: '#000',
+    marginLeft:30
   },
   imageContainer: {
     flexDirection: 'row',

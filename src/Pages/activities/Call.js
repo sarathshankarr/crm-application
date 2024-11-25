@@ -305,9 +305,9 @@ const Call = () => {
   const renderItem = ({ item }) => (
     <TouchableOpacity style={styles.callItem} onPress={() => fetchCallById(item.id)}>
       <Text style={{ flex: 1.3, marginLeft: 10, color: "#000" }}>{item.customer}</Text>
-      <Text style={{ flex: 1, color: "#000" }}>{item.relatedTo}</Text>
+      <Text style={{ flex: 1, color: "#000" ,marginRight:20}}>{item.relatedTo}</Text>
       <Text style={{ flex: 0.7, color: "#000" }}>{item.status}</Text>
-      <Text style={{ flex: 0.8, marginRight: 5, color: "#000" }}>{item.created_on}</Text>
+      <Text style={{ flex: 0.9, marginRight: 5, color: "#000" }}>{item.created_on}</Text>
     </TouchableOpacity>
   );
   return (
@@ -369,9 +369,9 @@ const Call = () => {
 
       <View style={styles.listHeader}>
         <Text style={styles.headerText}>Distributor Name</Text>
-        <Text style={styles.headerText}>Related To</Text>
-        <Text style={styles.headerText}>Status</Text>
-        <Text style={styles.headerText}>Date</Text>
+        <Text style={styles.headerText1}>Related To</Text>
+        <Text style={styles.headerText2}>Status</Text>
+        <Text style={styles.headerText3}>Date</Text>
       </View>
 
       {loading ? (
@@ -482,25 +482,29 @@ const styles = StyleSheet.create({
   headerText: {
     fontWeight: 'bold',
     fontSize: 16,
-    marginLeft: 10,
     color: "#000",
-    flex: 0.8
+    flex: 1
   },
   headerText1: {
     fontWeight: 'bold',
     fontSize: 16,
-    marginRight: 10,
+    marginRight: 20,
     color: "#000",
-    flex: 0.7
-
+    flex: 0.,
   },
   headerText2: {
     fontWeight: 'bold',
     fontSize: 16,
     color: "#000",
-    flex: 0.7
-
-
+    flex: 0.7,
+    marginLeft:10
+  },
+  headerText3: {
+    fontWeight: 'bold',
+    fontSize: 16,
+    color: "#000",
+    flex: 0.5,
+    marginRight:20
   },
   callItem: {
     flexDirection: 'row',

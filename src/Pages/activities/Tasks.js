@@ -580,10 +580,9 @@ const styles = StyleSheet.create({
     color: '#000',
   },
   taskText3: {
-    flex: 1,
+    flex: 1.1,
     fontSize: 16,
     paddingVertical: 5,
-    paddingHorizontal: 5,
     color: '#000',
   },
   noCategoriesText: {
