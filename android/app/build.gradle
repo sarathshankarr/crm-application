@@ -4,7 +4,9 @@ apply plugin: "com.facebook.react"
 
 
 project.ext.react = [
-    nodeExecutableAndArgs: ["/Users/apple/.nvm/versions/node/v18.20.4/bin/node"]  // Use the output from `which node`
+    nodeExecutableAndArgs: ["/Users/apple/.nvm/versions/node/v18.20.4/bin/node"] , // Use the output from `which node`
+    enableHermes: true
+
 ]
 /**
  * This is the configuration block to customize your React Native Android app.
@@ -86,7 +88,7 @@ android {
     applicationId "com.CodevCRM"
     minSdkVersion 24  // Keep this line only
     targetSdkVersion rootProject.ext.targetSdkVersion
-    versionCode 5
+    versionCode 6
     versionName "1.0"
     
 }
@@ -122,17 +124,32 @@ android {
       enable true
       reset() 
       include "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
-      universalApk false 
+    universalApk true 
     }
   }
 }
 
-dependencies {
-    // The version of react-native is set by the React Native Gradle Plugin
-    implementation("com.facebook.react:react-android")
+// dependencies {
+//     // The version of react-native is set by the React Native Gradle Plugin
+//     implementation("com.facebook.react:react-android")
 
-    if (hermesEnabled.toBoolean()) {
-        implementation("com.facebook.react:hermes-android")
+//     if (hermesEnabled.toBoolean()) {
+//         implementation("com.facebook.react:hermes-android")
+//     } else {
+//         implementation jscFlavor
+//     }
+// }
+
+dependencies {
+    // React Native core dependencies
+    implementation("com.facebook.react:react-android:+")
+
+    // Include Hermes dependencies if enabled
+    if (project.ext.react.enableHermes) {
+        implementation("com.facebook.react:hermes-engine:+") {
+            exclude group: 'com.facebook.fbjni'
+        }
+        implementation("com.facebook.fbjni:fbjni:+")
     } else {
         implementation jscFlavor
     }

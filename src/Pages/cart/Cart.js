@@ -98,13 +98,12 @@ const Cart = () => {
   const handleGstChange = (index, text) => {
     // If the text is empty (user removed the value), set it to '0'
     const validGst = text.trim() === '' ? '0' : parseInt(text, 10).toString();
-  
+
     setGstValues(prevValues => ({
       ...prevValues,
       [index]: validGst, // Update GST value for the specific index/item
     }));
   };
-  
 
   const userData = useSelector(state => state.loggedInUser);
   const userId = userData?.userId;
@@ -858,20 +857,19 @@ const Cart = () => {
     //   .toFixed(2);
 
     const totalGst = cartItems
-  .reduce((acc, item, index) => {
-    const gstPercentage = parseFloat(
-      gstValues[index] !== undefined && !isNaN(gstValues[index])
-        ? gstValues[index]
-        : item.gst
-    ); // Use gstValues if available and valid, otherwise fallback to item.gst
-    const itemTotalPrice =
-      parseFloat(isEnabled ? item?.retailerPrice : item?.dealerPrice) *
-      parseInt(item.quantity, 10);
-    const itemGst = (itemTotalPrice * gstPercentage) / 100;
-    return acc + itemGst; // Sum GST
-  }, 0)
-  .toFixed(2);
-
+      .reduce((acc, item, index) => {
+        const gstPercentage = parseFloat(
+          gstValues[index] !== undefined && !isNaN(gstValues[index])
+            ? gstValues[index]
+            : item.gst,
+        ); // Use gstValues if available and valid, otherwise fallback to item.gst
+        const itemTotalPrice =
+          parseFloat(isEnabled ? item?.retailerPrice : item?.dealerPrice) *
+          parseInt(item.quantity, 10);
+        const itemGst = (itemTotalPrice * gstPercentage) / 100;
+        return acc + itemGst; // Sum GST
+      }, 0)
+      .toFixed(2);
 
     // Calculate total amount
     const totalAmount = (parseFloat(totalPrice) + parseFloat(totalGst)).toFixed(
@@ -977,6 +975,9 @@ const Cart = () => {
       currentCreditLimit: 0.0,
       orderType: 0,
       roundOff: 0,
+      advancePayment:0,
+      paidAmount:0,
+      billNo: '',
     };
 
     console.log('Req body ===> ', requestData);
@@ -1080,32 +1081,34 @@ const Cart = () => {
   //   setShipDate(date.toISOString().split('T')[0]);
   // };
 
-  const handleDateConfirm = (date) => {
+  const handleDateConfirm = date => {
     const today = new Date();
     today.setHours(0, 0, 0, 0); // Set time to midnight for comparison
-  
+
     if (date < today) {
       // If the selected date is in the past, show an error or ignore
-      Alert.alert("Invalid Date", "Please select today's date or a future date.");
+      Alert.alert(
+        'Invalid Date',
+        "Please select today's date or a future date.",
+      );
       hideDatePicker();
       return;
     }
-  
+
     console.warn('A date has been picked: ', date);
-  
+
     // Extract day, month, and year
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0'); // getMonth() returns month from 0-11
     const year = date.getFullYear();
-  
+
     // Format date as DD-MM-YYYY
     const formattedDate = `${day}-${month}-${year}`;
-  
+
     setSelectedDate('Expected Delivery Date: ' + formattedDate);
     hideDatePicker();
     setShipDate(date.toISOString().split('T')[0]);
   };
-  
 
   const handleQuantityChange = (index, text) => {
     const updatedItems = [...cartItems];
@@ -1129,28 +1132,26 @@ const Cart = () => {
   //     dispatch(updateCartItem(index, updatedItems[index]));
   //   }
   // };
-  
+
   const handlePriceChange = (index, text) => {
     const updatedItems = [...cartItems];
-  
+
     // Convert the text to an integer to remove leading zeros and then back to a string
     const parsedPrice = parseInt(text, 10); // Removes leading zeros
-  
+
     // Only update if the text is a valid number or empty
     if (!isNaN(parsedPrice) || text === '') {
       const formattedPrice = text === '' ? '0' : parsedPrice.toString(); // Convert to string, ensure '0' if empty
-  
+
       if (isEnabled) {
         updatedItems[index].retailerPrice = formattedPrice;
       } else {
         updatedItems[index].dealerPrice = formattedPrice;
       }
-  
+
       dispatch(updateCartItem(index, updatedItems[index]));
     }
   };
-  
-  
 
   const handleIncrementQuantityCart = index => {
     const updatedItems = [...cartItems];
@@ -1291,12 +1292,10 @@ const Cart = () => {
   //   2,
   // ); // Total amount formatted to 2 decimal places
 
-
   const totalAmount = (
     (parseFloat(totalPrice) || 0) + (parseFloat(totalGst) || 0)
   ).toFixed(2); // Total amount formatted to 2 decimal places
 
-  
   // Outputting the total values for debugging
   console.log('Total Price:', totalPrice);
   console.log('Total GST:', totalGst);
@@ -1460,18 +1459,26 @@ const Cart = () => {
   const toggleSwitch = () => setIsEnabled(previousState => !previousState);
 
   const OrderDetailRow = ({label, value}) => (
-    <View style={{flexDirection: 'row', }}>
-      <Text style={{width: 155, textAlign: 'right', color: '#000',marginVertical:3}}>
+    <View style={{flexDirection: 'row'}}>
+      <Text
+        style={{
+          width: 155,
+          textAlign: 'right',
+          color: '#000',
+          marginVertical: 3,
+        }}>
         {label}
       </Text>
-      <Text style={{width: 50, textAlign: 'center', color: '#000',marginLeft:20}}>:</Text>
       <Text
-  style={{width: 80, textAlign: 'right', color: '#000'}}
-  adjustsFontSizeToFit
-  numberOfLines={1}
->
-  {value}
-</Text>
+        style={{width: 50, textAlign: 'center', color: '#000', marginLeft: 20}}>
+        :
+      </Text>
+      <Text
+        style={{width: 80, textAlign: 'right', color: '#000'}}
+        adjustsFontSizeToFit
+        numberOfLines={1}>
+        {value}
+      </Text>
     </View>
   );
 
@@ -1493,7 +1500,13 @@ const Cart = () => {
               onValueChange={toggleSwitch}
               value={isEnabled}
             />
-            <Text style={{fontWeight: 'bold', fontSize: 15, color: '#000',marginLeft:5}}>
+            <Text
+              style={{
+                fontWeight: 'bold',
+                fontSize: 15,
+                color: '#000',
+                marginLeft: 5,
+              }}>
               Slide For Retailer
             </Text>
           </View>
@@ -1915,12 +1928,22 @@ const Cart = () => {
             <Text style={style.txt}>Total Items: {cartItems.length}</Text>
           </View> */}
           {cartItems.length === 0 ? (
-            <View style={{marginVertical:50}}>
-            
-            <Image style={{alignSelf:"center", tintColor: "black"}} resizeMode="cover" source={require('../../../assets/no-cart-product.png')}/>
-            <Text style={{marginLeft: 10, color: '#000',alignSelf:"center",fontWeight:"bold",fontSize:20}}>
-              No items in cart
-            </Text>
+            <View style={{marginVertical: 50}}>
+              <Image
+                style={{alignSelf: 'center', tintColor: 'black'}}
+                resizeMode="cover"
+                source={require('../../../assets/no-cart-product.png')}
+              />
+              <Text
+                style={{
+                  marginLeft: 10,
+                  color: '#000',
+                  alignSelf: 'center',
+                  fontWeight: 'bold',
+                  fontSize: 20,
+                }}>
+                No items in cart
+              </Text>
             </View>
           ) : (
             <View>
@@ -2051,8 +2074,8 @@ const Cart = () => {
                             height: 20,
                             width: 20,
                             // marginHorizontal: 10,
-                            marginLeft:10,
-                            marginRight:15
+                            marginLeft: 10,
+                            marginRight: 15,
                           }}
                           source={require('../../../assets/add1.png')}
                         />
@@ -2090,10 +2113,9 @@ const Cart = () => {
                           marginLeft: 30,
                           borderBottomWidth: 1,
                           borderColor: '#000',
-                          
                         }}>
                         <TextInput
-                          style={{color: '#000', alignSelf: 'center',}}
+                          style={{color: '#000', alignSelf: 'center'}}
                           value={
                             gstValues[index] !== undefined
                               ? gstValues[index]
@@ -2141,7 +2163,8 @@ const Cart = () => {
                         <View style={{flex: 1.5, marginLeft: 18}}>
                           <Text style={{color: '#000'}}>Total</Text>
                         </View>
-                        <View style={{flex: 2.1, marginLeft: 10,marginRight:20}}>
+                        <View
+                          style={{flex: 2.1, marginLeft: 10, marginRight: 20}}>
                           <Text style={{color: '#000'}}>
                             {' '}
                             {calculateTotalQty(item.styleId, item.colorId)}
@@ -2150,7 +2173,8 @@ const Cart = () => {
                         {/* <View style={{ flex: 1 }}>
                           <Text style={{color:"#000"}}>Total Set: {calculateTotalItems(item.styleId, item.colorId)}</Text>
                         </View> */}
-                        <View style={{flex: 1.5, marginLeft: 90,marginRight:10}}>
+                        <View
+                          style={{flex: 1.5, marginLeft: 90, marginRight: 10}}>
                           <Text style={{color: '#000'}}>
                             {calculateTotalPrice(item.styleId, item.colorId)}
                           </Text>
@@ -2238,22 +2262,18 @@ const Cart = () => {
               <Text style={style.value3}>{totalAmount}</Text>
             </View>
           </View> */}
-          
+
           <View
-              style={{
-                marginHorizontal: 15,
-                marginBottom: 15,
-                marginVertical:25
-              }}>
-              <OrderDetailRow label="Total Qty" value={totalQty} />
-              <OrderDetailRow label="Total Items" value={totalItems} />
-              <OrderDetailRow label="Total Gst" value={totalGst} />
-              <OrderDetailRow
-                label="Total Amt"
-                value={totalAmount}
-              />
-             
-            </View>
+            style={{
+              marginHorizontal: 15,
+              marginBottom: 15,
+              marginVertical: 25,
+            }}>
+            <OrderDetailRow label="Total Qty" value={totalQty} />
+            <OrderDetailRow label="Total Items" value={totalItems} />
+            <OrderDetailRow label="Total Gst" value={totalGst} />
+            <OrderDetailRow label="Total Amt" value={totalAmount} />
+          </View>
           <TouchableOpacity
             onPress={PlaceAddOrder}
             disabled={isSubmitting} // Disable button when submitting
@@ -2864,7 +2884,7 @@ const style = StyleSheet.create({
     width: '80%',
     alignItems: 'center',
     elevation: 5, // Add elevation for shadow on Android
-    top:10
+    top: 10,
   },
   modalTitle: {
     fontSize: 16,
