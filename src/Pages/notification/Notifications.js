@@ -170,9 +170,16 @@ const Notifications = () => {
           color="#1F74BA"
         />
       ) : notifications.length === 0 ? (
-        <Text style={styles.noCategoriesText}>
-          You have no notifications !{' '}
+        <View style={{marginTop:50}}>
+        <Image
+          style={{ height: 250, width: 250,alignSelf:"center" }}
+          resizeMode="cover"
+          source={require('../../../assets/no-alarm.png')}
+        />
+         <Text style={styles.noCategoriesText}>
+          You have no notifications!
         </Text>
+      </View>
       ) : (
         <View style={styles.container}>
           <FlatList
