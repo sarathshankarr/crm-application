@@ -362,19 +362,39 @@ const HomeAllProducts = ({navigation}) => {
     {label: 'GSM', value: 8},
   ];
 
+  // const handleDropdownSelect = option => {
+  //   setSelectedSearchOption(option.label);
+  //   setSearchKey(option.value);
+  //   setDropdownVisible(false);
+  //   setSearchQuery('');  // Clear search query
+  //   setMinPrice('');     // Clear min price
+  //   setMaxPrice('');     // Clear max price
+  //   // console.log("handleDropdownSelect");
+  // };
+
   const handleDropdownSelect = option => {
-    setSelectedSearchOption(option.label);
-    setSearchKey(option.value);
-    setDropdownVisible(false);
-    setSearchQuery('');  // Clear search query
-    setMinPrice('');     // Clear min price
-    setMaxPrice('');     // Clear max price
-    // console.log("handleDropdownSelect");
+    // Trigger the refresh first
+    onRefresh();
+  
+    // After refresh, set the selected values
+    setTimeout(() => {
+      setSelectedSearchOption(option.label); // Update selected option label
+      setSearchKey(option.value);           // Update search key
+      setDropdownVisible(false);            // Close the dropdown
+      setSearchQuery('');                   // Clear search query
+      setMinPrice('');                      // Clear min price
+      setMaxPrice('');                      // Clear max price
+      
+      console.log("Selected option:", option.label);
+    }, 0); // Ensure it runs immediately after the refresh is triggered
   };
 
+  
   const toggleDropdown = () => {
     setDropdownVisible(!dropdownVisible);
   };
+
+  
 
   const handleSearchInputChange = query => {
     setSearchQuery(query);

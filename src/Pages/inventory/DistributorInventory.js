@@ -191,12 +191,23 @@ const DistributorInventory = () => {
     }
   };
 
+  // const handleDropdownSelect = option => {
+  //   setSelectedSearchOption(option.label);
+  //   setSearchKey(option.value);
+  //   setDropdownVisible(false);
+  //   setSearchQuery(''); 
+  // };
+
   const handleDropdownSelect = option => {
-    setSelectedSearchOption(option.label);
+    onRefresh();
+    setTimeout(() => {
+      setSelectedSearchOption(option.label);
     setSearchKey(option.value);
     setDropdownVisible(false);
     setSearchQuery(''); 
+    }, 0);
   };
+
 
   const toggleDropdown = () => {
     setDropdownVisible(!dropdownVisible);

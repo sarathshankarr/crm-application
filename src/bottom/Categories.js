@@ -168,7 +168,7 @@ import FastImage from 'react-native-fast-image';
 //               : ''}
 //             placeholderTextColor="#000"
 //           />
-  
+
 //         <View
 //           style={styles.searchButton}>
 //           <Image
@@ -206,7 +206,7 @@ import FastImage from 'react-native-fast-image';
 //   );
 // };
 
-const Categories = ({ navigation }) => {
+const Categories = ({navigation}) => {
   const [selectedDetails, setSelectedDetails] = useState([]);
   const [showSearchInput, setShowSearchInput] = useState(false);
   // const [from, setFrom] = useState(1);
@@ -216,7 +216,6 @@ const Categories = ({ navigation }) => {
   const [hasMore, setHasMore] = useState(true);
   const [categories, setCategories] = useState([]);
   const [searchFlag, setsearchFlag] = useState(false);
-
 
   const [tasks, setTasks] = useState([]);
   const [filteredTasks, setFilteredTasks] = useState([]);
@@ -234,7 +233,6 @@ const Categories = ({ navigation }) => {
   const [searchKey, setSearchKey] = useState(null);
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [filterFlag, setFilterFlag] = useState(false);
-
 
   const selectedCompany = useSelector(state => state.selectedCompany);
 
@@ -260,101 +258,107 @@ const Categories = ({ navigation }) => {
     ? selectedCompany.id
     : initialSelectedCompany?.id;
 
-
-
-    const gettasksearch = async (
-      reset = false,
-      customFrom = from,
-      customTo = to,
-    ) => {
-      const apiUrl = `${global?.userData?.productURL}${API.SEARCH_ALL_CATEGORIES_LL}`;
-      const requestBody = {
-        fieldvalue: searchQuery,
-        from: customFrom,
-        to: customTo,
-        t_company_id: companyId,
-        dropdownId :searchKey,
-        companyId: companyId,
-      };
-  
-      console.log('gettasksearch==> ', customFrom, customTo);
-  
-      try {
-        const response = await axios.post(apiUrl, requestBody, {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${global?.userData?.token?.access_token}`,
-          },
-        });
-  
-        if (response.data) {
-          // setOrders(response.data.response.ordersList);
-  
-          const newOrders = response.data.filter(order => order !== null);
-  
-          setCategories(prevDetails =>
-            reset ? newOrders : [...prevDetails, ...newOrders],
-          );
-          setHasMoreTasks(newOrders?.length >= 15);
-  
-          // setHasMoreTasks(false);
-        } else {
-          setCategories([]);
-        }
-      } catch (error) {
-        console.error('Error fetching tasks:', error);
-      }
+  const gettasksearch = async (
+    reset = false,
+    customFrom = from,
+    customTo = to,
+  ) => {
+    const apiUrl = `${global?.userData?.productURL}${API.SEARCH_ALL_CATEGORIES_LL}`;
+    const requestBody = {
+      fieldvalue: searchQuery,
+      from: customFrom,
+      to: customTo,
+      t_company_id: companyId,
+      dropdownId: searchKey,
+      companyId: companyId,
     };
-  
-    const handleDropdownSelect = option => {
+
+    console.log('gettasksearch==> ', customFrom, customTo);
+
+    try {
+      const response = await axios.post(apiUrl, requestBody, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+        },
+      });
+
+      if (response.data) {
+        // setOrders(response.data.response.ordersList);
+
+        const newOrders = response.data.filter(order => order !== null);
+
+        setCategories(prevDetails =>
+          reset ? newOrders : [...prevDetails, ...newOrders],
+        );
+        setHasMoreTasks(newOrders?.length >= 15);
+
+        // setHasMoreTasks(false);
+      } else {
+        setCategories([]);
+      }
+    } catch (error) {
+      console.error('Error fetching tasks:', error);
+    }
+  };
+
+  // const handleDropdownSelect = option => {
+  //   setSelectedSearchOption(option.label);
+  //   setSearchKey(option.value);
+  //   setDropdownVisible(false);
+  //   setSearchQuery('');
+  // };
+
+  const handleDropdownSelect = option => {
+    onRefresh();
+    setTimeout(() => {
       setSelectedSearchOption(option.label);
       setSearchKey(option.value);
       setDropdownVisible(false);
-      setSearchQuery(''); 
-    };
-  
-    const toggleDropdown = () => {
-      setDropdownVisible(!dropdownVisible);
-    };
-  
-    const handleSearch = () => {
-      if (!searchKey) {
-        Alert.alert(
-          'Alert',
-          'Please select an option from the dropdown before searching',
-        );
-        return; // Exit the function if no search key is selected
-      }
-  
-      if (!searchQuery.trim()) {
-        Alert.alert(
-          'Alert',
-          'Please select an option from the dropdown before searching',
-        );
-        return; // Exit if the search query is empty
-      }
-  
-      setFilterFlag(true);
-      setFrom(0);
-      setTo(15);
-  
-      gettasksearch(true, 0, 15);
-    };
-  
-    const handleSearchInputChange = query => {
-      setSearchQuery(query);
-      if (query.trim() === '') {
-        fetchCategories(true, 0, 15);
-      }
-    };
+      setSearchQuery('');
+    }, 0);
+  };
 
+  const toggleDropdown = () => {
+    setDropdownVisible(!dropdownVisible);
+  };
 
-    const searchOption = [
-      { label: 'Category', value: 1 },
-      { label: 'Category Desc.', value: 2 },
-    ];
-  
-  
+  const handleSearch = () => {
+    if (!searchKey) {
+      Alert.alert(
+        'Alert',
+        'Please select an option from the dropdown before searching',
+      );
+      return; // Exit the function if no search key is selected
+    }
+
+    if (!searchQuery.trim()) {
+      Alert.alert(
+        'Alert',
+        'Please select an option from the dropdown before searching',
+      );
+      return; // Exit if the search query is empty
+    }
+
+    setFilterFlag(true);
+    setFrom(0);
+    setTo(15);
+
+    gettasksearch(true, 0, 15);
+  };
+
+  const handleSearchInputChange = query => {
+    setSearchQuery(query);
+    if (query.trim() === '') {
+      fetchCategories(true, 0, 15);
+    }
+  };
+
+  const searchOption = [
+    {label: 'Category', value: 1},
+    {label: 'Category Desc.', value: 2},
+  ];
+
   // useEffect(() => {
   //   const unsubscribe = navigation.addListener('focus', () => {
   //     // setShowSearchInput(false);
@@ -380,15 +384,12 @@ const Categories = ({ navigation }) => {
     return unsubscribe;
   }, [navigation]);
 
-
   useEffect(() => {
     if (companyId) {
       fetchCategories(true, 0, 15);
     }
   }, [companyId]);
 
-
-  
   const fetchCategories = async (
     reset = false,
     customFrom = from,
@@ -405,9 +406,7 @@ const Categories = ({ navigation }) => {
       setHasMoreTasks(true); // Reset hasMoreTasks for new fetch
     }
 
-    const apiUrl = `${global?.userData?.productURL}${
-      API.ALL_CATEGORIES_LL_LIST
-    }/${customFrom}/${customTo}/${companyId}`;
+    const apiUrl = `${global?.userData?.productURL}${API.ALL_CATEGORIES_LL_LIST}/${customFrom}/${customTo}/${companyId}`;
 
     console.log('fetchCategories A ', customFrom, customTo);
 
@@ -486,17 +485,12 @@ const Categories = ({ navigation }) => {
     setRefreshing(false);
   };
 
-
- 
-
-
-
   const onChangeText = text => {
     setSearchQuery(text);
   };
 
-  const renderProductItem = ({ item }) => {
-    const { category, imageUrls } = item;
+  const renderProductItem = ({item}) => {
+    const {category, imageUrls} = item;
 
     return (
       <TouchableOpacity
@@ -510,7 +504,10 @@ const Categories = ({ navigation }) => {
         }}>
         <View style={styles.productImageContainer}>
           {imageUrls && imageUrls.length > 0 ? (
-            <FastImage style={styles.productImage} source={{ uri: imageUrls[0] }} />
+            <FastImage
+              style={styles.productImage}
+              source={{uri: imageUrls[0]}}
+            />
           ) : (
             <Image
               style={styles.productImage}
@@ -538,13 +535,16 @@ const Categories = ({ navigation }) => {
     );
   };
 
-
-
   return (
     <View style={styles.container}>
-
-
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 10, marginVertical: 10 }}>
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          paddingHorizontal: 10,
+          marginVertical: 10,
+        }}>
         <View style={styles.searchContainer}>
           <TextInput
             style={styles.searchInput}
@@ -553,8 +553,10 @@ const Categories = ({ navigation }) => {
             placeholder="Search"
             placeholderTextColor="#000"
           />
-          <TouchableOpacity style={styles.dropdownButton} onPress={toggleDropdown}>
-            <Text style={{ color: "#000", marginRight: 5 }}>
+          <TouchableOpacity
+            style={styles.dropdownButton}
+            onPress={toggleDropdown}>
+            <Text style={{color: '#000', marginRight: 5}}>
               {searchKey ? selectedSearchOption : 'Select'}
             </Text>
             <Image
@@ -572,8 +574,11 @@ const Categories = ({ navigation }) => {
         <View style={styles.dropdownContent1}>
           <ScrollView>
             {searchOption.map((option, index) => (
-              <TouchableOpacity style={styles.dropdownOption} key={`${option.value}_${index}`} onPress={() => handleDropdownSelect(option)}>
-                <Text style={{ color: '#000' }}>{option.label}</Text>
+              <TouchableOpacity
+                style={styles.dropdownOption}
+                key={`${option.value}_${index}`}
+                onPress={() => handleDropdownSelect(option)}>
+                <Text style={{color: '#000'}}>{option.label}</Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
@@ -599,7 +604,7 @@ const Categories = ({ navigation }) => {
         />
         
       )} */}
-       {loading ? (
+      {loading ? (
         <ActivityIndicator size="large" color="#0000ff" />
       ) : categories.length === 0 ? (
         <Text style={styles.noCategoriesText}>Sorry, no results found!</Text>
@@ -619,7 +624,7 @@ const Categories = ({ navigation }) => {
               <ActivityIndicator size="small" color="#0000ff" />
             ) : null
           }
-          contentContainerStyle={{ paddingBottom: 70 }}
+          contentContainerStyle={{paddingBottom: 70}}
         />
       )}
     </View>
@@ -658,7 +663,6 @@ const styles = StyleSheet.create({
   //   backgroundColor: 'white',
   //   elevation: 5,
 
-
   // },
   // searchInput: {
   //   flex: 1,
@@ -685,7 +689,7 @@ const styles = StyleSheet.create({
   },
   productList: {
     paddingTop: 10,
-    paddingBottom: 70
+    paddingBottom: 70,
   },
   productItem: {
     flex: 1,
@@ -730,7 +734,7 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     paddingLeft: 10,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.1,
     shadowRadius: 5,
     elevation: 4,

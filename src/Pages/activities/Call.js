@@ -114,11 +114,22 @@ const Call = () => {
 
 
 
+  // const handleDropdownSelect = option => {
+  //   setSelectedSearchOption(option.label);
+  //   setSearchKey(option.value);
+  //   setDropdownVisible(false);
+  //   setSearchQuery(''); 
+  // };
+
+
   const handleDropdownSelect = option => {
-    setSelectedSearchOption(option.label);
-    setSearchKey(option.value);
-    setDropdownVisible(false);
-    setSearchQuery(''); 
+    onRefresh();
+    setTimeout(() => {
+      setSelectedSearchOption(option.label);
+      setSearchKey(option.value);
+      setDropdownVisible(false);
+      setSearchQuery(''); 
+    }, 0);
   };
 
 
