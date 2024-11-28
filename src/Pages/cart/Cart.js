@@ -88,6 +88,8 @@ const Cart = () => {
   const [selectedCompanyLocationId, setSelectedCompanyLocationId] = useState(0);
   const [gstValues, setGstValues] = useState({});
 
+  const [isSaving, setIsSaving] = useState(false);
+
   // const handleGstChange = (index, text) => {
   //   setGstValues(prevValues => ({
   //     ...prevValues,
@@ -249,6 +251,43 @@ const Cart = () => {
 
   const [errorFields, setErrorFields] = useState([]);
 
+  // const handleSaveButtonPress = () => {
+  //   const mandatoryFields = [
+  //     'firstName',
+  //     'phoneNumber',
+  //     'whatsappId',
+  //     'cityOrTown',
+  //     'state',
+  //     'country',
+  //     'pincode',
+  //     'locationName',
+  //     'locationDescription',
+  //   ];
+  //   setErrorFields([]);
+  //   const missingFields = mandatoryFields.filter(field => !inputValues[field]);
+
+  //   if (missingFields.length > 0) {
+  //     setErrorFields(missingFields);
+  //     Alert.alert('Alert', 'Please fill in all mandatory fields');
+  //     return;
+  //   }
+
+  //   const hasExactlyTenDigits = /^\d{10,12}$/;
+  //   if (!hasExactlyTenDigits.test(Number(inputValues?.phoneNumber))) {
+  //     Alert.alert('Alert', 'Please Provide a valid Phone Number');
+  //     return;
+  //   }
+
+  //   if (inputValues?.whatsappId?.length > 0) {
+  //     if (!hasExactlyTenDigits.test(inputValues?.whatsappId)) {
+  //       Alert.alert('Alert', 'Please Provide a valid Whatsapp Number');
+  //       return;
+  //     }
+  //   }
+
+  //   isEnabled ? getisValidCustomer() : getisValidDistributors();
+  // };
+
   const handleSaveButtonPress = () => {
     const mandatoryFields = [
       'firstName',
@@ -261,6 +300,7 @@ const Cart = () => {
       'locationName',
       'locationDescription',
     ];
+
     setErrorFields([]);
     const missingFields = mandatoryFields.filter(field => !inputValues[field]);
 
@@ -283,6 +323,10 @@ const Cart = () => {
       }
     }
 
+    // Set saving state to true to disable the button
+    setIsSaving(true);
+
+    // Call appropriate function based on isEnabled
     isEnabled ? getisValidCustomer() : getisValidDistributors();
   };
 
@@ -305,6 +349,7 @@ const Cart = () => {
   }, [dispatch]);
 
   const toggleModal = () => {
+    setIsSaving(false);
     setIsModalVisible(!isModalVisible);
     // Reset error fields and input values when modal is closed
     if (isModalVisible) {
@@ -351,6 +396,7 @@ const Cart = () => {
     }
   };
   const addCustomerDetails = () => {
+    setIsSaving(true); 
     const requestData = {
       firstName: inputValues.firstName,
       lastName: '',
@@ -403,10 +449,13 @@ const Cart = () => {
         getCustomerLocations(newCustomer.customerId);
 
         // Close the modal
+        setIsSaving(false); 
         toggleModal();
+       
       })
       .catch(error => {
         console.error('Error adding customer:', error);
+        setIsSaving(false); 
       });
   };
 
@@ -438,6 +487,7 @@ const Cart = () => {
     }
   };
   const addDistributorDetails = () => {
+    setIsSaving(true); 
     const requestData = {
       id: null,
       distributorName: inputValues.firstName,
@@ -498,10 +548,12 @@ const Cart = () => {
         getCustomerLocations(newDistributor.id);
 
         // Close the modal
+        setIsSaving(false); 
         toggleModal();
       })
       .catch(error => {
         console.error('Error adding Distributor:', error);
+        setIsSaving(false); 
       });
   };
 
@@ -975,8 +1027,8 @@ const Cart = () => {
       currentCreditLimit: 0.0,
       orderType: 0,
       roundOff: 0,
-      advancePayment:0,
-      paidAmount:0,
+      advancePayment: 0,
+      paidAmount: 0,
       billNo: '',
     };
 
@@ -2508,8 +2560,12 @@ const Cart = () => {
                   )}
                   <TouchableOpacity
                     style={style.saveButton}
-                    onPress={handleSaveButtonPress}>
-                    <Text style={style.saveButtonText}>Save</Text>
+                    onPress={handleSaveButtonPress}
+                    disabled={isSaving} // Disable button when saving
+                  >
+                    <Text style={style.saveButtonText}>
+                      {isSaving ? 'Saving...' : 'Save'}
+                    </Text>
                   </TouchableOpacity>
                 </ScrollView>
               </View>
