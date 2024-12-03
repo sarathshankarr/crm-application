@@ -15,6 +15,7 @@ import {
   Alert,
   useColorScheme,
   RefreshControl,
+  SafeAreaView,
 } from 'react-native';
 import {RadioGroup} from 'react-native-radio-buttons-group';
 import {API} from '../../config/apiConfig';
@@ -64,10 +65,13 @@ const ProductPackagePublish = () => {
   const [searchKey, setSearchKey] = useState(null);
   const [dropdownVisible, setDropdownVisible] = useState(false);
 
-  const userData=useSelector(state=>state.loggedInUser);
-  const userId=userData?.userId;
+  const [isSaving, setIsSaving] = useState(false);
+
+  const userData = useSelector(state => state.loggedInUser);
+  const userId = userData?.userId;
 
   const toggleModal = () => {
+    setIsSaving(false);
     setIsModalVisible(!isModalVisible);
     // Reset error fields and input values when modal is closed
     if (isModalVisible) {
@@ -78,9 +82,9 @@ const ProductPackagePublish = () => {
         cityOrTown: '',
         state: '',
         country: '',
-        pincode:'',
-        locationName:'',
-        locationDescription:'',
+        pincode: '',
+        locationName: '',
+        locationDescription: '',
       });
       setSearchQuery('');
       setSearchQueryStylesData('');
@@ -93,9 +97,9 @@ const ProductPackagePublish = () => {
     cityOrTown: '',
     state: '',
     country: '',
-    pincode:'',
-    locationName:'',
-    locationDescription:'',
+    pincode: '',
+    locationName: '',
+    locationDescription: '',
   });
 
   const [errorFields, setErrorFields] = useState([]);
@@ -110,7 +114,7 @@ const ProductPackagePublish = () => {
       'country',
       'pincode',
       'locationName',
-      'locationDescription'
+      'locationDescription',
     ];
     setErrorFields([]);
     const missingFields = mandatoryFields.filter(field => !inputValues[field]);
@@ -133,7 +137,7 @@ const ProductPackagePublish = () => {
         return;
       }
     }
-
+    setIsSaving(true);
     selectedId === '1' ? getisValidDistributors() : getisValidCustomer();
   };
   const getisValidCustomer = async () => {
@@ -152,7 +156,8 @@ const ProductPackagePublish = () => {
         // Show an alert if the distributor name is already used
         Alert.alert(
           'crm.codeverse.co says',
-          'A Customer/Retailer already exist with this name',
+          'A Customer/Distributor already exist with this name.',
+          [{ text: 'OK', onPress: () => setIsSaving(false) }]
         );
       }
     } catch (error) {
@@ -164,6 +169,7 @@ const ProductPackagePublish = () => {
     }
   };
   const addCustomerDetails = () => {
+    setIsSaving(true); 
     const requestData = {
       firstName: inputValues.firstName,
       lastName: '',
@@ -190,8 +196,8 @@ const ProductPackagePublish = () => {
       locationName: inputValues.locationName,
       locationCode: '',
       locationDescription: inputValues.locationDescription,
-      userId:userId,
-      linkType: 3
+      userId: userId,
+      linkType: 3,
     };
     axios
       .post(
@@ -212,10 +218,12 @@ const ProductPackagePublish = () => {
         setSelectedCustomerId(newCustomer.customerId);
 
         // Close the modal
+        setIsSaving(false); 
         toggleModal();
       })
       .catch(error => {
         console.error('Error adding customer:', error);
+        setIsSaving(false); 
       });
   };
   const getisValidDistributors = async () => {
@@ -234,7 +242,8 @@ const ProductPackagePublish = () => {
         // Show an alert if the distributor name is already used
         Alert.alert(
           'crm.codeverse.co says',
-          'A Customer/Distributor already exist with this name',
+          'A Customer/Distributor already exist with this name.',
+          [{ text: 'OK', onPress: () => setIsSaving(false) }]
         );
       }
     } catch (error) {
@@ -247,6 +256,7 @@ const ProductPackagePublish = () => {
   };
 
   const addDistributorDetails = () => {
+    setIsSaving(true); 
     const requestData = {
       id: null,
       distributorName: inputValues.firstName,
@@ -280,9 +290,9 @@ const ProductPackagePublish = () => {
       companyId: companyId,
       locationName: inputValues.locationName,
       locationCode: '',
-      locationDescription:inputValues.locationDescription,
-      userId:userId,
-      linkType: 3
+      locationDescription: inputValues.locationDescription,
+      userId: userId,
+      linkType: 3,
     };
 
     axios
@@ -303,10 +313,12 @@ const ProductPackagePublish = () => {
         setSelectedDistributorDetails([newDistributor]);
         setSelectedDistributorId(newDistributor.id);
         // Close the modal
+        setIsSaving(false); 
         toggleModal();
       })
       .catch(error => {
         console.error('Error adding Distributor:', error);
+        setIsSaving(false); 
       });
   };
 
@@ -383,12 +395,10 @@ const ProductPackagePublish = () => {
   // };
 
   const getAllProducts = async (reset = false) => {
-    if (loading || loadingMore) return; 
-    setLoading(reset); 
+    if (loading || loadingMore) return;
+    setLoading(reset);
 
-    const apiUrl = `${global?.userData?.productURL}${
-      API.GET_ALL_PRODUCT_PUBLISH_LAZY
-    }/${from}/${to}/${companyId}`;
+    const apiUrl = `${global?.userData?.productURL}${API.GET_ALL_PRODUCT_PUBLISH_LAZY}/${from}/${to}/${companyId}`;
 
     try {
       const response = await axios.get(apiUrl, {
@@ -397,7 +407,7 @@ const ProductPackagePublish = () => {
         },
       });
 
-      const newTasks = response?.data?.response?.stylesList; 
+      const newTasks = response?.data?.response?.stylesList;
       if (reset) {
         setStylesData(newTasks);
       } else {
@@ -405,7 +415,7 @@ const ProductPackagePublish = () => {
       }
 
       if (newTasks.length < 15) {
-        setHasMoreTasks(false); 
+        setHasMoreTasks(false);
       }
     } catch (error) {
       console.error('Error:', error);
@@ -416,7 +426,7 @@ const ProductPackagePublish = () => {
   };
 
   const loadMoreTasks = () => {
-    if (!hasMoreTasks || loadingMore) return; 
+    if (!hasMoreTasks || loadingMore) return;
 
     setLoadingMore(true);
     const newFrom = from + 15;
@@ -424,7 +434,7 @@ const ProductPackagePublish = () => {
     setFrom(newFrom);
     setTo(newTo);
 
-    getAllProducts(false); 
+    getAllProducts(false);
   };
 
   const onRefresh = async () => {
@@ -432,10 +442,9 @@ const ProductPackagePublish = () => {
     setFrom(0);
     setTo(15);
     setHasMoreTasks(true);
-    await getAllProducts(true); 
+    await getAllProducts(true);
     setRefreshing(false);
   };
-
 
   const gettasksearch = async () => {
     const apiUrl = `${global?.userData?.productURL}${API.SEARCH_ALL_PRODUCT_PUBLISH}`;
@@ -456,8 +465,8 @@ const ProductPackagePublish = () => {
       });
 
       if (response?.data?.response?.stylesList) {
-        setStylesData(response?.data?.response?.stylesList); 
-        setHasMoreTasks(false); 
+        setStylesData(response?.data?.response?.stylesList);
+        setHasMoreTasks(false);
       } else {
         setStylesData([]);
       }
@@ -467,9 +476,9 @@ const ProductPackagePublish = () => {
   };
 
   const handleDropdownSelect = option => {
-    setSelectedSearchOption(option.label); 
-    setSearchKey(option.value); 
-    setDropdownVisible(false); 
+    setSelectedSearchOption(option.label);
+    setSearchKey(option.value);
+    setDropdownVisible(false);
   };
 
   const toggleDropdown = () => {
@@ -478,22 +487,27 @@ const ProductPackagePublish = () => {
 
   const handleSearch = () => {
     if (!searchKey) {
-      Alert.alert('Alert', 'Please select an option from the dropdown before searching');
+      Alert.alert(
+        'Alert',
+        'Please select an option from the dropdown before searching',
+      );
       return; // Exit the function if no search key is selected
     }
-    
+
     if (!searchQuery.trim()) {
-      Alert.alert('Alert', 'Please select an option from the dropdown before searching');
+      Alert.alert(
+        'Alert',
+        'Please select an option from the dropdown before searching',
+      );
       return; // Exit if the search query is empty
     }
-  
+
     gettasksearch(); // Call the search function if the dropdown and query are valid
   };
-  
 
   const handleSearchInputChange = query => {
     setSearchQuery(query);
-  
+
     // If query is cleared, reset tasks and fetch all
     if (query.trim() === '') {
       getAllProducts(true); // Call the fetchTasks function to load all tasks
@@ -563,33 +577,31 @@ const ProductPackagePublish = () => {
         return distributor ? distributor.whatsappId : '';
       }
     };
-    
 
     const requestData = {
-      stylesPublishList: checkedStyleIds.flatMap(styleId => 
+      stylesPublishList: checkedStyleIds.flatMap(styleId =>
         checkedModalIds.map(customerId => ({
           styleId: styleId,
           customerId: customerId,
           phoneNo: getWhatsappId(customerId, selectedId === '2'),
           messageStts: 'Pending',
           customerTypes: selectedId === '2' ? 1 : 2,
-        }))
+        })),
       ),
       loggedInUserWhatsappNumber: '', // Set this to the appropriate value if available
       companyId: companyId,
-      userId:userId,
+      userId: userId,
       linkType: 3,
     };
 
     try {
-      const apiUrl =`${global?.userData?.productURL}${API.GENERATE_CATE_LOG}`;
+      const apiUrl = `${global?.userData?.productURL}${API.GENERATE_CATE_LOG}`;
       const response = await axios.post(apiUrl, requestData, {
         headers: {
           Authorization: `Bearer ${global?.userData?.token?.access_token}`,
           'Content-Type': 'application/json',
         },
       });
-
 
       // Show success alert and reset checkbox selection
       Alert.alert(
@@ -753,10 +765,12 @@ const ProductPackagePublish = () => {
 
   const renderItem = ({item}) => (
     <View style={styles.row}>
-      {item?.styleId && <CustomCheckBox
-        isChecked={checkedStyleIds.includes(item?.styleId)}
-        onToggle={() => handleCheckBoxToggleStyle(item?.styleId)}
-      />}
+      {item?.styleId && (
+        <CustomCheckBox
+          isChecked={checkedStyleIds.includes(item?.styleId)}
+          onToggle={() => handleCheckBoxToggleStyle(item?.styleId)}
+        />
+      )}
       <Text style={styles.cell1}>{item?.styleName}</Text>
       <Text style={styles.cell2}>{item?.colorName}</Text>
       <Text style={styles.cell3}>{item?.mrp}</Text>
@@ -810,7 +824,7 @@ const ProductPackagePublish = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <View style={styles.head1}>
         <TouchableOpacity onPress={handleGoBack}>
           <Image
@@ -852,9 +866,10 @@ const ProductPackagePublish = () => {
       <View
         style={{
           flexDirection: 'row',
+          justifyContent: 'space-between',
           alignItems: 'center',
-          marginLeft: 5,
-          marginTop: 10,
+          paddingHorizontal: 10,
+          marginVertical: 10,
         }}>
         <View style={styles.searchContainer}>
           {/* <TextInput
@@ -874,9 +889,9 @@ const ProductPackagePublish = () => {
             value={searchQuery}
             onChangeText={handleSearchInputChange}
           />
-          
+
           <TouchableOpacity
-            style={styles.searchButton}
+            style={styles.dropdownButton}
             onPress={toggleDropdown}>
             <Text style={{color: '#000'}}>
               {selectedSearchOption || 'Select'}
@@ -887,19 +902,16 @@ const ProductPackagePublish = () => {
             />
           </TouchableOpacity>
         </View>
-        <TouchableOpacity onPress={handleSearch}>
-          <Image
-            style={styles.searchIcon}
-            source={require('../../../assets/search.png')}
-          />
+        <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
+          <Text style={styles.searchButtonText}>Search</Text>
         </TouchableOpacity>
-        <RadioGroup
-          radioButtons={radioButtons}
-          onPress={setSelectedId}
-          selectedId={selectedId}
-          containerStyle={styles.radioGroup}
-        />
       </View>
+      <RadioGroup
+        radioButtons={radioButtons}
+        onPress={setSelectedId}
+        selectedId={selectedId}
+        containerStyle={styles.radioGroup}
+      />
       {dropdownVisible && (
         <View style={styles.dropdownContent1}>
           <ScrollView>
@@ -927,7 +939,8 @@ const ProductPackagePublish = () => {
       </View>
       {loading && pageNo === 1 ? (
         <ActivityIndicator size="large" color="#0000ff" />
-      ) : (stylesData?.length===1 && stylesData[0]===null) || stylesData?.length === 0 ? (
+      ) : (stylesData?.length === 1 && stylesData[0] === null) ||
+        stylesData?.length === 0 ? (
         <Text style={styles.noCategoriesText}>Sorry, no results found! </Text>
       ) : (
         // <FlatList
@@ -945,20 +958,20 @@ const ProductPackagePublish = () => {
         //   }
         // />
         <FlatList
-        data={stylesData}
-        renderItem={renderItem}
-        keyExtractor={(item, index) => `${item.styleId}-${index}`}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-        onEndReached={loadMoreTasks} // Load more when scrolled to the end
-        onEndReachedThreshold={0.2} // Adjust this value to control when to load more
-        ListFooterComponent={
-          loadingMore ? (
-            <ActivityIndicator size="small" color="#0000ff" />
-          ) : null
-        }
-      />
+          data={stylesData}
+          renderItem={renderItem}
+          keyExtractor={(item, index) => `${item.styleId}-${index}`}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+          onEndReached={loadMoreTasks} // Load more when scrolled to the end
+          onEndReachedThreshold={0.2} // Adjust this value to control when to load more
+          ListFooterComponent={
+            loadingMore ? (
+              <ActivityIndicator size="small" color="#0000ff" />
+            ) : null
+          }
+        />
       )}
       <Modal
         animationType="slide"
@@ -1006,7 +1019,8 @@ const ProductPackagePublish = () => {
               <TextInput
                 style={[
                   styles.searchInput1,
-                  {color: colorScheme === 'dark' ? '#000' : '#000'}, // Adjust text color based on theme
+                  {color: colorScheme === 'dark' ? '#000' : '#000' ,// Adjust text color based on theme
+                  paddingVertical: Platform.OS === 'ios' ? 15 : 0},
                 ]}
                 onChangeText={text => setSearchQuery(text)}
                 placeholder="Search"
@@ -1097,17 +1111,18 @@ const ProductPackagePublish = () => {
               style={{
                 backgroundColor: '#1F74BA',
                 borderRadius: 10,
-                // marginHorizontal: 10,
+                marginHorizontal: 10,
                 flexDirection: 'row',
-                alignItems: 'center', // Ensure vertical alignment
-                justifyContent: 'space-between', // Space between text and close button
+                alignItems: 'center',
                 marginTop: 10,
                 paddingVertical: 5,
+                width: '100%',
+                justifyContent: 'space-between',
                 marginBottom: 15,
               }}>
               {selectedId === '1' && (
                 <Text style={[styles.txt3, {flex: 1, textAlign: 'center'}]}>
-                  Distributors Details
+                  Distributor Details
                 </Text>
               )}
               {selectedId === '2' && (
@@ -1124,158 +1139,178 @@ const ProductPackagePublish = () => {
                 />
               </TouchableOpacity>
             </View>
-            <ScrollView style={{width:'100%', height:'80%'}}>
+            <ScrollView style={{width: '100%', height: '80%'}}>
+              <TextInput
+                style={[
+                  styles.input,
+                  {color: '#000'},
+                  errorFields.includes('firstName') ? styles.errorBorder : null,
+                ]}
+                placeholder={
+                  selectedId === '1' ? 'Distributor Name *' : 'Retailer Name *'
+                }
+                placeholderTextColor="#000"
+                onChangeText={text =>
+                  setInputValues({...inputValues, firstName: text})
+                }
+                value={inputValues.firstName}
+              />
+              {errorFields.includes('firstName') && (
+                <Text style={styles.errorText}>
+                  {selectedId === '1'
+                    ? 'Please Enter Distributor Name'
+                    : 'Please Enter Retailer Name'}
+                </Text>
+              )}
 
-            <TextInput
-              style={[
-                styles.input,
-                {color: '#000'},
-                errorFields.includes('firstName') ? styles.errorBorder : null,
-              ]}
-              placeholder={
-                selectedId === '1' ? 'Distributor Name *' : 'Retailer Name *'
-              }
-              placeholderTextColor="#000"
-              onChangeText={text =>
-                setInputValues({...inputValues, firstName: text})
-              }
-              value={inputValues.firstName}
-            />
-            {errorFields.includes('firstName') && (
-              <Text style={styles.errorText}>
-                {selectedId === '1'
-                  ? 'Please Enter Distributor Name'
-                  : 'Please Enter Retailer Name'}
-              </Text>
-            )}
+              <TextInput
+                style={[
+                  styles.input,
+                  {color: '#000'},
+                  errorFields.includes('phoneNumber')
+                    ? styles.errorBorder
+                    : null,
+                ]}
+                placeholder="Phone Number *"
+                placeholderTextColor="#000"
+                onChangeText={text =>
+                  setInputValues({...inputValues, phoneNumber: text})
+                }
+              />
+              {errorFields.includes('phoneNumber') && (
+                <Text style={styles.errorText}>Please Enter Phone Number</Text>
+              )}
 
-            <TextInput
-              style={[
-                styles.input,
-                {color: '#000'},
-                errorFields.includes('phoneNumber') ? styles.errorBorder : null,
-              ]}
-              placeholder="Phone Number *"
-              placeholderTextColor="#000"
-              onChangeText={text =>
-                setInputValues({...inputValues, phoneNumber: text})
-              }
-            />
-            {errorFields.includes('phoneNumber') && (
-              <Text style={styles.errorText}>Please Enter Phone Number</Text>
-            )}
-
-            <TextInput
-              style={[styles.input, {color: '#000'}]}
-              placeholder="Whatsapp Number *"
-              placeholderTextColor="#000"
-              onChangeText={text =>
-                setInputValues({...inputValues, whatsappId: text})
-              }
-            />
-            {errorFields.includes('whatsappId') && (
-              <Text style={styles.errorText}>Please Enter Whatsapp Number</Text>
-            )}
-            <TextInput
-              style={[
-                styles.input,
-                {color: '#000'},
-                errorFields.includes('cityOrTown') ? styles.errorBorder : null,
-              ]}
-              placeholder="City or Town *"
-              placeholderTextColor="#000"
-              onChangeText={text =>
-                setInputValues({...inputValues, cityOrTown: text})
-              }
-            />
-            {errorFields.includes('cityOrTown') && (
-              <Text style={styles.errorText}>Please Enter City Or Town</Text>
-            )}
-            <TextInput
-              style={[
-                styles.input,
-                {color: '#000'},
-                errorFields.includes('state') ? styles.errorBorder : null,
-              ]}
-              placeholderTextColor="#000"
-              placeholder="State *"
-              onChangeText={text =>
-                setInputValues({...inputValues, state: text})
-              }
-            />
-            {errorFields.includes('state') && (
-              <Text style={styles.errorText}>Please Enter State</Text>
-            )}
-            <TextInput
-              style={[
-                styles.input,
-                {color: '#000'},
-                errorFields.includes('country') ? styles.errorBorder : null,
-              ]}
-              placeholderTextColor="#000"
-              placeholder="Country *"
-              onChangeText={text =>
-                setInputValues({...inputValues, country: text})
-              }
-            />
-            {errorFields.includes('country') && (
-              <Text style={styles.errorText}>Please Enter Country</Text>
-            )}
-            <TextInput
-              style={[
-                styles.input,
-                {color: '#000'},
-                errorFields.includes('pincode') ? styles.errorBorder : null,
-              ]}
-              placeholderTextColor="#000"
-              placeholder="Pincode *"
-              onChangeText={text =>
-                setInputValues({...inputValues, pincode: text})
-              }
-            />
-            {errorFields.includes('pincode') && (
-              <Text style={styles.errorText}>Please Enter Pincode</Text>
-            )}
-            <TextInput
-              style={[
-                styles.input,
-                {color: '#000'},
-                errorFields.includes('locationName') ? styles.errorBorder : null,
-              ]}
-              placeholderTextColor="#000"
-              placeholder="Location Name *"
-              onChangeText={text =>
-                setInputValues({...inputValues, locationName: text})
-              }
-            />
-            {errorFields.includes('locationName') && (
-              <Text style={styles.errorText}>Please Enter Location Name</Text>
-            )}
-            <TextInput
-              style={[
-                styles.input,
-                {color: '#000'},
-                errorFields.includes('locationDescription') ? styles.errorBorder : null,
-              ]}
-              placeholderTextColor="#000"
-              placeholder="Location Description *"
-              onChangeText={text =>
-                setInputValues({...inputValues, locationDescription: text})
-              }
-            />
-            {errorFields.includes('locationDescription') && (
-              <Text style={styles.errorText}>Please Enter Location Description</Text>
-            )}
-            <TouchableOpacity
+              <TextInput
+                style={[styles.input, {color: '#000'}]}
+                placeholder="Whatsapp Number *"
+                placeholderTextColor="#000"
+                onChangeText={text =>
+                  setInputValues({...inputValues, whatsappId: text})
+                }
+              />
+              {errorFields.includes('whatsappId') && (
+                <Text style={styles.errorText}>
+                  Please Enter Whatsapp Number
+                </Text>
+              )}
+              <TextInput
+                style={[
+                  styles.input,
+                  {color: '#000'},
+                  errorFields.includes('cityOrTown')
+                    ? styles.errorBorder
+                    : null,
+                ]}
+                placeholder="City or Town *"
+                placeholderTextColor="#000"
+                onChangeText={text =>
+                  setInputValues({...inputValues, cityOrTown: text})
+                }
+              />
+              {errorFields.includes('cityOrTown') && (
+                <Text style={styles.errorText}>Please Enter City Or Town</Text>
+              )}
+              <TextInput
+                style={[
+                  styles.input,
+                  {color: '#000'},
+                  errorFields.includes('state') ? styles.errorBorder : null,
+                ]}
+                placeholderTextColor="#000"
+                placeholder="State *"
+                onChangeText={text =>
+                  setInputValues({...inputValues, state: text})
+                }
+              />
+              {errorFields.includes('state') && (
+                <Text style={styles.errorText}>Please Enter State</Text>
+              )}
+              <TextInput
+                style={[
+                  styles.input,
+                  {color: '#000'},
+                  errorFields.includes('country') ? styles.errorBorder : null,
+                ]}
+                placeholderTextColor="#000"
+                placeholder="Country *"
+                onChangeText={text =>
+                  setInputValues({...inputValues, country: text})
+                }
+              />
+              {errorFields.includes('country') && (
+                <Text style={styles.errorText}>Please Enter Country</Text>
+              )}
+              <TextInput
+                style={[
+                  styles.input,
+                  {color: '#000'},
+                  errorFields.includes('pincode') ? styles.errorBorder : null,
+                ]}
+                placeholderTextColor="#000"
+                placeholder="Pincode *"
+                onChangeText={text =>
+                  setInputValues({...inputValues, pincode: text})
+                }
+              />
+              {errorFields.includes('pincode') && (
+                <Text style={styles.errorText}>Please Enter Pincode</Text>
+              )}
+              <TextInput
+                style={[
+                  styles.input,
+                  {color: '#000'},
+                  errorFields.includes('locationName')
+                    ? styles.errorBorder
+                    : null,
+                ]}
+                placeholderTextColor="#000"
+                placeholder="Location Name *"
+                onChangeText={text =>
+                  setInputValues({...inputValues, locationName: text})
+                }
+              />
+              {errorFields.includes('locationName') && (
+                <Text style={styles.errorText}>Please Enter Location Name</Text>
+              )}
+              <TextInput
+                style={[
+                  styles.input,
+                  {color: '#000'},
+                  errorFields.includes('locationDescription')
+                    ? styles.errorBorder
+                    : null,
+                ]}
+                placeholderTextColor="#000"
+                placeholder="Location Description *"
+                onChangeText={text =>
+                  setInputValues({...inputValues, locationDescription: text})
+                }
+              />
+              {errorFields.includes('locationDescription') && (
+                <Text style={styles.errorText}>
+                  Please Enter Location Description
+                </Text>
+              )}
+              {/* <TouchableOpacity
               style={styles.saveButton}
               onPress={handleSaveButtonPress}>
               <Text style={styles.saveButtonText}>Save</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
+              <TouchableOpacity
+                style={styles.saveButton}
+                onPress={handleSaveButtonPress}
+                disabled={isSaving} // Disable button when saving
+              >
+                <Text style={styles.saveButtonText}>
+                  {isSaving ? 'Saving...' : 'Save'}
+                </Text>
+              </TouchableOpacity>
             </ScrollView>
           </View>
         </View>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -1325,34 +1360,59 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1,
-    borderRadius: 10,
-   
+    backgroundColor: '#fff',
+    borderRadius: 25,
+    paddingLeft: 10,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 4,
     flex: 1,
+    marginRight: 10,
+  },
+  searchInput: {
+    flex: 1,
+    height: 40,
+    borderRadius: 25,
+    paddingHorizontal: 15,
+    color: '#000',
+    // backgroundColor: '#f1f1f1',
+    marginRight: 10,
+  },
+  dropdownButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    backgroundColor: '#e6e6e6',
+    borderRadius: 15,
   },
   searchButton: {
     marginLeft: 'auto',
     flexDirection: 'row',
-    
   },
-  searchInput: {
-    flex: 1,
+  searchButton: {
+    backgroundColor: '#1F74BA',
+    borderRadius: 25,
+    paddingHorizontal: 20,
     paddingVertical: 10,
-    paddingHorizontal: 10,
-    fontSize: 16,
-    color: '#000000',
+    elevation: 3,
   },
-  searchInput: {},
+  searchButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
   image: {
     height: 20,
     width: 20,
-    marginLeft:2,
-    marginRight:2
+    marginLeft: 2,
+    marginRight: 2,
   },
   searchIcon: {
     width: 25,
     height: 25,
-    marginLeft:2
+    marginLeft: 2,
   },
   dropdownContent1: {
     elevation: 5,
@@ -1361,6 +1421,9 @@ const styles = StyleSheet.create({
     width: '90%',
     backgroundColor: '#fff',
     borderRadius: 10,
+    alignSelf: 'center',
+    borderColor: 'lightgray', // Optional: Adds subtle border (for effect)
+    borderWidth: 1,
   },
   dropdownOption: {
     paddingHorizontal: 10,
@@ -1369,7 +1432,9 @@ const styles = StyleSheet.create({
     borderBottomColor: '#ccc',
   },
   radioGroup: {
+    marginHorizontal: 10,
     flexDirection: 'row',
+    marginBottom: 10,
   },
   topheader: {
     flexDirection: 'row',
@@ -1449,6 +1514,9 @@ const styles = StyleSheet.create({
     marginVertical: 8,
     marginHorizontal: 10,
   },
+  searchInput1:{
+marginHorizontal:10
+  },
   noDataText: {
     textAlign: 'center',
     marginTop: 20,
@@ -1459,16 +1527,18 @@ const styles = StyleSheet.create({
   modalContainerr: {
     flex: 1,
     alignItems: 'center',
-    marginTop: 40,
+    marginTop: 50,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContentt: {
     backgroundColor: '#fff',
-    padding: 10,
+    padding: 20,
     borderRadius: 10,
     width: '80%',
     alignItems: 'center',
     elevation: 5, // Add elevation for shadow on Android
+    top: 10,
+    maxHeight: '70%',
   },
   modalTitle: {
     fontSize: 20,

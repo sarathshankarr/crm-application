@@ -384,7 +384,8 @@ const Cart = () => {
         // Show an alert if the distributor name is already used
         Alert.alert(
           'crm.codeverse.co says',
-          'A Customer/Retailer already exist with this name',
+          'A Customer/Distributor already exist with this name.',
+          [{ text: 'OK', onPress: () => setIsSaving(false) }]
         );
       }
     } catch (error) {
@@ -475,7 +476,8 @@ const Cart = () => {
         // Show an alert if the distributor name is already used
         Alert.alert(
           'crm.codeverse.co says',
-          'A Customer/Distributor already exist with this name',
+          'A Customer/Distributor already exist with this name.',
+          [{ text: 'OK', onPress: () => setIsSaving(false) }]
         );
       }
     } catch (error) {

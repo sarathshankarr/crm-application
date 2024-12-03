@@ -348,6 +348,15 @@ const Sidebar = ({navigation, route}) => {
               />
               <Text style={styles.dropdownItem}>Packages</Text>
             </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.inventoryhead}
+              onPress={goToPublish}>
+              <Image
+                style={styles.prodimg}
+                source={require('../assets/package.png')}
+              />
+              <Text style={styles.dropdownItem}>Product Publish</Text>
+            </TouchableOpacity>
           </View>
         )}
         <TouchableOpacity
