@@ -701,11 +701,13 @@ const NewStyleDetail = ({ route }) => {
       });
   };
   const getLocations = () => {
+    console.log("comp_flag",comp_flag)
     if (comp_flag === 0) {
       const apiUrl0 = `${global?.userData?.productURL}${API.GET_LOCATION_C0_LIST}`;
       setIsLoading(true);
       const requestData = {
         styleName: '',
+        companyId:companyId
       };
       axios
         .post(apiUrl0, requestData, {
@@ -714,6 +716,7 @@ const NewStyleDetail = ({ route }) => {
           },
         })
         .then(response => {
+          console.log('response?.data?.locationList',response?.data?.locationList)
           setLocationList(response?.data?.locationList || []);
           setFilteredLocationList(response?.data?.locationList || []);
           setIsLoading(false);
