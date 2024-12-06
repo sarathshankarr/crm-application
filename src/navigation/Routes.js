@@ -46,6 +46,7 @@ import MailConfirmation from '../Pages/forgetPassword/MailConfirmation';
 import ConfirmPassword from '../Pages/forgetPassword/ConfirmPassword';
 import EnterOtp from '../Pages/forgetPassword/EnterOtp';
 import ImageSliderPackages from '../components/ImageSliderPackages';
+import QRCodeScanner from '../Pages/scan/QrScanner';
 
 const Stack = createNativeStackNavigator();
 
@@ -330,6 +331,11 @@ const Routes = () => {
        <Stack.Screen
         name="ImageSliderPackages"
         component={ImageSliderPackages}
+        options={{ headerShown: false }}
+      />
+       <Stack.Screen
+        name="QRCodeScanner"
+        component={QRCodeScanner}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

@@ -98,15 +98,42 @@ const Cart = () => {
   // };
 
   const handleGstChange = (index, text) => {
-    // If the text is empty (user removed the value), set it to '0'
-    const validGst = text.trim() === '' ? '0' : parseInt(text, 10).toString();
-
-    setGstValues(prevValues => ({
-      ...prevValues,
-      [index]: validGst, // Update GST value for the specific index/item
-    }));
+    // Validate the input to allow only numbers and a single decimal point
+    const isValidInput = /^\d*\.?\d*$/.test(text);
+  
+    if (isValidInput) {
+      // Parse integer part only if no decimal point
+      const validGst = text.trim() === ''
+        ? '0' // If the input is empty, default to '0'
+        : text.includes('.')
+        ? text // Preserve the decimal value
+        : parseInt(text, 10).toString(); // Convert to integer for whole numbers
+  
+      setGstValues(prevValues => ({
+        ...prevValues,
+        [index]: validGst, // Update GST value for the specific index/item
+      }));
+    }
   };
-
+  
+  const grossPrices = cartItems.map((item, index) => {
+    // Ensure item is defined and has necessary properties
+    if (!item || !item.quantity) return 0; // Fallback if item or quantity is missing
+    
+    const grossPrice = (
+      Number(
+        isEnabled
+          ? item?.retailerPrice?.toString()
+          : item?.dealerPrice?.toString() || item?.price?.toString() || '0'
+      ) * (Number(item?.quantity) || 0)
+    ).toFixed(2); // Calculate the gross price for each item
+    
+    return parseFloat(grossPrice); // Return as a number after converting it to float
+  });
+  
+  // Now you have an array of grossPrices, you can sum them up or use them
+  const totalGrossPrice = grossPrices.reduce((acc, grossPrice) => acc + grossPrice, 0).toFixed(2);
+  
   const userData = useSelector(state => state.loggedInUser);
   const userId = userData?.userId;
 
@@ -384,8 +411,7 @@ const Cart = () => {
         // Show an alert if the distributor name is already used
         Alert.alert(
           'crm.codeverse.co says',
-          'A Customer/Distributor already exist with this name.',
-          [{ text: 'OK', onPress: () => setIsSaving(false) }]
+          'A Customer/Retailer already exist with this name',
         );
       }
     } catch (error) {
@@ -476,8 +502,7 @@ const Cart = () => {
         // Show an alert if the distributor name is already used
         Alert.alert(
           'crm.codeverse.co says',
-          'A Customer/Distributor already exist with this name.',
-          [{ text: 'OK', onPress: () => setIsSaving(false) }]
+          'A Customer/Distributor already exist with this name',
         );
       }
     } catch (error) {
@@ -926,10 +951,13 @@ const Cart = () => {
       .toFixed(2);
 
     // Calculate total amount
-    const totalAmount = (parseFloat(totalPrice) + parseFloat(totalGst)).toFixed(
-      2,
-    ); // Total amount formatted to 2 decimal places
-
+    const totalAmount = (
+      (parseFloat(totalGst) || 0) +
+      (parseFloat(totalGrossPrice) || 0) // Add gross price to the total amount
+    ).toFixed(2); // Format the total amount to 2 decimal places
+    
+    console.log(totalAmount); // Outputs: "1603.50"
+    
     const requestData = {
       totalAmount: totalAmount,
       totalDiscount: '0',
@@ -1164,15 +1192,36 @@ const Cart = () => {
     setShipDate(date.toISOString().split('T')[0]);
   };
 
+  // const handleQuantityChange = (index, text) => {
+  //   const updatedItems = [...cartItems];
+  //   const parsedQuantity = parseInt(text, 10);
+
+  //   if (!isNaN(parsedQuantity) || text === '') {
+  //     updatedItems[index].quantity = text === '' ? '' : parsedQuantity;
+  //     dispatch(updateCartItem(index, updatedItems[index]));
+  //   }
+  // };
+
   const handleQuantityChange = (index, text) => {
     const updatedItems = [...cartItems];
-    const parsedQuantity = parseInt(text, 10);
-
-    if (!isNaN(parsedQuantity) || text === '') {
-      updatedItems[index].quantity = text === '' ? '' : parsedQuantity;
+  
+    // Validate the input to allow only numbers and a single decimal point
+    const isValidInput = /^\d*\.?\d*$/.test(text);
+  
+    if (isValidInput) {
+      // Parse integer part only if no decimal point, otherwise preserve the input
+      const parsedQuantity = text.includes('.')
+        ? text // Preserve the input if it contains a decimal point
+        : text === ''
+        ? '' // Keep as empty string for empty input
+        : parseInt(text, 10); // Parse to integer for whole numbers
+  
+      updatedItems[index].quantity = parsedQuantity;
       dispatch(updateCartItem(index, updatedItems[index]));
     }
   };
+
+  
   // const handlePriceChange = (index, text) => {
   //   const updatedItems = [...cartItems];
   //   const parsedPrice = parseFloat(text);
@@ -1187,25 +1236,50 @@ const Cart = () => {
   //   }
   // };
 
+  // const handlePriceChange = (index, text) => {
+  //   const updatedItems = [...cartItems];
+
+  //   // Convert the text to an integer to remove leading zeros and then back to a string
+  //   const parsedPrice = parseInt(text, 10); // Removes leading zeros
+
+  //   // Only update if the text is a valid number or empty
+  //   if (!isNaN(parsedPrice) || text === '') {
+  //     const formattedPrice = text === '' ? '0' : parsedPrice.toString(); // Convert to string, ensure '0' if empty
+
+  //     if (isEnabled) {
+  //       updatedItems[index].retailerPrice = formattedPrice;
+  //     } else {
+  //       updatedItems[index].dealerPrice = formattedPrice;
+  //     }
+
+  //     dispatch(updateCartItem(index, updatedItems[index]));
+  //   }
+  // };
+
   const handlePriceChange = (index, text) => {
     const updatedItems = [...cartItems];
-
-    // Convert the text to an integer to remove leading zeros and then back to a string
-    const parsedPrice = parseInt(text, 10); // Removes leading zeros
-
-    // Only update if the text is a valid number or empty
-    if (!isNaN(parsedPrice) || text === '') {
-      const formattedPrice = text === '' ? '0' : parsedPrice.toString(); // Convert to string, ensure '0' if empty
-
+  
+    // Validate the input to allow only numbers and a single decimal point
+    const isValidInput = /^\d*\.?\d*$/.test(text); // Matches numbers with optional decimal point
+  
+    if (isValidInput) {
+      // Parse integer part only if no decimal point
+      const parsedPrice = text.includes('.') ? text : parseInt(text, 10).toString(); // Parse integer only for whole numbers
+  
+      // Ensure empty input defaults to '0'
+      const formattedPrice = text === '' ? '0' : parsedPrice;
+  
+      // Update the respective price based on isEnabled
       if (isEnabled) {
-        updatedItems[index].retailerPrice = formattedPrice;
+        updatedItems[index].retailerPrice = formattedPrice; // Update retailerPrice
       } else {
-        updatedItems[index].dealerPrice = formattedPrice;
+        updatedItems[index].dealerPrice = formattedPrice; // Update dealerPrice
       }
-
+  
       dispatch(updateCartItem(index, updatedItems[index]));
     }
   };
+  
 
   const handleIncrementQuantityCart = index => {
     const updatedItems = [...cartItems];
@@ -1259,16 +1333,25 @@ const Cart = () => {
     });
   };
 
+  // const totalQty = cartItems.reduce((total, item) => {
+  //   // Ensure item.quantity is defined and not NaN before adding to total
+  //   const quantity = parseInt(item.quantity);
+  //   if (!isNaN(quantity)) {
+  //     return total + quantity;
+  //   } else {
+  //     return total; // Ignore invalid quantities
+  //   }
+  // }, 0);
   const totalQty = cartItems.reduce((total, item) => {
     // Ensure item.quantity is defined and not NaN before adding to total
-    const quantity = parseInt(item.quantity);
+    const quantity = parseFloat(item.quantity); // Use parseFloat to handle decimals
     if (!isNaN(quantity)) {
       return total + quantity;
     } else {
       return total; // Ignore invalid quantities
     }
   }, 0);
-
+  
   const calculateTotalQty = (styleId, colorId) => {
     let totalQty = 0;
     for (let item of cartItems) {
@@ -1289,6 +1372,20 @@ const Cart = () => {
     return totalItems;
   };
 
+  // const calculateTotalPrice = (styleId, colorId) => {
+  //   let totalPrice = 0;
+  //   for (let item of cartItems) {
+  //     if (item.styleId === styleId && item.colorId === colorId) {
+  //       totalPrice +=
+  //         (isEnabled
+  //           ? item?.retailerPrice?.toString()
+  //           : item?.dealerPrice?.toString() || item?.price?.toString()) *
+  //         item.quantity;
+  //     }
+  //   }
+  //   return totalPrice;
+  // };
+
   const calculateTotalPrice = (styleId, colorId) => {
     let totalPrice = 0;
     for (let item of cartItems) {
@@ -1300,7 +1397,7 @@ const Cart = () => {
           item.quantity;
       }
     }
-    return totalPrice;
+    return totalPrice.toFixed(2); // Ensure the result is formatted to 2 decimal places
   };
 
   const uniqueSets = new Set(
@@ -1328,32 +1425,62 @@ const Cart = () => {
     .toFixed(2); // Total price formatted to 2 decimal places
 
   // Calculate total GST based on the totalPrice and user input (gstValues)
+  // const totalGst = cartItems
+  //   .reduce((acc, item, index) => {
+  //     const gstPercentage = parseFloat(
+  //       gstValues[index] !== undefined ? gstValues[index] : item.gst,
+  //     ); // Use updated GST if available
+  //     const itemTotalPrice =
+  //       parseFloat(isEnabled ? item?.retailerPrice : item?.dealerPrice) *
+  //       parseInt(item.quantity, 10);
+  //     const itemGst = (itemTotalPrice * gstPercentage) / 100;
+  //     return acc + itemGst; // Sum GST
+  //   }, 0)
+  //   .toFixed(2);
   const totalGst = cartItems
-    .reduce((acc, item, index) => {
-      const gstPercentage = parseFloat(
-        gstValues[index] !== undefined ? gstValues[index] : item.gst,
-      ); // Use updated GST if available
-      const itemTotalPrice =
-        parseFloat(isEnabled ? item?.retailerPrice : item?.dealerPrice) *
-        parseInt(item.quantity, 10);
-      const itemGst = (itemTotalPrice * gstPercentage) / 100;
-      return acc + itemGst; // Sum GST
-    }, 0)
-    .toFixed(2);
+  .reduce((acc, item, index) => {
+    // Parse GST percentage as a float
+    const gstPercentage = parseFloat(
+      gstValues[index] !== undefined ? gstValues[index] : item.gst,
+    ); // Use updated GST if available
+
+    // Parse price and quantity as floats for accurate calculations
+    const itemTotalPrice =
+      parseFloat(isEnabled ? item?.retailerPrice : item?.dealerPrice) *
+      parseFloat(item.quantity);
+
+    // Calculate GST for the item
+    const itemGst = (itemTotalPrice * gstPercentage) / 100;
+
+    // Accumulate GST
+    return acc + itemGst;
+  }, 0) // Initial accumulator is 0
+  .toFixed(2); // Round the final sum to 2 decimal places
+
 
   // Calculate total amount
   // const totalAmount = (parseFloat(totalPrice) + parseFloat(totalGst)).toFixed(
   //   2,
   // ); // Total amount formatted to 2 decimal places
 
+  // const totalAmount = (
+  //   (parseFloat(totalPrice) || 0) + (parseFloat(totalGst) || 0)
+  // ).toFixed(2); // Total amount formatted to 2 decimal places
+
   const totalAmount = (
-    (parseFloat(totalPrice) || 0) + (parseFloat(totalGst) || 0)
-  ).toFixed(2); // Total amount formatted to 2 decimal places
+    (parseFloat(totalGst) || 0) +
+    (parseFloat(totalGrossPrice) || 0) // Add gross price to the total amount
+  ).toFixed(2); // Format the total amount to 2 decimal places
+  
+  console.log(totalAmount); // Outputs: "1603.50"
+  
 
   // Outputting the total values for debugging
   console.log('Total Price:', totalPrice);
   console.log('Total GST:', totalGst);
+  console.log('totalGrossPrice',totalGrossPrice)
   console.log('Total Amount:', totalAmount);
+
 
   const [locationInputValues, setLocationInputValues] = useState({
     locationName: '',
@@ -1542,10 +1669,13 @@ const Cart = () => {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : -500}>
       <SafeAreaView style={{flex: 1, backgroundColor: '#fff'}}>
-        <View style={{marginVertical: 10, backgroundColor: '#fff'}}>
-          {/* <View style={{marginHorizontal: 10, marginVertical: 2}}>
-            <Text style={{color: '#000', fontWeight: 'bold'}}>Customers</Text>
-          </View> */}
+      <View
+          style={{
+            marginVertical: 10,
+            flexDirection: 'row',
+            justifyContent: "space-between",
+            marginLeft:10
+          }}>
           <View style={style.switchContainer}>
             <Switch
               trackColor={{false: '#767577', true: '#81b0ff'}}
@@ -1563,6 +1693,28 @@ const Cart = () => {
               }}>
               Slide For Retailer
             </Text>
+          </View>
+          <View style={{flexDirection: 'row', alignItems: 'center',marginRight:2}}>
+            <Text
+              style={{
+                color: '#000',
+                fontWeight: 'bold',
+                fontSize: 15,
+                color: '#000',
+              }}>
+              Qr-Scanner
+            </Text>
+            <TouchableOpacity
+             onPress={() => navigation.navigate('QRCodeScanner')}
+             
+              style={{
+                marginHorizontal: 11,
+              }}>
+              <Image
+                style={{height: 27, width: 27}}
+                source={require('../../../assets/qr-scan.png')}
+              />
+            </TouchableOpacity>
           </View>
         </View>
         <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
@@ -2181,7 +2333,7 @@ const Cart = () => {
                       </View>
 
                       <View style={{flex: 0.3, marginLeft: 30}}>
-                        <Text style={{color: '#000'}}>
+                        {/* <Text style={{color: '#000'}}>
                           {(
                             Number(
                               isEnabled
@@ -2190,7 +2342,10 @@ const Cart = () => {
                                     item?.price?.toString(),
                             ) * Number(item.quantity)
                           ).toString()}
-                        </Text>
+                        </Text> */}
+                        <Text style={{ color: '#000' }}>
+  {totalGrossPrice} {/* Gross price for the current item */}
+</Text>
                       </View>
                       <TouchableOpacity onPress={() => handleRemoveItem(index)}>
                         <Image
@@ -3099,3 +3254,4 @@ const style = StyleSheet.create({
   },
 });
 export default Cart;
+

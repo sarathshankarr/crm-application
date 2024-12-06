@@ -49,6 +49,7 @@
     "react-native-svg": "^15.8.0",
     "react-native-swipe-list-view": "^3.2.9",
     "react-native-tab-view": "^3.5.2",
+    "react-native-vision-camera": "^4.6.3",
     "react-redux": "^9.1.2",
     "redux": "^5.0.1"
   },
