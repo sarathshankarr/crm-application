@@ -1,48 +1,60 @@
-import React, { useState, useEffect } from "react";
-import { Image, StyleSheet, Text, TouchableOpacity, View, Alert } from "react-native";
+import React, {useState, useEffect} from 'react';
+import {
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  Alert,
+  Platform,
+} from 'react-native';
 import {
   Camera,
   useCameraDevice,
   useCodeScanner,
-} from "react-native-vision-camera";
+} from 'react-native-vision-camera';
+import {useNavigation} from '@react-navigation/native';
 
-const QRCodeScanner = (props) => {
+const QRCodeScanner = props => {
   const [hasPermission, setHasPermission] = useState(false);
   const [latestScannedData, setLatestScannedData] = useState(null);
   const [refresh, setRefresh] = useState(false);
-  const device = useCameraDevice("back");
+  const device = useCameraDevice('back');
+  const navigation = useNavigation();
 
   const codeScanner = useCodeScanner({
-    codeTypes: ['qr', 'ean-13','ean-8', 'code-128', 'code-39'],
-    onCodeScanned: (codes) => {
+    codeTypes: ['qr', 'ean-13', 'ean-8', 'code-128', 'code-39'],
+    onCodeScanned: codes => {
       try {
-        // Make sure we have valid data before proceeding
         if (codes && codes.length > 0 && codes[0]?.value) {
+          console.log('Scanned Code:', codes[0]?.value);
           setLatestScannedData(codes[0]?.value);
-          props.onRead(codes[0]?.value);
+          props.route.params?.onRead(codes[0]?.value); // Pass scanned data back to parent
+          navigation.goBack(); // Close scanner
         } else {
-          throw new Error("Invalid QR code data");
+          throw new Error('No valid QR code detected');
         }
       } catch (error) {
-        console.error("Scanning error: ", error.message);
-        Alert.alert("Error", "Failed to read the QR code. Please try again.");
+        console.error('Scanning error: ', error.message);
+        Alert.alert('Error', 'Failed to read the QR code. Please try again.', [
+          {text: 'Retry', onPress: () => setRefresh(!refresh)},
+        ]);
       }
     },
   });
 
   useEffect(() => {
-    setRefresh(!refresh);
-  }, [device, hasPermission]);
-
-  useEffect(() => {
     const requestCameraPermission = async () => {
       try {
         const permission = await Camera.requestCameraPermission();
-        console.log("Camera.requestCameraPermission ", permission);
-        setHasPermission(permission === "granted");
+        console.log('Camera.requestCameraPermission: ', permission);
+        setHasPermission(permission === 'granted');
       } catch (error) {
-        console.error("Permission error: ", error.message);
-        Alert.alert("Permission Error", "Failed to get camera permission. Please enable it in settings.");
+        console.error('Permission error: ', error.message);
+        Alert.alert(
+          'Permission Error',
+          'Failed to get camera permission. Please enable it in settings.',
+        );
       }
     };
 
@@ -50,16 +62,20 @@ const QRCodeScanner = (props) => {
 
     // Timeout to close the scanner after a certain period if no scan happens
     const timeout = setTimeout(() => {
-      props.onRead(null);
+      props.route.params?.onRead(null);
     }, 15 * 1000);
 
     return () => clearTimeout(timeout); // Cleanup the timeout on unmount
   }, []);
 
-  if (device === null || !hasPermission) {
+  useEffect(() => {
+    setRefresh(!refresh); // Trigger a re-render when device or permission changes
+  }, [device, hasPermission]);
+
+  if (!device || !hasPermission) {
     return (
-      <View style={styles.page2}>
-        <Text style={{ backgroundColor: "white" }}>
+      <View style={styles.page}>
+        <Text style={styles.errorText}>
           Camera not available or not permitted
         </Text>
       </View>
@@ -67,7 +83,7 @@ const QRCodeScanner = (props) => {
   }
 
   return (
-    <View style={styles.page2}>
+    <View style={styles.page}>
       <Camera
         codeScanner={codeScanner}
         style={StyleSheet.absoluteFill}
@@ -76,72 +92,67 @@ const QRCodeScanner = (props) => {
       />
       <View style={styles.footer}>
         <TouchableOpacity
-          style={{
-            paddingVertical: 8,
-            paddingHorizontal: 10,
-            borderWidth: 1,
-            borderRadius: 5,
-            borderColor: "snow",
-            alignItems: "center",
-          }}
+          style={styles.closeButton}
           onPress={() => {
-            props.onRead(null);
-          }}
-        >
-          {latestScannedData && (
+            if (
+              props.route.params?.onRead &&
+              typeof props.route.params.onRead === 'function'
+            ) {
+              props.route.params.onRead(null); // Notify parent no scan happened
+            }
+            navigation.goBack();
+          }}>
+          <Text style={styles.closeButtonText}>Close</Text>
+        </TouchableOpacity>
+      </View>
+      {latestScannedData && (
         <View style={styles.resultContainer}>
           <Text style={styles.resultTitle}>Latest Scanned Code:</Text>
           <Text style={styles.resultText}>{latestScannedData}</Text>
         </View>
       )}
-          <Text style={{ color: "snow", fontSize: 14 }}>Close</Text>
-        </TouchableOpacity>
-      </View>
     </View>
   );
 };
 
-
-
 export default QRCodeScanner;
 
 const styles = StyleSheet.create({
-  page2: {
+  page: {
     flex: 1,
-    position: "absolute",
-    top: 0,
-    height: "100%",
-    width: "100%",
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'black',
   },
-  backHeader: {
-    backgroundColor: "#00000090",
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    padding: "2%",
-    height: "5%",
-    width: "100%",
-    alignItems: "flex-start",
-    justifyContent: "center",
+  errorText: {
+    color: 'white',
+    fontSize: 16,
   },
   footer: {
-    backgroundColor: "#00000090",
-    position: "absolute",
+    backgroundColor: '#00000090',
+    position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    padding: "10%",
-    height: "20%",
-    width: "100%",
-    alignItems: "center",
-    justifyContent: "center",
+    padding: '5%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  closeButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderWidth: 1,
+    borderRadius: 5,
+    borderColor: 'white',
+    alignItems: 'center',
+  },
+  closeButtonText: {
+    color: 'white',
+    fontSize: 16,
   },
   resultContainer: {
     position: 'absolute',
-    bottom: 40, // Adjust the position to provide space between the camera view and the result container
+    bottom: 100,
     left: 20,
     right: 20,
     backgroundColor: 'rgba(0, 0, 0, 0.8)',
@@ -151,8 +162,8 @@ const styles = StyleSheet.create({
   resultTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    marginBottom: 5,
     color: 'white',
+    marginBottom: 5,
   },
   resultText: {
     fontSize: 14,

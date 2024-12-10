@@ -112,16 +112,18 @@ const PackageDetail = ({ route }) => {
 
       if (parseInt(inputValue, 10) > 0) {
         const itemBaseDetails = {
-          packageId: item.packageId,
+          packageId: modalData.packageId,
           styleId: item.styleId,
           styleName: item.styleName,
           colorName: item.colorName,
+          sizeId: item.sizeId,
           colorId: item.colorId,
           sizeDesc: item.size,
           quantity: inputValue,
-          dealerPrice: modalData?.dealerPrice,
-          retailerPrice: modalData?.retailerPrice,
-          price: modalData?.price,
+          dealerPrice: modalData?.price || 0,
+          retailerPrice: modalData?.retailerPrice || 0,
+          price: modalData?.price || 0,
+          gst: item.gst|| 0,
           sourceScreen: 'PackageDetail',
         };
 

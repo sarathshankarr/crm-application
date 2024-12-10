@@ -18,6 +18,7 @@ import {
 } from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
 import {
+  addItemToCart,
   addToPending,
   removeFromCart,
   setLoggedInUser,
@@ -45,7 +46,7 @@ const Cart = () => {
 
   const [inputValuess, setInputValuess] = useState({});
   const cartItems = useSelector(state => state.cartItems);
-  console.log('cartItems=====>', cartItems);
+  console.log('cartItems', cartItems);
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [selatedDate, setSelectedDate] = useState('Expected delivery date');
   const [modalVisible, setModalVisible] = useState(false);
@@ -90,6 +91,297 @@ const Cart = () => {
 
   const [isSaving, setIsSaving] = useState(false);
 
+  const [isSearchVisible, setIsSearchVisible] = useState(false);
+  const [isDropdownVisible, setIsDropdownVisible] = useState(false);
+  const [searchQueryCode, setSearchQueryCode] = useState('');
+  const [selectedOption, setSelectedOption] = useState('Style');
+  const [fetchedData, setFetchedData] = useState([]); // To store API response
+  const [fetchedPakageData, setFetchedPakageData] = useState([]); // To store API response
+  const [loading, setLoading] = useState(false); // For loading state
+  const [error, setError] = useState(null); // To handle errors
+  const [stylesData, setStylesData] = useState([]);
+
+  const [barcodeList, setBarcodeList] = useState([]);
+  const [isAlertVisible, setIsAlertVisible] = useState(false);
+  const [isAlertShown, setIsAlertShown] = useState(false);
+
+  const StylePublish = ['Style', 'Package'];
+
+  const [modalData, setModalData] = useState(null);
+
+  const toggleSearchVisibility = () => {
+    setIsSearchVisible(!isSearchVisible);
+  };
+
+  const toggleDropdown = () => {
+    setIsDropdownVisible(!isDropdownVisible);
+  };
+
+  const handleOptionSelect = option => {
+    setSelectedOption(option);
+    setIsDropdownVisible(false);
+  };
+
+  const getStyle = query => {
+    const trimmedQuery = query.trim();
+    if (!trimmedQuery) {
+      setError('Please enter a barcode.');
+      return;
+    }
+
+    const apiUrl = `${global?.userData?.productURL}${API.GET_STYLE_ITEMS}/${trimmedQuery}/${companyId}/0/${comp_flag}`;
+
+    setLoading(true);
+    setError(null);
+
+    axios
+      .get(apiUrl, {
+        headers: {
+          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+        },
+      })
+      .then(response => {
+        console.log('Fetched Data:', response.data);
+        const data = response?.data || [];
+        setFetchedData(data); // Store fetched data if needed elsewhere
+        handleSaveItem(data); // Save items to the cart
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        setError('Failed to fetch data.');
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  };
+
+  const handleSaveItem = fetchedData => {
+    console.log('Fetched Data:', fetchedData); // Log fetched data for debugging
+
+    let itemsToUpdate = [];
+
+    fetchedData.forEach(item => {
+      const itemDetails = {
+        packageId: item.packageId || null,
+        styleId: item.styleId,
+        styleName: item.styleDesc,
+        colorName: item.colorName,
+        colorId: item.colorId,
+        sizeDesc: item.sizeDesc,
+        sizeId: item.sizeId,
+        quantity: item.qty || 1, // Default to 1 if quantity is not available
+        dealerPrice: item.dealerPrice,
+        retailerPrice: item.retailerPrice,
+        price: item.unitPrice,
+        gst: item.gst,
+        imageUrls: item.imageUrls, // Add imageUrls to the cart item details
+      };
+
+      console.log('Item details to add/update:', itemDetails);
+
+      // Check if the item already exists in the cart
+      const existingItemIndex = cartItems.findIndex(
+        cartItem =>
+          cartItem.styleId === item.styleId &&
+          cartItem.colorId === item.colorId &&
+          cartItem.sizeDesc === item.sizeDesc,
+      );
+
+      if (existingItemIndex !== -1) {
+        // Update the existing item's quantity and other details if needed
+        const updatedItem = {
+          ...cartItems[existingItemIndex],
+          quantity:
+            parseInt(cartItems[existingItemIndex].quantity, 10) +
+            itemDetails.quantity, // Add the new quantity
+          price: itemDetails.price,
+          imageUrls: itemDetails.imageUrls, // Update images if necessary
+        };
+
+        console.log(
+          `Updating existing item at index ${existingItemIndex}:`,
+          updatedItem,
+        );
+        dispatch(updateCartItem(existingItemIndex, updatedItem));
+      } else {
+        // Add a new item to the list if it doesn't exist
+        console.log('Adding new item:', itemDetails);
+        itemsToUpdate.push(itemDetails);
+      }
+    });
+
+    // Dispatch actions to update the cart
+    if (itemsToUpdate.length > 0) {
+      console.log('Items to be added to cart:', itemsToUpdate);
+      itemsToUpdate.forEach(item => dispatch(addItemToCart(item)));
+    } else {
+      console.log('No items to add to cart.');
+    }
+
+    // Clear inputs and close modal
+    console.log('Clearing input values and closing modal.');
+    setInputValues({});
+    setModalVisible(false);
+  };
+
+  const getPackage = async query => {
+    const trimmedQuery = typeof query === 'string' ? query.trim() : '';
+
+    if (!trimmedQuery) {
+      setError('Please enter a valid barcode.');
+      return;
+    }
+
+    if (barcodeList.includes(trimmedQuery) && !isAlertVisible) {
+      console.log('Duplicate barcode detected. Showing alert.');
+      setIsAlertVisible(true); // Set the flag to true when the alert is triggered
+      Alert.alert(
+        'Barcode',
+        'This barcode has already been scanned or entered. Kindly verify.',
+        [
+          {
+            text: 'OK',
+            onPress: () => {
+              setIsAlertVisible(false); // Reset flag when the alert is dismissed
+              console.log('OK Pressed');
+            },
+          },
+        ],
+        {cancelable: true},
+      );
+      return; // Exit early to prevent further code execution
+    }
+
+    const apiUrl = `${global?.userData?.productURL}${API.GET_PACKAGES_ITEMS}/${trimmedQuery}`;
+    console.log('API URL:', apiUrl);
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await axios.get(apiUrl, {
+        headers: {
+          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+        },
+      });
+
+      if (response.data?.status?.success) {
+        const packagesList = response.data?.response?.packagesList || [];
+        console.log('Fetched Package List:', packagesList);
+
+        if (packagesList.length === 0) {
+          setError('No packages found for the given barcode.');
+          return;
+        }
+
+        console.log('Checking condition for alert...');
+        console.log('trimmedQuery:', trimmedQuery);
+        console.log('packagesList:', packagesList);
+
+        // Check if the trimmedQuery is exactly 11 digits long
+        if (
+          trimmedQuery.trim().length === 11 &&
+          packagesList.some(pkg => pkg.packageId === 0)
+        ) {
+          console.log('Alert conditions met, showing alert');
+
+          // Show the alert
+          Alert.alert(
+            'No Package Found',
+            'No package found for the given barcode. Please check and try again.',
+            [{text: 'OK'}],
+            {cancelable: true},
+          );
+          return; // Stop further execution
+        }
+
+        // Check package validity and update barcode list
+        const validPackages = packagesList.filter(
+          pkg => pkg.packageId && pkg.packageId !== 0,
+        );
+        if (validPackages.length > 0) {
+          setStylesData(validPackages); // Store the data for use in your component
+          handleSaveItemPackage(validPackages); // Handle all the valid packages
+
+          // Add barcode to the list if not already present
+          setBarcodeList(prevList => {
+            const newBarcode = trimmedQuery.trim();
+            if (newBarcode && !prevList.includes(newBarcode)) {
+              const updatedList = [...prevList.filter(Boolean), newBarcode]; // Filter out undefined/null
+              console.log('Updated barcodeList:', updatedList);
+              return updatedList;
+            }
+            console.log('Barcode already exists or is invalid:', newBarcode);
+            return prevList;
+          });
+        } else {
+          setError('Package ID is invalid or zero. Package cannot be added.');
+        }
+      } else {
+        setError('Failed to fetch package details.');
+      }
+    } catch (error) {
+      console.error('Error fetching package data:', error);
+      setError('An error occurred while fetching the package.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveItemPackage = packagesList => {
+    console.log('Received Packages List:', packagesList);
+
+    // Ensure we have packages to process
+    if (!packagesList || packagesList.length === 0) {
+      console.error('No packages to process.');
+      return;
+    }
+
+    packagesList.forEach(modalData => {
+      console.log('Processing Package:', modalData);
+
+      if (!modalData?.lineItems) {
+        console.error('Missing lineItems in package data.');
+        return;
+      }
+
+      modalData.lineItems.forEach(item => {
+        // Get the input value for the current item, fall back to '1' if invalid
+        const inputValue = inputValues[item.styleId] || '1'; // Default to '1' instead of '0'
+        console.log(
+          `Processing Line Item for Style ID ${item.styleId}: Input Value = ${inputValue}`,
+        );
+
+        // Ensure that input value is valid and proceed with adding to cart
+        if (parseInt(inputValue, 10) > 0) {
+          const itemBaseDetails = {
+            packageId: modalData.packageId,
+            styleId: item.styleId,
+            styleName: item.styleName,
+            colorName: item.colorName,
+            sizeId: item.sizeId,
+            colorId: item.colorId,
+            sizeDesc: item.size,
+            quantity: inputValue,
+            dealerPrice: modalData?.price || 0,
+            retailerPrice: modalData?.retailerPrice || 0,
+            price: modalData?.price || 0,
+            gst: item.gst || 0,
+            sourceScreen: 'PackageDetail',
+          };
+
+          console.log('Adding Item to Cart:', itemBaseDetails);
+          dispatch(addItemToCart(itemBaseDetails));
+        } else {
+          // Handle invalid or zero input value, provide feedback if necessary
+          console.warn(
+            `Input value for Style ID ${item.styleId} is zero or invalid. You might want to allow a default value or display a message.`,
+          );
+        }
+      });
+    });
+  };
+
   // const handleGstChange = (index, text) => {
   //   setGstValues(prevValues => ({
   //     ...prevValues,
@@ -100,40 +392,43 @@ const Cart = () => {
   const handleGstChange = (index, text) => {
     // Validate the input to allow only numbers and a single decimal point
     const isValidInput = /^\d*\.?\d*$/.test(text);
-  
+
     if (isValidInput) {
       // Parse integer part only if no decimal point
-      const validGst = text.trim() === ''
-        ? '0' // If the input is empty, default to '0'
-        : text.includes('.')
-        ? text // Preserve the decimal value
-        : parseInt(text, 10).toString(); // Convert to integer for whole numbers
-  
+      const validGst =
+        text.trim() === ''
+          ? '0' // If the input is empty, default to '0'
+          : text.includes('.')
+          ? text // Preserve the decimal value
+          : parseInt(text, 10).toString(); // Convert to integer for whole numbers
+
       setGstValues(prevValues => ({
         ...prevValues,
         [index]: validGst, // Update GST value for the specific index/item
       }));
     }
   };
-  
+
   const grossPrices = cartItems.map((item, index) => {
     // Ensure item is defined and has necessary properties
     if (!item || !item.quantity) return 0; // Fallback if item or quantity is missing
-    
+
     const grossPrice = (
       Number(
         isEnabled
           ? item?.retailerPrice?.toString()
-          : item?.dealerPrice?.toString() || item?.price?.toString() || '0'
+          : item?.dealerPrice?.toString() || item?.price?.toString() || '0',
       ) * (Number(item?.quantity) || 0)
     ).toFixed(2); // Calculate the gross price for each item
-    
+
     return parseFloat(grossPrice); // Return as a number after converting it to float
   });
-  
+
   // Now you have an array of grossPrices, you can sum them up or use them
-  const totalGrossPrice = grossPrices.reduce((acc, grossPrice) => acc + grossPrice, 0).toFixed(2);
-  
+  const totalGrossPrice = grossPrices
+    .reduce((acc, grossPrice) => acc + grossPrice, 0)
+    .toFixed(2);
+
   const userData = useSelector(state => state.loggedInUser);
   const userId = userData?.userId;
 
@@ -174,8 +469,21 @@ const Cart = () => {
     setModalItems([]);
   };
 
+  // const handleRemoveItem = index => {
+  //   dispatch(removeFromCart(index));
+  // };
+
   const handleRemoveItem = index => {
+    // Remove item from the cart
     dispatch(removeFromCart(index));
+
+    // Update barcodeList to remove the corresponding barcode
+    setBarcodeList(prevList => {
+      const updatedList = [...prevList]; // Clone the current list
+      updatedList.splice(index, 1); // Remove the barcode at the given index
+      console.log('Updated barcodeList after removal:', updatedList);
+      return updatedList; // Return the updated list
+    });
   };
 
   const filteredCustomers = customers
@@ -423,7 +731,7 @@ const Cart = () => {
     }
   };
   const addCustomerDetails = () => {
-    setIsSaving(true); 
+    setIsSaving(true);
     const requestData = {
       firstName: inputValues.firstName,
       lastName: '',
@@ -476,13 +784,12 @@ const Cart = () => {
         getCustomerLocations(newCustomer.customerId);
 
         // Close the modal
-        setIsSaving(false); 
+        setIsSaving(false);
         toggleModal();
-       
       })
       .catch(error => {
         console.error('Error adding customer:', error);
-        setIsSaving(false); 
+        setIsSaving(false);
       });
   };
 
@@ -514,7 +821,7 @@ const Cart = () => {
     }
   };
   const addDistributorDetails = () => {
-    setIsSaving(true); 
+    setIsSaving(true);
     const requestData = {
       id: null,
       distributorName: inputValues.firstName,
@@ -575,12 +882,12 @@ const Cart = () => {
         getCustomerLocations(newDistributor.id);
 
         // Close the modal
-        setIsSaving(false); 
+        setIsSaving(false);
         toggleModal();
       })
       .catch(error => {
         console.error('Error adding Distributor:', error);
-        setIsSaving(false); 
+        setIsSaving(false);
       });
   };
 
@@ -952,12 +1259,10 @@ const Cart = () => {
 
     // Calculate total amount
     const totalAmount = (
-      (parseFloat(totalGst) || 0) +
-      (parseFloat(totalGrossPrice) || 0) // Add gross price to the total amount
-    ).toFixed(2); // Format the total amount to 2 decimal places
-    
-    console.log(totalAmount); // Outputs: "1603.50"
-    
+      (parseFloat(totalGst) || 0) + (parseFloat(totalGrossPrice) || 0)
+    ) // Add gross price to the total amount
+      .toFixed(2); // Format the total amount to 2 decimal places
+
     const requestData = {
       totalAmount: totalAmount,
       totalDiscount: '0',
@@ -1052,6 +1357,7 @@ const Cart = () => {
       gOtherExp: 0,
       companyId: companyId,
       d_pkg_flag: d_pkg_flag,
+      barcodeList: barcodeList,
       // companyLocId: selectedCompanyLocationId,
       linkType: 3,
       currentCreditLimit: 0.0,
@@ -1062,10 +1368,8 @@ const Cart = () => {
       billNo: '',
     };
 
-    console.log('Req body ===> ', requestData);
     // return;
-
-    console.log('requestData:', JSON.stringify(requestData, null, 2));
+    console.log('requestData======>', requestData);
     axios
       .post(global?.userData?.productURL + API.ADD_ORDER_DATA, requestData, {
         headers: {
@@ -1101,6 +1405,7 @@ const Cart = () => {
         }
       })
       .finally(() => {
+        setBarcodeList([]);
         setIsSubmitting(false);
       });
   };
@@ -1204,10 +1509,10 @@ const Cart = () => {
 
   const handleQuantityChange = (index, text) => {
     const updatedItems = [...cartItems];
-  
+
     // Validate the input to allow only numbers and a single decimal point
     const isValidInput = /^\d*\.?\d*$/.test(text);
-  
+
     if (isValidInput) {
       // Parse integer part only if no decimal point, otherwise preserve the input
       const parsedQuantity = text.includes('.')
@@ -1215,13 +1520,12 @@ const Cart = () => {
         : text === ''
         ? '' // Keep as empty string for empty input
         : parseInt(text, 10); // Parse to integer for whole numbers
-  
+
       updatedItems[index].quantity = parsedQuantity;
       dispatch(updateCartItem(index, updatedItems[index]));
     }
   };
 
-  
   // const handlePriceChange = (index, text) => {
   //   const updatedItems = [...cartItems];
   //   const parsedPrice = parseFloat(text);
@@ -1258,28 +1562,29 @@ const Cart = () => {
 
   const handlePriceChange = (index, text) => {
     const updatedItems = [...cartItems];
-  
+
     // Validate the input to allow only numbers and a single decimal point
     const isValidInput = /^\d*\.?\d*$/.test(text); // Matches numbers with optional decimal point
-  
+
     if (isValidInput) {
       // Parse integer part only if no decimal point
-      const parsedPrice = text.includes('.') ? text : parseInt(text, 10).toString(); // Parse integer only for whole numbers
-  
+      const parsedPrice = text.includes('.')
+        ? text
+        : parseInt(text, 10).toString(); // Parse integer only for whole numbers
+
       // Ensure empty input defaults to '0'
       const formattedPrice = text === '' ? '0' : parsedPrice;
-  
+
       // Update the respective price based on isEnabled
       if (isEnabled) {
         updatedItems[index].retailerPrice = formattedPrice; // Update retailerPrice
       } else {
         updatedItems[index].dealerPrice = formattedPrice; // Update dealerPrice
       }
-  
+
       dispatch(updateCartItem(index, updatedItems[index]));
     }
   };
-  
 
   const handleIncrementQuantityCart = index => {
     const updatedItems = [...cartItems];
@@ -1351,7 +1656,7 @@ const Cart = () => {
       return total; // Ignore invalid quantities
     }
   }, 0);
-  
+
   const calculateTotalQty = (styleId, colorId) => {
     let totalQty = 0;
     for (let item of cartItems) {
@@ -1438,25 +1743,24 @@ const Cart = () => {
   //   }, 0)
   //   .toFixed(2);
   const totalGst = cartItems
-  .reduce((acc, item, index) => {
-    // Parse GST percentage as a float
-    const gstPercentage = parseFloat(
-      gstValues[index] !== undefined ? gstValues[index] : item.gst,
-    ); // Use updated GST if available
+    .reduce((acc, item, index) => {
+      // Parse GST percentage as a float
+      const gstPercentage = parseFloat(
+        gstValues[index] !== undefined ? gstValues[index] : item.gst,
+      ); // Use updated GST if available
 
-    // Parse price and quantity as floats for accurate calculations
-    const itemTotalPrice =
-      parseFloat(isEnabled ? item?.retailerPrice : item?.dealerPrice) *
-      parseFloat(item.quantity);
+      // Parse price and quantity as floats for accurate calculations
+      const itemTotalPrice =
+        parseFloat(isEnabled ? item?.retailerPrice : item?.dealerPrice) *
+        parseFloat(item.quantity);
 
-    // Calculate GST for the item
-    const itemGst = (itemTotalPrice * gstPercentage) / 100;
+      // Calculate GST for the item
+      const itemGst = (itemTotalPrice * gstPercentage) / 100;
 
-    // Accumulate GST
-    return acc + itemGst;
-  }, 0) // Initial accumulator is 0
-  .toFixed(2); // Round the final sum to 2 decimal places
-
+      // Accumulate GST
+      return acc + itemGst;
+    }, 0) // Initial accumulator is 0
+    .toFixed(2); // Round the final sum to 2 decimal places
 
   // Calculate total amount
   // const totalAmount = (parseFloat(totalPrice) + parseFloat(totalGst)).toFixed(
@@ -1468,19 +1772,9 @@ const Cart = () => {
   // ).toFixed(2); // Total amount formatted to 2 decimal places
 
   const totalAmount = (
-    (parseFloat(totalGst) || 0) +
-    (parseFloat(totalGrossPrice) || 0) // Add gross price to the total amount
-  ).toFixed(2); // Format the total amount to 2 decimal places
-  
-  console.log(totalAmount); // Outputs: "1603.50"
-  
-
-  // Outputting the total values for debugging
-  console.log('Total Price:', totalPrice);
-  console.log('Total GST:', totalGst);
-  console.log('totalGrossPrice',totalGrossPrice)
-  console.log('Total Amount:', totalAmount);
-
+    (parseFloat(totalGst) || 0) + (parseFloat(totalGrossPrice) || 0)
+  ) // Add gross price to the total amount
+    .toFixed(2); // Format the total amount to 2 decimal places
 
   const [locationInputValues, setLocationInputValues] = useState({
     locationName: '',
@@ -1669,12 +1963,12 @@ const Cart = () => {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : -500}>
       <SafeAreaView style={{flex: 1, backgroundColor: '#fff'}}>
-      <View
+        <View
           style={{
             marginVertical: 10,
             flexDirection: 'row',
-            justifyContent: "space-between",
-            marginLeft:10
+            justifyContent: 'space-between',
+            marginLeft: 10,
           }}>
           <View style={style.switchContainer}>
             <Switch
@@ -1689,12 +1983,17 @@ const Cart = () => {
                 fontWeight: 'bold',
                 fontSize: 15,
                 color: '#000',
-                marginLeft: 5,
+                marginLeft: 10,
               }}>
               Slide For Retailer
             </Text>
           </View>
-          <View style={{flexDirection: 'row', alignItems: 'center',marginRight:2}}>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              marginRight: 2,
+            }}>
             <Text
               style={{
                 color: '#000',
@@ -1705,8 +2004,28 @@ const Cart = () => {
               Qr-Scanner
             </Text>
             <TouchableOpacity
-             onPress={() => navigation.navigate('QRCodeScanner')}
-             
+              style={{marginHorizontal: 10, alignItems: 'center'}}
+              onPress={toggleSearchVisibility}>
+              <Image
+                style={{height: 20, width: 20}}
+                source={require('../../../assets/dropdown.png')}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() =>
+                navigation.navigate('QRCodeScanner', {
+                  onRead: scannedCode => {
+                    if (scannedCode) {
+                      setSearchQueryCode(scannedCode); // Set the scanned code in the search input
+                      if (selectedOption === 'Style') {
+                        getStyle(scannedCode); // Fetch style data based on the scanned code
+                      } else if (selectedOption === 'Package') {
+                        getPackage(scannedCode); // Fetch package data based on the scanned code
+                      }
+                    }
+                  },
+                })
+              }
               style={{
                 marginHorizontal: 11,
               }}>
@@ -1717,6 +2036,82 @@ const Cart = () => {
             </TouchableOpacity>
           </View>
         </View>
+        {isSearchVisible && (
+          <View>
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                paddingHorizontal: 10,
+                marginVertical: 10,
+              }}>
+              <View style={style.searchContainer}>
+                <TextInput
+                  style={style.searchInput}
+                  value={searchQueryCode}
+                  onChangeText={text => {
+                    setSearchQueryCode(text);
+                    console.log('TextInput Value:', text);
+                    if (text.trim()) {
+                      if (selectedOption === 'Style') {
+                        console.log('Calling getStyle...');
+                        getStyle(text); // Call getStyle when there is input
+                      } else if (selectedOption === 'Package') {
+                        console.log('Calling getPackage...');
+                        getPackage(text); // Call getPackage when there is input
+                      }
+                    }
+                  }}
+                  onSubmitEditing={() => {
+                    console.log(
+                      'Submit Editing triggered with:',
+                      searchQueryCode,
+                    );
+                    if (searchQueryCode.trim()) {
+                      if (selectedOption === 'Style') {
+                        console.log('Calling getStyle on Submit...');
+                        getStyle(searchQueryCode); // Call getStyle on Enter key
+                      } else if (selectedOption === 'Package') {
+                        console.log('Calling getPackage on Submit...');
+                        getPackage(searchQueryCode); // Call getPackage on Enter key
+                      }
+                    }
+                  }}
+                  placeholder="Search"
+                  placeholderTextColor="#000"
+                  returnKeyType="search" // Changes the keyboard 'Enter' button to 'Search'
+                />
+
+                <TouchableOpacity
+                  style={style.dropdownButton}
+                  onPress={toggleDropdown}>
+                  <Text style={{color: '#000', marginRight: 5}}>
+                    {selectedOption}
+                  </Text>
+                  <Image
+                    style={style.dropdownIcon}
+                    source={require('../../../assets/dropdown.png')}
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {isDropdownVisible && (
+              <View style={style.dropdownContent1}>
+                {StylePublish.map((option, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={style.dropdownOption}
+                    onPress={() => handleOptionSelect(option)}>
+                    <Text style={style.dropdownItemText}>{option}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+          </View>
+        )}
+
         <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
           {/* {userRole &&
               userRole.toLowerCase &&
@@ -2206,7 +2601,10 @@ const Cart = () => {
                             </Text>
                           </View>
                           <View style={style.buttonsContainer}>
-                            <TouchableOpacity onPress={() => openModal(item)}>
+                            <TouchableOpacity onPress={() => openModal(item)}
+                               disabled={item.sourceScreen === 'PackageDetail'} 
+                              >
+
                               <Image
                                 style={style.buttonIcon}
                                 source={require('../../../assets/edit.png')}
@@ -2343,9 +2741,10 @@ const Cart = () => {
                             ) * Number(item.quantity)
                           ).toString()}
                         </Text> */}
-                        <Text style={{ color: '#000' }}>
-  {totalGrossPrice} {/* Gross price for the current item */}
-</Text>
+                        <Text style={{color: '#000'}}>
+                          {totalGrossPrice}{' '}
+                          {/* Gross price for the current item */}
+                        </Text>
                       </View>
                       <TouchableOpacity onPress={() => handleRemoveItem(index)}>
                         <Image
@@ -3244,7 +3643,6 @@ const style = StyleSheet.create({
   },
   switchContainer: {
     paddingLeft: 10, // Add padding if you want some space from the left edge
-    marginHorizontal: 10,
     flexDirection: 'row',
     marginVertical: 5,
     alignItems: 'center',
@@ -3252,6 +3650,74 @@ const style = StyleSheet.create({
   scrollView: {
     maxHeight: 150,
   },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 25,
+    paddingLeft: 10,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 4,
+    flex: 1,
+    marginRight: 10,
+  },
+  searchInput: {
+    flex: 1,
+    height: 40,
+    borderRadius: 25,
+    paddingHorizontal: 15,
+    color: '#000',
+    // backgroundColor: '#f1f1f1',
+    marginRight: 10,
+  },
+  dropdownButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    backgroundColor: '#e6e6e6',
+    borderRadius: 15,
+  },
+  dropdownIcon: {
+    width: 15,
+    height: 15,
+    tintColor: '#000',
+  },
+  searchButton: {
+    backgroundColor: '#1F74BA',
+    borderRadius: 25,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    elevation: 3,
+  },
+  searchButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  dropdownContent1: {
+    width: '90%',
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    elevation: 5,
+    paddingVertical: 10,
+    paddingHorizontal: 5,
+    zIndex: 1,
+    alignSelf: 'center',
+    borderColor: 'lightgray', // Optional: Adds subtle border (for effect)
+    borderWidth: 1,
+    marginBottom: 8,
+  },
+  dropdownOption: {
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f1f1',
+  },
+  dropdownItemText: {
+    color: '#000',
+  },
 });
 export default Cart;
-

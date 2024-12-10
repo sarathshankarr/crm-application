@@ -110,7 +110,9 @@ export const API = {
   REQUEST_OTP:'erpportal/api/users/requestOtp',
   CONFIRM_OTP:'erpportal/api/users/confirmOtp',
   RESET_PASSWORD:'erpportal/api/users/resetPassword',
-  ADD_NEW_LOCATION:'erpportal/api/location/updateUserNewLocationForMobile'
+  ADD_NEW_LOCATION:'erpportal/api/location/updateUserNewLocationForMobile',
+  GET_STYLE_ITEMS:'erpportal/api/style/getStylesByBarcode',
+  GET_PACKAGES_ITEMS:'erpportal/api/package/getPackageDtlsByBarcode'
 };
 
 export const USER_ID = 'adminClientId';
