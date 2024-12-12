@@ -11,6 +11,7 @@ import {
   ActivityIndicator,
   Alert,
   SafeAreaView,
+  KeyboardAvoidingView,
 } from 'react-native';
 import {API} from '../../config/apiConfig';
 import axios from 'axios';
@@ -256,7 +257,6 @@ const PackingConformation = ({route}) => {
                 updateStatusForNonCanceledItems(selectedStatus);
               }
               setTriggerUpdate(true);
-              navigation.goBack();
             },
           },
         ],
@@ -353,6 +353,21 @@ const PackingConformation = ({route}) => {
       }),
     };
 
+    Alert.alert(
+      "Success",
+      "Order updated successfully",
+      [
+        {
+          text: "OK",
+          onPress: () => {
+            // After the user presses "OK", navigate back immediately
+            navigation.goBack();
+          },
+        },
+      ],
+      { cancelable: false }
+    );
+  
     axios
       .post(
         `${global?.userData?.productURL}${API.UPDATE_DIS_ORDERl}`,
@@ -366,7 +381,6 @@ const PackingConformation = ({route}) => {
       )
       .then(response => {
         if (response.data.status.success) {
-          navigation.goBack();
         } else {
           console.error('Failed to update order:', response.data.status);
         }
@@ -478,6 +492,9 @@ const PackingConformation = ({route}) => {
   };
 
   return (
+    <KeyboardAvoidingView
+  style={{ flex: 1 }}
+  behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
     <SafeAreaView style={styles.container}>
       <View style={{flexDirection: 'row', backgroundColor: '#f0f0f0'}}>
         <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
@@ -684,6 +701,7 @@ const PackingConformation = ({route}) => {
       </TouchableOpacity>
       {/* </View> */}
     </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -813,6 +831,7 @@ const styles = StyleSheet.create({
   dropdownContainer: {
     marginLeft: 15,
     marginTop: 1,
+    marginBottom:50,
     width: '51%',
     backgroundColor: 'white',
     borderWidth: 0.5,
