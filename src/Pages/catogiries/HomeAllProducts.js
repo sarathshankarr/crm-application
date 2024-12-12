@@ -402,6 +402,19 @@ const HomeAllProducts = ({navigation}) => {
       onRefresh();
     }
   };
+  const handleMinPriceChange = value => {
+    setMinPrice(value);
+    if (value.trim() === '' && maxPrice.trim() === '') {
+      onRefresh();
+    }
+  };
+  
+  const handleMaxPriceChange = value => {
+    setMaxPrice(value);
+    if (value.trim() === '' && minPrice.trim() === '') {
+      onRefresh();
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -430,7 +443,7 @@ const HomeAllProducts = ({navigation}) => {
                 placeholderTextColor="#000"
                 style={styles.minMaxInput}
                 value={minPrice}
-                onChangeText={setMinPrice}
+                onChangeText={handleMinPriceChange}
                 keyboardType="numeric" // Optional: To show numeric keyboard
               />
               <TextInput
@@ -438,7 +451,7 @@ const HomeAllProducts = ({navigation}) => {
                 placeholderTextColor="#000"
                 style={styles.MaxInput}
                 value={maxPrice}
-                onChangeText={setMaxPrice}
+                onChangeText={handleMaxPriceChange}
                 keyboardType="numeric" // Optional: To show numeric keyboard
               />
             </View>

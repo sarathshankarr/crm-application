@@ -100,6 +100,7 @@ const Cart = () => {
   const [loading, setLoading] = useState(false); // For loading state
   const [error, setError] = useState(null); // To handle errors
   const [stylesData, setStylesData] = useState([]);
+  const currentScreen = useSelector(state => state.cartItems.currentSourceScreen);
 
   const [barcodeList, setBarcodeList] = useState([]);
   const [isAlertVisible, setIsAlertVisible] = useState(false);
@@ -119,6 +120,7 @@ const Cart = () => {
 
   const handleOptionSelect = option => {
     setSelectedOption(option);
+    setSearchQueryCode(''); 
     setIsDropdownVisible(false);
   };
 
@@ -143,8 +145,20 @@ const Cart = () => {
       .then(response => {
         console.log('Fetched Data:', response.data);
         const data = response?.data || [];
-        setFetchedData(data); // Store fetched data if needed elsewhere
-        handleSaveItem(data); // Save items to the cart
+  
+        if (
+          data.length === 0 &&
+          (trimmedQuery.length === 11 || trimmedQuery.length === 13)
+        ) {
+          Alert.alert(
+            'No Package Found',
+            'No package found for the given barcode. Please check and try again.',
+            [{text: 'OK'}]
+          );
+        } else {
+          setFetchedData(data); // Store fetched data if needed elsewhere
+          handleSaveItem(data); // Save items to the cart
+        }
       })
       .catch(error => {
         console.error('Error:', error);
@@ -175,6 +189,7 @@ const Cart = () => {
         price: item.unitPrice,
         gst: item.gst,
         imageUrls: item.imageUrls, // Add imageUrls to the cart item details
+        sourceScreen: 'ModalComponent',
       };
 
       console.log('Item details to add/update:', itemDetails);
@@ -280,7 +295,7 @@ const Cart = () => {
 
         // Check if the trimmedQuery is exactly 11 digits long
         if (
-          trimmedQuery.trim().length === 11 &&
+          (trimmedQuery.trim().length === 11 || trimmedQuery.trim().length === 13) &&
           packagesList.some(pkg => pkg.packageId === 0)
         ) {
           console.log('Alert conditions met, showing alert');
