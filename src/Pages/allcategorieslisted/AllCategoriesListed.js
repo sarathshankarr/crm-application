@@ -331,6 +331,12 @@ const AllCategoriesListed = ({navigation,route}) => {
       return;
     }
 
+    if (minPrice && maxPrice && parseFloat(minPrice) > parseFloat(maxPrice)) {
+      Alert.alert('Please enter a min value less than the max value.');
+      return;
+    }
+  
+    
     setSearchFilterFlag(true);
     setPageNo(1);
     setStopLoad(false); // Start loading
