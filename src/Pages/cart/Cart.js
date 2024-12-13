@@ -42,11 +42,13 @@ const Cart = () => {
 
   const selectedCompany = useSelector(state => state.selectedCompany);
   const comp_flag = selectedCompany?.comp_flag;
+  const package_barcode_flag = selectedCompany?.package_barcode_flag;
+  console.log('package_barcode_flag', package_barcode_flag);
   const [isLoading, setIsLoading] = useState(false);
 
   const [inputValuess, setInputValuess] = useState({});
   const cartItems = useSelector(state => state.cartItems);
-  console.log('cartItems', cartItems);
+  
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [selatedDate, setSelectedDate] = useState('Expected delivery date');
   const [modalVisible, setModalVisible] = useState(false);
@@ -153,7 +155,14 @@ const Cart = () => {
           Alert.alert(
             'No Package Found',
             'No package found for the given barcode. Please check and try again.',
-            [{text: 'OK'}]
+            [
+              {
+                text: 'OK',
+                onPress: () => {
+                  setSearchQueryCode(''); // Clear the search query when "OK" is pressed
+                },
+              },
+            ]
           );
         } else {
           setFetchedData(data); // Store fetched data if needed elsewhere
@@ -258,6 +267,7 @@ const Cart = () => {
             text: 'OK',
             onPress: () => {
               setIsAlertVisible(false); // Reset flag when the alert is dismissed
+              setSearchQueryCode('');
               console.log('OK Pressed');
             },
           },
@@ -304,9 +314,16 @@ const Cart = () => {
           Alert.alert(
             'No Package Found',
             'No package found for the given barcode. Please check and try again.',
-            [{text: 'OK'}],
-            {cancelable: true},
+            [
+              {
+                text: 'OK',
+                onPress: () => {
+                  setSearchQueryCode(''); // Clear the search query when "OK" is pressed
+                },
+              },
+            ]
           );
+          
           return; // Stop further execution
         }
 
@@ -2003,12 +2020,14 @@ const Cart = () => {
               Slide For Retailer
             </Text>
           </View>
+          {package_barcode_flag !== 0 && (
           <View
             style={{
               flexDirection: 'row',
               alignItems: 'center',
               marginRight: 2,
             }}>
+            
             <Text
               style={{
                 color: '#000',
@@ -2018,6 +2037,7 @@ const Cart = () => {
               }}>
               Qr-Scanner
             </Text>
+              
             <TouchableOpacity
               style={{marginHorizontal: 10, alignItems: 'center'}}
               onPress={toggleSearchVisibility}>
@@ -2050,6 +2070,7 @@ const Cart = () => {
               />
             </TouchableOpacity>
           </View>
+        )}
         </View>
         {isSearchVisible && (
           <View>
