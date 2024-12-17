@@ -1824,7 +1824,7 @@ const ProductsStyles = ({ route }) => {
         },
       })
       .then(response => {
-        navigation.navigate('AddNewStyle', {
+        navigation.navigate('StyleDetails', {
           Style: response.data.response.stylesList[0],
         });
       })
@@ -1889,7 +1889,7 @@ const ProductsStyles = ({ route }) => {
   };
 
   const handleAddNew = () => {
-    navigation.navigate('AddNewStyle');
+    navigation.navigate('StyleDetails');
   };
 
   const handleSelectAllToggleModal = () => {

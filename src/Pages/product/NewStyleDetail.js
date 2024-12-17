@@ -9,18 +9,20 @@ import {
   TextInput,
   Modal,
   Alert,
+  SafeAreaView,
 } from 'react-native';
-import React, { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
-import { API } from '../../config/apiConfig';
+import React, {useEffect, useState} from 'react';
+import {useSelector} from 'react-redux';
+import {API} from '../../config/apiConfig';
 import axios from 'axios';
-import { useNavigation } from '@react-navigation/native';
+import {useNavigation} from '@react-navigation/native';
 import CustomCheckBox from '../../components/CheckBox';
 
-const NewStyleDetail = ({ route }) => {
+const NewStyleDetail = ({route}) => {
   const navigation = useNavigation();
   const selectedCompany = useSelector(state => state.selectedCompany);
   const userId = useSelector(state => state?.loggedInUser?.userId);
+  const styleDetails = route?.params?.Style;
 
   // const userData=useSelector(state=>state.loggedInUser);
   // const userId=userData?.userId;
@@ -34,7 +36,6 @@ const NewStyleDetail = ({ route }) => {
   const [kapture_task_flag, setkaptureFlag] = useState(
     selectedCompany?.kapture_task_flag,
   );
-
 
   // const companyId = selectedCompany?.id;
   // const cedge_flag = selectedCompany?.cedge_flag;
@@ -249,10 +250,10 @@ const NewStyleDetail = ({ route }) => {
   }, [companyId]);
 
   useEffect(() => {
-    if (route.params && route?.params?.styleDetails) {
-      const styleDetails = route?.params?.styleDetails;
+    if (route.params && route?.params?.Style) {
+      const styleDetails = route?.params?.Style;
 
-      console.log("Style Details ==> ", styleDetails);
+      console.log('Style Details ==> ', styleDetails);
 
       if (styleDetails.categoryId) {
         setSelectedCategoryId(styleDetails?.categoryId);
@@ -298,9 +299,8 @@ const NewStyleDetail = ({ route }) => {
 
       if (styleDetails?.gst) {
         setGst(styleDetails?.gst.toString());
-        console.log("styleDetails.gst==========>",styleDetails.gst)
+        console.log('styleDetails.gst==========>', styleDetails.gst);
       }
-
 
       if (styleDetails?.gsm) {
         setGsm(styleDetails?.gsm);
@@ -345,19 +345,15 @@ const NewStyleDetail = ({ route }) => {
         setSelectedClosureId(styleDetails?.closureId);
       }
       if (styleDetails?.peakId) {
-
         setSelectedPeakId(styleDetails?.peakId);
       }
       if (styleDetails?.logoId) {
-
         setSelectedLogoId(styleDetails?.logoId);
       }
       if (styleDetails?.trimId) {
-
         setSelectedTrimsId(styleDetails?.trimId);
       }
       if (styleDetails?.decId) {
-
         setSelectedDecorationId(styleDetails?.decId);
       }
     }
@@ -547,9 +543,6 @@ const NewStyleDetail = ({ route }) => {
 
   useEffect(() => {
     if (selectedProcessWorkflowId && processWorkflowList.length > 0) {
-
-     
-
       const found = processWorkflowList?.filter(
         item => item.id === selectedProcessWorkflowId,
       );
@@ -568,7 +561,7 @@ const NewStyleDetail = ({ route }) => {
 
   useEffect(() => {
     if (processWorkflowList?.length > 0) {
-      if(!editProcessWF) return;
+      if (!editProcessWF) return;
       const foundItem = processWorkflowList?.filter(
         proc => proc.priority === 1,
       );
@@ -701,13 +694,13 @@ const NewStyleDetail = ({ route }) => {
       });
   };
   const getLocations = () => {
-    console.log("comp_flag",comp_flag)
+    console.log('comp_flag', comp_flag);
     if (comp_flag === 0) {
       const apiUrl0 = `${global?.userData?.productURL}${API.GET_LOCATION_C0_LIST}`;
       setIsLoading(true);
       const requestData = {
         styleName: '',
-        companyId:companyId
+        companyId: companyId,
       };
       axios
         .post(apiUrl0, requestData, {
@@ -716,7 +709,10 @@ const NewStyleDetail = ({ route }) => {
           },
         })
         .then(response => {
-          console.log('response?.data?.locationList',response?.data?.locationList)
+          console.log(
+            'response?.data?.locationList',
+            response?.data?.locationList,
+          );
           setLocationList(response?.data?.locationList || []);
           setFilteredLocationList(response?.data?.locationList || []);
           setIsLoading(false);
@@ -803,7 +799,6 @@ const NewStyleDetail = ({ route }) => {
       j_item_id: item.j_item_id,
       article_no: item.article_no,
     }));
-
 
     setSelectedSizes(filteredList);
   };
@@ -1024,7 +1019,6 @@ const NewStyleDetail = ({ route }) => {
   };
 
   const handleChangeScale = item => {
-
     const sizes = item.scaleRange.split(',').map(size => size.trim());
 
     const newSizes = sizes.map((size, index) => ({
@@ -1039,7 +1033,6 @@ const NewStyleDetail = ({ route }) => {
       j_item_id: null,
       article_no: null,
     }));
-
 
     // Update selectedSizes and then update all items
     setSelectedSizes(newSizes);
@@ -1413,7 +1406,6 @@ const NewStyleDetail = ({ route }) => {
     }
   };
 
-
   const ValidateNewType = async () => {
     if (processing) return;
     setProcessing(true);
@@ -1485,7 +1477,6 @@ const NewStyleDetail = ({ route }) => {
     if (processing) return;
     setProcessing(true);
 
-
     if (mSize.length === 0) {
       Alert.alert(' Please fill all mandatory fields');
       setProcessing(false);
@@ -1523,7 +1514,6 @@ const NewStyleDetail = ({ route }) => {
         colorName: item.colorName,
       }));
 
-
     const styleDetails = {
       styleId: styleId,
       styleNum: styleNum,
@@ -1540,7 +1530,7 @@ const NewStyleDetail = ({ route }) => {
       gsm: gsm,
       customerLevel: Number(selectedCustomerLevelId),
       hsn: hsn,
-      gst:gst,
+      gst: gst,
       discount: 0,
       categoryId: selectedCategoryId,
       locationId: selectedLocationId,
@@ -1562,7 +1552,7 @@ const NewStyleDetail = ({ route }) => {
       decoration: selectedDecorationId,
       trims: selectedTrimsId,
     };
-    navigation.navigate('Product Images', { productStyle: styleDetails });
+    navigation.navigate('UploadProductImage', {productStyle: styleDetails});
   };
 
   const handleInputChange = (index, field, value) => {
@@ -1620,12 +1610,11 @@ const NewStyleDetail = ({ route }) => {
         );
         setIsLoading(false);
         setProcessing(false);
-      })
+      });
     toggleScalesModal(false);
   };
 
   const getAllKapture = flagValue => {
-
     const apiUrl = `${global?.userData?.productURL}${API.GET_KAPTURE}/${flagValue}/${companyId}`;
 
     setIsKapturLoading(true); // Start loading
@@ -1637,7 +1626,6 @@ const NewStyleDetail = ({ route }) => {
         },
       })
       .then(response => {
-
         // Update the appropriate state based on the flag
         if (flagValue === 1) {
           setClosureData(response.data);
@@ -1658,7 +1646,6 @@ const NewStyleDetail = ({ route }) => {
         setIsKapturLoading(false); // End loading
       });
   };
-
 
   const toggleClosure = () => {
     setShowClosure(!showClosure);
@@ -1715,7 +1702,6 @@ const NewStyleDetail = ({ route }) => {
   };
 
   const ValidateAllKapture = async (flag, typeName, name) => {
-
     if (processing) return;
 
     if (!name) {
@@ -1825,11 +1811,11 @@ const NewStyleDetail = ({ route }) => {
       }
 
       // Alert.alert('Success', `${typeName} saved successfully!`);
-      getAllKapture(1)
-      getAllKapture(2)
-      getAllKapture(3)
-      getAllKapture(4)
-      getAllKapture(5)
+      getAllKapture(1);
+      getAllKapture(2);
+      getAllKapture(3);
+      getAllKapture(4);
+      getAllKapture(5);
     } catch (error) {
       console.error(
         'Error:',
@@ -1859,316 +1845,366 @@ const NewStyleDetail = ({ route }) => {
           color="#1F74BA"
         />
       ) : (
-        <ScrollView style={style.conatiner}>
-          <View style={{ marginTop: 15 }} />
-          <Text style={style.headerTxt}>{'Category *'}</Text>
-          <View style={style.container1}>
-            <View style={style.container2}>
+        <SafeAreaView style={{flex: 1}}>
+          <ScrollView>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                paddingHorizontal: 10,
+                paddingVertical: 10,
+                backgroundColor: 'white',
+                elevation: 5,
+              }}>
+              <TouchableOpacity onPress={() => navigation.goBack()}>
+                <Image
+                  resizeMode="contain"
+                  source={require('../../../assets/back_arrow.png')}
+                  style={style.menuimg}
+                />
+              </TouchableOpacity>
+              <View
+                style={{
+                  flex: 1,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                <Text
+                  style={{
+                    fontSize: 18,
+                    fontWeight: 'bold',
+                    color: '#000',
+                    marginRight:60
+                  }}>
+                   {styleName ? styleName : 'New Style'}
+                </Text>
+              </View>
+            </View>
+            <View style={{flexDirection: 'row', alignSelf: 'center'}}>
+              <TouchableOpacity style={style.headbasicinfo}>
+                <Text>Basic Info</Text>
+              </TouchableOpacity>
               <TouchableOpacity
-                style={style.container3}
-                onPress={handleCategoryDropDown}>
-                <Text style={{ fontWeight: '600', color: '#000' }}>
-                  {selectedCategory?.length > 0 ? selectedCategory : 'Select'}
+                onPress={handleNextPage}
+                disabled={!nextButton}
+                style={[
+                  style.headprductimage,
+                  {backgroundColor: nextButton ? '#' : 'lightgray'}, // Correct way to set dynamic background color
+                ]}>
+                <Text>Product Images</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={{marginTop: 15}} />
+            <Text style={style.headerTxt}>{'Category *'}</Text>
+            <View style={style.container1}>
+              <View style={style.container2}>
+                <TouchableOpacity
+                  style={style.container3}
+                  onPress={handleCategoryDropDown}>
+                  <Text style={{fontWeight: '600', color: '#000'}}>
+                    {selectedCategory?.length > 0 ? selectedCategory : 'Select'}
+                  </Text>
+
+                  <Image
+                    source={require('../../../assets/dropdown.png')}
+                    style={{width: 20, height: 20}}
+                  />
+                </TouchableOpacity>
+              </View>
+              <View style={style.container4}>
+                <TouchableOpacity
+                  onPress={toggleCategoryModal}
+                  style={style.plusButton}>
+                  <Image
+                    style={{
+                      height: 30,
+                      width: 30,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      // tintColor:'#1F74BA',
+                    }}
+                    source={require('../../../assets/plus.png')}
+                    // source={require('../../../assets/plus11.png')}
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
+            {showCategoryList && (
+              <View
+                style={{
+                  elevation: 5,
+                  height: 300,
+                  alignSelf: 'center',
+                  width: '90%',
+                  backgroundColor: '#fff',
+                  borderRadius: 10,
+                  marginBottom: 10,
+                  borderColor: 'lightgray', // Optional: Adds subtle border (for effect)
+                  borderWidth: 1,
+                  marginTop: 5,
+                }}>
+                <TextInput
+                  style={{
+                    marginTop: 10,
+                    borderRadius: 10,
+                    height: 40,
+                    borderColor: 'gray',
+                    borderWidth: 1,
+                    marginHorizontal: 10,
+                    paddingLeft: 10,
+                    marginBottom: 10,
+                    color: '#000000',
+                  }}
+                  placeholderTextColor="#000"
+                  placeholder="Search"
+                  onChangeText={filtercategories}
+                />
+
+                {filteredCategories.length === 0 && !isLoading ? (
+                  <Text style={style.noCategoriesText}>
+                    Sorry, no results found!
+                  </Text>
+                ) : (
+                  <ScrollView nestedScrollEnabled={true}>
+                    {filteredCategories?.map((item, index) => (
+                      <TouchableOpacity
+                        key={index}
+                        style={{
+                          width: '90%',
+                          height: 40,
+                          //  justifyContent: 'fle',
+                          borderBottomWidth: 0.5,
+                          borderColor: '#8e8e8e',
+                          ...(Platform.OS === 'ios' && {
+                            paddingTop: 8,
+                            marginLeft: 8,
+                          }),
+                        }}
+                        onPress={() => handleSelectCategory(item)}>
+                        <Text style={style.itemcattxt}>{item?.category}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                )}
+              </View>
+            )}
+
+            <Text
+              style={{marginHorizontal: 20, marginVertical: 3, color: '#000'}}>
+              {'Style Name *'}
+            </Text>
+            <View style={style.inputContainer}>
+              <TextInput
+                style={[
+                  style.txtinput,
+                  {backgroundColor: editColor ? '#fff' : '#f1e8e6'},
+                ]}
+                placeholder="Style name"
+                placeholderTextColor="#000"
+                value={styleName}
+                editable={editStyleName}
+                onChangeText={text => setStyleName(text)}
+              />
+            </View>
+            <Text
+              style={{marginHorizontal: 20, marginVertical: 3, color: '#000'}}>
+              {'Style Description *'}
+            </Text>
+
+            <View style={style.inputContainer}>
+              <TextInput
+                style={style.txtinput}
+                placeholder="style Description"
+                placeholderTextColor="#000"
+                value={styleDesc}
+                onChangeText={text => setStyleDesc(text)}
+              />
+            </View>
+            <Text
+              style={{marginHorizontal: 20, marginVertical: 3, color: '#000'}}>
+              {'Dealer Price *'}
+            </Text>
+
+            <View style={style.inputContainer}>
+              <TextInput
+                style={style.txtinput}
+                placeholder="Dealer Price"
+                placeholderTextColor="#000"
+                value={dealerPrice > 0 ? dealerPrice.toString() : ''}
+                onChangeText={text => {
+                  setDealerPrice(text);
+                  updateAllItems('dealerPrice', text);
+                }}
+              />
+            </View>
+            <Text
+              style={{marginHorizontal: 20, marginVertical: 3, color: '#000'}}>
+              {'Retailer Price '}
+            </Text>
+
+            <View style={style.inputContainer}>
+              <TextInput
+                style={style.txtinput}
+                placeholder="Retailer Price "
+                placeholderTextColor="#000"
+                value={retailerPrice > 0 ? retailerPrice.toString() : ''}
+                onChangeText={text => {
+                  setRetailerPrice(text);
+                  updateAllItems('retailerPrice', text);
+                }}
+              />
+            </View>
+
+            <Text
+              style={{marginHorizontal: 20, marginVertical: 3, color: '#000'}}>
+              {'MRP '}
+            </Text>
+
+            <View style={style.inputContainer}>
+              <TextInput
+                style={style.txtinput}
+                placeholder="MRP"
+                placeholderTextColor="#000"
+                value={mrp > 0 ? mrp.toString() : ''}
+                onChangeText={text => {
+                  setMrp(text);
+                  updateAllItems('mrp', text);
+                }}
+              />
+            </View>
+            <Text
+              style={{marginHorizontal: 20, marginVertical: 3, color: '#000'}}>
+              {'Fixed Discount '}
+            </Text>
+
+            <View style={style.inputContainer}>
+              <TextInput
+                style={style.txtinput}
+                placeholder="Fixed Discount "
+                placeholderTextColor="#000"
+                value={fixedDiscount > 0 ? fixedDiscount.toString() : ''}
+                onChangeText={text => setfixedDiscount(text)}
+              />
+            </View>
+            <Text style={style.headerTxt}>{'Customer Level '}</Text>
+
+            <View style={{flexDirection: 'row', marginTop: 13}}>
+              <TouchableOpacity
+                style={{
+                  width: '90%',
+                  height: 37,
+                  borderRadius: 10,
+                  borderWidth: 0.5,
+                  alignSelf: 'center',
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  paddingLeft: 15,
+                  paddingRight: 15,
+                  marginHorizontal: 20,
+                }}
+                onPress={handleCustomerLevelDropDown}>
+                <Text style={{fontWeight: '600', color: '#000'}}>
+                  {selectedCustomerLevel ? selectedCustomerLevel : 'Select'}
                 </Text>
 
                 <Image
                   source={require('../../../assets/dropdown.png')}
-                  style={{ width: 20, height: 20 }}
+                  style={{width: 20, height: 20}}
                 />
               </TouchableOpacity>
             </View>
-            <View style={style.container4}>
-              <TouchableOpacity
-                onPress={toggleCategoryModal}
-                style={style.plusButton}>
-                <Image
-                  style={{
-                    height: 30,
-                    width: 30,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    // tintColor:'#1F74BA',
-                  }}
-                  source={require('../../../assets/plus.png')}
-                // source={require('../../../assets/plus11.png')}
-                />
-              </TouchableOpacity>
-            </View>
-          </View>
-          {showCategoryList && (
-            <View
-              style={{
-                elevation: 5,
-                height: 300,
-                alignSelf: 'center',
-                width: '90%',
-                backgroundColor: '#fff',
-                borderRadius: 10,
-                marginBottom: 10,
-                borderColor: 'lightgray', // Optional: Adds subtle border (for effect)
-                borderWidth: 1,
-                marginTop:5
-              }}>
-              <TextInput
+            {showCustomerLevelList && (
+              <View
                 style={{
-                  marginTop: 10,
+                  elevation: 5,
+                  height: 300,
+                  alignSelf: 'center',
+                  width: '90%',
+                  backgroundColor: '#fff',
                   borderRadius: 10,
-                  height: 40,
-                  borderColor: 'gray',
+                  borderColor: 'lightgray', // Optional: Adds subtle border (for effect)
                   borderWidth: 1,
-                  marginHorizontal: 10,
-                  paddingLeft: 10,
-                  marginBottom: 10,
-                  color: '#000000',
-                }}
-                placeholderTextColor="#000"
-                placeholder="Search"
-                onChangeText={filtercategories}
-              />
-
-              {filteredCategories.length === 0 && !isLoading ? (
-                <Text style={style.noCategoriesText}>
-                  Sorry, no results found!
-                </Text>
-              ) : (
-                <ScrollView nestedScrollEnabled={true}>
-                  {filteredCategories?.map((item, index) => (
-                    <TouchableOpacity
-                      key={index}
-                      style={{
-                        width: '90%',
-                        height: 40,
-                        //  justifyContent: 'fle',
-                        borderBottomWidth: 0.5,
-                        borderColor: '#8e8e8e',
-                        ...(Platform.OS === 'ios' && { paddingTop: 8,marginLeft:8}), 
-                      }}
-                      onPress={() => handleSelectCategory(item)}>
-                      <Text
-                        style={style.itemcattxt}>
-                        {item?.category}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              )}
-            </View>
-          )}
-
-          <Text
-            style={{ marginHorizontal: 20, marginVertical: 3, color: '#000' }}>
-            {'Style Name *'}
-          </Text>
-          <View style={style.inputContainer}>
-            <TextInput
-              style={[
-                style.txtinput,
-                { backgroundColor: editColor ? '#fff' : '#f1e8e6' },
-              ]}
-              placeholder="Style name"
-              placeholderTextColor="#000"
-              value={styleName}
-              editable={editStyleName}
-              onChangeText={text => setStyleName(text)}
-            />
-          </View>
-          <Text
-            style={{ marginHorizontal: 20, marginVertical: 3, color: '#000' }}>
-            {'Style Description *'}
-          </Text>
-
-          <View style={style.inputContainer}>
-            <TextInput
-              style={style.txtinput}
-              placeholder="style Description"
-              placeholderTextColor="#000"
-              value={styleDesc}
-              onChangeText={text => setStyleDesc(text)}
-            />
-          </View>
-          <Text
-            style={{ marginHorizontal: 20, marginVertical: 3, color: '#000' }}>
-            {'Dealer Price *'}
-          </Text>
-
-          <View style={style.inputContainer}>
-            <TextInput
-              style={style.txtinput}
-              placeholder="Dealer Price"
-              placeholderTextColor="#000"
-              value={dealerPrice > 0 ? dealerPrice.toString() : ''}
-              onChangeText={text => {
-                setDealerPrice(text);
-                updateAllItems('dealerPrice', text);
-              }}
-            />
-          </View>
-          <Text
-            style={{ marginHorizontal: 20, marginVertical: 3, color: '#000' }}>
-            {'Retailer Price '}
-          </Text>
-
-          <View style={style.inputContainer}>
-            <TextInput
-              style={style.txtinput}
-              placeholder="Retailer Price "
-              placeholderTextColor="#000"
-              value={retailerPrice > 0 ? retailerPrice.toString() : ''}
-              onChangeText={text => {
-                setRetailerPrice(text);
-                updateAllItems('retailerPrice', text);
-              }}
-            />
-          </View>
-
-          <Text
-            style={{ marginHorizontal: 20, marginVertical: 3, color: '#000' }}>
-            {'MRP '}
-          </Text>
-
-          <View style={style.inputContainer}>
-            <TextInput
-              style={style.txtinput}
-              placeholder="MRP"
-              placeholderTextColor="#000"
-              value={mrp > 0 ? mrp.toString() : ''}
-              onChangeText={text => {
-                setMrp(text);
-                updateAllItems('mrp', text);
-              }}
-            />
-          </View>
-          <Text
-            style={{ marginHorizontal: 20, marginVertical: 3, color: '#000' }}>
-            {'Fixed Discount '}
-          </Text>
-
-          <View style={style.inputContainer}>
-            <TextInput
-              style={style.txtinput}
-              placeholder="Fixed Discount "
-              placeholderTextColor="#000"
-              value={fixedDiscount > 0 ? fixedDiscount.toString() : ''}
-              onChangeText={text => setfixedDiscount(text)}
-            />
-          </View>
-          <Text style={style.headerTxt}>{'Customer Level '}</Text>
-
-          <View style={{ flexDirection: 'row', marginTop: 13 }}>
-            <TouchableOpacity
-              style={{
-                width: '90%',
-                height: 37,
-                borderRadius: 10,
-                borderWidth: 0.5,
-                alignSelf: 'center',
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                paddingLeft: 15,
-                paddingRight: 15,
-                marginHorizontal: 20,
-              }}
-              onPress={handleCustomerLevelDropDown}>
-              <Text style={{ fontWeight: '600', color: '#000' }}>
-                {selectedCustomerLevel ? selectedCustomerLevel : 'Select'}
-              </Text>
-
-              <Image
-                source={require('../../../assets/dropdown.png')}
-                style={{ width: 20, height: 20 }}
-              />
-            </TouchableOpacity>
-          </View>
-          {showCustomerLevelList && (
-            <View
-              style={{
-                elevation: 5,
-                height: 300,
-                alignSelf: 'center',
-                width: '90%',
-                backgroundColor: '#fff',
-                borderRadius: 10,
-                borderColor: 'lightgray', // Optional: Adds subtle border (for effect)
-                borderWidth: 1,
-                marginTop:5
-              }}>
-              <TextInput
-                style={{
-                  marginTop: 10,
-                  borderRadius: 10,
-                  height: 40,
-                  borderColor: 'gray',
-                  borderWidth: 1,
-                  marginHorizontal: 10,
-                  paddingLeft: 10,
-                  marginBottom: 10,
-                  color: '#000000',
-                }}
-                placeholderTextColor="#000"
-                placeholder="Search"
-                onChangeText={filterCustomerLevels}
-              />
-
-              {filteredcustomerLevelList.length === 0 && !isLoading ? (
-                <Text style={style.noCategoriesText}>
-                  Sorry, no results found!
-                </Text>
-              ) : (
-                <ScrollView nestedScrollEnabled={true}>
-                  {filteredcustomerLevelList?.map((item, index) => (
-                    <TouchableOpacity
-                      key={index}
-                      style={{
-                        width: '100%',
-                        height: 50,
-                        justifyContent: 'center',
-                        borderBottomWidth: 0.5,
-                        borderColor: '#8e8e8e',
-                      }}
-                      onPress={() => handleSelectCustomerLevel(item)}>
-                      <Text
-                        style={{
-                          fontWeight: '600',
-                          marginHorizontal: 15,
-                          color: '#000',
-                        }}>
-                        {item?.customerLevelType}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              )}
-            </View>
-          )}
-
-          {showCustomerLevelPrice && (
-            <>
-              <Text
-                style={{
-                  marginHorizontal: 20,
-                  marginVertical: 3,
-                  color: '#000',
+                  marginTop: 5,
                 }}>
-                {'Customer Level Price '}
-              </Text>
-
-              <View style={style.inputContainer}>
                 <TextInput
-                  style={style.txtinput}
-                  placeholder="Customer Level Price "
+                  style={{
+                    marginTop: 10,
+                    borderRadius: 10,
+                    height: 40,
+                    borderColor: 'gray',
+                    borderWidth: 1,
+                    marginHorizontal: 10,
+                    paddingLeft: 10,
+                    marginBottom: 10,
+                    color: '#000000',
+                  }}
                   placeholderTextColor="#000"
-                  value={
-                    customerLevelPrice > 0 ? customerLevelPrice.toString() : ''
-                  }
-                  onChangeText={text => setCustomerLevelPrice(text)}
+                  placeholder="Search"
+                  onChangeText={filterCustomerLevels}
                 />
-              </View>
-            </>
-          )}
-          <Text style={style.headerTxt}>{'Color  *'}</Text>
 
-          {/* <View style={style.container1}>
+                {filteredcustomerLevelList.length === 0 && !isLoading ? (
+                  <Text style={style.noCategoriesText}>
+                    Sorry, no results found!
+                  </Text>
+                ) : (
+                  <ScrollView nestedScrollEnabled={true}>
+                    {filteredcustomerLevelList?.map((item, index) => (
+                      <TouchableOpacity
+                        key={index}
+                        style={{
+                          width: '100%',
+                          height: 50,
+                          justifyContent: 'center',
+                          borderBottomWidth: 0.5,
+                          borderColor: '#8e8e8e',
+                        }}
+                        onPress={() => handleSelectCustomerLevel(item)}>
+                        <Text
+                          style={{
+                            fontWeight: '600',
+                            marginHorizontal: 15,
+                            color: '#000',
+                          }}>
+                          {item?.customerLevelType}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                )}
+              </View>
+            )}
+
+            {showCustomerLevelPrice && (
+              <>
+                <Text
+                  style={{
+                    marginHorizontal: 20,
+                    marginVertical: 3,
+                    color: '#000',
+                  }}>
+                  {'Customer Level Price '}
+                </Text>
+
+                <View style={style.inputContainer}>
+                  <TextInput
+                    style={style.txtinput}
+                    placeholder="Customer Level Price "
+                    placeholderTextColor="#000"
+                    value={
+                      customerLevelPrice > 0
+                        ? customerLevelPrice.toString()
+                        : ''
+                    }
+                    onChangeText={text => setCustomerLevelPrice(text)}
+                  />
+                </View>
+              </>
+            )}
+            <Text style={style.headerTxt}>{'Color  *'}</Text>
+
+            {/* <View style={style.container1}>
             <View style={style.container2}>
               <TouchableOpacity
                 style={[style.container3, {backgroundColor:editColor?'#fff':'#f1e8e6'}]}
@@ -2258,780 +2294,871 @@ const NewStyleDetail = ({ route }) => {
               )}
             </View>
           )} */}
-          <View style={style.container1}>
-            <View style={style.container2}>
-              <TouchableOpacity
-                style={[
-                  style.container3,
-                  { backgroundColor: editColor ? '#fff' : '#f1e8e6' },
-                ]}
-                onPress={handleColorDropDown}>
-                <Text style={{ fontWeight: '600', color: '#000' }}>
-                  {selectedColorIds.length > 0
-                    ? filteredColorList
-                      .filter(color =>
-                        selectedColorIds.includes(color.colorId),
-                      )
-                      .map(color => color.colorName)
-                      .join(', ')
-                    : 'Select'}
-                </Text>
-                <Image
-                  source={require('../../../assets/dropdown.png')}
-                  style={{ width: 20, height: 20 }}
-                />
-              </TouchableOpacity>
-            </View>
-            <View style={style.container4}>
-              <TouchableOpacity
-                onPress={toggleColorModal}
-                style={style.plusButton}>
-                <Image
-                  style={{
-                    height: 30,
-                    width: 30,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                  }}
-                  source={require('../../../assets/plus.png')}
-                />
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          {showColorList && editColor && (
-            <View
-              style={{
-                elevation: 5,
-                height: 300,
-                alignSelf: 'center',
-                width: '90%',
-                backgroundColor: '#fff',
-                borderRadius: 10,
-                borderColor: 'lightgray', // Optional: Adds subtle border (for effect)
-                borderWidth: 1,
-                marginTop:5
-              }}>
-              <View>
+            <View style={style.container1}>
+              <View style={style.container2}>
                 <TouchableOpacity
-                  onPress={handleSelectAll}
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    margin: 10,
-                  }}>
-                  <CustomCheckBox
-                    isChecked={isSelectAll}
-                    onToggle={handleSelectAll}
-                  />
-                  <Text style={{ color: '#000', marginLeft: 10 }}>
-                    Select All
+                  style={[
+                    style.container3,
+                    {backgroundColor: editColor ? '#fff' : '#f1e8e6'},
+                  ]}
+                  onPress={handleColorDropDown}>
+                  <Text style={{fontWeight: '600', color: '#000'}}>
+                    {selectedColorIds.length > 0
+                      ? filteredColorList
+                          .filter(color =>
+                            selectedColorIds.includes(color.colorId),
+                          )
+                          .map(color => color.colorName)
+                          .join(', ')
+                      : 'Select'}
                   </Text>
+                  <Image
+                    source={require('../../../assets/dropdown.png')}
+                    style={{width: 20, height: 20}}
+                  />
                 </TouchableOpacity>
               </View>
-              <TextInput
+              <View style={style.container4}>
+                <TouchableOpacity
+                  onPress={toggleColorModal}
+                  style={style.plusButton}>
+                  <Image
+                    style={{
+                      height: 30,
+                      width: 30,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}
+                    source={require('../../../assets/plus.png')}
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {showColorList && editColor && (
+              <View
                 style={{
-                  marginTop: 10,
+                  elevation: 5,
+                  height: 300,
+                  alignSelf: 'center',
+                  width: '90%',
+                  backgroundColor: '#fff',
                   borderRadius: 10,
-                  height: 40,
-                  borderColor: 'gray',
+                  borderColor: 'lightgray', // Optional: Adds subtle border (for effect)
                   borderWidth: 1,
-                  marginHorizontal: 10,
-                  paddingLeft: 10,
-                  marginBottom: 10,
-                  color: '#000000',
-                }}
-                placeholderTextColor="#000"
-                placeholder="Search"
-                onChangeText={filterColors}
-              />
-              {filteredColorList?.length === 0 ||
+                  marginTop: 5,
+                }}>
+                <View>
+                  <TouchableOpacity
+                    onPress={handleSelectAll}
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      margin: 10,
+                    }}>
+                    <CustomCheckBox
+                      isChecked={isSelectAll}
+                      onToggle={handleSelectAll}
+                    />
+                    <Text style={{color: '#000', marginLeft: 10}}>
+                      Select All
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+                <TextInput
+                  style={{
+                    marginTop: 10,
+                    borderRadius: 10,
+                    height: 40,
+                    borderColor: 'gray',
+                    borderWidth: 1,
+                    marginHorizontal: 10,
+                    paddingLeft: 10,
+                    marginBottom: 10,
+                    color: '#000000',
+                  }}
+                  placeholderTextColor="#000"
+                  placeholder="Search"
+                  onChangeText={filterColors}
+                />
+                {filteredColorList?.length === 0 ||
                 (filteredColorList?.length === 1 &&
                   !filteredColorList[0] &&
                   !isLoading) ? (
-                <Text style={style.noCategoriesText}>
-                  Sorry, no results found!
-                </Text>
-              ) : (
-                <ScrollView nestedScrollEnabled={true}>
-                  {filteredColorList?.map((item, index) => (
-                    <TouchableOpacity
-                      key={index}
-                      style={{
-                        width: '100%',
-                        height: 50,
-                        justifyContent: 'center',
-                        borderBottomWidth: 0.5,
-                        borderColor: '#8e8e8e',
-                      }}
-                      onPress={() => handleSelectColor(item)}>
-                      <View
+                  <Text style={style.noCategoriesText}>
+                    Sorry, no results found!
+                  </Text>
+                ) : (
+                  <ScrollView nestedScrollEnabled={true}>
+                    {filteredColorList?.map((item, index) => (
+                      <TouchableOpacity
+                        key={index}
                         style={{
-                          flexDirection: 'row',
-                          alignItems: 'center',
-                          marginHorizontal: 10,
-                        }}>
-                        <CustomCheckBox
-                          isChecked={selectedColorIds.includes(item.colorId)}
-                          onToggle={() => handleSelectColor(item)}
-                        />
-                        <Text
+                          width: '100%',
+                          height: 50,
+                          justifyContent: 'center',
+                          borderBottomWidth: 0.5,
+                          borderColor: '#8e8e8e',
+                        }}
+                        onPress={() => handleSelectColor(item)}>
+                        <View
                           style={{
-                            fontWeight: '600',
-                            color: '#000',
-                            marginLeft: 10,
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            marginHorizontal: 10,
                           }}>
-                          {item.colorName}
-                        </Text>
-                      </View>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              )}
-            </View>
-          )}
+                          <CustomCheckBox
+                            isChecked={selectedColorIds.includes(item.colorId)}
+                            onToggle={() => handleSelectColor(item)}
+                          />
+                          <Text
+                            style={{
+                              fontWeight: '600',
+                              color: '#000',
+                              marginLeft: 10,
+                            }}>
+                            {item.colorName}
+                          </Text>
+                        </View>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                )}
+              </View>
+            )}
 
-          <Text
-            style={{ marginHorizontal: 20, marginVertical: 3, color: '#000' }}>
-            {'Color Code '}
-          </Text>
-          <View style={style.inputContainer}>
-            <TextInput
-              style={style.txtinput}
-              placeholder="Color Code"
-              placeholderTextColor="#000"
-              editable={false}
-              value={colorCode}
-              onChangeText={text => setColorCode(text)}
-            />
-          </View>
-
-          <Text style={style.headerTxt}>{'Types *'}</Text>
-
-          <View style={style.container1}>
-            <View style={style.container2}>
-              <TouchableOpacity
-                style={style.container3}
-                onPress={handleTypesDropDown}>
-                <Text style={{ fontWeight: '600', color: '#000' }}>
-                  {selectedType ? selectedType : 'Select'}
-                </Text>
-
-                <Image
-                  source={require('../../../assets/dropdown.png')}
-                  style={{ width: 20, height: 20 }}
-                />
-              </TouchableOpacity>
-            </View>
-            <View style={style.container4}>
-              <TouchableOpacity
-                onPress={toggleTypesModal}
-                style={style.plusButton}>
-                <Image
-                  style={{
-                    height: 30,
-                    width: 30,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                  }}
-                  source={require('../../../assets/plus.png')}
-                />
-              </TouchableOpacity>
-            </View>
-          </View>
-          {showTypesList && (
-            <View
-              style={{
-                elevation: 5,
-                height: 300,
-                alignSelf: 'center',
-                width: '90%',
-                backgroundColor: '#fff',
-                borderRadius: 10,
-                borderColor: 'lightgray', // Optional: Adds subtle border (for effect)
-                borderWidth: 1,
-                marginTop:5
-              }}>
+            <Text
+              style={{marginHorizontal: 20, marginVertical: 3, color: '#000'}}>
+              {'Color Code '}
+            </Text>
+            <View style={style.inputContainer}>
               <TextInput
-                style={{
-                  marginTop: 10,
-                  borderRadius: 10,
-                  height: 40,
-                  borderColor: 'gray',
-                  borderWidth: 1,
-                  marginHorizontal: 10,
-                  paddingLeft: 10,
-                  marginBottom: 10,
-                  color: '#000000',
-                }}
+                style={style.txtinput}
+                placeholder="Color Code"
                 placeholderTextColor="#000"
-                placeholder="Search"
-                onChangeText={filterTypes}
+                editable={false}
+                value={colorCode}
+                onChangeText={text => setColorCode(text)}
               />
+            </View>
 
-              {filteredTypesList.length === 0 ||
+            <Text style={style.headerTxt}>{'Types *'}</Text>
+
+            <View style={style.container1}>
+              <View style={style.container2}>
+                <TouchableOpacity
+                  style={style.container3}
+                  onPress={handleTypesDropDown}>
+                  <Text style={{fontWeight: '600', color: '#000'}}>
+                    {selectedType ? selectedType : 'Select'}
+                  </Text>
+
+                  <Image
+                    source={require('../../../assets/dropdown.png')}
+                    style={{width: 20, height: 20}}
+                  />
+                </TouchableOpacity>
+              </View>
+              <View style={style.container4}>
+                <TouchableOpacity
+                  onPress={toggleTypesModal}
+                  style={style.plusButton}>
+                  <Image
+                    style={{
+                      height: 30,
+                      width: 30,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}
+                    source={require('../../../assets/plus.png')}
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
+            {showTypesList && (
+              <View
+                style={{
+                  elevation: 5,
+                  height: 300,
+                  alignSelf: 'center',
+                  width: '90%',
+                  backgroundColor: '#fff',
+                  borderRadius: 10,
+                  borderColor: 'lightgray', // Optional: Adds subtle border (for effect)
+                  borderWidth: 1,
+                  marginTop: 5,
+                }}>
+                <TextInput
+                  style={{
+                    marginTop: 10,
+                    borderRadius: 10,
+                    height: 40,
+                    borderColor: 'gray',
+                    borderWidth: 1,
+                    marginHorizontal: 10,
+                    paddingLeft: 10,
+                    marginBottom: 10,
+                    color: '#000000',
+                  }}
+                  placeholderTextColor="#000"
+                  placeholder="Search"
+                  onChangeText={filterTypes}
+                />
+
+                {filteredTypesList.length === 0 ||
                 (filteredTypesList?.length === 1 &&
                   !filteredTypesList[0] &&
                   !isLoading) ? (
-                <Text style={style.noCategoriesText}>
-                  Sorry, no results found!
-                </Text>
-              ) : (
-                <ScrollView nestedScrollEnabled={true}>
-                  {filteredTypesList?.map((item, index) => (
-                    <TouchableOpacity
-                      key={index}
-                      style={{
-                        width: '100%',
-                        height: 50,
-                        justifyContent: 'center',
-                        borderBottomWidth: 0.5,
-                        borderColor: '#8e8e8e',
-                      }}
-                      onPress={() => handleSelectType(item)}>
-                      <Text
+                  <Text style={style.noCategoriesText}>
+                    Sorry, no results found!
+                  </Text>
+                ) : (
+                  <ScrollView nestedScrollEnabled={true}>
+                    {filteredTypesList?.map((item, index) => (
+                      <TouchableOpacity
+                        key={index}
                         style={{
-                          fontWeight: '600',
-                          marginHorizontal: 15,
-                          color: '#000',
-                        }}>
-                        {item?.typeName}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              )}
-            </View>
-          )}
+                          width: '100%',
+                          height: 50,
+                          justifyContent: 'center',
+                          borderBottomWidth: 0.5,
+                          borderColor: '#8e8e8e',
+                        }}
+                        onPress={() => handleSelectType(item)}>
+                        <Text
+                          style={{
+                            fontWeight: '600',
+                            marginHorizontal: 15,
+                            color: '#000',
+                          }}>
+                          {item?.typeName}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                )}
+              </View>
+            )}
 
-          <Text style={style.headerTxt}>{'Season Groups *'}</Text>
+            <Text style={style.headerTxt}>{'Season Groups *'}</Text>
 
-          <View style={style.container1}>
-            <View style={style.container2}>
-              <TouchableOpacity
-                style={[
-                  style.container3,
-                  { backgroundColor: editColor ? '#fff' : '#f1e8e6' },
-                ]}
-                onPress={handleSeasonGroupsDropDown}>
-                <Text style={{ fontWeight: '600', color: '#000' }}>
-                  {selectedSeasonGroup ? selectedSeasonGroup : 'Select'}
-                </Text>
+            <View style={style.container1}>
+              <View style={style.container2}>
+                <TouchableOpacity
+                  style={[
+                    style.container3,
+                    {backgroundColor: editColor ? '#fff' : '#f1e8e6'},
+                  ]}
+                  onPress={handleSeasonGroupsDropDown}>
+                  <Text style={{fontWeight: '600', color: '#000'}}>
+                    {selectedSeasonGroup ? selectedSeasonGroup : 'Select'}
+                  </Text>
 
-                <Image
-                  source={require('../../../assets/dropdown.png')}
-                  style={{ width: 20, height: 20 }}
-                />
-              </TouchableOpacity>
+                  <Image
+                    source={require('../../../assets/dropdown.png')}
+                    style={{width: 20, height: 20}}
+                  />
+                </TouchableOpacity>
+              </View>
+              <View style={style.container4}>
+                <TouchableOpacity
+                  onPress={toggleSeasonGroupsModal}
+                  style={style.plusButton}>
+                  <Image
+                    style={{
+                      height: 30,
+                      width: 30,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}
+                    source={require('../../../assets/plus.png')}
+                  />
+                </TouchableOpacity>
+              </View>
             </View>
-            <View style={style.container4}>
-              <TouchableOpacity
-                onPress={toggleSeasonGroupsModal}
-                style={style.plusButton}>
-                <Image
-                  style={{
-                    height: 30,
-                    width: 30,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                  }}
-                  source={require('../../../assets/plus.png')}
-                />
-              </TouchableOpacity>
-            </View>
-          </View>
-          {showSeasonGroupsList && editSeasonGroup && (
-            <View
-              style={{
-                elevation: 5,
-                height: 300,
-                alignSelf: 'center',
-                width: '90%',
-                backgroundColor: '#fff',
-                borderRadius: 10,
-                borderColor: 'lightgray', // Optional: Adds subtle border (for effect)
-                borderWidth: 1,
-                marginTop:5
-              }}>
-              <TextInput
+            {showSeasonGroupsList && editSeasonGroup && (
+              <View
                 style={{
-                  marginTop: 10,
+                  elevation: 5,
+                  height: 300,
+                  alignSelf: 'center',
+                  width: '90%',
+                  backgroundColor: '#fff',
                   borderRadius: 10,
-                  height: 40,
-                  borderColor: 'gray',
+                  borderColor: 'lightgray', // Optional: Adds subtle border (for effect)
                   borderWidth: 1,
-                  marginHorizontal: 10,
-                  paddingLeft: 10,
-                  marginBottom: 10,
-                  color: '#000000',
-                }}
-                placeholderTextColor="#000"
-                placeholder="Search"
-                onChangeText={filterSeasonGroups}
-              />
+                  marginTop: 5,
+                }}>
+                <TextInput
+                  style={{
+                    marginTop: 10,
+                    borderRadius: 10,
+                    height: 40,
+                    borderColor: 'gray',
+                    borderWidth: 1,
+                    marginHorizontal: 10,
+                    paddingLeft: 10,
+                    marginBottom: 10,
+                    color: '#000000',
+                  }}
+                  placeholderTextColor="#000"
+                  placeholder="Search"
+                  onChangeText={filterSeasonGroups}
+                />
 
-              {filteredSeasonGroupsList.length === 0 ||
+                {filteredSeasonGroupsList.length === 0 ||
                 (filteredSeasonGroupsList?.length === 1 &&
                   !filteredSeasonGroupsList[0] &&
                   !isLoading) ? (
-                <Text style={style.noCategoriesText}>
-                  Sorry, no results found!
-                </Text>
-              ) : (
-                <ScrollView nestedScrollEnabled={true}>
-                  {filteredSeasonGroupsList?.map((item, index) => (
-                    <TouchableOpacity
-                      key={index}
-                      style={{
-                        width: '100%',
-                        height: 50,
-                        justifyContent: 'center',
-                        borderBottomWidth: 0.5,
-                        borderColor: '#8e8e8e',
-                      }}
-                      onPress={() => handleSelectSeasonGroup(item)}>
-                      <Text
+                  <Text style={style.noCategoriesText}>
+                    Sorry, no results found!
+                  </Text>
+                ) : (
+                  <ScrollView nestedScrollEnabled={true}>
+                    {filteredSeasonGroupsList?.map((item, index) => (
+                      <TouchableOpacity
+                        key={index}
                         style={{
-                          fontWeight: '600',
-                          marginHorizontal: 15,
-                          color: '#000',
-                        }}>
-                        {item?.sizeGroup}
+                          width: '100%',
+                          height: 50,
+                          justifyContent: 'center',
+                          borderBottomWidth: 0.5,
+                          borderColor: '#8e8e8e',
+                        }}
+                        onPress={() => handleSelectSeasonGroup(item)}>
+                        <Text
+                          style={{
+                            fontWeight: '600',
+                            marginHorizontal: 15,
+                            color: '#000',
+                          }}>
+                          {item?.sizeGroup}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                )}
+              </View>
+            )}
+            <Text
+              style={{marginHorizontal: 20, marginVertical: 3, color: '#000'}}>
+              {'GSM  '}
+            </Text>
+
+            <View style={style.inputContainer}>
+              <TextInput
+                style={style.txtinput}
+                placeholder="GSM  "
+                placeholderTextColor="#000"
+                value={gsm}
+                keyboardType="numeric"
+                onChangeText={text => setGsm(text)}
+              />
+            </View>
+            <Text
+              style={{marginHorizontal: 20, marginVertical: 3, color: '#000'}}>
+              {'HSN'}
+            </Text>
+
+            <View style={style.inputContainer}>
+              <TextInput
+                style={style.txtinput}
+                placeholder="HSN  "
+                placeholderTextColor="#000"
+                value={hsn}
+                keyboardType="numeric"
+                onChangeText={text => setHsn(text)}
+              />
+            </View>
+            <Text
+              style={{marginHorizontal: 20, marginVertical: 3, color: '#000'}}>
+              {'GST'}
+            </Text>
+
+            <View style={style.inputContainer}>
+              <TextInput
+                style={style.txtinput}
+                placeholder="GST "
+                placeholderTextColor="#000"
+                value={gst}
+                keyboardType="numeric"
+                onChangeText={text => setGst(text)}
+              />
+            </View>
+
+            {/* Closure Dropdown */}
+            {kapture_task_flag === 1 && (
+              <View style={style.dropdownContainer}>
+                <Text style={style.headerTxt}>{'Closure'}</Text>
+                <View style={style.container1}>
+                  <View style={style.container2}>
+                    <TouchableOpacity
+                      style={style.dropdownButton}
+                      onPress={toggleClosure}>
+                      <Text style={{fontWeight: '600', color: '#000'}}>
+                        {selectedClosureId ? selectedClosure : 'Select'}
                       </Text>
+                      <Image
+                        style={{width: 20, height: 20}}
+                        source={require('../../../assets/dropdown.png')}
+                      />
                     </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              )}
-            </View>
-          )}
-          <Text
-            style={{ marginHorizontal: 20, marginVertical: 3, color: '#000' }}>
-            {'GSM  '}
-          </Text>
-
-          <View style={style.inputContainer}>
-            <TextInput
-              style={style.txtinput}
-              placeholder="GSM  "
-              placeholderTextColor="#000"
-              value={gsm}
-               keyboardType='numeric'
-              onChangeText={text => setGsm(text)}
-            />
-          </View>
-          <Text
-            style={{ marginHorizontal: 20, marginVertical: 3, color: '#000' }}>
-            {'HSN'}
-          </Text>
-
-          <View style={style.inputContainer}>
-            <TextInput
-              style={style.txtinput}
-              placeholder="HSN  "
-              placeholderTextColor="#000"
-              value={hsn}
-              keyboardType='numeric'
-              onChangeText={text => setHsn(text)}
-            />
-          </View>
-          <Text
-            style={{ marginHorizontal: 20, marginVertical: 3, color: '#000' }}>
-            {'GST'}
-          </Text>
-
-          <View style={style.inputContainer}>
-            <TextInput
-              style={style.txtinput}
-              placeholder="GST "
-              placeholderTextColor="#000"
-              value={gst}
-              keyboardType='numeric'
-              onChangeText={text => setGst(text)}
-            />
-          </View>
-
-          {/* Closure Dropdown */}
-          {kapture_task_flag === 1 && (
-            <View style={style.dropdownContainer}>
-              <Text style={style.headerTxt}>{'Closure'}</Text>
-              <View style={style.container1}>
-                <View style={style.container2}>
-                  <TouchableOpacity
-                    style={style.dropdownButton}
-                    onPress={toggleClosure}>
-                    <Text style={{ fontWeight: '600', color: '#000' }}>
-                      {selectedClosureId ? selectedClosure : 'Select'}
-                    </Text>
-                    <Image
-                      style={{ width: 20, height: 20 }}
-                      source={require('../../../assets/dropdown.png')}
-                    />
-                  </TouchableOpacity>
+                  </View>
+                  <View style={style.container4}>
+                    <TouchableOpacity
+                      onPress={toggleClosureModal}
+                      style={style.plusButton}>
+                      <Image
+                        style={style.plusIcon}
+                        source={require('../../../assets/plus.png')}
+                      />
+                    </TouchableOpacity>
+                  </View>
                 </View>
-                <View style={style.container4}>
-                  <TouchableOpacity
-                    onPress={toggleClosureModal}
-                    style={style.plusButton}>
-                    <Image
-                      style={style.plusIcon}
-                      source={require('../../../assets/plus.png')}
+
+                {showClosure && (
+                  <View style={style.dropdownContent}>
+                    <TextInput
+                      style={style.searchInput}
+                      placeholderTextColor="#000"
+                      placeholder="Search"
+                      value={searchClosure}
+                      onChangeText={setSearchClosure}
                     />
-                  </TouchableOpacity>
-                </View>
+                    <ScrollView nestedScrollEnabled={true}>
+                      {isKaptureLoading ? (
+                        <Text style={{color: '#000'}}>Loading...</Text>
+                      ) : filteredClosureData.length === 0 &&
+                        !isKaptureLoading ? (
+                        <Text style={style.noCategoriesText}>
+                          Sorry, no results found!
+                        </Text>
+                      ) : (
+                        filteredClosureData.map(item => (
+                          <TouchableOpacity
+                            key={item.m_id}
+                            style={style.dropdownItem}
+                            onPress={() => {
+                              setSelectedClosure(item.m_name); // Set selected value
+                              setSelectedClosureId(item.m_id);
+                              setShowClosure(false); // Close dropdown
+                            }}>
+                            <Text
+                              style={{
+                                fontWeight: '600',
+                                marginHorizontal: 15,
+                                color: '#000',
+                              }}>
+                              {item.m_name}
+                            </Text>
+                          </TouchableOpacity>
+                        ))
+                      )}
+                    </ScrollView>
+                  </View>
+                )}
               </View>
+            )}
 
-              {showClosure && (
-                <View style={style.dropdownContent}>
-                  <TextInput
-                    style={style.searchInput}
-                    placeholderTextColor="#000"
-                    placeholder="Search"
-                    value={searchClosure}
-                    onChangeText={setSearchClosure}
+            {/* Peak Dropdown */}
+            {kapture_task_flag === 1 && (
+              <View style={style.dropdownContainer}>
+                <Text style={style.headerTxt}>{'Peak'}</Text>
+                <View style={style.container1}>
+                  <View style={style.container2}>
+                    <TouchableOpacity
+                      style={style.dropdownButton}
+                      onPress={togglePeak}>
+                      <Text style={{fontWeight: '600', color: '#000'}}>
+                        {selectedPeakId ? selectedPeak : 'Select'}
+                      </Text>
+                      <Image
+                        style={{width: 20, height: 20}}
+                        source={require('../../../assets/dropdown.png')}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                  <View style={style.container4}>
+                    <TouchableOpacity
+                      onPress={togglePeakModal}
+                      style={style.plusButton}>
+                      <Image
+                        style={style.plusIcon}
+                        source={require('../../../assets/plus.png')}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+                {showPeak && (
+                  <View style={style.dropdownContent}>
+                    <TextInput
+                      style={style.searchInput}
+                      placeholderTextColor="#000"
+                      placeholder="Search"
+                      value={searchPeak}
+                      onChangeText={setSearchPeak}
+                    />
+                    <ScrollView nestedScrollEnabled={true}>
+                      {isKaptureLoading ? (
+                        <Text style={{color: '#000'}}>Loading...</Text>
+                      ) : filteredPeakData.length === 0 && !isKaptureLoading ? (
+                        <Text style={style.noCategoriesText}>
+                          Sorry, no results found!
+                        </Text>
+                      ) : (
+                        filteredPeakData.map(item => (
+                          <TouchableOpacity
+                            key={item.m_id}
+                            style={style.dropdownItem}
+                            onPress={() => {
+                              setSelectedPeak(item.m_name); // Set selected value
+                              setSelectedPeakId(item.m_id);
+                              setShowPeak(false); // Close dropdown
+                            }}>
+                            <Text
+                              style={{
+                                fontWeight: '600',
+                                marginHorizontal: 15,
+                                color: '#000',
+                              }}>
+                              {item.m_name}
+                            </Text>
+                          </TouchableOpacity>
+                        ))
+                      )}
+                    </ScrollView>
+                  </View>
+                )}
+              </View>
+            )}
+
+            {/* Logo Dropdown */}
+            {kapture_task_flag === 1 && (
+              <View style={style.dropdownContainer}>
+                <Text style={style.headerTxt}>{'Logo'}</Text>
+                <View style={style.container1}>
+                  <View style={style.container2}>
+                    <TouchableOpacity
+                      style={style.dropdownButton}
+                      onPress={toggleLogo}>
+                      <Text style={{fontWeight: '600', color: '#000'}}>
+                        {selectedLogoId ? selectedLogo : 'Select'}
+                      </Text>
+                      <Image
+                        style={{width: 20, height: 20}}
+                        source={require('../../../assets/dropdown.png')}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                  <View style={style.container4}>
+                    <TouchableOpacity
+                      onPress={toggleLogoModal}
+                      style={style.plusButton}>
+                      <Image
+                        style={style.plusIcon}
+                        source={require('../../../assets/plus.png')}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+                {showLogo && (
+                  <View style={style.dropdownContent}>
+                    <TextInput
+                      style={style.searchInput}
+                      placeholderTextColor="#000"
+                      placeholder="Search"
+                      value={searchLogo}
+                      onChangeText={setSearchLogo}
+                    />
+                    <ScrollView>
+                      {isKaptureLoading ? (
+                        <Text style={{color: '#000'}}>Loading...</Text>
+                      ) : filteredLogoData.length === 0 && !isKaptureLoading ? (
+                        <Text style={style.noCategoriesText}>
+                          Sorry, no results found!
+                        </Text>
+                      ) : (
+                        filteredLogoData.map(item => (
+                          <TouchableOpacity
+                            key={item.m_id}
+                            style={style.dropdownItem}
+                            onPress={() => {
+                              setSelectedLogo(item.m_name); // Set selected value
+                              setSelectedLogoId(item.m_id);
+                              setShowLogo(false); // Close dropdown
+                            }}>
+                            <Text
+                              style={{
+                                fontWeight: '600',
+                                marginHorizontal: 15,
+                                color: '#000',
+                              }}>
+                              {item.m_name}
+                            </Text>
+                          </TouchableOpacity>
+                        ))
+                      )}
+                    </ScrollView>
+                  </View>
+                )}
+              </View>
+            )}
+            {/* Decoration Dropdown */}
+            {kapture_task_flag === 1 && (
+              <View style={style.dropdownContainer}>
+                <Text style={style.headerTxt}>{'Decoration'}</Text>
+                <View style={style.container1}>
+                  <View style={style.container2}>
+                    <TouchableOpacity
+                      style={style.dropdownButton}
+                      onPress={toggleDecoration}>
+                      <Text style={{fontWeight: '600', color: '#000'}}>
+                        {selectedDecorationId ? selectedDecoration : 'Select'}
+                      </Text>
+                      <Image
+                        style={{width: 20, height: 20}}
+                        source={require('../../../assets/dropdown.png')}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                  <View style={style.container4}>
+                    <TouchableOpacity
+                      onPress={toggleDecorationModal}
+                      style={style.plusButton}>
+                      <Image
+                        style={style.plusIcon}
+                        source={require('../../../assets/plus.png')}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+                {showDecoration && (
+                  <View style={style.dropdownContent}>
+                    <TextInput
+                      style={style.searchInput}
+                      placeholderTextColor="#000"
+                      placeholder="Search"
+                      value={searchDecoration}
+                      onChangeText={setSearchDecoration}
+                    />
+                    <ScrollView>
+                      {isKaptureLoading ? (
+                        <Text style={{color: '#000'}}>Loading...</Text>
+                      ) : filteredDecorationData.length === 0 &&
+                        !isKaptureLoading ? (
+                        <Text style={style.noCategoriesText}>
+                          Sorry, no results found!
+                        </Text>
+                      ) : (
+                        filteredDecorationData.map(item => (
+                          <TouchableOpacity
+                            key={item.m_id}
+                            style={style.dropdownItem}
+                            onPress={() => {
+                              setSelectedDecoration(item.m_name); // Set selected value
+                              setSelectedDecorationId(item.m_id);
+                              setShowDecoration(false); // Close dropdown
+                            }}>
+                            <Text
+                              style={{
+                                fontWeight: '600',
+                                marginHorizontal: 15,
+                                color: '#000',
+                              }}>
+                              {item.m_name}
+                            </Text>
+                          </TouchableOpacity>
+                        ))
+                      )}
+                    </ScrollView>
+                  </View>
+                )}
+              </View>
+            )}
+            {/* Trims Dropdown */}
+            {kapture_task_flag === 1 && (
+              <View style={style.dropdownContainer}>
+                <Text style={style.headerTxt}>{'Trims'}</Text>
+                <View style={style.container1}>
+                  <View style={style.container2}>
+                    <TouchableOpacity
+                      style={{
+                        width: '90%',
+                        height: 37,
+                        borderRadius: 10,
+                        borderWidth: 0.5,
+                        alignSelf: 'center',
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        paddingLeft: 15,
+                        paddingRight: 15,
+                        marginHorizontal: 20,
+                      }}
+                      onPress={toggleTrims}>
+                      <Text style={{fontWeight: '600', color: '#000'}}>
+                        {selectedTrimsId ? selectedTrims : 'Select'}
+                      </Text>
+                      <Image
+                        style={{width: 20, height: 20}}
+                        source={require('../../../assets/dropdown.png')}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                  <View style={style.container4}>
+                    <TouchableOpacity
+                      onPress={toggleTrimsModal}
+                      style={style.plusButton}>
+                      <Image
+                        style={style.plusIcon}
+                        source={require('../../../assets/plus.png')}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+                {showTrims && (
+                  <View style={style.dropdownContent}>
+                    <TextInput
+                      style={style.searchInput}
+                      placeholderTextColor="#000"
+                      placeholder="Search"
+                      value={searchTrims}
+                      onChangeText={setSearchTrims}
+                    />
+                    <ScrollView>
+                      {isKaptureLoading ? (
+                        <Text style={{color: '#000'}}>Loading...</Text>
+                      ) : filteredTrimsData.length === 0 &&
+                        !isKaptureLoading ? (
+                        <Text style={style.noCategoriesText}>
+                          Sorry, no results found!
+                        </Text>
+                      ) : (
+                        filteredTrimsData.map(item => (
+                          <TouchableOpacity
+                            key={item.m_id}
+                            style={style.dropdownItem}
+                            onPress={() => {
+                              setSelectedTrims(item.m_name); // Set selected value
+                              setSelectedTrimsId(item.m_id);
+                              setShowTrims(false); // Close dropdown
+                            }}>
+                            <Text
+                              style={{
+                                fontWeight: '600',
+                                marginHorizontal: 15,
+                                color: '#000',
+                              }}>
+                              {item.m_name}
+                            </Text>
+                          </TouchableOpacity>
+                        ))
+                      )}
+                    </ScrollView>
+                  </View>
+                )}
+              </View>
+            )}
+            {cedge_flag === 1 && (
+              <Text style={style.headerTxt}>{'Process Work Flow *'}</Text>
+            )}
+
+            {cedge_flag === 1 && (
+              <View style={{flexDirection: 'row', marginTop: 10}}>
+                <TouchableOpacity
+                  style={{
+                    width: '90%',
+                    height: 50,
+                    borderRadius: 10,
+                    borderWidth: 0.5,
+                    alignSelf: 'center',
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    paddingLeft: 15,
+                    paddingRight: 15,
+                    marginHorizontal: 20,
+                  }}
+                  onPress={handleProcessWorkflowDropDown}>
+                  <Text style={{fontWeight: '600', color: '#000'}}>
+                    {selectedProcessWorkflow
+                      ? selectedProcessWorkflow
+                      : 'Select'}
+                  </Text>
+
+                  <Image
+                    source={require('../../../assets/dropdown.png')}
+                    style={{width: 20, height: 20}}
                   />
+                </TouchableOpacity>
+              </View>
+            )}
+            {showProcessWorkflowList && editProcessWF && (
+              <View
+                style={{
+                  elevation: 5,
+                  height: 300,
+                  alignSelf: 'center',
+                  width: '90%',
+                  backgroundColor: '#fff',
+                  borderRadius: 10,
+                }}>
+                <TextInput
+                  style={{
+                    marginTop: 10,
+                    borderRadius: 10,
+                    height: 40,
+                    borderColor: 'gray',
+                    borderWidth: 1,
+                    marginHorizontal: 10,
+                    paddingLeft: 10,
+                    marginBottom: 10,
+                    color: '#000000',
+                  }}
+                  placeholderTextColor="#000"
+                  placeholder="Search"
+                  onChangeText={filterProcessWorkflow}
+                />
+
+                {filteredProcessWorkflowList.length === 0 && !isLoading ? (
+                  <Text style={style.noCategoriesText}>
+                    Sorry, no results found!
+                  </Text>
+                ) : (
                   <ScrollView nestedScrollEnabled={true}>
-                    {isKaptureLoading ? (
-                      <Text style={{ color: '#000' }}>Loading...</Text>
-                    ) : filteredClosureData.length === 0 &&
-                      !isKaptureLoading ? (
-                      <Text style={style.noCategoriesText}>
-                        Sorry, no results found!
-                      </Text>
-                    ) : (
-                      filteredClosureData.map(item => (
-                        <TouchableOpacity
-                          key={item.m_id}
-                          style={style.dropdownItem}
-                          onPress={() => {
-                            setSelectedClosure(item.m_name); // Set selected value
-                            setSelectedClosureId(item.m_id);
-                            setShowClosure(false); // Close dropdown
+                    {filteredProcessWorkflowList?.map((item, index) => (
+                      <TouchableOpacity
+                        key={index}
+                        style={{
+                          width: '100%',
+                          height: 50,
+                          justifyContent: 'center',
+                          borderBottomWidth: 0.5,
+                          borderColor: '#8e8e8e',
+                        }}
+                        onPress={() => handleSelectProcessWorkflow(item)}>
+                        <Text
+                          style={{
+                            fontWeight: '600',
+                            marginHorizontal: 15,
+                            color: '#000',
                           }}>
-                          <Text
-                            style={{
-                              fontWeight: '600',
-                              marginHorizontal: 15,
-                              color: '#000',
-                            }}>
-                            {item.m_name}
-                          </Text>
-                        </TouchableOpacity>
-                      ))
-                    )}
+                          {item?.configName}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
                   </ScrollView>
-                </View>
-              )}
-            </View>
-          )}
+                )}
+              </View>
+            )}
 
-          {/* Peak Dropdown */}
-          {kapture_task_flag === 1 && (
-            <View style={style.dropdownContainer}>
-              <Text style={style.headerTxt}>{'Peak'}</Text>
-              <View style={style.container1}>
-                <View style={style.container2}>
-                  <TouchableOpacity
-                    style={style.dropdownButton}
-                    onPress={togglePeak}>
-                    <Text style={{ fontWeight: '600', color: '#000' }}>
-                      {selectedPeakId ? selectedPeak : 'Select'}
-                    </Text>
-                    <Image
-                      style={{ width: 20, height: 20 }}
-                      source={require('../../../assets/dropdown.png')}
-                    />
-                  </TouchableOpacity>
-                </View>
-                <View style={style.container4}>
-                  <TouchableOpacity
-                    onPress={togglePeakModal}
-                    style={style.plusButton}>
-                    <Image
-                      style={style.plusIcon}
-                      source={require('../../../assets/plus.png')}
-                    />
-                  </TouchableOpacity>
-                </View>
-              </View>
-              {showPeak && (
-                <View style={style.dropdownContent}>
-                  <TextInput
-                    style={style.searchInput}
-                    placeholderTextColor="#000"
-                    placeholder="Search"
-                    value={searchPeak}
-                    onChangeText={setSearchPeak}
-                  />
-                  <ScrollView nestedScrollEnabled={true}>
-                    {isKaptureLoading ? (
-                      <Text style={{ color: '#000' }}>Loading...</Text>
-                    ) : filteredPeakData.length === 0 && !isKaptureLoading ? (
-                      <Text style={style.noCategoriesText}>
-                        Sorry, no results found!
-                      </Text>
-                    ) : (
-                      filteredPeakData.map(item => (
-                        <TouchableOpacity
-                          key={item.m_id}
-                          style={style.dropdownItem}
-                          onPress={() => {
-                            setSelectedPeak(item.m_name); // Set selected value
-                            setSelectedPeakId(item.m_id);
-                            setShowPeak(false); // Close dropdown
-                          }}>
-                          <Text
-                            style={{
-                              fontWeight: '600',
-                              marginHorizontal: 15,
-                              color: '#000',
-                            }}>
-                            {item.m_name}
-                          </Text>
-                        </TouchableOpacity>
-                      ))
-                    )}
-                  </ScrollView>
-                </View>
-              )}
-            </View>
-          )}
+            <Text style={style.headerTxt}>{'Location *'}</Text>
 
-          {/* Logo Dropdown */}
-          {kapture_task_flag === 1 && (
-            <View style={style.dropdownContainer}>
-              <Text style={style.headerTxt}>{'Logo'}</Text>
-              <View style={style.container1}>
-                <View style={style.container2}>
-                  <TouchableOpacity
-                    style={style.dropdownButton}
-                    onPress={toggleLogo}>
-                    <Text style={{ fontWeight: '600', color: '#000' }}>
-                      {selectedLogoId ? selectedLogo : 'Select'}
-                    </Text>
-                    <Image
-                      style={{ width: 20, height: 20 }}
-                      source={require('../../../assets/dropdown.png')}
-                    />
-                  </TouchableOpacity>
-                </View>
-                <View style={style.container4}>
-                  <TouchableOpacity
-                    onPress={toggleLogoModal}
-                    style={style.plusButton}>
-                    <Image
-                      style={style.plusIcon}
-                      source={require('../../../assets/plus.png')}
-                    />
-                  </TouchableOpacity>
-                </View>
-              </View>
-              {showLogo && (
-                <View style={style.dropdownContent}>
-                  <TextInput
-                    style={style.searchInput}
-                    placeholderTextColor="#000"
-                    placeholder="Search"
-                    value={searchLogo}
-                    onChangeText={setSearchLogo}
-                  />
-                  <ScrollView>
-                    {isKaptureLoading ? (
-                      <Text style={{ color: '#000' }}>Loading...</Text>
-                    ) : filteredLogoData.length === 0 && !isKaptureLoading ? (
-                      <Text style={style.noCategoriesText}>
-                        Sorry, no results found!
-                      </Text>
-                    ) : (
-                      filteredLogoData.map(item => (
-                        <TouchableOpacity
-                          key={item.m_id}
-                          style={style.dropdownItem}
-                          onPress={() => {
-                            setSelectedLogo(item.m_name); // Set selected value
-                            setSelectedLogoId(item.m_id);
-                            setShowLogo(false); // Close dropdown
-                          }}>
-                          <Text
-                            style={{
-                              fontWeight: '600',
-                              marginHorizontal: 15,
-                              color: '#000',
-                            }}>
-                            {item.m_name}
-                          </Text>
-                        </TouchableOpacity>
-                      ))
-                    )}
-                  </ScrollView>
-                </View>
-              )}
-            </View>
-          )}
-          {/* Decoration Dropdown */}
-          {kapture_task_flag === 1 && (
-            <View style={style.dropdownContainer}>
-              <Text style={style.headerTxt}>{'Decoration'}</Text>
-              <View style={style.container1}>
-                <View style={style.container2}>
-                  <TouchableOpacity
-                    style={style.dropdownButton}
-                    onPress={toggleDecoration}>
-                    <Text style={{ fontWeight: '600', color: '#000' }}>
-                      {selectedDecorationId ? selectedDecoration : 'Select'}
-                    </Text>
-                    <Image
-                      style={{ width: 20, height: 20 }}
-                      source={require('../../../assets/dropdown.png')}
-                    />
-                  </TouchableOpacity>
-                </View>
-                <View style={style.container4}>
-                  <TouchableOpacity
-                    onPress={toggleDecorationModal}
-                    style={style.plusButton}>
-                    <Image
-                      style={style.plusIcon}
-                      source={require('../../../assets/plus.png')}
-                    />
-                  </TouchableOpacity>
-                </View>
-              </View>
-              {showDecoration && (
-                <View style={style.dropdownContent}>
-                  <TextInput
-                    style={style.searchInput}
-                    placeholderTextColor="#000"
-                    placeholder="Search"
-                    value={searchDecoration}
-                    onChangeText={setSearchDecoration}
-                  />
-                  <ScrollView>
-                    {isKaptureLoading ? (
-                      <Text style={{ color: '#000' }}>Loading...</Text>
-                    ) : filteredDecorationData.length === 0 &&
-                      !isKaptureLoading ? (
-                      <Text style={style.noCategoriesText}>
-                        Sorry, no results found!
-                      </Text>
-                    ) : (
-                      filteredDecorationData.map(item => (
-                        <TouchableOpacity
-                          key={item.m_id}
-                          style={style.dropdownItem}
-                          onPress={() => {
-                            setSelectedDecoration(item.m_name); // Set selected value
-                            setSelectedDecorationId(item.m_id);
-                            setShowDecoration(false); // Close dropdown
-                          }}>
-                          <Text
-                            style={{
-                              fontWeight: '600',
-                              marginHorizontal: 15,
-                              color: '#000',
-                            }}>
-                            {item.m_name}
-                          </Text>
-                        </TouchableOpacity>
-                      ))
-                    )}
-                  </ScrollView>
-                </View>
-              )}
-            </View>
-          )}
-          {/* Trims Dropdown */}
-          {kapture_task_flag === 1 && (
-            <View style={style.dropdownContainer}>
-              <Text style={style.headerTxt}>{'Trims'}</Text>
-              <View style={style.container1}>
-                <View style={style.container2}>
-                  <TouchableOpacity
-                    style={{
-                      width: '90%',
-                      height: 37,
-                      borderRadius: 10,
-                      borderWidth: 0.5,
-                      alignSelf: 'center',
-                      flexDirection: 'row',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      paddingLeft: 15,
-                      paddingRight: 15,
-                      marginHorizontal: 20,
-                    }}
-                    onPress={toggleTrims}>
-                    <Text style={{ fontWeight: '600', color: '#000' }}>
-                      {selectedTrimsId ? selectedTrims : 'Select'}
-                    </Text>
-                    <Image
-                      style={{ width: 20, height: 20 }}
-                      source={require('../../../assets/dropdown.png')}
-                    />
-                  </TouchableOpacity>
-                </View>
-                <View style={style.container4}>
-                  <TouchableOpacity
-                    onPress={toggleTrimsModal}
-                    style={style.plusButton}>
-                    <Image
-                      style={style.plusIcon}
-                      source={require('../../../assets/plus.png')}
-                    />
-                  </TouchableOpacity>
-                </View>
-              </View>
-              {showTrims && (
-                <View style={style.dropdownContent}>
-                  <TextInput
-                    style={style.searchInput}
-                    placeholderTextColor="#000"
-                    placeholder="Search"
-                    value={searchTrims}
-                    onChangeText={setSearchTrims}
-                  />
-                  <ScrollView>
-                    {isKaptureLoading ? (
-                      <Text style={{ color: '#000' }}>Loading...</Text>
-                    ) : filteredTrimsData.length === 0 && !isKaptureLoading ? (
-                      <Text style={style.noCategoriesText}>
-                        Sorry, no results found!
-                      </Text>
-                    ) : (
-                      filteredTrimsData.map(item => (
-                        <TouchableOpacity
-                          key={item.m_id}
-                          style={style.dropdownItem}
-                          onPress={() => {
-                            setSelectedTrims(item.m_name); // Set selected value
-                            setSelectedTrimsId(item.m_id);
-                            setShowTrims(false); // Close dropdown
-                          }}>
-                          <Text
-                            style={{
-                              fontWeight: '600',
-                              marginHorizontal: 15,
-                              color: '#000',
-                            }}>
-                            {item.m_name}
-                          </Text>
-                        </TouchableOpacity>
-                      ))
-                    )}
-                  </ScrollView>
-                </View>
-              )}
-            </View>
-          )}
-          {cedge_flag === 1 && (
-            <Text style={style.headerTxt}>{'Process Work Flow *'}</Text>
-          )}
-
-          {cedge_flag === 1 && (
-            <View style={{ flexDirection: 'row', marginTop: 10 }}>
+            <View style={{flexDirection: 'row', marginTop: 10}}>
               <TouchableOpacity
                 style={{
                   width: '90%',
-                  height: 50,
+                  height: 37,
                   borderRadius: 10,
                   borderWidth: 0.5,
                   alignSelf: 'center',
@@ -3041,545 +3168,187 @@ const NewStyleDetail = ({ route }) => {
                   paddingLeft: 15,
                   paddingRight: 15,
                   marginHorizontal: 20,
+                  backgroundColor: editColor ? '#fff' : '#f1e8e6',
                 }}
-                onPress={handleProcessWorkflowDropDown}>
-                <Text style={{ fontWeight: '600', color: '#000' }}>
-                  {selectedProcessWorkflow ? selectedProcessWorkflow : 'Select'}
+                onPress={handleLocationDropDown}>
+                <Text style={{fontWeight: '600', color: '#000'}}>
+                  {selectedLocation ? selectedLocation : 'Select'}
                 </Text>
 
                 <Image
                   source={require('../../../assets/dropdown.png')}
-                  style={{ width: 20, height: 20 }}
+                  style={{width: 20, height: 20}}
                 />
               </TouchableOpacity>
             </View>
-          )}
-          {showProcessWorkflowList && editProcessWF && (
-            <View
-              style={{
-                elevation: 5,
-                height: 300,
-                alignSelf: 'center',
-                width: '90%',
-                backgroundColor: '#fff',
-                borderRadius: 10,
-              }}>
-              <TextInput
+            {showLocationList && editLocation && (
+              <View
                 style={{
-                  marginTop: 10,
+                  elevation: 5,
+                  height: 300,
+                  alignSelf: 'center',
+                  width: '90%',
+                  backgroundColor: '#fff',
                   borderRadius: 10,
-                  height: 40,
-                  borderColor: 'gray',
+                  borderColor: 'lightgray', // Optional: Adds subtle border (for effect)
                   borderWidth: 1,
-                  marginHorizontal: 10,
-                  paddingLeft: 10,
-                  marginBottom: 10,
-                  color: '#000000',
-                }}
-                placeholderTextColor="#000"
-                placeholder="Search"
-                onChangeText={filterProcessWorkflow}
-              />
-
-              {filteredProcessWorkflowList.length === 0 && !isLoading ? (
-                <Text style={style.noCategoriesText}>
-                  Sorry, no results found!
-                </Text>
-              ) : (
-                <ScrollView nestedScrollEnabled={true}>
-                  {filteredProcessWorkflowList?.map((item, index) => (
-                    <TouchableOpacity
-                      key={index}
-                      style={{
-                        width: '100%',
-                        height: 50,
-                        justifyContent: 'center',
-                        borderBottomWidth: 0.5,
-                        borderColor: '#8e8e8e',
-                      }}
-                      onPress={() => handleSelectProcessWorkflow(item)}>
-                      <Text
-                        style={{
-                          fontWeight: '600',
-                          marginHorizontal: 15,
-                          color: '#000',
-                        }}>
-                        {item?.configName}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              )}
-            </View>
-          )}
-
-          <Text style={style.headerTxt}>{'Location *'}</Text>
-
-          <View style={{ flexDirection: 'row', marginTop: 10 }}>
-            <TouchableOpacity
-              style={{
-                width: '90%',
-                height: 37,
-                borderRadius: 10,
-                borderWidth: 0.5,
-                alignSelf: 'center',
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                paddingLeft: 15,
-                paddingRight: 15,
-                marginHorizontal: 20,
-                backgroundColor: editColor ? '#fff' : '#f1e8e6',
-              }}
-              onPress={handleLocationDropDown}>
-              <Text style={{ fontWeight: '600', color: '#000' }}>
-                {selectedLocation ? selectedLocation : 'Select'}
-              </Text>
-
-              <Image
-                source={require('../../../assets/dropdown.png')}
-                style={{ width: 20, height: 20 }}
-              />
-            </TouchableOpacity>
-          </View>
-          {showLocationList && editLocation && (
-            <View
-              style={{
-                elevation: 5,
-                height: 300,
-                alignSelf: 'center',
-                width: '90%',
-                backgroundColor: '#fff',
-                borderRadius: 10,
-                borderColor: 'lightgray', // Optional: Adds subtle border (for effect)
-                borderWidth: 1,
-                marginTop:5
-              }}>
-              <TextInput
-                style={{
-                  marginTop: 10,
-                  borderRadius: 10,
-                  height: 40,
-                  borderColor: 'gray',
-                  borderWidth: 1,
-                  marginHorizontal: 10,
-                  paddingLeft: 10,
-                  marginBottom: 10,
-                  color: '#000000',
-                }}
-                placeholderTextColor="#000"
-                placeholder="Search"
-                onChangeText={filterLocation}
-              />
-
-              {filteredLocationList.length === 0 && !isLoading ? (
-                <Text style={style.noCategoriesText}>
-                  Sorry, no results found!
-                </Text>
-              ) : (
-                <ScrollView nestedScrollEnabled={true}>
-                  {filteredLocationList?.map((item, index) => (
-                    <TouchableOpacity
-                      key={index}
-                      style={{
-                        width: '100%',
-                        height: 50,
-                        justifyContent: 'center',
-                        borderBottomWidth: 0.5,
-                        borderColor: '#8e8e8e',
-                      }}
-                      onPress={() => handleSelectLocation(item)}>
-                      <Text
-                        style={{
-                          fontWeight: '600',
-                          marginHorizontal: 15,
-                          color: '#000',
-                        }}>
-                        {item?.locationName}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              )}
-            </View>
-          )}
-          <Text style={style.headerTxt}>{'Scales *'}</Text>
-
-          <View style={style.container1}>
-            <View style={style.container2}>
-              <TouchableOpacity
-                style={[
-                  style.container3,
-                  { backgroundColor: editColor ? '#fff' : '#f1e8e6' },
-                ]}
-                onPress={handleScalesDropDown}>
-                <Text style={{ fontWeight: '600', color: '#000' }}>
-                  {selectedScale ? selectedScale : 'Select'}
-                </Text>
-                <Image
-                  source={require('../../../assets/dropdown.png')}
-                  style={{ width: 20, height: 20 }}
-                />
-              </TouchableOpacity>
-            </View>
-            <View style={style.container4}>
-              <TouchableOpacity
-                onPress={toggleScalesModal}
-                style={style.plusButton}>
-                <Image
+                  marginTop: 5,
+                }}>
+                <TextInput
                   style={{
-                    height: 30,
-                    width: 30,
-                    justifyContent: 'center',
-                    alignItems: 'center',
+                    marginTop: 10,
+                    borderRadius: 10,
+                    height: 40,
+                    borderColor: 'gray',
+                    borderWidth: 1,
+                    marginHorizontal: 10,
+                    paddingLeft: 10,
+                    marginBottom: 10,
+                    color: '#000000',
                   }}
-                  source={require('../../../assets/plus.png')}
+                  placeholderTextColor="#000"
+                  placeholder="Search"
+                  onChangeText={filterLocation}
                 />
-              </TouchableOpacity>
-            </View>
-          </View>
-          {showScalesList && editScale && (
-            <View
-              style={{
-                elevation: 5,
-                height: 300,
-                alignSelf: 'center',
-                width: '90%',
-                backgroundColor: '#fff',
-                borderRadius: 10,
-                borderColor: 'lightgray', // Optional: Adds subtle border (for effect)
-                borderWidth: 1,
-                marginTop:5
-              }}>
-              <TextInput
-                style={{
-                  marginTop: 10,
-                  borderRadius: 10,
-                  height: 40,
-                  borderColor: 'gray',
-                  borderWidth: 1,
-                  marginHorizontal: 10,
-                  paddingLeft: 10,
-                  marginBottom: 10,
-                  color: '#000000',
-                }}
-                placeholderTextColor="#000"
-                placeholder="Search"
-                onChangeText={filterScales}
-              />
 
-              {filteredScalesList.length === 0 && !isLoading ? (
-                <Text style={style.noCategoriesText}>
-                  Sorry, no results found!
-                </Text>
-              ) : (
-                <ScrollView nestedScrollEnabled={true}>
-                  {filteredScalesList?.map((item, index) => (
-                    <TouchableOpacity
-                      key={index}
-                      style={{
-                        width: '100%',
-                        height: 50,
-                        justifyContent: 'center',
-                        borderBottomWidth: 0.5,
-                        borderColor: '#8e8e8e',
-                      }}
-                      onPress={() => handleSelectScale(item)}>
-                      <Text
+                {filteredLocationList.length === 0 && !isLoading ? (
+                  <Text style={style.noCategoriesText}>
+                    Sorry, no results found!
+                  </Text>
+                ) : (
+                  <ScrollView nestedScrollEnabled={true}>
+                    {filteredLocationList?.map((item, index) => (
+                      <TouchableOpacity
+                        key={index}
                         style={{
-                          fontWeight: '600',
-                          marginHorizontal: 15,
-                          color: '#000',
-                        }}>
-                        {item?.scaleRange}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              )}
-            </View>
-          )}
+                          width: '100%',
+                          height: 50,
+                          justifyContent: 'center',
+                          borderBottomWidth: 0.5,
+                          borderColor: '#8e8e8e',
+                        }}
+                        onPress={() => handleSelectLocation(item)}>
+                        <Text
+                          style={{
+                            fontWeight: '600',
+                            marginHorizontal: 15,
+                            color: '#000',
+                          }}>
+                          {item?.locationName}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                )}
+              </View>
+            )}
+            <Text style={style.headerTxt}>{'Scales *'}</Text>
 
-          {/* Models */}
-
-          <Modal
-            animationType="fade"
-            transparent={true}
-            visible={categoryModal && editShortcutKey}
-            onRequestClose={() => {
-              toggleCategoryModal();
-            }}>
-            <View style={style.modalContainerr}>
-              <View style={style.modalContentt}>
-                <View
-                  style={{
-                    backgroundColor: '#1F74BA',
-                    borderRadius: 10,
-                    marginHorizontal: 10,
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    marginTop: 10,
-                    paddingVertical: 5,
-                    width: '100%',
-                    justifyContent: 'space-between',
-                    marginBottom: 15,
-                  }}>
-                  <Text
-                    style={[style.modalTitle, { textAlign: 'center', flex: 1 }]}>
-                    {'Add New Category'}
-                  </Text>
-                  <TouchableOpacity
-                    onPress={handleCloseCategoryModal}
-                    style={{ alignSelf: 'flex-end' }}>
-                    <Image
-                      style={{ height: 30, width: 30, marginRight: 5 }}
-                      source={require('../../../assets/close.png')}
-                    />
-                  </TouchableOpacity>
-                </View>
-
-                <Text style={{ fontWeight: 'bold', color: '#000' }}>{'Category Name * '}</Text>
-                <TextInput
-                  style={[style.input, { color: '#000' }]}
-                  placeholder=""
-                  placeholderTextColor="#000"
-                  onChangeText={text => setmCategoryName(text)}
-                />
-
-                <Text style={{ fontWeight: 'bold', color: '#000' }}>
-                  {'Category Description * '}
-                </Text>
-                <TextInput
-                  style={[style.input, { color: '#000' }]}
-                  placeholder=""
-                  placeholderTextColor="#000"
-                  onChangeText={text => setmCategoryDesc(text)}
-                />
+            <View style={style.container1}>
+              <View style={style.container2}>
                 <TouchableOpacity
-                  style={style.saveButton}
-                  // style={[style.saveButton, processing && { opacity: 0.5 }]}
-                  onPress={ValidateNewCategory}
-                  disabled={processing}>
-                  <Text style={style.saveButtonText}>{processing ? "Processing..." : "Save"}</Text>
+                  style={[
+                    style.container3,
+                    {backgroundColor: editColor ? '#fff' : '#f1e8e6'},
+                  ]}
+                  onPress={handleScalesDropDown}>
+                  <Text style={{fontWeight: '600', color: '#000'}}>
+                    {selectedScale ? selectedScale : 'Select'}
+                  </Text>
+                  <Image
+                    source={require('../../../assets/dropdown.png')}
+                    style={{width: 20, height: 20}}
+                  />
+                </TouchableOpacity>
+              </View>
+              <View style={style.container4}>
+                <TouchableOpacity
+                  onPress={toggleScalesModal}
+                  style={style.plusButton}>
+                  <Image
+                    style={{
+                      height: 30,
+                      width: 30,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}
+                    source={require('../../../assets/plus.png')}
+                  />
                 </TouchableOpacity>
               </View>
             </View>
-          </Modal>
-
-          <Modal
-            animationType="fade"
-            transparent={true}
-            visible={colorModal && editShortcutKey}
-            onRequestClose={() => {
-              toggleColorModal();
-            }}>
-            <View style={style.modalContainerr}>
-              <View style={style.modalContentt}>
-                <View
+            {showScalesList && editScale && (
+              <View
+                style={{
+                  elevation: 5,
+                  height: 300,
+                  alignSelf: 'center',
+                  width: '90%',
+                  backgroundColor: '#fff',
+                  borderRadius: 10,
+                  borderColor: 'lightgray', // Optional: Adds subtle border (for effect)
+                  borderWidth: 1,
+                  marginTop: 5,
+                }}>
+                <TextInput
                   style={{
-                    backgroundColor: '#1F74BA',
-                    borderRadius: 10,
-                    marginHorizontal: 10,
-                    flexDirection: 'row',
-                    alignItems: 'center',
                     marginTop: 10,
-                    paddingVertical: 5,
-                    width: '100%',
-                    justifyContent: 'space-between',
-                    marginBottom: 15,
-                  }}>
-                  <Text
-                    style={[style.modalTitle, { textAlign: 'center', flex: 1 }]}>
-                    {'Add New Color'}
-                  </Text>
-                  <TouchableOpacity
-                    onPress={handleCloseColorModal}
-                    style={{ alignSelf: 'flex-end' }}>
-                    <Image
-                      style={{ height: 30, width: 30, marginRight: 5 }}
-                      source={require('../../../assets/close.png')}
-                    />
-                  </TouchableOpacity>
-                </View>
-
-                <Text style={{ fontWeight: 'bold', color: '#000' }}>{'Color Name * '}</Text>
-                <TextInput
-                  style={[style.input, { color: '#000' }]}
-                  placeholder=""
-                  placeholderTextColor="#000"
-                  onChangeText={text => setmColorName(text)}
-                />
-
-                <Text style={{ fontWeight: 'bold', color: '#000' }}>
-                  {'Color Description * '}
-                </Text>
-                <TextInput
-                  style={[style.input, { color: '#000' }]}
-                  placeholder=""
-                  placeholderTextColor="#000"
-                  onChangeText={text => setmColorDesc(text)}
-                />
-
-                <Text style={{ fontWeight: 'bold', color: '#000' }}>{'Color Code '}</Text>
-                <TextInput
-                  style={[style.input, { color: '#000' }]}
-                  placeholder=""
-                  placeholderTextColor="#000"
-                  onChangeText={text => setmColorCode(text)}
-                />
-                <TouchableOpacity
-                  // style={style.saveButton}
-                  style={[style.saveButton, processing && { opacity: 0.5 }]}
-                  onPress={ValidateNewColor}
-                  disabled={processing}>
-                  <Text style={style.saveButtonText}>{processing ? "Processing" : "Save"}</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </Modal>
-
-          <Modal
-            animationType="fade"
-            transparent={true}
-            visible={typesModal && editShortcutKey}
-            onRequestClose={() => {
-              toggleTypesModal();
-            }}>
-            <View style={style.modalContainerr}>
-              <View style={style.modalContentt}>
-                <View
-                  style={{
-                    backgroundColor: '#1F74BA',
                     borderRadius: 10,
+                    height: 40,
+                    borderColor: 'gray',
+                    borderWidth: 1,
                     marginHorizontal: 10,
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    marginTop: 10,
-                    paddingVertical: 5,
-                    width: '100%',
-                    justifyContent: 'space-between',
-                    marginBottom: 15,
-                  }}>
-                  <Text
-                    style={[style.modalTitle, { textAlign: 'center', flex: 1 }]}>
-                    {'Add New Type'}
+                    paddingLeft: 10,
+                    marginBottom: 10,
+                    color: '#000000',
+                  }}
+                  placeholderTextColor="#000"
+                  placeholder="Search"
+                  onChangeText={filterScales}
+                />
+
+                {filteredScalesList.length === 0 && !isLoading ? (
+                  <Text style={style.noCategoriesText}>
+                    Sorry, no results found!
                   </Text>
-                  <TouchableOpacity
-                    onPress={handleCloseTypesModal}
-                    style={{ alignSelf: 'flex-end' }}>
-                    <Image
-                      style={{ height: 30, width: 30, marginRight: 5 }}
-                      source={require('../../../assets/close.png')}
-                    />
-                  </TouchableOpacity>
-                </View>
-
-                <Text style={{ fontWeight: 'bold', color: '#000' }}>{'Type Name * '}</Text>
-                <TextInput
-                  style={[style.input, { color: '#000' }]}
-                  placeholder=""
-                  placeholderTextColor="#000"
-                  onChangeText={text => setmTypeName(text)}
-                />
-
-                <Text style={{ fontWeight: 'bold', color: '#000' }}>
-                  {'Type Description * '}
-                </Text>
-                <TextInput
-                  style={[style.input, { color: '#000' }]}
-                  placeholder=""
-                  placeholderTextColor="#000"
-                  onChangeText={text => setmTypeDesc(text)}
-                />
-
-                <TouchableOpacity
-                  // style={style.saveButton}
-                  style={[style.saveButton, processing && { opacity: 0.5 }]}
-
-                  onPress={ValidateNewType}
-                  disabled={processing}>
-                  <Text style={style.saveButtonText}>{processing ? "Processing" : "Save"}</Text>
-                </TouchableOpacity>
+                ) : (
+                  <ScrollView nestedScrollEnabled={true}>
+                    {filteredScalesList?.map((item, index) => (
+                      <TouchableOpacity
+                        key={index}
+                        style={{
+                          width: '100%',
+                          height: 50,
+                          justifyContent: 'center',
+                          borderBottomWidth: 0.5,
+                          borderColor: '#8e8e8e',
+                        }}
+                        onPress={() => handleSelectScale(item)}>
+                        <Text
+                          style={{
+                            fontWeight: '600',
+                            marginHorizontal: 15,
+                            color: '#000',
+                          }}>
+                          {item?.scaleRange}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                )}
               </View>
-            </View>
-          </Modal>
+            )}
 
-          <Modal
-            animationType="fade"
-            transparent={true}
-            visible={seasonGroupsModal && editShortcutKey}
-            onRequestClose={() => {
-              toggleSeasonGroupsModal();
-            }}>
-            <View style={style.modalContainerr}>
-              <View style={style.modalContentt}>
-                <View
-                  style={{
-                    backgroundColor: '#1F74BA',
-                    borderRadius: 10,
-                    marginHorizontal: 10,
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    marginTop: 10,
-                    paddingVertical: 5,
-                    width: '100%',
-                    justifyContent: 'space-between',
-                    marginBottom: 15,
-                  }}>
-                  <Text
-                    style={[style.modalTitle, { textAlign: 'center', flex: 1 }]}>
-                    {'Add New Season Group'}
-                  </Text>
-                  <TouchableOpacity
-                    onPress={handleCloseSeasonGroupsModal}
-                    style={{ alignSelf: 'flex-end' }}>
-                    <Image
-                      style={{ height: 30, width: 30, marginRight: 5 }}
-                      source={require('../../../assets/close.png')}
-                    />
-                  </TouchableOpacity>
-                </View>
+            {/* Models */}
 
-                <Text style={{ fontWeight: 'bold', color: '#000' }}>
-                  {'Season Group Name * '}
-                </Text>
-                <TextInput
-                  style={[style.input, { color: '#000' }]}
-                  placeholder=""
-                  placeholderTextColor="#000"
-                  onChangeText={text => setmSeasonGroupName(text)}
-                />
-
-                <Text style={{ fontWeight: 'bold', color: '#000' }}>
-                  {'Season Group Description * '}
-                </Text>
-                <TextInput
-                  style={[style.input, { color: '#000' }]}
-                  placeholder=""
-                  placeholderTextColor="#000"
-                  onChangeText={text => setmSeasonGroupDesc(text)}
-                />
-
-                <TouchableOpacity
-                  // style={style.saveButton}
-                  style={[style.saveButton, processing && { opacity: 0.5 }]}
-                  onPress={ValidateSeasonGroup}
-                  disabled={processing}>
-                  <Text style={style.saveButtonText}>{processing ? "Processing" : "Save"}</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </Modal>
-
-          <Modal
-            animationType="fade"
-            transparent={true}
-            visible={scalesModal && editShortcutKey}
-            onRequestClose={() => {
-              toggleScalesModal();
-            }}>
-            <ScrollView style={{}}>
-              <View style={style.modalContainerr1}>
+            <Modal
+              animationType="fade"
+              transparent={true}
+              visible={categoryModal && editShortcutKey}
+              onRequestClose={() => {
+                toggleCategoryModal();
+              }}>
+              <View style={style.modalContainerr}>
                 <View style={style.modalContentt}>
                   <View
                     style={{
@@ -3597,484 +3366,841 @@ const NewStyleDetail = ({ route }) => {
                     <Text
                       style={[
                         style.modalTitle,
-                        { textAlign: 'center', flex: 1 },
+                        {textAlign: 'center', flex: 1},
                       ]}>
-                      {'Add New Scale'}
+                      {'Add New Category'}
                     </Text>
                     <TouchableOpacity
-                      onPress={handleCloseScalesModal}
-                      style={{ alignSelf: 'flex-end' }}>
+                      onPress={handleCloseCategoryModal}
+                      style={{alignSelf: 'flex-end'}}>
                       <Image
-                        style={{ height: 30, width: 30, marginRight: 5 }}
+                        style={{height: 30, width: 30, marginRight: 5}}
                         source={require('../../../assets/close.png')}
                       />
                     </TouchableOpacity>
                   </View>
 
-                  <Text style={{ fontWeight: 'bold', color: '#000' }}>{'Size * '}</Text>
+                  <Text style={{fontWeight: 'bold', color: '#000'}}>
+                    {'Category Name * '}
+                  </Text>
                   <TextInput
-                    style={[style.input, { color: '#000' }]}
+                    style={[style.input, {color: '#000'}]}
                     placeholder=""
                     placeholderTextColor="#000"
-                    onChangeText={text => setmSize(text)}
+                    onChangeText={text => setmCategoryName(text)}
+                  />
+
+                  <Text style={{fontWeight: 'bold', color: '#000'}}>
+                    {'Category Description * '}
+                  </Text>
+                  <TextInput
+                    style={[style.input, {color: '#000'}]}
+                    placeholder=""
+                    placeholderTextColor="#000"
+                    onChangeText={text => setmCategoryDesc(text)}
                   />
                   <TouchableOpacity
-                    // style={style.saveButton}
-                    style={[style.saveButton, processing && { opacity: 0.5 }]}
-
-                    onPress={ValidateNewScale}
+                    style={style.saveButton}
+                    // style={[style.saveButton, processing && { opacity: 0.5 }]}
+                    onPress={ValidateNewCategory}
                     disabled={processing}>
-                    <Text style={style.saveButtonText}>{processing ? "Processing" : "Save"}</Text>
+                    <Text style={style.saveButtonText}>
+                      {processing ? 'Processing...' : 'Save'}
+                    </Text>
                   </TouchableOpacity>
+                </View>
+              </View>
+            </Modal>
 
-                  <Text style={[style.headerTxt, { textAlign: 'left' }]}>
-                    {'Season Group *'}
-                  </Text>
-
-                  <View style={{ flexDirection: 'row', marginTop: 13 }}>
+            <Modal
+              animationType="fade"
+              transparent={true}
+              visible={colorModal && editShortcutKey}
+              onRequestClose={() => {
+                toggleColorModal();
+              }}>
+              <View style={style.modalContainerr}>
+                <View style={style.modalContentt}>
+                  <View
+                    style={{
+                      backgroundColor: '#1F74BA',
+                      borderRadius: 10,
+                      marginHorizontal: 10,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      marginTop: 10,
+                      paddingVertical: 5,
+                      width: '100%',
+                      justifyContent: 'space-between',
+                      marginBottom: 15,
+                    }}>
+                    <Text
+                      style={[
+                        style.modalTitle,
+                        {textAlign: 'center', flex: 1},
+                      ]}>
+                      {'Add New Color'}
+                    </Text>
                     <TouchableOpacity
-                      style={{
-                        width: '90%',
-                        height: 37,
-                        borderRadius: 10,
-                        borderWidth: 0.5,
-                        alignSelf: 'center',
-                        flexDirection: 'row',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        paddingLeft: 15,
-                        paddingRight: 15,
-                        marginHorizontal: 20,
-                      }}
-                      onPress={handleModalSeasonGroupsDropDown}>
-                      <Text style={{ fontWeight: '600', color: '#000' }}>
-                        {selectedModalSeasonGroup
-                          ? selectedModalSeasonGroup
-                          : 'Select'}
-                      </Text>
-
+                      onPress={handleCloseColorModal}
+                      style={{alignSelf: 'flex-end'}}>
                       <Image
-                        source={require('../../../assets/dropdown.png')}
-                        style={{ width: 20, height: 20 }}
+                        style={{height: 30, width: 30, marginRight: 5}}
+                        source={require('../../../assets/close.png')}
                       />
                     </TouchableOpacity>
                   </View>
-                  {showModalSeasonGroupsList && (
+
+                  <Text style={{fontWeight: 'bold', color: '#000'}}>
+                    {'Color Name * '}
+                  </Text>
+                  <TextInput
+                    style={[style.input, {color: '#000'}]}
+                    placeholder=""
+                    placeholderTextColor="#000"
+                    onChangeText={text => setmColorName(text)}
+                  />
+
+                  <Text style={{fontWeight: 'bold', color: '#000'}}>
+                    {'Color Description * '}
+                  </Text>
+                  <TextInput
+                    style={[style.input, {color: '#000'}]}
+                    placeholder=""
+                    placeholderTextColor="#000"
+                    onChangeText={text => setmColorDesc(text)}
+                  />
+
+                  <Text style={{fontWeight: 'bold', color: '#000'}}>
+                    {'Color Code '}
+                  </Text>
+                  <TextInput
+                    style={[style.input, {color: '#000'}]}
+                    placeholder=""
+                    placeholderTextColor="#000"
+                    onChangeText={text => setmColorCode(text)}
+                  />
+                  <TouchableOpacity
+                    // style={style.saveButton}
+                    style={[style.saveButton, processing && {opacity: 0.5}]}
+                    onPress={ValidateNewColor}
+                    disabled={processing}>
+                    <Text style={style.saveButtonText}>
+                      {processing ? 'Processing' : 'Save'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </Modal>
+
+            <Modal
+              animationType="fade"
+              transparent={true}
+              visible={typesModal && editShortcutKey}
+              onRequestClose={() => {
+                toggleTypesModal();
+              }}>
+              <View style={style.modalContainerr}>
+                <View style={style.modalContentt}>
+                  <View
+                    style={{
+                      backgroundColor: '#1F74BA',
+                      borderRadius: 10,
+                      marginHorizontal: 10,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      marginTop: 10,
+                      paddingVertical: 5,
+                      width: '100%',
+                      justifyContent: 'space-between',
+                      marginBottom: 15,
+                    }}>
+                    <Text
+                      style={[
+                        style.modalTitle,
+                        {textAlign: 'center', flex: 1},
+                      ]}>
+                      {'Add New Type'}
+                    </Text>
+                    <TouchableOpacity
+                      onPress={handleCloseTypesModal}
+                      style={{alignSelf: 'flex-end'}}>
+                      <Image
+                        style={{height: 30, width: 30, marginRight: 5}}
+                        source={require('../../../assets/close.png')}
+                      />
+                    </TouchableOpacity>
+                  </View>
+
+                  <Text style={{fontWeight: 'bold', color: '#000'}}>
+                    {'Type Name * '}
+                  </Text>
+                  <TextInput
+                    style={[style.input, {color: '#000'}]}
+                    placeholder=""
+                    placeholderTextColor="#000"
+                    onChangeText={text => setmTypeName(text)}
+                  />
+
+                  <Text style={{fontWeight: 'bold', color: '#000'}}>
+                    {'Type Description * '}
+                  </Text>
+                  <TextInput
+                    style={[style.input, {color: '#000'}]}
+                    placeholder=""
+                    placeholderTextColor="#000"
+                    onChangeText={text => setmTypeDesc(text)}
+                  />
+
+                  <TouchableOpacity
+                    // style={style.saveButton}
+                    style={[style.saveButton, processing && {opacity: 0.5}]}
+                    onPress={ValidateNewType}
+                    disabled={processing}>
+                    <Text style={style.saveButtonText}>
+                      {processing ? 'Processing' : 'Save'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </Modal>
+
+            <Modal
+              animationType="fade"
+              transparent={true}
+              visible={seasonGroupsModal && editShortcutKey}
+              onRequestClose={() => {
+                toggleSeasonGroupsModal();
+              }}>
+              <View style={style.modalContainerr}>
+                <View style={style.modalContentt}>
+                  <View
+                    style={{
+                      backgroundColor: '#1F74BA',
+                      borderRadius: 10,
+                      marginHorizontal: 10,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      marginTop: 10,
+                      paddingVertical: 5,
+                      width: '100%',
+                      justifyContent: 'space-between',
+                      marginBottom: 15,
+                    }}>
+                    <Text
+                      style={[
+                        style.modalTitle,
+                        {textAlign: 'center', flex: 1},
+                      ]}>
+                      {'Add New Season Group'}
+                    </Text>
+                    <TouchableOpacity
+                      onPress={handleCloseSeasonGroupsModal}
+                      style={{alignSelf: 'flex-end'}}>
+                      <Image
+                        style={{height: 30, width: 30, marginRight: 5}}
+                        source={require('../../../assets/close.png')}
+                      />
+                    </TouchableOpacity>
+                  </View>
+
+                  <Text style={{fontWeight: 'bold', color: '#000'}}>
+                    {'Season Group Name * '}
+                  </Text>
+                  <TextInput
+                    style={[style.input, {color: '#000'}]}
+                    placeholder=""
+                    placeholderTextColor="#000"
+                    onChangeText={text => setmSeasonGroupName(text)}
+                  />
+
+                  <Text style={{fontWeight: 'bold', color: '#000'}}>
+                    {'Season Group Description * '}
+                  </Text>
+                  <TextInput
+                    style={[style.input, {color: '#000'}]}
+                    placeholder=""
+                    placeholderTextColor="#000"
+                    onChangeText={text => setmSeasonGroupDesc(text)}
+                  />
+
+                  <TouchableOpacity
+                    // style={style.saveButton}
+                    style={[style.saveButton, processing && {opacity: 0.5}]}
+                    onPress={ValidateSeasonGroup}
+                    disabled={processing}>
+                    <Text style={style.saveButtonText}>
+                      {processing ? 'Processing' : 'Save'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </Modal>
+
+            <Modal
+              animationType="fade"
+              transparent={true}
+              visible={scalesModal && editShortcutKey}
+              onRequestClose={() => {
+                toggleScalesModal();
+              }}>
+              <ScrollView style={{}}>
+                <View style={style.modalContainerr1}>
+                  <View style={style.modalContentt}>
                     <View
                       style={{
-                        elevation: 5,
-                        height: 300,
-                        alignSelf: 'center',
-                        width: '90%',
-                        backgroundColor: '#fff',
+                        backgroundColor: '#1F74BA',
                         borderRadius: 10,
+                        marginHorizontal: 10,
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        marginTop: 10,
+                        paddingVertical: 5,
+                        width: '100%',
+                        justifyContent: 'space-between',
+                        marginBottom: 15,
                       }}>
-                      <TextInput
-                        style={{
-                          marginTop: 10,
-                          borderRadius: 10,
-                          height: 40,
-                          borderColor: 'gray',
-                          borderWidth: 1,
-                          marginHorizontal: 10,
-                          paddingLeft: 10,
-                          marginBottom: 10,
-                          color: '#000000',
-                        }}
-                        placeholderTextColor="#000"
-                        placeholder="Search"
-                        onChangeText={filterModalSeasonGroups}
-                      />
+                      <Text
+                        style={[
+                          style.modalTitle,
+                          {textAlign: 'center', flex: 1},
+                        ]}>
+                        {'Add New Scale'}
+                      </Text>
+                      <TouchableOpacity
+                        onPress={handleCloseScalesModal}
+                        style={{alignSelf: 'flex-end'}}>
+                        <Image
+                          style={{height: 30, width: 30, marginRight: 5}}
+                          source={require('../../../assets/close.png')}
+                        />
+                      </TouchableOpacity>
+                    </View>
 
-                      {filteredModalSeasonGroupsList.length === 0 ||
+                    <Text style={{fontWeight: 'bold', color: '#000'}}>
+                      {'Size * '}
+                    </Text>
+                    <TextInput
+                      style={[style.input, {color: '#000'}]}
+                      placeholder=""
+                      placeholderTextColor="#000"
+                      onChangeText={text => setmSize(text)}
+                    />
+                    <TouchableOpacity
+                      // style={style.saveButton}
+                      style={[style.saveButton, processing && {opacity: 0.5}]}
+                      onPress={ValidateNewScale}
+                      disabled={processing}>
+                      <Text style={style.saveButtonText}>
+                        {processing ? 'Processing' : 'Save'}
+                      </Text>
+                    </TouchableOpacity>
+
+                    <Text style={[style.headerTxt, {textAlign: 'left'}]}>
+                      {'Season Group *'}
+                    </Text>
+
+                    <View style={{flexDirection: 'row', marginTop: 13}}>
+                      <TouchableOpacity
+                        style={{
+                          width: '90%',
+                          height: 37,
+                          borderRadius: 10,
+                          borderWidth: 0.5,
+                          alignSelf: 'center',
+                          flexDirection: 'row',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          paddingLeft: 15,
+                          paddingRight: 15,
+                          marginHorizontal: 20,
+                        }}
+                        onPress={handleModalSeasonGroupsDropDown}>
+                        <Text style={{fontWeight: '600', color: '#000'}}>
+                          {selectedModalSeasonGroup
+                            ? selectedModalSeasonGroup
+                            : 'Select'}
+                        </Text>
+
+                        <Image
+                          source={require('../../../assets/dropdown.png')}
+                          style={{width: 20, height: 20}}
+                        />
+                      </TouchableOpacity>
+                    </View>
+                    {showModalSeasonGroupsList && (
+                      <View
+                        style={{
+                          elevation: 5,
+                          height: 300,
+                          alignSelf: 'center',
+                          width: '90%',
+                          backgroundColor: '#fff',
+                          borderRadius: 10,
+                        }}>
+                        <TextInput
+                          style={{
+                            marginTop: 10,
+                            borderRadius: 10,
+                            height: 40,
+                            borderColor: 'gray',
+                            borderWidth: 1,
+                            marginHorizontal: 10,
+                            paddingLeft: 10,
+                            marginBottom: 10,
+                            color: '#000000',
+                          }}
+                          placeholderTextColor="#000"
+                          placeholder="Search"
+                          onChangeText={filterModalSeasonGroups}
+                        />
+
+                        {filteredModalSeasonGroupsList.length === 0 ||
                         (filteredModalSeasonGroupsList?.length === 1 &&
                           !filteredModalSeasonGroupsList[0] &&
                           !isLoading) ? (
+                          <Text style={style.noCategoriesText}>
+                            Sorry, no results found!
+                          </Text>
+                        ) : (
+                          <ScrollView nestedScrollEnabled={true}>
+                            {filteredModalSeasonGroupsList?.map(
+                              (item, index) => (
+                                <TouchableOpacity
+                                  key={index}
+                                  style={{
+                                    width: '100%',
+                                    height: 50,
+                                    justifyContent: 'center',
+                                    borderBottomWidth: 0.5,
+                                    borderColor: '#8e8e8e',
+                                  }}
+                                  onPress={() =>
+                                    handleModalSelectSeasonGroup(item)
+                                  }>
+                                  <Text
+                                    style={{
+                                      fontWeight: '600',
+                                      marginHorizontal: 15,
+                                      color: '#000',
+                                    }}>
+                                    {item?.sizeGroup}
+                                  </Text>
+                                </TouchableOpacity>
+                              ),
+                            )}
+                          </ScrollView>
+                        )}
+                      </View>
+                    )}
+
+                    <Text
+                      style={{
+                        fontWeight: 'bold',
+                        marginTop: 10,
+                        color: '#000',
+                      }}>
+                      {'Sizes :'}
+                    </Text>
+
+                    <View style={{height: 180, width: '90%', marginTop: 10}}>
+                      {allSizesInScales.length === 0 ||
+                      (allSizesInScales?.length === 1 &&
+                        !allSizesInScales[0] &&
+                        !isLoading) ? (
                         <Text style={style.noCategoriesText}>
                           Sorry, no results found!
                         </Text>
                       ) : (
                         <ScrollView nestedScrollEnabled={true}>
-                          {filteredModalSeasonGroupsList?.map((item, index) => (
+                          {allSizesInScales?.map((item, index) => (
                             <TouchableOpacity
                               key={index}
                               style={{
                                 width: '100%',
                                 height: 50,
-                                justifyContent: 'center',
                                 borderBottomWidth: 0.5,
                                 borderColor: '#8e8e8e',
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                marginHorizontal: 10,
                               }}
                               onPress={() =>
-                                handleModalSelectSeasonGroup(item)
+                                handleSelectallSizesInScales(item)
                               }>
+                              <CustomCheckBox
+                                isChecked={selectedModalSizeInSeasonListIds.includes(
+                                  item.id,
+                                )}
+                                onToggle={() =>
+                                  handleSelectallSizesInScales(item)
+                                }
+                              />
                               <Text
                                 style={{
                                   fontWeight: '600',
                                   marginHorizontal: 15,
                                   color: '#000',
                                 }}>
-                                {item?.sizeGroup}
+                                {item.size}
                               </Text>
                             </TouchableOpacity>
                           ))}
                         </ScrollView>
                       )}
                     </View>
-                  )}
-
-                  <Text style={{ fontWeight: 'bold', marginTop: 10, color: '#000' }}>
-                    {'Sizes :'}
-                  </Text>
-
-                  <View style={{ height: 180, width: '90%', marginTop: 10 }}>
-                    {allSizesInScales.length === 0 ||
-                      (allSizesInScales?.length === 1 &&
-                        !allSizesInScales[0] &&
-                        !isLoading) ? (
-                      <Text style={style.noCategoriesText}>
-                        Sorry, no results found!
+                    <TouchableOpacity
+                      // style={style.saveButton}
+                      style={[style.saveButton, processing && {opacity: 0.5}]}
+                      onPress={handleSaveNewSizesToSeasonGroup}
+                      disabled={processing}>
+                      <Text style={style.saveButtonText}>
+                        {processing ? 'Processing' : 'Save'}
                       </Text>
-                    ) : (
-                      <ScrollView nestedScrollEnabled={true}>
-                        {allSizesInScales?.map((item, index) => (
-                          <TouchableOpacity
-                            key={index}
-                            style={{
-                              width: '100%',
-                              height: 50,
-                              borderBottomWidth: 0.5,
-                              borderColor: '#8e8e8e',
-                              flexDirection: 'row',
-                              alignItems: 'center',
-                              marginHorizontal: 10,
-                            }}
-                            onPress={() => handleSelectallSizesInScales(item)}>
-                            <CustomCheckBox
-                              isChecked={selectedModalSizeInSeasonListIds.includes(
-                                item.id,
-                              )}
-                              onToggle={() =>
-                                handleSelectallSizesInScales(item)
-                              }
-                            />
-                            <Text
-                              style={{
-                                fontWeight: '600',
-                                marginHorizontal: 15,
-                                color: '#000',
-                              }}>
-                              {item.size}
-                            </Text>
-                          </TouchableOpacity>
-                        ))}
-                      </ScrollView>
-                    )}
-                  </View>
-                  <TouchableOpacity
-                    // style={style.saveButton}
-                    style={[style.saveButton, processing && { opacity: 0.5 }]}
-                    onPress={handleSaveNewSizesToSeasonGroup}
-                    disabled={processing}>
-                    <Text style={style.saveButtonText}>{processing ? "Processing" : "Save"}</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </ScrollView>
-          </Modal>
-
-          {/* Closure Modal */}
-          <Modal
-            animationType="fade"
-            transparent={true}
-            visible={closureModal && editShortcutKey}
-            onRequestClose={toggleClosureModal}>
-            <ScrollView>
-              <View style={style.modalContainerr1}>
-                <View style={style.modalContentt}>
-                  <View style={style.modalHeader}>
-                    <Text style={[style.modalTitle, { textAlign: 'center', flex: 1 }]}> {'Add New Closure'}</Text>
-                    <TouchableOpacity onPress={toggleClosureModal}>
-                      <Image
-                        style={style.closeIcon}
-                        source={require('../../../assets/close.png')}
-                      />
                     </TouchableOpacity>
                   </View>
-                  <Text style={style.modalLabel}>Closure Name *</Text>
-                  <TextInput
-                    style={style.input}
-                    placeholder="Enter Closure Name"
-                    placeholderTextColor="#000"
-                    value={closureName}
-                    onChangeText={setClosureName}
-                  />
-                  <TouchableOpacity
-                    // style={style.saveButton}
-                    style={[style.saveButton, processing && { opacity: 0.5 }]}
-                    disabled={processing}
-                    onPress={() => ValidateAllKapture(1, 'Closure', closureName)}>
-                    <Text style={style.saveButtonText}>{processing ? "Processing" : "Save"}</Text>
-                  </TouchableOpacity>
                 </View>
-              </View>
-            </ScrollView>
-          </Modal>
-
-          {/* Peak Modal */}
-          <Modal
-            animationType="fade"
-            transparent={true}
-            visible={peakModal && editShortcutKey}
-            onRequestClose={togglePeakModal}>
-            <ScrollView>
-              <View style={style.modalContainerr1}>
-                <View style={style.modalContentt}>
-                  <View style={style.modalHeader}>
-                    <Text style={[style.modalTitle, { textAlign: 'center', flex: 1 }]}> {'Add New Peak'}</Text>
-                    <TouchableOpacity onPress={togglePeakModal}>
-                      <Image
-                        style={style.closeIcon}
-                        source={require('../../../assets/close.png')}
-                      />
-                    </TouchableOpacity>
-                  </View>
-                  <Text style={style.modalLabel}>Peak Name *</Text>
-                  <TextInput
-                    style={style.input}
-                    placeholder="Enter Peak Name"
-                    placeholderTextColor="#000"
-                    value={peakName}
-                    onChangeText={setPeakName}
-                  />
-                  <TouchableOpacity
-                    // style={style.saveButton}
-                    style={[style.saveButton, processing && { opacity: 0.5 }]}
-                    onPress={() => ValidateAllKapture(2, 'Peak', peakName)}
-                    disabled={processing}>
-                    <Text style={style.saveButtonText}>{processing ? "Processing" : "Save"}</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </ScrollView>
-          </Modal>
-
-          {/* Logo Modal */}
-          <Modal
-            animationType="fade"
-            transparent={true}
-            visible={logoModal && editShortcutKey}
-            onRequestClose={toggleLogoModal}>
-            <ScrollView>
-              <View style={style.modalContainerr1}>
-                <View style={style.modalContentt}>
-                  <View style={style.modalHeader}>
-                    <Text style={[style.modalTitle, { textAlign: 'center', flex: 1 }]}> {'Add New Logo'}</Text>
-                    <TouchableOpacity onPress={toggleLogoModal}>
-                      <Image
-                        style={style.closeIcon}
-                        source={require('../../../assets/close.png')}
-                      />
-                    </TouchableOpacity>
-                  </View>
-                  <Text style={style.modalLabel}>Logo Name *</Text>
-                  <TextInput
-                    style={style.input}
-                    placeholder="Enter Logo Name"
-                    placeholderTextColor="#000"
-                    value={logoName}
-                    onChangeText={setLogoName}
-                  />
-                  <TouchableOpacity
-                    // style={style.saveButton}
-                    style={[style.saveButton, processing && { opacity: 0.5 }]}
-
-                    onPress={() => ValidateAllKapture(3, 'Logo', logoName)}
-                    disabled={processing}>
-                    <Text style={style.saveButtonText}>{processing ? "Processing" : "Save"}</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </ScrollView>
-          </Modal>
-
-          {/* Decoration Modal */}
-          <Modal
-            animationType="fade"
-            transparent={true}
-            visible={decorationModal && editShortcutKey}
-            onRequestClose={toggleDecorationModal}>
-            <ScrollView>
-              <View style={style.modalContainerr1}>
-                <View style={style.modalContentt}>
-                  <View style={style.modalHeader}>
-                    <Text style={[style.modalTitle, { textAlign: 'center', flex: 1 }]}> {'Add New Decoration'}</Text>
-                    <TouchableOpacity onPress={toggleDecorationModal}>
-                      <Image
-                        style={style.closeIcon}
-                        source={require('../../../assets/close.png')}
-                      />
-                    </TouchableOpacity>
-                  </View>
-                  <Text style={style.modalLabel}>Decoration Name *</Text>
-                  <TextInput
-                    style={style.input}
-                    placeholder="Enter Decoration Name"
-                    placeholderTextColor="#000"
-                    value={decorationName}
-                    onChangeText={setDecorationName}
-                  />
-                  <TouchableOpacity
-                    // style={style.saveButton}
-                    style={[style.saveButton, processing && { opacity: 0.5 }]}
-
-                    onPress={() =>
-                      ValidateAllKapture(4, 'Decoration', decorationName)
-                    }
-                    disabled={processing}>
-                    <Text style={style.saveButtonText}>{processing ? "Processing" : "Save"}</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </ScrollView>
-          </Modal>
-
-          {/* Trims Modal */}
-          <Modal
-            animationType="fade"
-            transparent={true}
-            visible={trimsModal && editShortcutKey}
-            onRequestClose={toggleTrimsModal}>
-            <ScrollView>
-              <View style={style.modalContainerr1}>
-                <View style={style.modalContentt}>
-                  <View style={style.modalHeader}>
-                    <Text style={style.modalTitle}>Add New Trims</Text>
-                    <TouchableOpacity onPress={toggleTrimsModal}>
-                      <Image
-                        style={style.closeIcon}
-                        source={require('../../../assets/close.png')}
-                      />
-                    </TouchableOpacity>
-                  </View>
-                  <Text style={[style.modalTitle, { textAlign: 'center', flex: 1 }]}> {'Trims Name *'}</Text>
-                  <TextInput
-                    style={style.input}
-                    placeholder="Enter Trims Name"
-                    placeholderTextColor="#000"
-                    value={trimsName}
-                    onChangeText={setTrimsName}
-                  />
-                  <TouchableOpacity
-                    // style={style.saveButton}
-                    style={[style.saveButton, processing && { opacity: 0.5 }]}
-                    disabled={processing}
-                    onPress={() => ValidateAllKapture(5, 'Trim', trimsName)}>
-                    <Text style={style.saveButtonText}>{processing ? "Processing" : "Save"}</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </ScrollView>
-          </Modal>
-
-          {showScaleTable && (
-            <View style={style.container}>
-              <View style={style.header}>
-                <View style={style.headerCell}>
-                  <Text style={style.headerText}>Id</Text>
-                </View>
-                <View style={style.headerCell}>
-                  <Text style={style.headerText}>Size</Text>
-                </View>
-                <View style={style.headerCell}>
-                  <Text style={style.headerText}>Dealer Price</Text>
-                </View>
-                <View style={style.headerCell}>
-                  <Text style={style.headerText}>Retailer Price</Text>
-                </View>
-                <View style={style.headerCell}>
-                  <Text style={style.headerText}>MRP</Text>
-                </View>
-                <View style={style.headerCell}>
-                  <Text style={style.headerText}>Available Quantity</Text>
-                </View>
-              </View>
-
-              <ScrollView>
-                {selectedSizes.map((item, index) => (
-                  <View key={index} style={style.row}>
-                    <View style={style.cell}>
-                      <Text style={style.cellText}>{item?.sizeId}</Text>
-                    </View>
-                    <View style={style.cell}>
-                      <Text style={style.cellText}>{item?.sizeDesc}</Text>
-                    </View>
-                    <View style={style.cell}>
-                      <TextInput
-                        style={style.input}
-                        keyboardType="numeric"
-                        value={item?.dealerPrice.toString()}
-                        onChangeText={text =>
-                          handleInputChange(index, 'dealerPrice', text)
-                        }
-                        editable={true}
-                      />
-                    </View>
-                    <View style={style.cell}>
-                      <TextInput
-                        style={style.input}
-                        keyboardType="numeric"
-                        value={item?.retailerPrice.toString()}
-                        onChangeText={text =>
-                          handleInputChange(index, 'retailerPrice', text)
-                        }
-                        editable={true}
-                      />
-                    </View>
-                    <View style={style.cell}>
-                      <TextInput
-                        style={style.input}
-                        keyboardType="numeric"
-                        value={item.mrp.toString()}
-                        onChangeText={text =>
-                          handleInputChange(index, 'mrp', text)
-                        }
-                        editable={true}
-                      />
-                    </View>
-                    <View style={style.cell}>
-                      <TextInput
-                        style={style.input}
-                        keyboardType="numeric"
-                        value={item.availQty.toString()}
-                        onChangeText={text =>
-                          handleInputChange(index, 'availQty', text)
-                        }
-                        editable={editAvailQty}
-                      />
-                    </View>
-                  </View>
-                ))}
               </ScrollView>
-            </View>
-          )}
+            </Modal>
 
-          <TouchableOpacity
-            style={{
-              backgroundColor: nextButton ? '#1F74BA' : 'skyblue',
-              padding: 10,
-              borderRadius: 5,
-              marginTop: 20,
-              width: '90%',
-              marginHorizontal: 20,
-            }}
-            onPress={handleNextPage}
-            disabled={!nextButton}>
-            <Text style={style.saveButtonText}>Next</Text>
-          </TouchableOpacity>
+            {/* Closure Modal */}
+            <Modal
+              animationType="fade"
+              transparent={true}
+              visible={closureModal && editShortcutKey}
+              onRequestClose={toggleClosureModal}>
+              <ScrollView>
+                <View style={style.modalContainerr1}>
+                  <View style={style.modalContentt}>
+                    <View style={style.modalHeader}>
+                      <Text
+                        style={[
+                          style.modalTitle,
+                          {textAlign: 'center', flex: 1},
+                        ]}>
+                        {' '}
+                        {'Add New Closure'}
+                      </Text>
+                      <TouchableOpacity onPress={toggleClosureModal}>
+                        <Image
+                          style={style.closeIcon}
+                          source={require('../../../assets/close.png')}
+                        />
+                      </TouchableOpacity>
+                    </View>
+                    <Text style={style.modalLabel}>Closure Name *</Text>
+                    <TextInput
+                      style={style.input}
+                      placeholder="Enter Closure Name"
+                      placeholderTextColor="#000"
+                      value={closureName}
+                      onChangeText={setClosureName}
+                    />
+                    <TouchableOpacity
+                      // style={style.saveButton}
+                      style={[style.saveButton, processing && {opacity: 0.5}]}
+                      disabled={processing}
+                      onPress={() =>
+                        ValidateAllKapture(1, 'Closure', closureName)
+                      }>
+                      <Text style={style.saveButtonText}>
+                        {processing ? 'Processing' : 'Save'}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </ScrollView>
+            </Modal>
 
-          <View style={{ marginBottom: 50 }} />
-        </ScrollView>
+            {/* Peak Modal */}
+            <Modal
+              animationType="fade"
+              transparent={true}
+              visible={peakModal && editShortcutKey}
+              onRequestClose={togglePeakModal}>
+              <ScrollView>
+                <View style={style.modalContainerr1}>
+                  <View style={style.modalContentt}>
+                    <View style={style.modalHeader}>
+                      <Text
+                        style={[
+                          style.modalTitle,
+                          {textAlign: 'center', flex: 1},
+                        ]}>
+                        {' '}
+                        {'Add New Peak'}
+                      </Text>
+                      <TouchableOpacity onPress={togglePeakModal}>
+                        <Image
+                          style={style.closeIcon}
+                          source={require('../../../assets/close.png')}
+                        />
+                      </TouchableOpacity>
+                    </View>
+                    <Text style={style.modalLabel}>Peak Name *</Text>
+                    <TextInput
+                      style={style.input}
+                      placeholder="Enter Peak Name"
+                      placeholderTextColor="#000"
+                      value={peakName}
+                      onChangeText={setPeakName}
+                    />
+                    <TouchableOpacity
+                      // style={style.saveButton}
+                      style={[style.saveButton, processing && {opacity: 0.5}]}
+                      onPress={() => ValidateAllKapture(2, 'Peak', peakName)}
+                      disabled={processing}>
+                      <Text style={style.saveButtonText}>
+                        {processing ? 'Processing' : 'Save'}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </ScrollView>
+            </Modal>
+
+            {/* Logo Modal */}
+            <Modal
+              animationType="fade"
+              transparent={true}
+              visible={logoModal && editShortcutKey}
+              onRequestClose={toggleLogoModal}>
+              <ScrollView>
+                <View style={style.modalContainerr1}>
+                  <View style={style.modalContentt}>
+                    <View style={style.modalHeader}>
+                      <Text
+                        style={[
+                          style.modalTitle,
+                          {textAlign: 'center', flex: 1},
+                        ]}>
+                        {' '}
+                        {'Add New Logo'}
+                      </Text>
+                      <TouchableOpacity onPress={toggleLogoModal}>
+                        <Image
+                          style={style.closeIcon}
+                          source={require('../../../assets/close.png')}
+                        />
+                      </TouchableOpacity>
+                    </View>
+                    <Text style={style.modalLabel}>Logo Name *</Text>
+                    <TextInput
+                      style={style.input}
+                      placeholder="Enter Logo Name"
+                      placeholderTextColor="#000"
+                      value={logoName}
+                      onChangeText={setLogoName}
+                    />
+                    <TouchableOpacity
+                      // style={style.saveButton}
+                      style={[style.saveButton, processing && {opacity: 0.5}]}
+                      onPress={() => ValidateAllKapture(3, 'Logo', logoName)}
+                      disabled={processing}>
+                      <Text style={style.saveButtonText}>
+                        {processing ? 'Processing' : 'Save'}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </ScrollView>
+            </Modal>
+
+            {/* Decoration Modal */}
+            <Modal
+              animationType="fade"
+              transparent={true}
+              visible={decorationModal && editShortcutKey}
+              onRequestClose={toggleDecorationModal}>
+              <ScrollView>
+                <View style={style.modalContainerr1}>
+                  <View style={style.modalContentt}>
+                    <View style={style.modalHeader}>
+                      <Text
+                        style={[
+                          style.modalTitle,
+                          {textAlign: 'center', flex: 1},
+                        ]}>
+                        {' '}
+                        {'Add New Decoration'}
+                      </Text>
+                      <TouchableOpacity onPress={toggleDecorationModal}>
+                        <Image
+                          style={style.closeIcon}
+                          source={require('../../../assets/close.png')}
+                        />
+                      </TouchableOpacity>
+                    </View>
+                    <Text style={style.modalLabel}>Decoration Name *</Text>
+                    <TextInput
+                      style={style.input}
+                      placeholder="Enter Decoration Name"
+                      placeholderTextColor="#000"
+                      value={decorationName}
+                      onChangeText={setDecorationName}
+                    />
+                    <TouchableOpacity
+                      // style={style.saveButton}
+                      style={[style.saveButton, processing && {opacity: 0.5}]}
+                      onPress={() =>
+                        ValidateAllKapture(4, 'Decoration', decorationName)
+                      }
+                      disabled={processing}>
+                      <Text style={style.saveButtonText}>
+                        {processing ? 'Processing' : 'Save'}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </ScrollView>
+            </Modal>
+
+            {/* Trims Modal */}
+            <Modal
+              animationType="fade"
+              transparent={true}
+              visible={trimsModal && editShortcutKey}
+              onRequestClose={toggleTrimsModal}>
+              <ScrollView>
+                <View style={style.modalContainerr1}>
+                  <View style={style.modalContentt}>
+                    <View style={style.modalHeader}>
+                      <Text style={style.modalTitle}>Add New Trims</Text>
+                      <TouchableOpacity onPress={toggleTrimsModal}>
+                        <Image
+                          style={style.closeIcon}
+                          source={require('../../../assets/close.png')}
+                        />
+                      </TouchableOpacity>
+                    </View>
+                    <Text
+                      style={[
+                        style.modalTitle,
+                        {textAlign: 'center', flex: 1},
+                      ]}>
+                      {' '}
+                      {'Trims Name *'}
+                    </Text>
+                    <TextInput
+                      style={style.input}
+                      placeholder="Enter Trims Name"
+                      placeholderTextColor="#000"
+                      value={trimsName}
+                      onChangeText={setTrimsName}
+                    />
+                    <TouchableOpacity
+                      // style={style.saveButton}
+                      style={[style.saveButton, processing && {opacity: 0.5}]}
+                      disabled={processing}
+                      onPress={() => ValidateAllKapture(5, 'Trim', trimsName)}>
+                      <Text style={style.saveButtonText}>
+                        {processing ? 'Processing' : 'Save'}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </ScrollView>
+            </Modal>
+
+            {showScaleTable && (
+              <View style={style.container}>
+                <View style={style.header}>
+                  <View style={style.headerCell}>
+                    <Text style={style.headerText}>Id</Text>
+                  </View>
+                  <View style={style.headerCell}>
+                    <Text style={style.headerText}>Size</Text>
+                  </View>
+                  <View style={style.headerCell}>
+                    <Text style={style.headerText}>Dealer Price</Text>
+                  </View>
+                  <View style={style.headerCell}>
+                    <Text style={style.headerText}>Retailer Price</Text>
+                  </View>
+                  <View style={style.headerCell}>
+                    <Text style={style.headerText}>MRP</Text>
+                  </View>
+                  <View style={style.headerCell}>
+                    <Text style={style.headerText}>Available Quantity</Text>
+                  </View>
+                </View>
+
+                <ScrollView>
+                  {selectedSizes.map((item, index) => (
+                    <View key={index} style={style.row}>
+                      <View style={style.cell}>
+                        <Text style={style.cellText}>{item?.sizeId}</Text>
+                      </View>
+                      <View style={style.cell}>
+                        <Text style={style.cellText}>{item?.sizeDesc}</Text>
+                      </View>
+                      <View style={style.cell}>
+                        <TextInput
+                          style={style.input}
+                          keyboardType="numeric"
+                          value={item?.dealerPrice.toString()}
+                          onChangeText={text =>
+                            handleInputChange(index, 'dealerPrice', text)
+                          }
+                          editable={true}
+                        />
+                      </View>
+                      <View style={style.cell}>
+                        <TextInput
+                          style={style.input}
+                          keyboardType="numeric"
+                          value={item?.retailerPrice.toString()}
+                          onChangeText={text =>
+                            handleInputChange(index, 'retailerPrice', text)
+                          }
+                          editable={true}
+                        />
+                      </View>
+                      <View style={style.cell}>
+                        <TextInput
+                          style={style.input}
+                          keyboardType="numeric"
+                          value={item.mrp.toString()}
+                          onChangeText={text =>
+                            handleInputChange(index, 'mrp', text)
+                          }
+                          editable={true}
+                        />
+                      </View>
+                      <View style={style.cell}>
+                        <TextInput
+                          style={style.input}
+                          keyboardType="numeric"
+                          value={item.availQty.toString()}
+                          onChangeText={text =>
+                            handleInputChange(index, 'availQty', text)
+                          }
+                          editable={editAvailQty}
+                        />
+                      </View>
+                    </View>
+                  ))}
+                </ScrollView>
+              </View>
+            )}
+
+            <TouchableOpacity
+              style={{
+                backgroundColor: nextButton ? '#1F74BA' : 'skyblue',
+                padding: 10,
+                borderRadius: 5,
+                marginTop: 20,
+                width: '90%',
+                marginHorizontal: 20,
+              }}
+              onPress={handleNextPage}
+              disabled={!nextButton}>
+              <Text style={style.saveButtonText}>Next</Text>
+            </TouchableOpacity>
+
+            <View style={{marginBottom: 50}} />
+          </ScrollView>
+        </SafeAreaView>
       )}
     </>
   );
@@ -4084,6 +4210,30 @@ const style = StyleSheet.create({
   conatiner: {
     flex: 1,
     backgroundColor: '#fff',
+  },
+  menuimg: {
+    height: 30,
+    width: 30,
+    marginHorizontal: 5,
+  },
+  headbasicinfo: {
+    marginTop: 10,
+    paddingHorizontal: 50,
+    borderTopLeftRadius: 10,
+    borderBottomLeftRadius: 10,
+    borderColor: '#000',
+    borderWidth: 1,
+    paddingVertical: 10,
+    backgroundColor: '#1F74BA',
+  },
+  headprductimage: {
+    marginTop: 10,
+    paddingHorizontal: 50,
+    borderTopRightRadius: 10,
+    borderBottomRightRadius: 10,
+    paddingVertical: 10,
+    borderColor: '#000',
+    borderWidth: 1,
   },
   container1: {
     flexDirection: 'row',
@@ -4130,7 +4280,7 @@ const style = StyleSheet.create({
     color: '#000',
     fontWeight: '600',
   },
-  itemcattxt:{
+  itemcattxt: {
     fontWeight: '600',
     marginHorizontal: 15,
     color: '#000',
@@ -4162,7 +4312,7 @@ const style = StyleSheet.create({
     color: '#000',
   },
   modalLabel: {
-    color: "#000"
+    color: '#000',
   },
   saveButton: {
     backgroundColor: '#1F74BA',
@@ -4197,7 +4347,7 @@ const style = StyleSheet.create({
     fontSize: 16,
     paddingHorizontal: 10,
     color: '#000000',
-    ...(Platform.OS === 'ios' && { marginVertical: 7 }), 
+    ...(Platform.OS === 'ios' && {marginVertical: 7}),
   },
 
   container: {
@@ -4256,7 +4406,7 @@ const style = StyleSheet.create({
     borderRadius: 10,
     borderColor: 'lightgray', // Optional: Adds subtle border (for effect)
     borderWidth: 1,
-    marginTop:5
+    marginTop: 5,
   },
   searchInput: {
     marginTop: 10,
@@ -4301,8 +4451,10 @@ const style = StyleSheet.create({
     marginBottom: 15,
   },
   closeIcon: {
-    height: 30, width: 30, marginRight: 5
-  }
+    height: 30,
+    width: 30,
+    marginRight: 5,
+  },
   // input1: {
   //   height: 40,
   //   borderColor: '#ddd',

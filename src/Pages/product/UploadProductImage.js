@@ -6,6 +6,7 @@ import {
   Alert,
   Image,
   ScrollView,
+  SafeAreaView,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import ImagePicker from 'react-native-image-crop-picker';
@@ -15,6 +16,8 @@ import {API} from '../../config/apiConfig';
 import {useNavigation} from '@react-navigation/native';
 
 const UploadProductImage = ({route}) => {
+  const styleDetails = route?.params?.Style;
+  console.log("styleDetails12344",styleDetails)
   const [productStyle, setProductStyle] = useState({});
   const [allProductStyles, setAllProductStyles] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -255,7 +258,11 @@ const UploadProductImage = ({route}) => {
     setIsSaving(true);
     let formData = new FormData();
 
-    // Append fields to FormData
+    // Log before appending data to FormData
+    console.log('Appending data to FormData...');
+    console.log('styleId', productStyle.styleId);
+    console.log('styleName', productStyle.styleName);
+
     formData.append('styleId', productStyle.styleId);
     formData.append('styleName', productStyle.styleName);
     formData.append('styleDesc', productStyle.styleDesc);
@@ -266,13 +273,11 @@ const UploadProductImage = ({route}) => {
     formData.append('typeId', productStyle.typeId.toString());
     formData.append('sizeGroupId', productStyle.sizeGroupId.toString());
     formData.append('scaleId', productStyle.scaleId.toString());
-
-    // Change sizeList to sizesListReq
     formData.append('sizesListReq', productStyle.sizesListReq);
 
+    // Additional fields
     formData.append('styleQuality', productStyle.styleQuality || '');
     formData.append('fabricQuality', productStyle.fabricQuality || '');
-    // formData.append("gst", productStyle.gst.toString() || '');
     formData.append('gsm', productStyle.gsm || '');
     formData.append('customerLevel', productStyle?.customerLevel?.toString());
     formData.append('publishType', productStyle.publishType || '');
@@ -310,48 +315,35 @@ const UploadProductImage = ({route}) => {
       'pub_to_jakya',
       (productStyle.pub_to_jakya || 0)?.toString(),
     );
-    formData.append('styleNum', (productStyle?.styleNum || 0).toString());
     formData.append('closureId', productStyle?.closure?.toString());
     formData.append('peakId', productStyle?.peak?.toString());
     formData.append('logoId', productStyle?.logo?.toString());
     formData.append('decId', productStyle?.decoration?.toString());
     formData.append('trimId', productStyle?.trims?.toString());
     formData.append('processId', (productStyle.processId || 0).toString());
-    // formData.append("linkType",0);
 
-    // selectedImages.forEach((image, index) => {
-    //   formData.append('files', {
-    //     uri: image.uri,
-    //     type: image.mime,
-    //     name: `image_${index}.jpg`,
-    //   });
-    // });
-
-    // formData.append("imgUrls", JSON.stringify([])
-
+    // Debugging the image URLs
+    console.log('Image URLs:', productStyle.imageUrls);
     formData.append('imgUrls', productStyle.imageUrls);
-    // Append image files
-    selectedImages?.forEach((image, index) => {
-      if (image.uri && image.mime) {
-        formData.append('files', {
-          uri: image.uri,
-          type: image.mime,
-          name: `image_${index}.jpg`,
-        });
-      }
-    });
 
-    // Log FormData contents in a readable format
-    // const formDataObject = {};
-    // formData.forEach((value, key) => {
-    //   if (Array.isArray(value)) {
-    //     formDataObject[key] = value.map(item => (typeof item === 'object' ? JSON.stringify(item) : item));
-    //   } else {
-    //     formDataObject[key] = value;
-    //   }
-    // });
+    // Debugging the selected images
+    if (selectedImages?.length > 0) {
+      console.log('Selected Images:', selectedImages);
+      selectedImages.forEach((image, index) => {
+        if (image.uri && image.mime) {
+          formData.append('files', {
+            uri: image.uri,
+            type: image.mime,
+            name: `image_${index}.jpg`,
+          });
+        }
+      });
+    }
 
-    // URL for API
+    // Log the final FormData object
+    console.log('FormData being sent:', formData);
+
+    // API call
     const apiUrl = 'https://crm.codeverse.co/erpportal/api/style/editstyle';
     setIsLoading(true);
     axios
@@ -362,8 +354,10 @@ const UploadProductImage = ({route}) => {
         },
       })
       .then(response => {
+        console.log('Response:', response.data);
         Alert.alert('Style edited successfully');
         setIsLoading(false);
+        setIsSaving(false);
         navigation.navigate('ProductsStyles', {reload: 'true'});
       })
       .catch(error => {
@@ -376,8 +370,54 @@ const UploadProductImage = ({route}) => {
       });
   };
 
+  const handlebasicinfo = () => {
+    navigation.navigate('StyleDetails');
+  };
   return (
-    <View>
+    <SafeAreaView>
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingHorizontal: 10,
+          paddingVertical: 10,
+          backgroundColor: 'white',
+          elevation: 5,
+        }}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Image
+            resizeMode="contain"
+            source={require('../../../assets/back_arrow.png')}
+            style={styles.menuimg}
+          />
+        </TouchableOpacity>
+        <View
+          style={{
+            flex: 1,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+          <Text
+            style={{
+              fontSize: 18,
+              fontWeight: 'bold',
+              color: '#000',
+              marginRight:80
+            }}>
+            {productStyle?.styleName ? productStyle?.styleName : 'New Style'}
+          </Text>
+        </View>
+      </View>
+      <View style={{flexDirection: 'row', alignSelf: 'center'}}>
+        <TouchableOpacity
+          onPress={handlebasicinfo}
+          style={styles.headbasicinfo}>
+          <Text>Basic Info</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.headprductimage}>
+          <Text>Product Images</Text>
+        </TouchableOpacity>
+      </View>
       <TouchableOpacity style={styles.uploadimg} onPress={selectImages}>
         <Image
           style={{height: 80, width: 80}}
@@ -447,13 +487,38 @@ const UploadProductImage = ({route}) => {
           {isSaving ? 'Saving...' : styleId ? 'Update' : 'Save'}
         </Text>
       </TouchableOpacity>
-    </View>
+    </SafeAreaView>
   );
 };
 
 export default UploadProductImage;
 
 const styles = StyleSheet.create({
+  menuimg: {
+    height: 30,
+    width: 30,
+    marginHorizontal: 5,
+  },
+  headbasicinfo: {
+    marginTop: 10,
+    paddingHorizontal: 50,
+    borderTopLeftRadius: 10,
+    borderBottomLeftRadius: 10,
+    borderColor: '#000',
+    borderWidth: 1,
+    paddingVertical: 10,
+  },
+  headprductimage: {
+    backgroundColor: '#ffffff',
+    marginTop: 10,
+    paddingHorizontal: 50,
+    borderTopRightRadius: 10,
+    borderBottomRightRadius: 10,
+    paddingVertical: 10,
+    borderColor: '#000',
+    borderWidth: 1,
+    backgroundColor: '#1F74BA',
+  },
   saveButtonText: {
     color: '#fff',
     fontWeight: 'bold',

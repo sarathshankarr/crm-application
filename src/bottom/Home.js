@@ -77,6 +77,7 @@ const CustomTabBar = ({state, descriptors, route}) => {
   };
 
   const companyName = selectedCompany ? selectedCompany.companyName : '';
+  const companyCode = selectedCompany ? selectedCompany.companyCode : '';
   const companysLogo = selectedCompany ? selectedCompany.companyLogo : '';
 
   useEffect(() => {
@@ -84,6 +85,8 @@ const CustomTabBar = ({state, descriptors, route}) => {
       getCompany(selectedCompany.id);
     }
   }, [selectedCompany]);
+
+
 
   const getCompany = companyId => {
     const apiUrl = `${global?.userData?.productURL}${API.GET_COMPANY}/${companyId}`;
@@ -95,6 +98,7 @@ const CustomTabBar = ({state, descriptors, route}) => {
       })
       .then(response => {
         const companyList = response.data.response.companyList;
+        console.log("getCompany",response.data.response.companyList)
         if (companyList && companyList.length > 0) {
           const company = companyList[0];
           setCompanyLogo(company.companyLogo);
@@ -139,7 +143,7 @@ const CustomTabBar = ({state, descriptors, route}) => {
           />
           <Text
             style={{fontWeight: '600', color: '#000', flex: 1, marginLeft: 5}}>
-            {companyName}
+            {companyName} ({companyCode})
           </Text>
           {loggedInUser &&
             loggedInUser.compList &&
@@ -172,17 +176,28 @@ const CustomTabBar = ({state, descriptors, route}) => {
                     style={{
                       width: '100%',
                       height: 35,
-                      justifyContent: 'center',
                       borderBottomWidth: 0.5,
                       borderColor: '#8e8e8e',
+                      flexDirection:"row",
+                      marginLeft:10,
+                      marginTop:5
                     }}>
                     <Text
                       style={{
                         fontWeight: '600',
-                        marginHorizontal: 15,
+                       
                         color: '#000',
                       }}>
                       {item.companyName}
+                       
+                    </Text>
+                    <Text
+                      style={{
+                        fontWeight: '600',
+                        marginHorizontal: 5,
+                        color: '#000',
+                      }}>
+                     ({item.companyCode})
                     </Text>
                   </TouchableOpacity>
                 )}

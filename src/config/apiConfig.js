@@ -112,7 +112,10 @@ export const API = {
   RESET_PASSWORD:'erpportal/api/users/resetPassword',
   ADD_NEW_LOCATION:'erpportal/api/location/updateUserNewLocationForMobile',
   GET_STYLE_ITEMS:'erpportal/api/style/getStylesByBarcode',
-  GET_PACKAGES_ITEMS:'erpportal/api/package/getPackageDtlsByBarcode'
+  GET_PACKAGES_ITEMS:'erpportal/api/package/getPackageDtlsByBarcode',
+  GET_COSTING:'erpportal/api/costing/getAllCostForLazyLoad',
+  SEARCH_COSTING:'erpportal/api/costing/getCostBasedOnTypeServices',
+  ADD_COSTING:'erpportal/api/costing/addCosting/formData'
 };
 
 export const USER_ID = 'adminClientId';

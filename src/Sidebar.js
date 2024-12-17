@@ -28,6 +28,9 @@ const Sidebar = ({navigation, route}) => {
   const [dropdownVisibleProduct, setDropdownVisibleProduct] = useState(false);
   const [dropdownVisibleOrder, setdropdownVisibleOrder] = useState(false);
 
+  const [dropdownVisibleStyle, setDropdownVisibleeStyel] = useState(false); // Add state for second dropdown if needed
+
+
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const dispatch = useDispatch();
   const loginuser = useSelector(state => state.loggedInUser);
@@ -117,10 +120,20 @@ const Sidebar = ({navigation, route}) => {
     setDropdownVisiblePublish(false);
     setDropdownVisibleProduct(false);
     setdropdownVisibleOrder(false);
+    setDropdownVisibleeStyel(false)
   };
 
   const toggleDropdownSecond = () => {
     setDropdownVisiblee(!dropdownVisiblee);
+    setDropdownVisible(false);
+    setDropdownVisiblePublish(false);
+    setDropdownVisibleProduct(false);
+    setdropdownVisibleOrder(false);
+    setDropdownVisibleeStyel(false)
+  };
+
+  const toggleDropdownStyle = () => {
+    setDropdownVisibleeStyel(!dropdownVisibleStyle);
     setDropdownVisible(false);
     setDropdownVisiblePublish(false);
     setDropdownVisibleProduct(false);
@@ -133,6 +146,7 @@ const Sidebar = ({navigation, route}) => {
     setDropdownVisiblee(false);
     setDropdownVisibleProduct(false);
     setdropdownVisibleOrder(false);
+    setDropdownVisibleeStyel(false)
   };
 
   const toggleDropdownfourth = () => {
@@ -141,6 +155,7 @@ const Sidebar = ({navigation, route}) => {
     setDropdownVisiblee(false);
     setDropdownVisiblePublish(false);
     setdropdownVisibleOrder(false);
+    setDropdownVisibleeStyel(false)
   };
 
   const toggleDropdownOrder = () => {
@@ -149,7 +164,9 @@ const Sidebar = ({navigation, route}) => {
     setDropdownVisiblee(false);
     setDropdownVisiblePublish(false);
     setDropdownVisibleProduct(false);
+    setDropdownVisibleeStyel(false)
   };
+
 
   const goToHome = () => {
     navigation.navigate('Home');
@@ -186,6 +203,9 @@ const Sidebar = ({navigation, route}) => {
 
   const goToActivities = () => {
     navigation.navigate('Activities');
+  };
+  const goToCosting = () => {
+    navigation.navigate('Costing');
   };
   const goToPublish = () => {
     navigation.navigate('ProductPackagePublish');
@@ -489,37 +509,35 @@ const Sidebar = ({navigation, route}) => {
             {/* Add more dropdown items here */}
           </View>
         )}
-        {/* {userRole.some(roleObj => roleObj.role !== 'Distributor') && ( */}
         {/* <TouchableOpacity
-          style={styles.inventoryhead}
-          onPress={toggleDropdownthird}>
-          <Image
-            style={styles.orderimg}
-            source={require('../assets/publish.png')}
-          />
-          <Text style={styles.ordertxt}>Publish</Text>
-          <View style={{marginLeft: 'auto'}}>
+            style={styles.inventoryhead}
+            onPress={toggleDropdownStyle}>
             <Image
-              source={require('../assets/dropdown.png')}
-              style={{width: 20, height: 20}}
+              style={styles.orderimg}
+              source={require('../assets/style.png')}
             />
-          </View>
-        </TouchableOpacity> */}
-        {/* )} */}
-        {/* {dropdownVisiblePublish && (
+            <Text style={styles.ordertxt}>Styles</Text>
+            <View style={{marginLeft: 'auto'}}>
+              <Image
+                source={require('../assets/dropdown.png')}
+                style={{width: 20, height: 20}}
+              />
+            </View>
+          </TouchableOpacity> */}
+          {dropdownVisibleStyle && (
           <View style={styles.dropdown}>
             <TouchableOpacity
               style={styles.inventoryhead}
-              onPress={goToPublish}>
+              onPress={goToCosting}>
               <Image
                 style={styles.prodimg}
-                source={require('../assets/publish.png')}
+                source={require('../assets/dollar.png')}
               />
-              <Text style={styles.dropdownItem}>Product Publish</Text>
+              <Text style={styles.dropdownItem}>Costing</Text>
             </TouchableOpacity>
+            {/* Add more dropdown items here */}
           </View>
-        )} */}
-
+        )}
         {!isDistributor && (
           <TouchableOpacity
             onPress={goToCustomerLocation}
