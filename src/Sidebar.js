@@ -27,12 +27,11 @@ const Sidebar = ({navigation, route}) => {
   const [dropdownVisiblePublish, setDropdownVisiblePublish] = useState(false); // Add state for second dropdown if needed
   const [dropdownVisibleProduct, setDropdownVisibleProduct] = useState(false);
   const [dropdownVisibleOrder, setdropdownVisibleOrder] = useState(false);
-
   const [dropdownVisibleStyle, setDropdownVisibleeStyel] = useState(false); // Add state for second dropdown if needed
-
-
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+
   const dispatch = useDispatch();
+  
   const loginuser = useSelector(state => state.loggedInUser);
   // console.log('loginuser============>', loginuser);
   const isAdmin = loginuser?.role?.some(
@@ -50,7 +49,6 @@ const Sidebar = ({navigation, route}) => {
     if (params && params.userData) {
       setUserData(params.userData);
     } else {
-      // If userData is not passed as prop, retrieve from AsyncStorage
       getUserDataFromStorage();
     }
   }, [route]);
@@ -95,24 +93,6 @@ const Sidebar = ({navigation, route}) => {
       });
   };
 
-  // const toggleDropdown = () => {
-  //   setDropdownVisible(!dropdownVisible);
-  // };
-
-  // const toggleDropdownSecond = () => {
-  //   setDropdownVisiblee(!dropdownVisiblee);
-  // };
-
-  // const toggleDropdownthird = () => {
-  //   setDropdownVisiblePublish(!dropdownVisiblePublish);
-  // };
-  // const toggleDropdownfourth = () => {
-  //   setDropdownVisibleProduct(!dropdownVisibleProduct);
-  // };
-
-  // const toggleDropdownOrder = () => {
-  //   setdropdownVisibleOrder(!dropdownVisibleOrder);
-  // };
 
   const toggleDropdown = () => {
     setDropdownVisible(!dropdownVisible);
