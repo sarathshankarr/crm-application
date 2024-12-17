@@ -14,7 +14,7 @@ import {
   SafeAreaView,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
-import {useDispatch} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import {encode as base64Encode} from 'base-64';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -43,6 +43,16 @@ const Login = () => {
   const [usernameSuggestions, setUsernameSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const onlineStatus = useOnlineStatus();
+
+  const [roleMenu, setRoleMenu] = useState(null);
+  const [mobileMenus, setMobileMenus] = useState(null);
+  const [error, setError] = useState(null);
+
+  const globalUserData = global?.userData;
+  const companyIdd = useSelector(state => state?.loggedInUser?.companyId);
+  const roleIdd = useSelector(state => state?.loggedInUser?.roleId);
+  console.log('companyId,', companyIdd);
+  console.log('roleId', roleIdd);
 
   useEffect(() => {
     const loadStoredCredentials = async () => {
@@ -194,10 +204,6 @@ const Login = () => {
     setShowPassword(!showPassword);
   };
 
-  const goingToSignUp = () => {
-    navigation.navigate('SignUp');
-  };
-
   const handleLogin = async productURL => {
     if (!username) {
       Alert.alert('crm.codeverse.co.says', 'Please enter a username');
@@ -232,6 +238,8 @@ const Login = () => {
         let data = {token: response.data, productURL: productURL};
         await saveToken(data);
         await getUsers(response.data, productURL);
+
+        await getRollMenu(roleIdd, companyIdd);
 
         LoginAudit(data);
 
@@ -280,6 +288,36 @@ const Login = () => {
       console.error('Error saving token:', error);
     }
   };
+
+  const getRollMenu = async (roleIdd, companyIdd) => {
+    setLoading(true);
+    setError(null); // Reset error state
+    try {
+      const apiUrl = `${global?.userData?.productURL}${API.GET_ALL_THE_ROLE_MENU}/${roleIdd}/${companyIdd}`;
+
+      console.log('apiUrl', apiUrl);
+      const response = await axios.get(apiUrl, {
+        headers: {
+          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+        },
+      });
+  
+      // Save the response to AsyncStorage
+      const roleMenuData = response.data.response.roleMenuMapList;
+      await AsyncStorage.setItem('roleMenu', JSON.stringify(roleMenuData)); // Store the response data in AsyncStorage
+  
+      setRoleMenu(roleMenuData); // Store response data in state
+      console.log('response.data.getRollMenu', roleMenuData);
+    } catch (err) {
+      setError(err?.response?.data || err.message); // Set error state
+    } finally {
+      setLoading(false); // Reset loading state
+    }
+  };
+  
+  
+  
+  
 
   const getUsers = async (userData, productURL) => {
     console.log('getUsers userData:', userData);
@@ -483,10 +521,6 @@ const Login = () => {
             {errorMsg?.includes('no_Password') && (
               <Text style={styles.errorText}>Password is required</Text>
             )}
-            {/* <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <CustomCheckBox isChecked={isChecked} onToggle={handleCheckBoxToggle} />
-          <Text style={{ padding: 5, color: '#000', color: "#000" }}>Remember Me</Text>
-        </View> */}
             <View
               style={{
                 flexDirection: 'row',
@@ -538,35 +572,9 @@ const Login = () => {
               )}
             </TouchableOpacity>
             <View style={styles.line} />
-            {/* <View>
-          <Text style={styles.signintext}>Or sign in with</Text>
-        </View> */}
-            {/* <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'center',
-            alignItems: 'center',
-            marginTop: 10,
-          }}>
-          <View>
-          <TouchableOpacity>
-            <Image
-              style={styles.googleimg}
-              source={require('../../../assets/google.png')}></Image></TouchableOpacity>
-          </View>
-          <View>
-            <TouchableOpacity>
-            <Image
-              style={styles.facebookimg}
-              source={require('../../../assets/Facebook.png')}></Image></TouchableOpacity>
-          </View>
-        </View> */}
           </View>
           <View
             style={{justifyContent: 'flex-end', flex: 1, marginVertical: 10}}>
-            {/* <TouchableOpacity onPress={goingToSignUp}>
-                <Text style={{textAlign:'center'}}>Don’t have an account? Sign Up</Text>
-        </TouchableOpacity> */}
             <Text style={{textAlign: 'center', color: '#000'}}>
               All rights with Codeverse Technologies 1.0
             </Text>

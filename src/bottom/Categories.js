@@ -408,7 +408,7 @@ const Categories = ({navigation}) => {
 
     const apiUrl = `${global?.userData?.productURL}${API.ALL_CATEGORIES_LL_LIST}/${customFrom}/${customTo}/${companyId}`;
 
-    console.log('fetchCategories A ', customFrom, customTo);
+    // console.log('fetchCategories A ', customFrom, customTo);
 
     try {
       const response = await axios.get(apiUrl, {

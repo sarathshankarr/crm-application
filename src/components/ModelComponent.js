@@ -308,7 +308,7 @@ const ModalComponent = ({
       })
       .then(response => {
         setStylesData(response?.data?.response?.stylesList || []);
-        console.log("response?.data?.response?.stylesList =====>",response?.data?.response?.stylesList)
+        // console.log("response?.data?.response?.stylesList =====>",response?.data?.response?.stylesList)
       })
       .catch(error => {
         console.error('Error:', error);

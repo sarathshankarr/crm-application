@@ -98,7 +98,7 @@ const CustomTabBar = ({state, descriptors, route}) => {
       })
       .then(response => {
         const companyList = response.data.response.companyList;
-        console.log("getCompany",response.data.response.companyList)
+        // console.log("getCompany",response.data.response.companyList)
         if (companyList && companyList.length > 0) {
           const company = companyList[0];
           setCompanyLogo(company.companyLogo);

@@ -115,7 +115,9 @@ export const API = {
   GET_PACKAGES_ITEMS:'erpportal/api/package/getPackageDtlsByBarcode',
   GET_COSTING:'erpportal/api/costing/getAllCostForLazyLoad',
   SEARCH_COSTING:'erpportal/api/costing/getCostBasedOnTypeServices',
-  ADD_COSTING:'erpportal/api/costing/addCosting/formData'
+  ADD_COSTING:'erpportal/api/costing/addCosting/formData',
+  GET_ALL_THE_ROLE_MENU:'erpportal/api/rolemenu/rolewisemobilemenus',
+  GET_ALL_THE_MENUS_FOR_MOBILE:'erpportal/api/menu/allmobilemenus'
 };
 
 export const USER_ID = 'adminClientId';

@@ -736,7 +736,7 @@ const Order = () => {
 
     const apiUrl = `${global?.userData?.productURL}${API.GET_ALL_ORDER_LAZY}/${customFrom}/${customTo}/${companyId}/${0}`;
 
-    console.log("getAllOrders A ", customFrom, customTo);
+    // console.log("getAllOrders A ", customFrom, customTo);
 
 
     try {
