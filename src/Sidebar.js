@@ -268,6 +268,7 @@ const Sidebar = ({navigation, route}) => {
       await AsyncStorage.removeItem('userRoleId'); // Remove the user role ID from AsyncStorage
       await AsyncStorage.removeItem('loggedInUser'); // Remove the logged-in user data from AsyncStorage
       await AsyncStorage.removeItem('selectedCompany'); // Remove the logged-in user data from AsyncStorage
+      await AsyncStorage.removeItem('roleMenu');
       dispatch({type: CLEAR_CART});
 
       navigation.closeDrawer(); // Close the drawer
@@ -659,7 +660,7 @@ const Sidebar = ({navigation, route}) => {
             <Text style={styles.ordertxt}>{LocationTask?.menuName}</Text>
           </TouchableOpacity>
         )}
-        {!isDistributor && attendance && (
+        {!isDistributor && hasDropdownattendance && (
           <TouchableOpacity
             onPress={goToAttendence}
             style={styles.inventoryhead}>
