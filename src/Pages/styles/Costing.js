@@ -17,8 +17,10 @@ import {API} from '../../config/apiConfig';
 import axios from 'axios';
 import {useSelector} from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation } from '@react-navigation/native';
 
-const Costing = ({navigation}) => {
+const Costing = () => {
+  const navigation = useNavigation(); // Use the useNavigation hook
   const [initialSelectedCompany, setInitialSelectedCompany] = useState(null);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -32,6 +34,8 @@ const Costing = ({navigation}) => {
   const [loadingMore, setLoadingMore] = useState(false);
   const [filterFlag, setFilterFlag] = useState(false);
   const [hasMoreTasks, setHasMoreTasks] = useState(true);
+  const [addedCostingDetails, setAddedCostingDetails] = useState(null);
+
 
   const selectedCompany = useSelector(state => state.selectedCompany);
 
@@ -85,13 +89,19 @@ const Costing = ({navigation}) => {
       });
       const newTasks = response?.data?.response?.costingRequest || [];
 
-      //   console.log('response.data====>', response.data);
+        console.log('response.data costingg====>', response?.data?.response?.costingRequest);
 
       if (reset) {
         setFilteredOrdersList(newTasks);
       } else {
         setFilteredOrdersList(prevTasks => [...(prevTasks || []), ...newTasks]);
       }
+      newTasks.forEach(task => {
+        if (task.costId) {
+          getAlladdedCostinDetails(task.costId);
+        }
+      });
+      
       if (newTasks.length < 20) {
         setHasMoreTasks(false);
       }
@@ -102,6 +112,30 @@ const Costing = ({navigation}) => {
       setLoadingMore(false);
     }
   };
+
+  const getAlladdedCostinDetails = async (costingId) => {
+    const apiUrl = `${global?.userData?.productURL}${API.GET_ALL_ADDED_COSTING_DETAILSL}/${costingId}`;
+    try {
+      const response = await axios.get(apiUrl, {
+        headers: {
+          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+        },
+      });
+  
+      if (response?.data?.response) {
+        console.log('Added costing details:', response?.data?.response);
+        return response?.data?.response;  // Return the data immediately
+      } else {
+        console.log(`No added costing details found for costId: ${costingId}`);
+        return null;
+      }
+    } catch (error) {
+      console.error('Error fetching added costing details:', error);
+      return null;
+    }
+  };
+  
+  
 
   const loadMoreTasks = async () => {
     if (!hasMoreTasks || loadingMore) return;
@@ -244,15 +278,48 @@ const Costing = ({navigation}) => {
   const goToAddNewCosting = () => {
     navigation.navigate('NewCosting');
   };
-  const renderOrderItem = ({item}) => {
+
+  
+  const renderOrderItem = ({ item }) => {
     return (
-      <TouchableOpacity style={styles.orderItem}>
+      <TouchableOpacity
+        style={styles.orderItem}
+        onPress={async () => {
+          try {
+            // Fetch added costing details dynamically for the selected costId
+            if (item.costId) {
+              // Wait for the data to be fetched
+              const fetchedAddedCostingDetails = await getAlladdedCostinDetails(item.costId);
+  
+              if (fetchedAddedCostingDetails) {
+                console.log("Navigating to NewCosting with details:", fetchedAddedCostingDetails);
+                
+                // Navigate to NewCosting screen with the fetched details
+                navigation.navigate('NewCosting', {
+                  costingRequest: fetchedAddedCostingDetails,
+                  costId: item.costId,  // Pass the costId along with details
+                });
+              } else {
+                console.log(`No added costing details found for costId: ${item.costId}`);
+              }
+            }
+          } catch (error) {
+            console.error("Error fetching costing details:", error);
+          }
+        }}
+      >
         <Text style={styles.orderIdText}>{item.costId}</Text>
         <Text style={styles.customerText}>{item.userName}</Text>
         <Text style={styles.qtyText}>{item.createdDate}</Text>
       </TouchableOpacity>
     );
   };
+  
+  
+  
+  
+  
+  
 
   return (
     <SafeAreaView style={styles.container}>

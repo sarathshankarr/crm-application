@@ -678,7 +678,7 @@ const NewTask = () => {
       id: route.params.task.id || 0,
       customerId: customerId || 0,
       customer: customeroption || task?.customer,
-      created_on: formatCreatedOn(route.params.task.created_on || new Date()),
+      created_on: route.params.task.created_on || new Date(),
       taskName: taskName || null,
       dueDate: selectedDateDue !== 'Due Date' ? selectedDateDue : null,
       repeatRem: showDropdownRow ? selectedDropdownOption.value : null,

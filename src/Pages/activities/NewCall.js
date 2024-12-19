@@ -743,7 +743,7 @@ const NewCall = () => {
       assignTo: selectedUserId || callData?.assignTo,
       status: selectedStatusOption || callData?.status,
       userName: selectedUserName || callData?.userName,
-      created_on: formatCreatedOn(callData?.created_on) || new Date(),
+      created_on: callData?.created_on || new Date(),
       locId: selectedLocationId,
       assign_by: userData.userId,
       customerType: customerType,

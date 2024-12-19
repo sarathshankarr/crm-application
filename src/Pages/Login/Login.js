@@ -29,6 +29,7 @@ import {setLoggedInUser, setUserRole} from '../../redux/actions/Actions';
 import CustomCheckBox from '../../components/CheckBox';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import useOnlineStatus from '../../utils/hooks/online/useOnlineStatus';
+import store from '../../redux/store/Store';
 
 const Login = () => {
   const navigation = useNavigation();
@@ -51,8 +52,35 @@ const Login = () => {
   const globalUserData = global?.userData;
   const companyIdd = useSelector(state => state?.loggedInUser?.companyId);
   const roleIdd = useSelector(state => state?.loggedInUser?.roleId);
-  console.log('companyId,', companyIdd);
+  
   console.log('roleId', roleIdd);
+
+  const [initialSelectedCompany, setInitialSelectedCompany] = useState(null);
+  const selectedCompany = useSelector(state => state.selectedCompany);
+  const [companyIdrollmenu, setCompanyIdrollmenu] = useState(null);
+
+  useEffect(() => {
+    const fetchInitialSelectedCompany = async () => {
+      try {
+        const initialCompanyData = await AsyncStorage.getItem(
+          'initialSelectedCompany',
+        );
+        if (initialCompanyData) {
+          const initialCompany = JSON.parse(initialCompanyData);
+          setInitialSelectedCompany(initialCompany);
+        }
+      } catch (error) {
+        console.error('Error fetching initial selected company:', error);
+      }
+    };
+
+    fetchInitialSelectedCompany();
+  }, []);
+
+ useEffect(() => {
+  const id = selectedCompany ? selectedCompany.id : initialSelectedCompany?.id;
+  setCompanyIdrollmenu(id);
+}, [selectedCompany, initialSelectedCompany]);
 
   useEffect(() => {
     const loadStoredCredentials = async () => {
@@ -67,6 +95,7 @@ const Login = () => {
     };
     loadStoredCredentials();
   }, []);
+  console.log('companyId,', companyIdrollmenu);
 
   const handleUsernameChange = async text => {
     setUsername(text);
@@ -289,76 +318,66 @@ const Login = () => {
     }
   };
 
-  const getRollMenu = async (roleIdd, companyIdd) => {
-    setLoading(true);
-    setError(null); // Reset error state
+  const getRollMenu = async () => {
     try {
+      const state = store.getState();
+      const roleIdd = state?.loggedInUser?.roleId;
+      const companyIdd = state?.loggedInUser?.companyId;
+  
+      console.log('Role ID:', roleIdd, 'Company ID:', companyIdd);
+  
       const apiUrl = `${global?.userData?.productURL}${API.GET_ALL_THE_ROLE_MENU}/${roleIdd}/${companyIdd}`;
-
-      console.log('apiUrl', apiUrl);
+      console.log('apiUrl:', apiUrl);
+  
       const response = await axios.get(apiUrl, {
         headers: {
           Authorization: `Bearer ${global?.userData?.token?.access_token}`,
         },
       });
   
-      // Save the response to AsyncStorage
       const roleMenuData = response.data.response.roleMenuMapList;
-      await AsyncStorage.setItem('roleMenu', JSON.stringify(roleMenuData)); // Store the response data in AsyncStorage
-  
-      setRoleMenu(roleMenuData); // Store response data in state
-      console.log('response.data.getRollMenu', roleMenuData);
+      await AsyncStorage.setItem('roleMenu', JSON.stringify(roleMenuData));
+      setRoleMenu(roleMenuData);
+      console.log('Role Menu Data:', roleMenuData);
     } catch (err) {
-      setError(err?.response?.data || err.message); // Set error state
-    } finally {
-      setLoading(false); // Reset loading state
+      console.error('Error fetching role menu:', err);
     }
   };
   
   
   
   
-
+  
+  
   const getUsers = async (userData, productURL) => {
     console.log('getUsers userData:', userData);
-    const apiUrl = `${productURL}${API.ADD_USERS}/${userData.userId}`; // Update API URL to include dynamic
-    console.log('apurl', apiUrl);
+    const apiUrl = `${productURL}${API.ADD_USERS}/${userData.userId}`; // Update API URL dynamically
+    console.log('apiUrl', apiUrl);
+  
     try {
       const response = await axios.get(apiUrl, {
-        headers: {Authorization: `Bearer ${userData.access_token}`},
+        headers: { Authorization: `Bearer ${userData.access_token}` },
       });
-      const loggedInUser = response.data.response.users[0]; // Since response is expected to have only one user with given
+      const loggedInUser = response.data.response.users[0];
+  
       if (loggedInUser) {
         console.log('Logged in user:', loggedInUser);
-        dispatch(setLoggedInUser(loggedInUser));
-        dispatch(setUserRole(loggedInUser.role));
-        await saveUserDataToStorage(loggedInUser);
-        // const roles = loggedInUser.role;
-        // let roleName = '';
-        // let roleId = '';
-        // for (const role of roles) {
-        //   const name = role.role;
-        //   if (name) {
-        //     if (
-        //       name === 'admin' ||
-        //       name === 'Distributor' ||
-        //       name === 'Retailer'
-        //     ) {
-        //       roleName = name;
-        //       roleId = role.id;
-        //       break;
-        //     }
-        //   }
-        // }
-        // if (roleName && roleId) {
-        //   await saveRoleToStorage({roleName, roleId});
-        // }
-        // else {
-        //   Alert.alert(
-        //     'Unauthorized role',
-        //     'You do not have access to this application.',
-        //   );
-        // }
+        await dispatch(setLoggedInUser(loggedInUser)); // Ensure Redux updates
+        await dispatch(setUserRole(loggedInUser.role)); // Ensure Redux updates
+        await saveUserDataToStorage(loggedInUser); // Save user data to storage
+  
+        // Extract roleId and companyId from the updated Redux state
+        const state = store.getState();
+        const roleIdd = state?.loggedInUser?.roleId;
+        const companyIdd = state?.loggedInUser?.companyId;
+  
+        if (roleIdd && companyIdd) {
+          console.log('Role ID:', roleIdd, 'Company ID:', companyIdd);
+          await getRollMenu(roleIdd, companyIdd); // Pass the IDs to getRollMenu
+        } else {
+          console.error('Role ID or Company ID is missing');
+          Alert.alert('Error', 'Unable to fetch role or company details.');
+        }
       } else {
         Alert.alert('No user data found', 'Failed to fetch user data.');
       }
@@ -370,6 +389,60 @@ const Login = () => {
       );
     }
   };
+  
+  
+
+  // const getUsers = async (userData, productURL) => {
+  //   console.log('getUsers userData:', userData);
+  //   const apiUrl = `${productURL}${API.ADD_USERS}/${userData.userId}`; // Update API URL to include dynamic
+  //   console.log('apurl', apiUrl);
+  //   try {
+  //     const response = await axios.get(apiUrl, {
+  //       headers: {Authorization: `Bearer ${userData.access_token}`},
+  //     });
+  //     const loggedInUser = response.data.response.users[0]; // Since response is expected to have only one user with given
+  //     if (loggedInUser) {
+  //       console.log('Logged in user:', loggedInUser);
+  //       dispatch(setLoggedInUser(loggedInUser));
+  //       dispatch(setUserRole(loggedInUser.role));
+  //       await saveUserDataToStorage(loggedInUser);
+  //       // const roles = loggedInUser.role;
+  //       // let roleName = '';
+  //       // let roleId = '';
+  //       // for (const role of roles) {
+  //       //   const name = role.role;
+  //       //   if (name) {
+  //       //     if (
+  //       //       name === 'admin' ||
+  //       //       name === 'Distributor' ||
+  //       //       name === 'Retailer'
+  //       //     ) {
+  //       //       roleName = name;
+  //       //       roleId = role.id;
+  //       //       break;
+  //       //     }
+  //       //   }
+  //       // }
+  //       // if (roleName && roleId) {
+  //       //   await saveRoleToStorage({roleName, roleId});
+  //       // }
+  //       // else {
+  //       //   Alert.alert(
+  //       //     'Unauthorized role',
+  //       //     'You do not have access to this application.',
+  //       //   );
+  //       // }
+  //     } else {
+  //       Alert.alert('No user data found', 'Failed to fetch user data.');
+  //     }
+  //   } catch (error) {
+  //     console.error('Error fetching user data:', error);
+  //     Alert.alert(
+  //       'Failed to fetch user data',
+  //       'An error occurred while fetching user data.',
+  //     );
+  //   }
+  // };
 
   const saveUserDataToStorage = async userData => {
     try {

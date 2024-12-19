@@ -36,6 +36,32 @@ const Sidebar = ({navigation, route}) => {
   const [error, setError] = useState(null);
   const [roleMenus, setRoleMenus] = useState([]);
 
+  const [initialSelectedCompany, setInitialSelectedCompany] = useState(null);
+  const selectedCompany = useSelector(state => state.selectedCompany);
+  const [roleMenusLoaded, setRoleMenusLoaded] = useState(false);
+
+  const fetchInitialSelectedCompany = async () => {
+    try {
+      const initialCompanyData = await AsyncStorage.getItem(
+        'initialSelectedCompany',
+      );
+      if (initialCompanyData) {
+        const initialCompany = JSON.parse(initialCompanyData);
+        setInitialSelectedCompany(initialCompany);
+      }
+    } catch (error) {
+      console.error('Error fetching initial selected company:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchInitialSelectedCompany();
+  }, []);
+
+  const companyId = selectedCompany
+    ? selectedCompany.id
+    : initialSelectedCompany?.id;
+
   const dispatch = useDispatch();
 
   const loginuser = useSelector(state => state.loggedInUser);
@@ -269,7 +295,14 @@ const Sidebar = ({navigation, route}) => {
       await AsyncStorage.removeItem('loggedInUser'); // Remove the logged-in user data from AsyncStorage
       await AsyncStorage.removeItem('selectedCompany'); // Remove the logged-in user data from AsyncStorage
       await AsyncStorage.removeItem('roleMenu');
+    
+
       dispatch({type: CLEAR_CART});
+
+      // Reset companyIdrollmenu
+
+      // Optionally, fetch initial selected company (if needed)
+      await fetchInitialSelectedCompany();
 
       navigation.closeDrawer(); // Close the drawer
       navigation.reset({
@@ -281,11 +314,16 @@ const Sidebar = ({navigation, route}) => {
     }
   };
 
+  useEffect(() => {
+    getRoleMenus(); // Fetch role menus first
+  }, []);
+
   const getRoleMenus = async () => {
     try {
       const storedRoleMenu = await AsyncStorage.getItem('roleMenu');
       if (storedRoleMenu) {
         setRoleMenus(JSON.parse(storedRoleMenu));
+        setRoleMenusLoaded(true); // Mark roleMenus as loaded
       }
     } catch (err) {
       console.error('Error retrieving role menus:', err.message);
@@ -304,8 +342,8 @@ const Sidebar = ({navigation, route}) => {
           Authorization: `Bearer ${global?.userData?.token?.access_token}`,
         },
       });
-      const allMenus = response.data.response.menuList;
-      setAllMenus(allMenus);
+      const allMenusData = response.data.response.menuList;
+      setAllMenus(allMenusData);
     } catch (err) {
       setError(err?.response?.data || err.message);
     } finally {
@@ -315,6 +353,13 @@ const Sidebar = ({navigation, route}) => {
 
   // Filter menus based on roleMenus
   useEffect(() => {
+    if (roleMenusLoaded) {
+      getAllMobileMenus(); // Only fetch mobile menus after roleMenus are loaded
+    }
+  }, [roleMenusLoaded]); // Trigger this when roleMenusLoaded changes to true
+
+  // Filter menus based on role menu ids
+  useEffect(() => {
     if (roleMenus.length > 0 && allMenus.length > 0) {
       const roleMenuIds = roleMenus.map(menu => menu?.menuId); // Extract menuId from roleMenus
       const filtered = allMenus.filter(menu =>
@@ -323,12 +368,6 @@ const Sidebar = ({navigation, route}) => {
       setFilteredMenus(filtered);
     }
   }, [roleMenus, allMenus]);
-
-  // Fetch menus on component mount
-  useEffect(() => {
-    getRoleMenus();
-    getAllMobileMenus();
-  }, []);
 
   // Map menus to variables based on menuId
   const menuMap = {};
@@ -620,21 +659,21 @@ const Sidebar = ({navigation, route}) => {
             {/* Add more dropdown items here */}
           </View>
         )}
-        {/* <TouchableOpacity
-            style={styles.inventoryhead}
-            onPress={toggleDropdownStyle}>
+        <TouchableOpacity
+          style={styles.inventoryhead}
+          onPress={toggleDropdownStyle}>
+          <Image
+            style={styles.orderimg}
+            source={require('../assets/style.png')}
+          />
+          <Text style={styles.ordertxt}>Styles</Text>
+          <View style={{marginLeft: 'auto'}}>
             <Image
-              style={styles.orderimg}
-              source={require('../assets/style.png')}
+              source={require('../assets/dropdown.png')}
+              style={{width: 20, height: 20}}
             />
-            <Text style={styles.ordertxt}>Styles</Text>
-            <View style={{marginLeft: 'auto'}}>
-              <Image
-                source={require('../assets/dropdown.png')}
-                style={{width: 20, height: 20}}
-              />
-            </View>
-          </TouchableOpacity> */}
+          </View>
+        </TouchableOpacity>
         {dropdownVisibleStyle && (
           <View style={styles.dropdown}>
             <TouchableOpacity

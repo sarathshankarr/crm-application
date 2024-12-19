@@ -13,9 +13,28 @@ import {
 } from 'react-native';
 import {RadioGroup} from 'react-native-radio-buttons-group';
 import ImagePicker from 'react-native-image-crop-picker';
-import { useFocusEffect } from '@react-navigation/native';
+import {useFocusEffect} from '@react-navigation/native';
+import {API} from '../../config/apiConfig';
+import {useSelector} from 'react-redux';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 
-const NewCosting = ({navigation}) => {
+const NewCosting = ({navigation, route}) => {
+  const {costingRequest} = route?.params || {};
+  useEffect(() => {
+    // Log the data to verify
+    console.log(
+      'Received costingRequest in NewCosting screen:',
+      costingRequest,
+    );
+  }, [costingRequest]);
+  const costingRequestData = costingRequest?.costingRequest;
+
+  const [dataLoaded, setDataLoaded] = useState(false);
+
+  const userData = useSelector(state => state.loggedInUser);
+  const userId = userData?.userId;
+
   const [selectedId, setSelectedId] = useState(null);
   const [isYarnVisible, setIsYarnVisible] = useState(false);
   const [isAddInputVisible, setIsAddInputVisible] = useState(false);
@@ -30,7 +49,9 @@ const NewCosting = ({navigation}) => {
   const [dyingPercent, setDyingPercent] = useState(''); // State to track Dying Percent
   const [weavingPercent, setWeavingPercent] = useState('');
   const [pipingPercent, setPipingPercent] = useState('');
-  const [yarnRows, setYarnRows] = useState([]);
+  const [yarnRows, setYarnRows] = useState([
+    {material: '', price: '', consumption: ''},
+  ]);
   const [inputFields, setInputFields] = useState([
     {id: Date.now(), description: '', amnt: '', total: '0.00'},
   ]);
@@ -40,12 +61,121 @@ const NewCosting = ({navigation}) => {
   const [fridge2, setFridge2] = useState('');
   const [fridge1cal, setFridge1cal] = useState('');
   const [fridge5, setFridge5] = useState('');
+  const [fridge6, setFridge6] = useState('');
   const [fridge7, setFridge7] = useState('');
   const [freight, setFreight] = useState('');
   const [packing, setPacking] = useState('');
   const [margin, setMargin] = useState('');
+  const [description, setDescription] = useState('');
   const [conversation, setConversation] = useState('');
   const [galleryImages, setGalleryImages] = useState([]);
+
+  useEffect(() => {
+    if (!costingRequest || !costingRequest.costingRequest) {
+      console.log('costingRequest is undefined or null');
+      return;
+    }
+
+    const costingRequestData = costingRequest.costingRequest;
+
+    if (!Array.isArray(costingRequestData)) {
+      console.log(
+        'costingRequest is not an array. Received:',
+        costingRequestData,
+      );
+      return;
+    }
+
+    if (costingRequestData.length === 0) {
+      console.log('costingRequest array is empty.');
+      return;
+    }
+
+    const requestData = costingRequestData[0];
+    console.log('Processing first item of costingRequest:', requestData);
+
+    // Map through ksMaterials to populate yarnRows
+    if (Array.isArray(requestData.ksMaterials)) {
+      const updatedYarnRows = requestData.ksMaterials.map(item => ({
+        material: item.ksMaterial || '',
+        price: item.ksPrice?.toString() || '',
+        consumption: item.ksCunsuption?.toString() || '',
+      }));
+      setYarnRows(updatedYarnRows);
+    }
+
+    // Map through totalInputs to populate inputFields
+    if (Array.isArray(requestData.totalInputs)) {
+      const populatedFields = requestData.totalInputs.map(item => ({
+        id: item.ksCostId || Date.now(), // Use ksCostId for a unique ID if available
+        description: item.description || '',
+        amnt: item.amount?.toString() || '',
+        total: (item.amount * (item.unit || 1)).toFixed(2), // Calculate total as amount * unit
+      }));
+      setInputFields(populatedFields); // Set state with pre-populated values
+    }
+
+    // Populate gallery images if ksImageUrls is available
+    if (
+      Array.isArray(requestData.ksImageUrls) &&
+      requestData.ksImageUrls.length > 0
+    ) {
+      const galleryImages = requestData.ksImageUrls.map(url => ({
+        uri: url, // Make sure this is the correct format for displaying images
+      }));
+      setGalleryImages(galleryImages); // Assuming setGalleryImages is the setter for the gallery images state
+    }
+
+    // Populate other fields as needed
+    setLength(requestData.locationLength?.toString() || '');
+    setBreadth(requestData.locationBreadth?.toString() || '');
+    setSquareFeet(requestData.squareFeet || 0);
+    setPrice(requestData.perSqFt?.toString() || '');
+    setConsumption(requestData.consumptionTotal?.toString() || '');
+    setWastagePercent(requestData.wastagepercent?.toString() || '');
+    setYarnPercent(requestData.yarnpercent?.toString() || '');
+    setDyingPercent(requestData.dyingpercent?.toString() || '');
+    setWeavingPercent(requestData.weavingpercent?.toString() || '');
+    setPipingPercent(requestData.pipingpercent?.toString() || '');
+    setDescription(requestData.description || '');
+    setConversation(requestData.conversation?.toString() || '');
+    setFreight(requestData.freight?.toString() || '');
+    setPacking(requestData.packing?.toString() || '');
+    setMargin(requestData.margin?.toString() || '');
+    setOverheadsPercent(requestData.overheadspercent?.toString() || '');
+    setFridge1(requestData.f1?.toString() || '');
+    setFridge2(requestData.f2?.toString() || '');
+    setFridge5(requestData.f3?.toString() || '');
+    setFridge6(requestData.f4?.toString() || '');
+    setFridge7(requestData.f5?.toString() || '');
+
+    setDataLoaded(true); // Mark data as loaded
+  }, [costingRequest]);
+
+  const [initialSelectedCompany, setInitialSelectedCompany] = useState(null);
+  const selectedCompany = useSelector(state => state.selectedCompany);
+
+  useEffect(() => {
+    const fetchInitialSelectedCompany = async () => {
+      try {
+        const initialCompanyData = await AsyncStorage.getItem(
+          'initialSelectedCompany',
+        );
+        if (initialCompanyData) {
+          const initialCompany = JSON.parse(initialCompanyData);
+          setInitialSelectedCompany(initialCompany);
+        }
+      } catch (error) {
+        console.error('Error fetching initial selected company:', error);
+      }
+    };
+
+    fetchInitialSelectedCompany();
+  }, []);
+
+  const companyId = selectedCompany
+    ? selectedCompany.id
+    : initialSelectedCompany?.id;
 
   const handleLengthChange = text => {
     setLength(text);
@@ -64,7 +194,7 @@ const NewCosting = ({navigation}) => {
     setSquareFeet(sqFeet.toFixed(2));
   };
 
-  const calculateTotal = () => {
+  const calculateTotal = (price, consumption) => {
     const priceValue = parseFloat(price) || 0;
     const consumptionValue = parseFloat(consumption) || 0;
     return (priceValue * consumptionValue).toFixed(2);
@@ -360,7 +490,7 @@ const NewCosting = ({navigation}) => {
     React.useCallback(() => {
       // Reset to "Bathmat" every time the screen is focused (when coming back)
       setSelectedId('1');
-    }, [])
+    }, []),
   );
   const radioButtons = [
     {
@@ -412,6 +542,151 @@ const NewCosting = ({navigation}) => {
       });
   };
 
+  const handleSubmit = async () => {
+    try {
+      const formData = new FormData();
+      const costId = String(costingRequest?.costingRequest?.[0]?.costId || 0);
+      console.log('Selected Cost ID:', costId); // Debugging log
+      const createBy = String(
+        costingRequest?.costingRequest?.[0]?.createBy || '',
+      );
+      const createOn = String(
+        costingRequest?.costingRequest?.[0]?.createOn || 0,
+      );
+      const ksImageName = String(
+        costingRequest?.costingRequest?.[0]?.ksImageName,
+      );
+
+      // Append individual fields
+      formData.append('costId', costId);
+      formData.append('locationLength', length || '');
+      formData.append('locationBreadth', breadth || '');
+      formData.append('squareFeet', squareFeet || '');
+      formData.append('quality', calculateTotalConsumption() || '');
+      formData.append('pieceweight', calculatePieceWeight() || '');
+      formData.append('wastagepercent', wastagePercent || '');
+      formData.append('wastage', calculatePieceWeightWithWastage() || '');
+      formData.append(
+        'yarnpercent',
+        calculateYarnPercentWithPieceWeight() || '',
+      );
+      formData.append('yarn', calculateYarnPercentWithPieceWeight() || '');
+      formData.append('dyingpercent', dyingPercent || '');
+      formData.append('dying', calculateDyingPercentWithYarn() || '');
+      formData.append('weavingpercent', weavingPercent || '');
+      formData.append('weaving', calculateWeavingPercent() || '');
+      formData.append('pipingpercent', pipingPercent || '');
+      formData.append('piping', calculatePipingPercent() || '');
+      formData.append('total', calculateTotalSum() || '');
+      formData.append('f1', fridge1 || '');
+      formData.append('f2', fridge2 || '');
+      formData.append('f3', fridge1cal || '');
+      formData.append('f4', calculateTotalConsumption() || '');
+      formData.append('f5', fridge5 || '');
+      formData.append('f6', fridge6 || '');
+      formData.append('f7', fridge7 || '');
+      formData.append('overheadspercent', overheadsPercent || '');
+      formData.append('overheads', calculateOverheadsValue() || '');
+      formData.append('grandTotal', calculateAllTotal() || '');
+      formData.append('inrpersqft', calculateINRPerSqFt() || '');
+      formData.append('packing', packing || '');
+      formData.append('freight', freight || '');
+      formData.append('totalvalue', calculateTotalCost() || '');
+      formData.append('margin', margin || '');
+      formData.append('FOB', calculateFOB() || '');
+      formData.append('perSqFt', calculatePerSqFt() || '');
+      formData.append('sumone', calculatePerSqMtr() || '');
+      formData.append('sumtwo', calculatePerKg() || '');
+
+      formData.append('createOn', createOn);
+      formData.append('createBy', createBy);
+      formData.append('checkBox', selectedId || '');
+
+      formData.append('companyId', companyId || '');
+      formData.append('conversation', conversation || 0);
+      formData.append('userId', userId);
+      formData.append('ksImageName', ksImageName);
+
+      const formattedInputFields = inputFields.map(field => ({
+        description: field.description || '', // Use a default empty string if description is not set.
+        amount: parseFloat(field.amnt || 0), // Parse `amnt` as a number for `amount`.
+        unit: parseFloat(field.total || 0), // Parse `total` as a number for `unit`.
+        // Remove ksCompanyId
+      }));
+
+      // Append `totalInputs` to FormData as a stringified JSON array.
+      if (formattedInputFields.length > 0) {
+        formData.append('totalInputs', JSON.stringify(formattedInputFields));
+      }
+
+      const formattedYarnRows = yarnRows.map(row => ({
+        ksMaterial: row.material || '', // Default to empty string if not set
+        ksPrice: parseFloat(row.price || 0), // Ensure price is a number
+        ksCunsuption: parseFloat(row.consumption || 0), // Ensure consumption is a number
+        totalPrice: calculateTotal(row.price, row.consumption) || 0,
+      }));
+
+      if (formattedYarnRows.length > 0) {
+        formData.append('ksMaterials', JSON.stringify(formattedYarnRows));
+      }
+
+      formData.append('description', description || '');
+
+      if (galleryImages && Array.isArray(galleryImages)) {
+        galleryImages.forEach(image => {
+          formData.append('files', {
+            uri: image.uri,
+            type: image.mime,
+            name: image.uri.split('/').pop(),
+          });
+        });
+      }
+
+      console.log('FormData Preview:', formData);
+
+      const apiUrl0 = `${global?.userData?.productURL}${API.ADD_COSTING}`;
+      console.log('Final API URL:', apiUrl0);
+
+      // API call
+      const response = await axios.post(apiUrl0, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+        },
+      });
+
+      console.log('API Response:', response.data);
+      Alert.alert('Success', 'Costing data has been added successfully.', [
+        {
+          text: 'OK',
+          onPress: () => navigation.navigate('Costing'), // Navigate to Costing screen
+        },
+      ]);
+      } catch (error) {
+      if (error.response) {
+        // The request was made and the server responded with a status code that falls out of the range of 2xx
+        console.error('Error Response:', error.response.data);
+        console.error('Error Response Status:', error.response.status);
+        console.error('Error Response Headers:', error.response.headers);
+        Alert.alert(
+          'Error',
+          `Failed to add costing data. Server responded with status: ${error.response.status}`,
+        );
+      } else if (error.request) {
+        // The request was made but no response was received
+        console.error('Error Request:', error.request);
+        Alert.alert(
+          'Error',
+          'No response from the server. Please check the server connection.',
+        );
+      } else {
+        // Something happened in setting up the request that triggered an error
+        console.error('Error Message:', error.message);
+        Alert.alert('Error', `An error occurred: ${error.message}`);
+      }
+    }
+  };
+
   return (
     <KeyboardAvoidingView
       style={{flex: 1}}
@@ -430,7 +705,9 @@ const NewCosting = ({navigation}) => {
               </TouchableOpacity>
               <Text style={styles.headerText}>Costing</Text>
             </View>
-            <TouchableOpacity style={styles.rightSection}>
+            <TouchableOpacity
+              onPress={handleSubmit}
+              style={styles.rightSection}>
               <Text style={styles.addCostingText}>ADD</Text>
             </TouchableOpacity>
           </View>
@@ -932,6 +1209,8 @@ const NewCosting = ({navigation}) => {
                   style={styles.Breadthtext}
                   placeholder="0"
                   placeholderTextColor="#000"
+                  value={fridge6}
+                  onChangeText={setFridge6}
                 />
               </View>
               <View style={styles.lengthheadfridge}>
@@ -1097,6 +1376,8 @@ const NewCosting = ({navigation}) => {
               style={styles.descriptiontxt}
               placeholder="Description"
               placeholderTextColor="#000"
+              value={description}
+              onChangeText={setDescription}
             />
           </View>
           <TouchableOpacity
