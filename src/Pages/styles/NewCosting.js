@@ -21,13 +21,8 @@ import axios from 'axios';
 
 const NewCosting = ({navigation, route}) => {
   const {costingRequest} = route?.params || {};
-  useEffect(() => {
-    // Log the data to verify
-    console.log(
-      'Received costingRequest in NewCosting screen:',
-      costingRequest,
-    );
-  }, [costingRequest]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const costingRequestData = costingRequest?.costingRequest;
 
   const [dataLoaded, setDataLoaded] = useState(false);
@@ -533,7 +528,6 @@ const NewCosting = ({navigation, route}) => {
     }
   };
 
-
   const handleImagePicker = () => {
     ImagePicker.openPicker({
       multiple: false, // Only allow single image selection
@@ -556,6 +550,9 @@ const NewCosting = ({navigation, route}) => {
   };
 
   const handleSubmit = async () => {
+    if (isSubmitting) return; // Prevent multiple clicks
+
+    setIsSubmitting(true);
     try {
       const formData = new FormData();
       const costId = String(costingRequest?.costingRequest?.[0]?.costId || 0);
@@ -676,27 +673,10 @@ const NewCosting = ({navigation, route}) => {
         },
       ]);
     } catch (error) {
-      if (error.response) {
-        // The request was made and the server responded with a status code that falls out of the range of 2xx
-        console.error('Error Response:', error.response.data);
-        console.error('Error Response Status:', error.response.status);
-        console.error('Error Response Headers:', error.response.headers);
-        Alert.alert(
-          'Error',
-          `Failed to add costing data. Server responded with status: ${error.response.status}`,
-        );
-      } else if (error.request) {
-        // The request was made but no response was received
-        console.error('Error Request:', error.request);
-        Alert.alert(
-          'Error',
-          'No response from the server. Please check the server connection.',
-        );
-      } else {
-        // Something happened in setting up the request that triggered an error
-        console.error('Error Message:', error.message);
-        Alert.alert('Error', `An error occurred: ${error.message}`);
-      }
+      console.error('Submission Error:', error);
+      Alert.alert('Error', 'Failed to add costing data. Please try again.');
+    } finally {
+      setIsSubmitting(false); // Re-enable the button after submission
     }
   };
 
@@ -719,9 +699,15 @@ const NewCosting = ({navigation, route}) => {
               <Text style={styles.headerText}>Costing</Text>
             </View>
             <TouchableOpacity
-              onPress={handleSubmit}
-              style={styles.rightSection}>
-              <Text style={styles.addCostingText}>ADD</Text>
+              onPress={!isSubmitting ? handleSubmit : null} // Prevent multiple submissions
+              disabled={isSubmitting} // Disable button when submitting
+              style={[
+                styles.rightSection,
+                {opacity: isSubmitting ? 0.5 : 1}, // Dim button when disabled
+              ]}>
+              <Text style={styles.addCostingText}>
+                {isSubmitting ? 'Submitting...' : 'ADD'}
+              </Text>
             </TouchableOpacity>
           </View>
           <View style={styles.radiobutheader}>
@@ -1402,7 +1388,6 @@ const NewCosting = ({navigation, route}) => {
             {galleryImages.map((image, index) => (
               <View key={index} style={styles.imageContainer}>
                 <Image source={{uri: image.uri}} style={styles.imagePreview} />
-              
               </View>
             ))}
           </ScrollView>
@@ -1851,7 +1836,7 @@ const styles = StyleSheet.create({
   imagePreviewContainer: {
     flexDirection: 'row',
     marginVertical: 5,
-    marginHorizontal:10
+    marginHorizontal: 10,
   },
   imagePreview: {
     width: 70,

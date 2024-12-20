@@ -19,20 +19,16 @@ import {useSelector} from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 
-const Cushion = ({navigation,route}) => {
+const Cushion = ({navigation, route}) => {
   const {costingRequest} = route?.params || {};
-  useEffect(() => {
-    // Log the data to verify
-    console.log(
-      'Received costingRequest in NewCosting screen======>:',
-      costingRequest,
-    );
-  }, [costingRequest]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const userData = useSelector(state => state.loggedInUser);
   const userId = userData?.userId;
   const [dataLoaded, setDataLoaded] = useState(false);
 
   const [selectedId, setSelectedId] = useState(null);
+  const [size, setSize] = useState('');
+  const [sizeNumber, setsizeNumber] = useState('');
   const [frontBack, setFrontBack] = useState('');
   const [frontBackNumber, setFrontBackNumber] = useState('');
   const [back, setBack] = useState('');
@@ -132,8 +128,6 @@ const Cushion = ({navigation,route}) => {
     setSelectedId('2'); // Ensure "Bathmat" is selected when the screen loads
   }, []);
 
-
-
   useEffect(() => {
     if (!costingRequest || !costingRequest.costingRequest) {
       console.log('costingRequest is undefined or null');
@@ -169,7 +163,6 @@ const Cushion = ({navigation,route}) => {
 
     setRadioButtons(updatedRadioButtons);
 
-
     // Populate gallery images if ksImageUrls is available
     if (
       Array.isArray(requestData.ksImageUrls) &&
@@ -183,63 +176,68 @@ const Cushion = ({navigation,route}) => {
 
     // Populate other fields as needed
     setSelectedId(requestData.checkBox?.toString() || '');
-  setFrontBack(requestData.frontBack?.toString() || '');
-  setFrontBackNumber(requestData.frontBackNumber?.toString() || '');
-  setBack(requestData.back?.toString() || '');
-  setBackNumber(requestData.backNumber?.toString() || '');
-  setLining(requestData.lining?.toString() || '');
-  setLiningNumber(requestData.liningNumber?.toString() || '');
-  setStitching(requestData.stitching?.toString() || '');
-  setStitchingNumber(requestData.stitchingNumber?.toString() || '');
-  setFinishing(requestData.finishing?.toString() || '');
-  setFinishingNumber(requestData.finishingNumber?.toString() || '');
-  setZip(requestData.zip?.toString() || '');
-  setZipNumber(requestData.zipNumber?.toString() || '');
-  setPrinting(requestData.printing?.toString() || '');
-  setPrintingNumber(requestData.printingNumber?.toString() || '');
-  setEmbroiderChenille(requestData.embroiderChenille?.toString() || '');
-  setEmbroiderChenilleNumber(requestData.embroiderChenilleNumber?.toString() || '');
-  setHandWork(requestData.handWork?.toString() || '');
-  setHandWorkNumber(requestData.handWorkNumber?.toString() || '');
-  setFringes(requestData.fringes?.toString() || '');
-  setFringesNumber(requestData.fringesNumber?.toString() || '');
-  setPomPom(requestData.pomPom?.toString() || '');
-  setPomPomNumber(requestData.pomPomNumber?.toString() || '');
-  setMiscellaneous(requestData.miscellaneous?.toString() || '');
-  setMiscellaneousNumber(requestData.miscellaneousNumber?.toString() || '');
-  setExtra1(requestData.extra1?.toString() || '');
-  setExtra1Number(requestData.extra1Number?.toString() || '');
-  setExtra2(requestData.extra2?.toString() || '');
-  setExtra2Number(requestData.extra2Number?.toString() || '');
-  setSubTotal1(requestData.subTotal1?.toString() || '');
-  setSubTotal1Number(requestData.subTotal1Number?.toString() || '');
-  setOverheadsAmount(requestData.overheadsAmount?.toString() || '');
-  setOverheadsNumber(requestData.overheadsNumber?.toString() || '');
-  setSubTotal2(requestData.subTotal2?.toString() || '');
-  setSubTotal2Number(requestData.subTotal2Number?.toString() || '');
-  setPackaging(requestData.packaging?.toString() || '');
-  setPackagingNumber(requestData.packagingNumber?.toString() || '');
-  setTesting(requestData.testing?.toString() || '');
-  setTestingNumber(requestData.testingNumber?.toString() || '');
-  setFilling(requestData.filling?.toString() || '');
-  setFillingNumber(requestData.fillingNumber?.toString() || '');
-  setTransportation(requestData.transportation?.toString() || '');
-  setTransportationNumber(requestData.transportationNumber?.toString() || '');
-  setSubTotal3(requestData.subTotal3?.toString() || '');
-  setSubTotal3Number(requestData.subTotal3Number?.toString() || '');
-  setMarginAmount(requestData.marginAmount?.toString() || '');
-  setMarginNumber(requestData.marginNumber?.toString() || '');
-  setSubTotal4(requestData.subTotal4?.toString() || '');
-  setSubTotal4Number(requestData.subTotal4Number?.toString() || '');
-  setUnitPrice(requestData.unitPrice?.toString() || '');
-  setUnitPriceNumber(requestData.unitPriceNumber?.toString() || '');
-  setDescription(requestData.description?.toString() || '');
-
+    setSize(requestData.size?.toString() || '');
+    setsizeNumber(requestData.sizeNumber?.toString() || '');
+    setFrontBack(requestData.frontBack?.toString() || '');
+    setFrontBackNumber(requestData.frontBackNumber?.toString() || '');
+    setBack(requestData.back?.toString() || '');
+    setBackNumber(requestData.backNumber?.toString() || '');
+    setLining(requestData.lining?.toString() || '');
+    setLiningNumber(requestData.liningNumber?.toString() || '');
+    setStitching(requestData.stitching?.toString() || '');
+    setStitchingNumber(requestData.stitchingNumber?.toString() || '');
+    setFinishing(requestData.finishing?.toString() || '');
+    setFinishingNumber(requestData.finishingNumber?.toString() || '');
+    setZip(requestData.zip?.toString() || '');
+    setZipNumber(requestData.zipNumber?.toString() || '');
+    setPrinting(requestData.printing?.toString() || '');
+    setPrintingNumber(requestData.printingNumber?.toString() || '');
+    setEmbroiderChenille(requestData.embroiderChenille?.toString() || '');
+    setEmbroiderChenilleNumber(
+      requestData.embroiderChenilleNumber?.toString() || '',
+    );
+    setHandWork(requestData.handWork?.toString() || '');
+    setHandWorkNumber(requestData.handWorkNumber?.toString() || '');
+    setFringes(requestData.fringes?.toString() || '');
+    setFringesNumber(requestData.fringesNumber?.toString() || '');
+    setPomPom(requestData.pomPom?.toString() || '');
+    setPomPomNumber(requestData.pomPomNumber?.toString() || '');
+    setMiscellaneous(requestData.miscellaneous?.toString() || '');
+    setMiscellaneousNumber(requestData.miscellaneousNumber?.toString() || '');
+    setExtra1(requestData.extra1?.toString() || '');
+    setExtra1Number(requestData.extra1Number?.toString() || '');
+    setExtra2(requestData.extra2?.toString() || '');
+    setExtra2Number(requestData.extra2Number?.toString() || '');
+    setSubTotal1(requestData.subTotal1?.toString() || '');
+    setSubTotal1Number(requestData.subTotal1Number?.toString() || '');
+    setOverheadsAmount(requestData.overheadsAmount?.toString() || '');
+    setOverheadsNumber(requestData.overheadsNumber?.toString() || '');
+    setSubTotal2(requestData.subTotal2?.toString() || '');
+    setSubTotal2Number(requestData.subTotal2Number?.toString() || '');
+    setPackaging(requestData.packaging?.toString() || '');
+    setPackagingNumber(requestData.packagingNumber?.toString() || '');
+    setTesting(requestData.testing?.toString() || '');
+    setTestingNumber(requestData.testingNumber?.toString() || '');
+    setFilling(requestData.filling?.toString() || '');
+    setFillingNumber(requestData.fillingNumber?.toString() || '');
+    setTransportation(requestData.transportation?.toString() || '');
+    setTransportationNumber(requestData.transportationNumber?.toString() || '');
+    setSubTotal3(requestData.subTotal3?.toString() || '');
+    setSubTotal3Number(requestData.subTotal3Number?.toString() || '');
+    setMarginAmount(requestData.marginAmount?.toString() || '');
+    setMarginNumber(requestData.marginNumber?.toString() || '');
+    setSubTotal4(requestData.subTotal4?.toString() || '');
+    setSubTotal4Number(requestData.subTotal4Number?.toString() || '');
+    setUnitPrice(requestData.unitPrice?.toString() || '');
+    setUnitPriceNumber(requestData.unitPriceNumber?.toString() || '');
+    setDescription(requestData.description?.toString() || '');
 
     setDataLoaded(true); // Mark data as loaded
   }, [costingRequest]);
 
   const handleSubmit = async () => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     try {
       const formData = new FormData();
       const costId = String(costingRequest?.costingRequest?.[0]?.costId || 0);
@@ -255,6 +253,9 @@ const Cushion = ({navigation,route}) => {
       );
       // Append all form fields to formData
       formData.append('costId', costId);
+       
+      formData.append('size', size || '');
+      formData.append('sizeNumber', sizeNumber || 0);
       formData.append('frontBack', frontBack || '');
       formData.append('frontBackNumber', frontBackNumber || 0);
       formData.append('back', back || '');
@@ -307,9 +308,9 @@ const Cushion = ({navigation,route}) => {
       formData.append('unitPriceNumber', unitPriceNumber || 0);
       formData.append('sizeNumber', 0);
       formData.append('size', '');
-            formData.append('userId', userId);
+      formData.append('userId', userId);
 
-            formData.append('conversation',  '');
+      formData.append('conversation', '');
 
       formData.append('description', description || '');
       formData.append('companyId', companyId || '');
@@ -319,7 +320,7 @@ const Cushion = ({navigation,route}) => {
 
       // Append gallery images if available
       if (galleryImages && Array.isArray(galleryImages)) {
-        galleryImages.forEach((image) => {
+        galleryImages.forEach(image => {
           formData.append('files', {
             uri: image.uri,
             type: image.mime,
@@ -327,12 +328,12 @@ const Cushion = ({navigation,route}) => {
           });
         });
       }
-  
+
       console.log('FormData Preview:', formData);
       // API URL
       const apiUrl0 = `${global?.userData?.productURL}${API.ADD_COSTING}`;
       console.log('Final API URL:', apiUrl0);
-  
+
       // Make the API call
       const response = await axios.post(apiUrl0, formData, {
         headers: {
@@ -340,9 +341,9 @@ const Cushion = ({navigation,route}) => {
           Authorization: `Bearer ${global?.userData?.token?.access_token}`,
         },
       });
-  
+
       console.log('API Response:', response.data);
-  
+
       // Show success message and navigate
       Alert.alert('Success', 'Costing data has been added successfully.', [
         {
@@ -351,22 +352,12 @@ const Cushion = ({navigation,route}) => {
         },
       ]);
     } catch (error) {
-      if (error.response) {
-        // Handle response error
-        console.error('Error Response:', error.response.data);
-        Alert.alert('Error', `Failed to add costing data. Server responded with status: ${error.response.status}`);
-      } else if (error.request) {
-        // Handle no response error
-        console.error('Error Request:', error.request);
-        Alert.alert('Error', 'No response from the server. Please check the server connection.');
-      } else {
-        // Handle other errors
-        console.error('Error Message:', error.message);
-        Alert.alert('Error', `An error occurred: ${error.message}`);
-      }
+      console.error('Submission Error:', error);
+      Alert.alert('Error', 'Failed to add costing data. Please try again.');
+    } finally {
+      setIsSubmitting(false); // Re-enable the button after submission
     }
   };
-  
 
   const handleSelect = selectedId => {
     setSelectedId(selectedId);
@@ -532,8 +523,16 @@ const Cushion = ({navigation,route}) => {
               </TouchableOpacity>
               <Text style={styles.headerText}>Costing</Text>
             </View>
-            <TouchableOpacity onPress={handleSubmit} style={styles.rightSection}>
-              <Text style={styles.addCostingText}>ADD</Text>
+            <TouchableOpacity
+              onPress={!isSubmitting ? handleSubmit : null} // Prevent multiple submissions
+              disabled={isSubmitting} // Disable button when submitting
+              style={[
+                styles.rightSection,
+                {opacity: isSubmitting ? 0.5 : 1}, // Dim button when disabled
+              ]}>
+              <Text style={styles.addCostingText}>
+                {isSubmitting ? 'Submitting...' : 'ADD'}
+              </Text>
             </TouchableOpacity>
           </View>
           <View style={styles.radiobutheader}>
@@ -552,6 +551,8 @@ const Cushion = ({navigation,route}) => {
                   style={styles.lengthtext}
                   placeholder="Sizes Price"
                   placeholderTextColor="#000"
+                  value={size}
+                  onChangeText={setSize}
                 />
               </View>
               <View style={styles.lengthhead}>
@@ -559,6 +560,8 @@ const Cushion = ({navigation,route}) => {
                   style={styles.lengthtext}
                   placeholder="Size"
                   placeholderTextColor="#000"
+                  value={sizeNumber}
+                  onChangeText={setsizeNumber}
                 />
               </View>
             </View>
@@ -1284,7 +1287,7 @@ const styles = StyleSheet.create({
   imagePreviewContainer: {
     flexDirection: 'row',
     marginVertical: 5,
-    marginHorizontal:10
+    marginHorizontal: 10,
   },
   imagePreview: {
     width: 70,
