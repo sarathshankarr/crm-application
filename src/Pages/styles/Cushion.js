@@ -381,9 +381,6 @@ const Cushion = ({navigation,route}) => {
   const handleGoBack = () => {
     navigation.navigate('Costing');
   };
-  const removeImage = index => {
-    setGalleryImages(galleryImages.filter((_, i) => i !== index));
-  };
 
   const handleImagePicker = () => {
     ImagePicker.openPicker({
@@ -1162,11 +1159,6 @@ const Cushion = ({navigation,route}) => {
             {galleryImages.map((image, index) => (
               <View key={index} style={styles.imageContainer}>
                 <Image source={{uri: image.uri}} style={styles.imagePreview} />
-                <TouchableOpacity
-                  style={styles.removeButton}
-                  onPress={() => removeImage(index, 'gallery')}>
-                  <Text style={styles.removeButtonText}>x</Text>
-                </TouchableOpacity>
               </View>
             ))}
           </ScrollView>
@@ -1292,6 +1284,7 @@ const styles = StyleSheet.create({
   imagePreviewContainer: {
     flexDirection: 'row',
     marginVertical: 5,
+    marginHorizontal:10
   },
   imagePreview: {
     width: 70,

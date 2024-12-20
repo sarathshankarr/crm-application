@@ -175,8 +175,8 @@ const NewCosting = ({navigation, route}) => {
     setFridge1(requestData.f1?.toString() || '');
     setFridge2(requestData.f2?.toString() || '');
     setFridge5(requestData.f3?.toString() || '');
-    setFridge6(requestData.f4?.toString() || '');
-    setFridge7(requestData.f5?.toString() || '');
+    setFridge6(requestData.f6?.toString() || '');
+    setFridge7(requestData.f7?.toString() || '');
     setSelectedId(requestData.checkBox?.toString() || '');
 
     setDataLoaded(true); // Mark data as loaded
@@ -532,9 +532,7 @@ const NewCosting = ({navigation, route}) => {
       navigation.navigate('Cushion');
     }
   };
-  const removeImage = index => {
-    setGalleryImages(galleryImages.filter((_, i) => i !== index));
-  };
+
 
   const handleImagePicker = () => {
     ImagePicker.openPicker({
@@ -1404,11 +1402,7 @@ const NewCosting = ({navigation, route}) => {
             {galleryImages.map((image, index) => (
               <View key={index} style={styles.imageContainer}>
                 <Image source={{uri: image.uri}} style={styles.imagePreview} />
-                <TouchableOpacity
-                  style={styles.removeButton}
-                  onPress={() => removeImage(index, 'gallery')}>
-                  <Text style={styles.removeButtonText}>x</Text>
-                </TouchableOpacity>
+              
               </View>
             ))}
           </ScrollView>
@@ -1857,6 +1851,7 @@ const styles = StyleSheet.create({
   imagePreviewContainer: {
     flexDirection: 'row',
     marginVertical: 5,
+    marginHorizontal:10
   },
   imagePreview: {
     width: 70,
