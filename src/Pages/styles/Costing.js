@@ -286,25 +286,38 @@ const Costing = () => {
         style={styles.orderItem}
         onPress={async () => {
           try {
-            // Fetch added costing details dynamically for the selected costId
             if (item.costId) {
-              // Wait for the data to be fetched
               const fetchedAddedCostingDetails = await getAlladdedCostinDetails(item.costId);
   
               if (fetchedAddedCostingDetails) {
-                console.log("Navigating to NewCosting with details:", fetchedAddedCostingDetails);
-                
-                // Navigate to NewCosting screen with the fetched details
-                navigation.navigate('NewCosting', {
-                  costingRequest: fetchedAddedCostingDetails,
-                  costId: item.costId,  // Pass the costId along with details
-                });
+                // Log the fetched details for debugging
+                console.log('Fetched costing details:', fetchedAddedCostingDetails);
+  
+                // Extract the checkBox value from the first element of costingRequest
+                const checkBoxValue = fetchedAddedCostingDetails?.costingRequest?.[0]?.checkBox;
+  
+                console.log('Navigating based on checkBox:', checkBoxValue);
+  
+                // Navigate based on the checkBox value
+                if (checkBoxValue === 1) {
+                  navigation.navigate('NewCosting', {
+                    costingRequest: fetchedAddedCostingDetails,
+                    costId: item.costId,
+                  });
+                } else if (checkBoxValue === 2) {
+                  navigation.navigate('Cushion', {
+                    costingRequest: fetchedAddedCostingDetails,
+                    costId: item.costId,
+                  });
+                } else {
+                  Alert.alert('Error', 'Invalid or missing checkBox value.');
+                }
               } else {
                 console.log(`No added costing details found for costId: ${item.costId}`);
               }
             }
           } catch (error) {
-            console.error("Error fetching costing details:", error);
+            console.error('Error fetching costing details:', error);
           }
         }}
       >
@@ -314,6 +327,8 @@ const Costing = () => {
       </TouchableOpacity>
     );
   };
+  
+  
   
   
   

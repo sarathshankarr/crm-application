@@ -69,9 +69,11 @@ const Sidebar = ({navigation, route}) => {
   const isAdmin = loginuser?.role?.some(
     role => role.role.toLowerCase() === 'admin',
   );
-  const isDistributor = loginuser?.role?.some(
-    role => role.role.toLowerCase() === 'distributor',
-  );
+  
+  // const isDistributor = loginuser?.role?.some(
+  //   role => role.role.toLowerCase() === 'distributor',
+  // );
+  // isDistributor! && 
 
   // console.log('isAdmin============>', isAdmin);
   // console.log('isDistributor============>', isDistributor);
@@ -450,7 +452,7 @@ const Sidebar = ({navigation, route}) => {
             <Text style={styles.categoriestxt}>{Categories?.menuName}</Text>
           </TouchableOpacity>
         )}
-        {!isDistributor && hasDropdownItemsprodust && (
+        {hasDropdownItemsprodust && (
           <TouchableOpacity
             style={styles.inventoryhead}
             onPress={toggleDropdownfourth}>
@@ -570,7 +572,7 @@ const Sidebar = ({navigation, route}) => {
         )}
         {dropdownVisible && (
           <View style={styles.dropdown}>
-            {!isDistributor && hasDropdownProductInventory && (
+            {hasDropdownProductInventory && (
               <TouchableOpacity
                 style={styles.inventoryhead}
                 onPress={() => goToProductInventory('Product Inventory')}>
@@ -583,7 +585,7 @@ const Sidebar = ({navigation, route}) => {
                 </Text>
               </TouchableOpacity>
             )}
-            {!isDistributor && hasDropdownlocationwiseinventory && (
+            {hasDropdownlocationwiseinventory && (
               <TouchableOpacity
                 style={styles.inventoryhead}
                 onPress={() =>
@@ -626,7 +628,7 @@ const Sidebar = ({navigation, route}) => {
             <Text style={styles.ordertxt}>{distributorgrn?.menuName}</Text>
           </TouchableOpacity>
         )}
-        {!isDistributor && hasDropdowncompaign && (
+        { hasDropdowncompaign && (
           <TouchableOpacity
             style={styles.inventoryhead}
             onPress={toggleDropdownSecond}>
@@ -688,7 +690,7 @@ const Sidebar = ({navigation, route}) => {
             {/* Add more dropdown items here */}
           </View>
         )}
-        {!isDistributor && hasDropdownLocationTask && (
+        {hasDropdownLocationTask && (
           <TouchableOpacity
             onPress={goToCustomerLocation}
             style={styles.inventoryhead}>
@@ -699,7 +701,7 @@ const Sidebar = ({navigation, route}) => {
             <Text style={styles.ordertxt}>{LocationTask?.menuName}</Text>
           </TouchableOpacity>
         )}
-        {!isDistributor && hasDropdownattendance && (
+        {hasDropdownattendance && (
           <TouchableOpacity
             onPress={goToAttendence}
             style={styles.inventoryhead}>

@@ -56,7 +56,7 @@ const NewCosting = ({navigation, route}) => {
     {id: Date.now(), description: '', amnt: '', total: '0.00'},
   ]);
   const [amnt, setAmnt] = useState(0); // Default to 0
-  const [overheadsPercent, setOverheadsPercent] = useState('0'); // Default to 0%
+  const [overheadsPercent, setOverheadsPercent] = useState(''); // Default to 0%
   const [fridge1, setFridge1] = useState('');
   const [fridge2, setFridge2] = useState('');
   const [fridge1cal, setFridge1cal] = useState('');
@@ -69,6 +69,24 @@ const NewCosting = ({navigation, route}) => {
   const [description, setDescription] = useState('');
   const [conversation, setConversation] = useState('');
   const [galleryImages, setGalleryImages] = useState([]);
+  const [radioButtons, setRadioButtons] = useState([
+    {
+      id: '1',
+      label: 'Bathmat',
+      value: 'bathmat',
+      labelStyle: styles.radioLabel,
+      color: '#1F74BA',
+      disabled: false, // Add disabled property
+    },
+    {
+      id: '2',
+      label: 'Cushion',
+      value: 'cushion',
+      labelStyle: styles.radioLabel,
+      color: '#1F74BA',
+      disabled: false, // Add disabled property
+    },
+  ]);
 
   useEffect(() => {
     if (!costingRequest || !costingRequest.costingRequest) {
@@ -93,6 +111,17 @@ const NewCosting = ({navigation, route}) => {
 
     const requestData = costingRequestData[0];
     console.log('Processing first item of costingRequest:', requestData);
+    setSelectedId(requestData.checkBox?.toString() || '');
+
+    const updatedRadioButtons = radioButtons.map(button => {
+      if (button.id === '2') {
+        // Disable 'Cushion' if checkBox ID exists
+        return {...button, disabled: !!requestData.checkBox};
+      }
+      return button;
+    });
+
+    setRadioButtons(updatedRadioButtons);
 
     // Map through ksMaterials to populate yarnRows
     if (Array.isArray(requestData.ksMaterials)) {
@@ -148,6 +177,7 @@ const NewCosting = ({navigation, route}) => {
     setFridge5(requestData.f3?.toString() || '');
     setFridge6(requestData.f4?.toString() || '');
     setFridge7(requestData.f5?.toString() || '');
+    setSelectedId(requestData.checkBox?.toString() || '');
 
     setDataLoaded(true); // Mark data as loaded
   }, [costingRequest]);
@@ -492,22 +522,7 @@ const NewCosting = ({navigation, route}) => {
       setSelectedId('1');
     }, []),
   );
-  const radioButtons = [
-    {
-      id: '1',
-      label: 'Bathmat',
-      value: 'bathmat',
-      labelStyle: styles.radioLabel,
-      color: '#1F74BA',
-    },
-    {
-      id: '2',
-      label: 'Cushion',
-      value: 'cushion',
-      labelStyle: styles.radioLabel,
-      color: '#1F74BA',
-    },
-  ];
+
   const handleSelect = selectedId => {
     setSelectedId(selectedId);
 
@@ -662,7 +677,7 @@ const NewCosting = ({navigation, route}) => {
           onPress: () => navigation.navigate('Costing'), // Navigate to Costing screen
         },
       ]);
-      } catch (error) {
+    } catch (error) {
       if (error.response) {
         // The request was made and the server responded with a status code that falls out of the range of 2xx
         console.error('Error Response:', error.response.data);
@@ -725,7 +740,7 @@ const NewCosting = ({navigation, route}) => {
               <View style={styles.lengthhead}>
                 <TextInput
                   style={styles.lengthtext}
-                  placeholder="Length"
+                  placeholder="0"
                   placeholderTextColor="#000"
                   keyboardType="numeric"
                   value={length}
@@ -735,7 +750,7 @@ const NewCosting = ({navigation, route}) => {
               <View style={styles.Breadthhead}>
                 <TextInput
                   style={styles.Breadthtext}
-                  placeholder="Breadth"
+                  placeholder="0"
                   placeholderTextColor="#000"
                   keyboardType="numeric"
                   value={breadth}
@@ -808,7 +823,7 @@ const NewCosting = ({navigation, route}) => {
                 <View style={styles.Pricehead}>
                   <TextInput
                     style={styles.Pricetext}
-                    placeholder="Price"
+                    placeholder="0"
                     placeholderTextColor="#000"
                     keyboardType="decimal-pad" // Allows decimals
                     value={row.price.toString()}
@@ -824,7 +839,7 @@ const NewCosting = ({navigation, route}) => {
                 <View style={styles.Consumptionhead}>
                   <TextInput
                     style={styles.Consumptiontext}
-                    placeholder="Consumption"
+                    placeholder="0"
                     placeholderTextColor="#000"
                     keyboardType="decimal-pad" // Allows decimals
                     value={row.consumption.toString()}
@@ -908,7 +923,7 @@ const NewCosting = ({navigation, route}) => {
               <View style={styles.lengthhead}>
                 <TextInput
                   style={styles.lengthtext}
-                  placeholder="Wastage Percent"
+                  placeholder="0"
                   placeholderTextColor="#000"
                   keyboardType="numeric"
                   value={wastagePercent}
@@ -959,7 +974,7 @@ const NewCosting = ({navigation, route}) => {
               <View style={styles.lengthhead}>
                 <TextInput
                   style={styles.lengthtext}
-                  placeholder="Dying Percent"
+                  placeholder="0"
                   placeholderTextColor="#000"
                   keyboardType="numeric" // Ensure numeric input
                   value={dyingPercent}
@@ -985,7 +1000,7 @@ const NewCosting = ({navigation, route}) => {
               <View style={styles.lengthhead}>
                 <TextInput
                   style={styles.lengthtext}
-                  placeholder="Weaving Percent"
+                  placeholder="0"
                   placeholderTextColor="#000"
                   value={weavingPercent} // Show the current value of Weaving Percent
                   onChangeText={text => setWeavingPercent(text)} // Update the Weaving Percent value
@@ -1011,7 +1026,7 @@ const NewCosting = ({navigation, route}) => {
               <View style={styles.lengthhead}>
                 <TextInput
                   style={styles.lengthtext}
-                  placeholder="Piping Percent"
+                  placeholder="0"
                   placeholderTextColor="#000"
                   value={pipingPercent} // Show the current value of Piping Percent
                   onChangeText={text => setPipingPercent(text)} // Update the Piping Percent value
@@ -1103,7 +1118,7 @@ const NewCosting = ({navigation, route}) => {
               <View style={styles.lengthhead}>
                 <TextInput
                   style={styles.lengthtext}
-                  placeholder="Overheads Percent"
+                  placeholder="0"
                   placeholderTextColor="#000"
                   keyboardType="numeric"
                   value={overheadsPercent} // Display the current percentage value
@@ -1157,7 +1172,7 @@ const NewCosting = ({navigation, route}) => {
               <View style={styles.lengthheadfridge}>
                 <TextInput
                   style={styles.lengthtext}
-                  placeholder="fridge1"
+                  placeholder="0"
                   placeholderTextColor="#000"
                   value={fridge1} // Bind the fridge1 value to state
                   onChangeText={setFridge1} // Update fridge1 state on input change
@@ -1167,7 +1182,7 @@ const NewCosting = ({navigation, route}) => {
               <View style={styles.lengthheadfridge}>
                 <TextInput
                   style={styles.Breadthtext}
-                  placeholder="fridge2"
+                  placeholder="0"
                   placeholderTextColor="#000"
                   value={fridge2} // Bind the fridge2 value to state
                   onChangeText={setFridge2} // Update fridge2 state on input change
@@ -1216,7 +1231,7 @@ const NewCosting = ({navigation, route}) => {
               <View style={styles.lengthheadfridge}>
                 <TextInput
                   style={styles.Breadthtext}
-                  placeholder="fridge7"
+                  placeholder="0"
                   placeholderTextColor="#000"
                   value={fridge7} // Bind fridge7 value to state
                   onChangeText={setFridge7} // Update fridge7 state on input change
