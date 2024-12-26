@@ -21,6 +21,14 @@ import axios from 'axios';
 
 const NewCosting = ({navigation, route}) => {
   const {costingRequest} = route?.params || {};
+  const [costId, setCostId] = useState(null); // Initialize costId in the state
+  
+  useEffect(() => {
+    // Get the costId when the component loads
+    const id = costingRequest?.costingRequest?.[0]?.costId;
+    setCostId(id);
+  }, [costingRequest]); // This effect will run when costingRequest changes
+
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const costingRequestData = costingRequest?.costingRequest;
@@ -564,9 +572,10 @@ const NewCosting = ({navigation, route}) => {
         costingRequest?.costingRequest?.[0]?.createOn || 0,
       );
       const ksImageName = String(
-        costingRequest?.costingRequest?.[0]?.ksImageName,
+        costingRequest?.costingRequest?.[0]?.ksImageName ||'',
       );
-
+      console.log('ksImageName:', ksImageName);
+      
       // Append individual fields
       formData.append('costId', costId);
       formData.append('locationLength', length || '');
@@ -615,7 +624,12 @@ const NewCosting = ({navigation, route}) => {
       formData.append('companyId', companyId || '');
       formData.append('conversation', conversation || 0);
       formData.append('userId', userId);
-      formData.append('ksImageName', ksImageName);
+      console.log('ksImageName:', ksImageName); // Debugging log
+      if (ksImageName) {
+        formData.append('ksImageName', ksImageName);
+      } else {
+        console.warn('ksImageName is empty or null.');
+      }
 
       const formattedInputFields = inputFields.map(field => ({
         description: field.description || '', // Use a default empty string if description is not set.
@@ -642,16 +656,25 @@ const NewCosting = ({navigation, route}) => {
 
       formData.append('description', description || '');
 
+      // if (galleryImages && Array.isArray(galleryImages)) {
+      //   galleryImages.forEach(image => {
+      //     formData.append('files', {
+      //       uri: image.uri,
+      //       type: image.mime,
+      //       name: image.uri.split('/').pop(),
+      //     });
+      //   });
+      // }
+      
       if (galleryImages && Array.isArray(galleryImages)) {
         galleryImages.forEach(image => {
           formData.append('files', {
             uri: image.uri,
-            type: image.mime,
+            type: image.mime || 'application/octet-stream', // Default content-type if mime is not present
             name: image.uri.split('/').pop(),
           });
         });
       }
-
       console.log('FormData Preview:', formData);
 
       const apiUrl0 = `${global?.userData?.productURL}${API.ADD_COSTING}`;
@@ -663,6 +686,7 @@ const NewCosting = ({navigation, route}) => {
           'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${global?.userData?.token?.access_token}`,
         },
+        timeout: 30000, // Set a timeout of 30 seconds
       });
 
       console.log('API Response:', response.data);
@@ -696,7 +720,9 @@ const NewCosting = ({navigation, route}) => {
                   source={require('../../../assets/back_arrow.png')}
                 />
               </TouchableOpacity>
-              <Text style={styles.headerText}>Costing</Text>
+              <Text style={styles.headerText}>
+          {costId === 0 || !costId ? 'New Costing' : ` ${costId}`}
+        </Text>
             </View>
             <TouchableOpacity
               onPress={!isSubmitting ? handleSubmit : null} // Prevent multiple submissions
@@ -706,8 +732,8 @@ const NewCosting = ({navigation, route}) => {
                 {opacity: isSubmitting ? 0.5 : 1}, // Dim button when disabled
               ]}>
               <Text style={styles.addCostingText}>
-                {isSubmitting ? 'Submitting...' : 'ADD'}
-              </Text>
+          {isSubmitting ? 'Submitting...' : costId === 0 || !costId ? 'Add' : 'Save'}
+        </Text>
             </TouchableOpacity>
           </View>
           <View style={styles.radiobutheader}>

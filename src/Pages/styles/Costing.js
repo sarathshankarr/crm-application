@@ -321,19 +321,12 @@ const Costing = () => {
           }
         }}
       >
-        <Text style={styles.orderIdText}>{item.costId}</Text>
-        <Text style={styles.customerText}>{item.userName}</Text>
-        <Text style={styles.qtyText}>{item.createdDate}</Text>
+        <Text style={styles.orderIdText}>{item?.costId}</Text>
+        <Text style={styles.customerText}>{item?.userName}</Text>
+        <Text style={styles.qtyText}>{item?.createdDate}</Text>
       </TouchableOpacity>
     );
   };
-  
-  
-  
-  
-  
-  
-  
   
 
   return (

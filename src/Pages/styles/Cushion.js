@@ -21,6 +21,14 @@ import axios from 'axios';
 
 const Cushion = ({navigation, route}) => {
   const {costingRequest} = route?.params || {};
+  const [costId, setCostId] = useState(null); // Initialize costId in the state
+
+  useEffect(() => {
+    // Get the costId when the component loads
+    const id = costingRequest?.costingRequest?.[0]?.costId;
+    setCostId(id);
+  }, [costingRequest]); // This effect will run when costingRequest changes
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const userData = useSelector(state => state.loggedInUser);
   const userId = userData?.userId;
@@ -253,7 +261,7 @@ const Cushion = ({navigation, route}) => {
       );
       // Append all form fields to formData
       formData.append('costId', costId);
-       
+
       formData.append('size', size || '');
       formData.append('sizeNumber', sizeNumber || 0);
       formData.append('frontBack', frontBack || '');
@@ -317,18 +325,32 @@ const Cushion = ({navigation, route}) => {
       formData.append('checkBox', selectedId || '');
       formData.append('createOn', createOn);
       formData.append('createBy', createBy);
-
+      if (ksImageName) {
+        formData.append('ksImageName', ksImageName);
+      } else {
+        console.warn('ksImageName is empty or null.');
+      }
       // Append gallery images if available
+      // if (galleryImages && Array.isArray(galleryImages)) {
+      //   galleryImages.forEach(image => {
+      //     formData.append('files', {
+      //       uri: image.uri,
+      //       type: image.mime,
+      //       name: image.uri.split('/').pop(),
+      //     });
+      //   });
+      // }
+      
       if (galleryImages && Array.isArray(galleryImages)) {
         galleryImages.forEach(image => {
           formData.append('files', {
             uri: image.uri,
-            type: image.mime,
+            type: image.mime || 'application/octet-stream', // Default content-type if mime is not present
             name: image.uri.split('/').pop(),
           });
         });
       }
-
+      
       console.log('FormData Preview:', formData);
       // API URL
       const apiUrl0 = `${global?.userData?.productURL}${API.ADD_COSTING}`;
@@ -521,7 +543,9 @@ const Cushion = ({navigation, route}) => {
                   source={require('../../../assets/back_arrow.png')}
                 />
               </TouchableOpacity>
-              <Text style={styles.headerText}>Costing</Text>
+              <Text style={styles.headerText}>
+                {costId === 0 || !costId ? 'New Costing' : ` ${costId}`}
+              </Text>
             </View>
             <TouchableOpacity
               onPress={!isSubmitting ? handleSubmit : null} // Prevent multiple submissions
@@ -531,7 +555,11 @@ const Cushion = ({navigation, route}) => {
                 {opacity: isSubmitting ? 0.5 : 1}, // Dim button when disabled
               ]}>
               <Text style={styles.addCostingText}>
-                {isSubmitting ? 'Submitting...' : 'ADD'}
+                {isSubmitting
+                  ? 'Submitting...'
+                  : costId === 0 || !costId
+                  ? 'Add'
+                  : 'Save'}
               </Text>
             </TouchableOpacity>
           </View>
