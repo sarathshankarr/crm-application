@@ -104,17 +104,20 @@
 
 // export default HomeScreen;
 
-import React from 'react';
+import React, { useContext } from 'react';
 import {View, TouchableOpacity, Image, StyleSheet, SafeAreaView} from 'react-native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import Categories from '../bottom/Categories';
 import Order from '../bottom/Order';
 import CommonHeader from '../components/CommonHeader';
 import Home from '../bottom/Home';
+import { ColorContext } from '../components/colortheme/colorTheme';
 
 const Bottom = createBottomTabNavigator();
 
 const HomeScreen = ({navigation}) => {
+  const { colors } = useContext(ColorContext);
+  const styles = getStyles(colors);
   return (
     <SafeAreaView style={styles.container}>
       <Bottom.Navigator
@@ -136,7 +139,7 @@ const HomeScreen = ({navigation}) => {
                   style={{
                     height: focused ? 30 : 25,
                     width: focused ? 30 : 25,
-                    tintColor: focused ? '#1F74BA' : '#000',
+                    tintColor: focused ? colors.color2 : '#000',
                   }}
                 />
               </View>
@@ -158,7 +161,7 @@ const HomeScreen = ({navigation}) => {
               />
             ) : null;
           },
-          tabBarActiveTintColor: '#390050',
+          tabBarActiveTintColor: colors.color2,
           tabBarInactiveTintColor: '#000',
           tabBarStyle: {
             borderRadius: 30,
@@ -189,7 +192,7 @@ const HomeScreen = ({navigation}) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'transparent', 
@@ -201,7 +204,7 @@ const styles = StyleSheet.create({
   },
   selectedTab: {
     borderTopWidth: 4,
-    borderTopColor: '#1F74BA',
+    borderTopColor:  colors.color2,
     width: '70%',
   },
 });

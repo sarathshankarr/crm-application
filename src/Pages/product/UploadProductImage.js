@@ -8,14 +8,17 @@ import {
   ScrollView,
   SafeAreaView,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import ImagePicker from 'react-native-image-crop-picker';
 import axios from 'axios';
 import {useSelector} from 'react-redux';
 import {API} from '../../config/apiConfig';
 import {useNavigation} from '@react-navigation/native';
+import { ColorContext } from '../../components/colortheme/colorTheme';
 
 const UploadProductImage = ({route}) => {
+  const { colors } = useContext(ColorContext);
+  const styles = getStyles(colors);
   const styleDetails = route?.params?.Style;
   console.log("styleDetails12344",styleDetails)
   const [productStyle, setProductStyle] = useState({});
@@ -473,7 +476,7 @@ const UploadProductImage = ({route}) => {
       </TouchableOpacity> */}
       <TouchableOpacity
         style={{
-          backgroundColor: saveBtn ? '#1F74BA' : 'skyblue',
+          backgroundColor: saveBtn ? colors.color2: 'skyblue',
           padding: 10,
           borderRadius: 5,
           marginTop: 20,
@@ -493,7 +496,7 @@ const UploadProductImage = ({route}) => {
 
 export default UploadProductImage;
 
-const styles = StyleSheet.create({
+const getStyles = (colors) => StyleSheet.create({
   menuimg: {
     height: 30,
     width: 30,
@@ -517,7 +520,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderColor: '#000',
     borderWidth: 1,
-    backgroundColor: '#1F74BA',
+    backgroundColor: colors.color2,
   },
   saveButtonText: {
     color: '#fff',

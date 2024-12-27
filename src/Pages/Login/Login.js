@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {
   Alert,
   Image,
@@ -30,8 +30,11 @@ import CustomCheckBox from '../../components/CheckBox';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import useOnlineStatus from '../../utils/hooks/online/useOnlineStatus';
 import store from '../../redux/store/Store';
+import { ColorContext } from '../../components/colortheme/colorTheme';
 
 const Login = () => {
+  const { colors } = useContext(ColorContext);
+  const styles = getStyles(colors);
   const navigation = useNavigation();
   const dispatch = useDispatch();
   const [username, setUsername] = useState('');
@@ -318,15 +321,47 @@ const Login = () => {
     }
   };
 
+  // const getRollMenu = async () => {
+  //   try {
+  //     const state = store.getState();
+  //     const roleIdd = state?.loggedInUser?.roleId;
+  //     const companyIdd = state?.loggedInUser?.companyId;
+  
+  //     console.log('Role ID:', roleIdd, 'Company ID:', companyIdd);
+  
+  //     const apiUrl = `${global?.userData?.productURL}${API.GET_ALL_THE_ROLE_MENU}/${roleIdd}/${companyIdd}`;
+  //     console.log('apiUrl:', apiUrl);
+  
+  //     const response = await axios.get(apiUrl, {
+  //       headers: {
+  //         Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+  //       },
+  //     });
+  
+  //     const roleMenuData = response.data.response.roleMenuMapList;
+  //     await AsyncStorage.setItem('roleMenu', JSON.stringify(roleMenuData));
+  //     setRoleMenu(roleMenuData);
+  //     console.log('Role Menu Data:', roleMenuData);
+  //   } catch (err) {
+  //     console.error('Error fetching role menu:', err);
+  //   }
+  // };
+  
+  
+  
   const getRollMenu = async () => {
     try {
       const state = store.getState();
       const roleIdd = state?.loggedInUser?.roleId;
       const companyIdd = state?.loggedInUser?.companyId;
   
-      console.log('Role ID:', roleIdd, 'Company ID:', companyIdd);
+      // Ensure `companyId` is a single value or processed correctly
+      const companyIdArray = companyIdd?.split(',') || [];
+      const companyId = companyIdArray[0]; // Pick the first `companyId` as an example
   
-      const apiUrl = `${global?.userData?.productURL}${API.GET_ALL_THE_ROLE_MENU}/${roleIdd}/${companyIdd}`;
+      console.log('Role ID:', roleIdd, 'Company ID:', companyId);
+  
+      const apiUrl = `${global?.userData?.productURL}${API.GET_ALL_THE_ROLE_MENU}/${roleIdd}/${companyId}`;
       console.log('apiUrl:', apiUrl);
   
       const response = await axios.get(apiUrl, {
@@ -343,9 +378,6 @@ const Login = () => {
       console.error('Error fetching role menu:', err);
     }
   };
-  
-  
-  
   
   
   
@@ -659,7 +691,7 @@ const Login = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors) => StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 20,
@@ -719,7 +751,7 @@ const styles = StyleSheet.create({
   button: {
     width: '100%',
     height: 50,
-    backgroundColor: '#1F74BA',
+    backgroundColor: colors.color2,
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 5,

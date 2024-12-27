@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useContext} from 'react';
 import {
   View,
   TouchableOpacity,
@@ -22,11 +22,14 @@ import {API} from '../config/apiConfig';
 import axios from 'axios';
 import NewCategoryUi from '../Pages/newCategoriesUi/NewCategoryUi';
 import FastImage from 'react-native-fast-image';
+import { ColorContext } from '../components/colortheme/colorTheme';
 
 const Tab = createMaterialTopTabNavigator();
 
 const CustomTabBar = ({state, descriptors, route}) => {
   const navigation = useNavigation();
+  const { colors } = useContext(ColorContext);
+  const styles = getStyles(colors);
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [companyLogo, setCompanyLogo] = useState(null);
@@ -234,7 +237,7 @@ const CustomTabBar = ({state, descriptors, route}) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors) => StyleSheet.create({
   tabContainer: {
     flexDirection: 'row',
     justifyContent: 'space-evenly',
@@ -254,7 +257,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   activeTabButton: {
-    backgroundColor: '#1F74BA',
+    backgroundColor: colors.color2,
     borderBottomColor: '#000',
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,

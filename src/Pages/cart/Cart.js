@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {
   Alert,
   FlatList,
@@ -32,8 +32,11 @@ import ModalComponent from '../../components/ModelComponent';
 import {API} from '../../config/apiConfig';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {ColorContext} from '../../components/colortheme/colorTheme';
 
 const Cart = () => {
+  const {colors} = useContext(ColorContext);
+  const style = getStyles(colors);
   const userRole = useSelector(state => state.userRole) || '';
   const loggedInUser = useSelector(state => state.loggedInUser);
   const dispatch = useDispatch();
@@ -48,7 +51,7 @@ const Cart = () => {
 
   const [inputValuess, setInputValuess] = useState({});
   const cartItems = useSelector(state => state.cartItems);
-  
+
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [selatedDate, setSelectedDate] = useState('Expected delivery date');
   const [modalVisible, setModalVisible] = useState(false);
@@ -102,7 +105,9 @@ const Cart = () => {
   const [loading, setLoading] = useState(false); // For loading state
   const [error, setError] = useState(null); // To handle errors
   const [stylesData, setStylesData] = useState([]);
-  const currentScreen = useSelector(state => state.cartItems.currentSourceScreen);
+  const currentScreen = useSelector(
+    state => state.cartItems.currentSourceScreen,
+  );
 
   const [barcodeList, setBarcodeList] = useState([]);
   const [isAlertVisible, setIsAlertVisible] = useState(false);
@@ -122,7 +127,7 @@ const Cart = () => {
 
   const handleOptionSelect = option => {
     setSelectedOption(option);
-    setSearchQueryCode(''); 
+    setSearchQueryCode('');
     setIsDropdownVisible(false);
   };
 
@@ -147,7 +152,7 @@ const Cart = () => {
       .then(response => {
         console.log('Fetched Data:', response.data);
         const data = response?.data || [];
-  
+
         if (
           data.length === 0 &&
           (trimmedQuery.length === 11 || trimmedQuery.length === 13)
@@ -162,7 +167,7 @@ const Cart = () => {
                   setSearchQueryCode(''); // Clear the search query when "OK" is pressed
                 },
               },
-            ]
+            ],
           );
         } else {
           setFetchedData(data); // Store fetched data if needed elsewhere
@@ -305,7 +310,8 @@ const Cart = () => {
 
         // Check if the trimmedQuery is exactly 11 digits long
         if (
-          (trimmedQuery.trim().length === 11 || trimmedQuery.trim().length === 13) &&
+          (trimmedQuery.trim().length === 11 ||
+            trimmedQuery.trim().length === 13) &&
           packagesList.some(pkg => pkg.packageId === 0)
         ) {
           console.log('Alert conditions met, showing alert');
@@ -321,9 +327,9 @@ const Cart = () => {
                   setSearchQueryCode(''); // Clear the search query when "OK" is pressed
                 },
               },
-            ]
+            ],
           );
-          
+
           return; // Stop further execution
         }
 
@@ -2021,56 +2027,55 @@ const Cart = () => {
             </Text>
           </View>
           {package_barcode_flag !== 0 && (
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              marginRight: 2,
-            }}>
-            
-            <Text
+            <View
               style={{
-                color: '#000',
-                fontWeight: 'bold',
-                fontSize: 15,
-                color: '#000',
+                flexDirection: 'row',
+                alignItems: 'center',
+                marginRight: 2,
               }}>
-              Qr-Scanner
-            </Text>
-              
-            <TouchableOpacity
-              style={{marginHorizontal: 10, alignItems: 'center'}}
-              onPress={toggleSearchVisibility}>
-              <Image
-                style={{height: 20, width: 20}}
-                source={require('../../../assets/dropdown.png')}
-              />
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() =>
-                navigation.navigate('QRCodeScanner', {
-                  onRead: scannedCode => {
-                    if (scannedCode) {
-                      setSearchQueryCode(scannedCode); // Set the scanned code in the search input
-                      if (selectedOption === 'Style') {
-                        getStyle(scannedCode); // Fetch style data based on the scanned code
-                      } else if (selectedOption === 'Package') {
-                        getPackage(scannedCode); // Fetch package data based on the scanned code
+              <Text
+                style={{
+                  color: '#000',
+                  fontWeight: 'bold',
+                  fontSize: 15,
+                  color: '#000',
+                }}>
+                Qr-Scanner
+              </Text>
+
+              <TouchableOpacity
+                style={{marginHorizontal: 10, alignItems: 'center'}}
+                onPress={toggleSearchVisibility}>
+                <Image
+                  style={{height: 20, width: 20}}
+                  source={require('../../../assets/dropdown.png')}
+                />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() =>
+                  navigation.navigate('QRCodeScanner', {
+                    onRead: scannedCode => {
+                      if (scannedCode) {
+                        setSearchQueryCode(scannedCode); // Set the scanned code in the search input
+                        if (selectedOption === 'Style') {
+                          getStyle(scannedCode); // Fetch style data based on the scanned code
+                        } else if (selectedOption === 'Package') {
+                          getPackage(scannedCode); // Fetch package data based on the scanned code
+                        }
                       }
-                    }
-                  },
-                })
-              }
-              style={{
-                marginHorizontal: 11,
-              }}>
-              <Image
-                style={{height: 27, width: 27}}
-                source={require('../../../assets/qr-scan.png')}
-              />
-            </TouchableOpacity>
-          </View>
-        )}
+                    },
+                  })
+                }
+                style={{
+                  marginHorizontal: 11,
+                }}>
+                <Image
+                  style={{height: 27, width: 27}}
+                  source={require('../../../assets/qr-scan.png')}
+                />
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
         {isSearchVisible && (
           <View>
@@ -2637,10 +2642,9 @@ const Cart = () => {
                             </Text>
                           </View>
                           <View style={style.buttonsContainer}>
-                            <TouchableOpacity onPress={() => openModal(item)}
-                               disabled={item.sourceScreen === 'PackageDetail'} 
-                              >
-
+                            <TouchableOpacity
+                              onPress={() => openModal(item)}
+                              disabled={item.sourceScreen === 'PackageDetail'}>
                               <Image
                                 style={style.buttonIcon}
                                 source={require('../../../assets/edit.png')}
@@ -2957,7 +2961,7 @@ const Cart = () => {
               <View style={style.modalContentt}>
                 <View
                   style={{
-                    backgroundColor: '#1F74BA',
+                    backgroundColor: colors.color2,
                     borderRadius: 10,
                     marginHorizontal: 10,
                     flexDirection: 'row',
@@ -3190,7 +3194,7 @@ const Cart = () => {
                 <View style={style.modalContentt}>
                   <View
                     style={{
-                      backgroundColor: '#1F74BA',
+                      backgroundColor: colors.color2,
                       borderRadius: 10,
                       marginHorizontal: 10,
                       flexDirection: 'row',
@@ -3375,385 +3379,386 @@ const Cart = () => {
   );
 };
 
-const style = StyleSheet.create({
-  container: {
-    backgroundColor: '#fff',
-    flex: 1,
-  },
-  header: {
-    marginTop: 15,
-  },
-  txt: {
-    color: '#000',
-    fontSize: 15,
-    fontWeight: 'bold',
-    marginHorizontal: 5,
-  },
-  imgContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginHorizontal: 10,
-    marginVertical: 10,
-  },
-  itemContainer: {
-    marginBottom: 20,
-  },
-  image: {
-    width: 100,
-    height: 100,
-    marginRight: 10,
-  },
-  buttonsContainer: {
-    flexDirection: 'row',
-    marginLeft: 'auto',
-  },
-  buttonIcon: {
-    width: 25,
-    height: 25,
-    marginLeft: 10,
-  },
-  bottomContainer: {
-    alignItems: 'flex-start',
-    paddingVertical: 3,
-    backgroundColor: '#faf7f6',
-    alignSelf: 'center',
-  },
+const getStyles = colors =>
+  StyleSheet.create({
+    container: {
+      backgroundColor: '#fff',
+      flex: 1,
+    },
+    header: {
+      marginTop: 15,
+    },
+    txt: {
+      color: '#000',
+      fontSize: 15,
+      fontWeight: 'bold',
+      marginHorizontal: 5,
+    },
+    imgContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginHorizontal: 10,
+      marginVertical: 10,
+    },
+    itemContainer: {
+      marginBottom: 20,
+    },
+    image: {
+      width: 100,
+      height: 100,
+      marginRight: 10,
+    },
+    buttonsContainer: {
+      flexDirection: 'row',
+      marginLeft: 'auto',
+    },
+    buttonIcon: {
+      width: 25,
+      height: 25,
+      marginLeft: 10,
+    },
+    bottomContainer: {
+      alignItems: 'flex-start',
+      paddingVertical: 3,
+      backgroundColor: '#faf7f6',
+      alignSelf: 'center',
+    },
 
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 5,
-  },
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 5,
+    },
 
-  label1: {
-    color: '#000',
-    minWidth: 100, // Adjust width for alignment
-  },
+    label1: {
+      color: '#000',
+      minWidth: 100, // Adjust width for alignment
+    },
 
-  label2: {
-    color: '#000',
-    minWidth: 100, // Adjust width for alignment
-  },
+    label2: {
+      color: '#000',
+      minWidth: 100, // Adjust width for alignment
+    },
 
-  label3: {
-    color: '#000',
-    minWidth: 100, // Adjust width for alignment
-  },
+    label3: {
+      color: '#000',
+      minWidth: 100, // Adjust width for alignment
+    },
 
-  colon: {
-    marginLeft: 5, // Space between label and colon
-  },
+    colon: {
+      marginLeft: 5, // Space between label and colon
+    },
 
-  value: {
-    marginLeft: 5, // Space between colon and value
-  },
+    value: {
+      marginLeft: 5, // Space between colon and value
+    },
 
-  value2: {
-    marginLeft: 5, // Space between colon and value
-  },
+    value2: {
+      marginLeft: 5, // Space between colon and value
+    },
 
-  value3: {
-    marginLeft: 5, // Space between colon and value
-  },
+    value3: {
+      marginLeft: 5, // Space between colon and value
+    },
 
-  value: {
-    marginLeft: 30,
-    color: '#000',
-    marginRight: 5,
-  },
-  value2: {
-    marginLeft: 30,
-    color: '#000',
-    marginRight: 5,
-  },
-  value3: {
-    marginLeft: 30,
-    color: '#000',
-    marginRight: 5,
-  },
-  dateIconContainer: {
-    justifyContent: 'center',
-    paddingLeft: 20,
-    marginHorizontal: 15,
-  },
-  sizehead: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'lightgray',
-    paddingVertical: 5,
-  },
-  dateIcon: {
-    height: 25,
-    width: 25,
-  },
-  temDetails: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 10,
-    justifyContent: 'space-between',
-    paddingVertical: 6,
-  },
-  itemDetails: {
-    flexDirection: 'row',
-    marginHorizontal: 10,
-    marginBottom: 10,
-    alignItems: 'center',
-  },
-  quantityInputContainer: {
-    flex: 0.3,
-  },
-  quantityInput: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
-    flex: 0.5,
-  },
-  separator: {
-    borderBottomWidth: 1,
-    borderColor: 'gray',
-    marginTop: 4,
-  },
-  separatorr: {
-    borderBottomWidth: 1,
-    borderColor: 'gray',
-    marginTop: 4,
-    marginBottom: 14,
-  },
-  modalContainerr: {
-    flex: 1,
-    alignItems: 'center',
-    marginTop: 50,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
-  modalContentt: {
-    backgroundColor: '#fff',
-    padding: 20,
-    borderRadius: 10,
-    width: '80%',
-    alignItems: 'center',
-    elevation: 5, // Add elevation for shadow on Android
-    top: 10,
-  },
-  modalTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    // marginBottom: 20,
-    color: '#000',
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: 'gray',
-    borderRadius: 5,
-    padding: Platform.OS === 'ios' ? 15 : 10,
-    marginBottom: Platform.OS === 'ios' ? 10 : 5,
-    width: '100%',
-  },
-  errorBorder: {
-    borderColor: 'red',
-  },
-  errorText: {
-    color: 'red',
-  },
-  saveButton: {
-    backgroundColor: '#1F74BA',
-    padding: 10,
-    borderRadius: 5,
-    marginTop: 20,
-    width: '100%',
-  },
-  saveButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  plusButton: {},
-  noCategoriesText: {
-    textAlign: 'center',
-    marginTop: 20,
-    fontSize: 16,
-    color: '#000',
-    fontWeight: '600',
-  },
-  noResultsLocation: {
-    textAlign: 'center',
-    paddingTop: 15,
-    fontSize: 16,
-    color: '#000',
-    fontWeight: '600',
-    elevation: 5,
-    height: 175,
-    alignSelf: 'center',
-    width: '85%',
-    backgroundColor: '#fff',
-    borderRadius: 10,
-  },
-  modalContainer: {
-    flexGrow: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'flex-end',
-  },
-  modalContent: {
-    backgroundColor: '#fff',
-    maxHeight: '70%', // Adjust as needed
-  },
-  modalText: {
-    fontSize: 16,
-    marginBottom: 10,
-    marginLeft: 10,
-  },
-  addqtytxt: {
-    color: 'black',
-    fontWeight: 'bold',
-    marginLeft: 10,
-  },
-  sizehead: {
-    padding: 1,
-    backgroundColor: '#E7E7E7',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 10,
-  },
-  sizetxt: {
-    flex: 0.6,
-    color: '#000',
-    fontWeight: 'bold',
-    marginLeft: 5,
-  },
-  quantitytxt: {
-    color: '#000',
-    fontWeight: 'bold',
-    flex: 0.2,
-  },
-  quantityqty: {
-    color: '#000',
-    fontWeight: 'bold',
-    flex: 0.5,
-  },
-  rowContainer: {
-    flexDirection: 'row',
-    marginHorizontal: 10,
-    marginBottom: 10,
-    alignItems: 'center',
-  },
-  labelContainer: {
-    flex: 0.4,
-  },
-  label: {
-    color: '#000',
-    fontWeight: 'bold',
-  },
-  copyButton: {
-    position: 'absolute',
-    right: 0,
-  },
-  copyImage: {
-    height: 20,
-    width: 18,
-    marginHorizontal: 5,
-  },
-  inputContainer: {
-    flex: 0.3,
-  },
-  priceContainer: {
-    flex: 0.2,
-    alignItems: 'flex-end',
-    marginRight: 10,
-  },
-  underline: {
-    borderBottomWidth: 1,
-    borderBottomColor: 'gray',
-  },
-  addqtyhead: {
-    backgroundColor: '#1F74BA',
-    padding: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
+    value: {
+      marginLeft: 30,
+      color: '#000',
+      marginRight: 5,
+    },
+    value2: {
+      marginLeft: 30,
+      color: '#000',
+      marginRight: 5,
+    },
+    value3: {
+      marginLeft: 30,
+      color: '#000',
+      marginRight: 5,
+    },
+    dateIconContainer: {
+      justifyContent: 'center',
+      paddingLeft: 20,
+      marginHorizontal: 15,
+    },
+    sizehead: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: 'lightgray',
+      paddingVertical: 5,
+    },
+    dateIcon: {
+      height: 25,
+      width: 25,
+    },
+    temDetails: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 10,
+      justifyContent: 'space-between',
+      paddingVertical: 6,
+    },
+    itemDetails: {
+      flexDirection: 'row',
+      marginHorizontal: 10,
+      marginBottom: 10,
+      alignItems: 'center',
+    },
+    quantityInputContainer: {
+      flex: 0.3,
+    },
+    quantityInput: {
+      borderWidth: 1,
+      borderColor: '#ccc',
+      borderRadius: 5,
+      flex: 0.5,
+    },
+    separator: {
+      borderBottomWidth: 1,
+      borderColor: 'gray',
+      marginTop: 4,
+    },
+    separatorr: {
+      borderBottomWidth: 1,
+      borderColor: 'gray',
+      marginTop: 4,
+      marginBottom: 14,
+    },
+    modalContainerr: {
+      flex: 1,
+      alignItems: 'center',
+      marginTop: 50,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    },
+    modalContentt: {
+      backgroundColor: '#fff',
+      padding: 20,
+      borderRadius: 10,
+      width: '80%',
+      alignItems: 'center',
+      elevation: 5, // Add elevation for shadow on Android
+      top: 10,
+    },
+    modalTitle: {
+      fontSize: 16,
+      fontWeight: 'bold',
+      // marginBottom: 20,
+      color: '#000',
+    },
+    input: {
+      borderWidth: 1,
+      borderColor: 'gray',
+      borderRadius: 5,
+      padding: Platform.OS === 'ios' ? 15 : 10,
+      marginBottom: Platform.OS === 'ios' ? 10 : 5,
+      width: '100%',
+    },
+    errorBorder: {
+      borderColor: 'red',
+    },
+    errorText: {
+      color: 'red',
+    },
+    saveButton: {
+      backgroundColor: colors.color2,
+      padding: 10,
+      borderRadius: 5,
+      marginTop: 20,
+      width: '100%',
+    },
+    saveButtonText: {
+      color: '#fff',
+      fontWeight: 'bold',
+      textAlign: 'center',
+    },
+    plusButton: {},
+    noCategoriesText: {
+      textAlign: 'center',
+      marginTop: 20,
+      fontSize: 16,
+      color: '#000',
+      fontWeight: '600',
+    },
+    noResultsLocation: {
+      textAlign: 'center',
+      paddingTop: 15,
+      fontSize: 16,
+      color: '#000',
+      fontWeight: '600',
+      elevation: 5,
+      height: 175,
+      alignSelf: 'center',
+      width: '85%',
+      backgroundColor: '#fff',
+      borderRadius: 10,
+    },
+    modalContainer: {
+      flexGrow: 1,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      justifyContent: 'flex-end',
+    },
+    modalContent: {
+      backgroundColor: '#fff',
+      maxHeight: '70%', // Adjust as needed
+    },
+    modalText: {
+      fontSize: 16,
+      marginBottom: 10,
+      marginLeft: 10,
+    },
+    addqtytxt: {
+      color: 'black',
+      fontWeight: 'bold',
+      marginLeft: 10,
+    },
+    sizehead: {
+      padding: 1,
+      backgroundColor: '#E7E7E7',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingVertical: 10,
+    },
+    sizetxt: {
+      flex: 0.6,
+      color: '#000',
+      fontWeight: 'bold',
+      marginLeft: 5,
+    },
+    quantitytxt: {
+      color: '#000',
+      fontWeight: 'bold',
+      flex: 0.2,
+    },
+    quantityqty: {
+      color: '#000',
+      fontWeight: 'bold',
+      flex: 0.5,
+    },
+    rowContainer: {
+      flexDirection: 'row',
+      marginHorizontal: 10,
+      marginBottom: 10,
+      alignItems: 'center',
+    },
+    labelContainer: {
+      flex: 0.4,
+    },
+    label: {
+      color: '#000',
+      fontWeight: 'bold',
+    },
+    copyButton: {
+      position: 'absolute',
+      right: 0,
+    },
+    copyImage: {
+      height: 20,
+      width: 18,
+      marginHorizontal: 5,
+    },
+    inputContainer: {
+      flex: 0.3,
+    },
+    priceContainer: {
+      flex: 0.2,
+      alignItems: 'flex-end',
+      marginRight: 10,
+    },
+    underline: {
+      borderBottomWidth: 1,
+      borderBottomColor: 'gray',
+    },
+    addqtyhead: {
+      backgroundColor: colors.color2,
+      padding: 10,
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
 
-  quantityInputformodel: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
-    flex: 0.5,
-  },
-  switchContainer: {
-    paddingLeft: 10, // Add padding if you want some space from the left edge
-    flexDirection: 'row',
-    marginVertical: 5,
-    alignItems: 'center',
-  },
-  scrollView: {
-    maxHeight: 150,
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 25,
-    paddingLeft: 10,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 4,
-    flex: 1,
-    marginRight: 10,
-  },
-  searchInput: {
-    flex: 1,
-    height: 40,
-    borderRadius: 25,
-    paddingHorizontal: 15,
-    color: '#000',
-    // backgroundColor: '#f1f1f1',
-    marginRight: 10,
-  },
-  dropdownButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 10,
-    backgroundColor: '#e6e6e6',
-    borderRadius: 15,
-  },
-  dropdownIcon: {
-    width: 15,
-    height: 15,
-    tintColor: '#000',
-  },
-  searchButton: {
-    backgroundColor: '#1F74BA',
-    borderRadius: 25,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    elevation: 3,
-  },
-  searchButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-  },
-  dropdownContent1: {
-    width: '90%',
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    elevation: 5,
-    paddingVertical: 10,
-    paddingHorizontal: 5,
-    zIndex: 1,
-    alignSelf: 'center',
-    borderColor: 'lightgray', // Optional: Adds subtle border (for effect)
-    borderWidth: 1,
-    marginBottom: 8,
-  },
-  dropdownOption: {
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f1f1f1',
-  },
-  dropdownItemText: {
-    color: '#000',
-  },
-});
+    quantityInputformodel: {
+      borderWidth: 1,
+      borderColor: '#ccc',
+      borderRadius: 5,
+      flex: 0.5,
+    },
+    switchContainer: {
+      paddingLeft: 10, // Add padding if you want some space from the left edge
+      flexDirection: 'row',
+      marginVertical: 5,
+      alignItems: 'center',
+    },
+    scrollView: {
+      maxHeight: 150,
+    },
+    searchContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: '#fff',
+      borderRadius: 25,
+      paddingLeft: 10,
+      shadowColor: '#000',
+      shadowOffset: {width: 0, height: 2},
+      shadowOpacity: 0.1,
+      shadowRadius: 5,
+      elevation: 4,
+      flex: 1,
+      marginRight: 10,
+    },
+    searchInput: {
+      flex: 1,
+      height: 40,
+      borderRadius: 25,
+      paddingHorizontal: 15,
+      color: '#000',
+      // backgroundColor: '#f1f1f1',
+      marginRight: 10,
+    },
+    dropdownButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 10,
+      paddingHorizontal: 10,
+      backgroundColor: '#e6e6e6',
+      borderRadius: 15,
+    },
+    dropdownIcon: {
+      width: 15,
+      height: 15,
+      tintColor: '#000',
+    },
+    searchButton: {
+      backgroundColor: colors.color2,
+      borderRadius: 25,
+      paddingHorizontal: 20,
+      paddingVertical: 10,
+      elevation: 3,
+    },
+    searchButtonText: {
+      color: '#fff',
+      fontWeight: 'bold',
+    },
+    dropdownContent1: {
+      width: '90%',
+      backgroundColor: '#fff',
+      borderRadius: 10,
+      elevation: 5,
+      paddingVertical: 10,
+      paddingHorizontal: 5,
+      zIndex: 1,
+      alignSelf: 'center',
+      borderColor: 'lightgray', // Optional: Adds subtle border (for effect)
+      borderWidth: 1,
+      marginBottom: 8,
+    },
+    dropdownOption: {
+      paddingVertical: 10,
+      paddingHorizontal: 15,
+      borderBottomWidth: 1,
+      borderBottomColor: '#f1f1f1',
+    },
+    dropdownItemText: {
+      color: '#000',
+    },
+  });
 export default Cart;

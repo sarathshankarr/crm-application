@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import {
     Alert,
     Image,
@@ -16,9 +16,12 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { API } from '../../config/apiConfig';
 import axios from 'axios';
+import { ColorContext } from '../../components/colortheme/colorTheme';
 
 
 const EnterOtp = ({ route, ...props }) => {
+    const { colors } = useContext(ColorContext);
+    const styles = getStyles(colors);
     const navigation = useNavigation();
     const [loading, setLoading] = useState(false);
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
@@ -245,7 +248,7 @@ const EnterOtp = ({ route, ...props }) => {
     );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors) => StyleSheet.create({
     container: {
         flex: 1,
         paddingHorizontal: 20,
@@ -283,7 +286,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     resendText: {
-        color: '#1F74BA',
+        color: colors.color2,
         fontSize: 16,
         fontWeight: 'bold',
     },
@@ -293,7 +296,7 @@ const styles = StyleSheet.create({
     button: {
         width: '100%',
         height: 50,
-        backgroundColor: '#1F74BA',
+        backgroundColor:colors.color2,
         justifyContent: 'center',
         alignItems: 'center',
         borderRadius: 5,

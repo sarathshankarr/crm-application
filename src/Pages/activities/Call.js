@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import {
   StyleSheet,
@@ -19,8 +19,11 @@ import { API } from '../../config/apiConfig';
 import { formatDateIntoDMY } from '../../Helper/Helper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSelector } from 'react-redux';
+import { ColorContext } from '../../components/colortheme/colorTheme';
 
 const Call = () => {
+  const { colors } = useContext(ColorContext);
+  const styles = getStyles(colors);
   const navigation = useNavigation();
   const [loading, setLoading] = useState(false);
   const [calls, setCalls] = useState([]);
@@ -423,7 +426,7 @@ const Call = () => {
 
 
 
-const styles = StyleSheet.create({
+const getStyles = (colors) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
@@ -469,7 +472,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     marginLeft: 10,
     padding: 10,
-    backgroundColor: '#1F74BA',
+    backgroundColor: colors.color2,
     borderRadius: 5,
 
   },

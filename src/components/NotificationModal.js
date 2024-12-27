@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import {
   View,
   Text,
@@ -9,9 +9,13 @@ import {
   Modal,
   Image,
 } from 'react-native';
+import { ColorContext } from './colortheme/colorTheme';
 
 
 const NotificationModal = ({ isModalVisible, toggleModal, slideAnim, notifications }) => {
+  const { colors } = useContext(ColorContext);
+  const styles = getStyles(colors);
+
   const renderNotificationItem = ({ item }) => (
     <View style={styles.notificationItem}>
       <Text style={styles.notificationIcon}>{item.icon}</Text>
@@ -57,7 +61,7 @@ const NotificationModal = ({ isModalVisible, toggleModal, slideAnim, notificatio
 };
 
 
-const styles = StyleSheet.create({
+const getStyles = (colors) => StyleSheet.create({
   modalBackdrop: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
@@ -78,7 +82,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 10,
-    backgroundColor: '#1f74ba',
+    backgroundColor:  colors.color2,
     padding: 5,
     borderRadius: 10,
   },

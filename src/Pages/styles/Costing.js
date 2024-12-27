@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useContext, useEffect, useState} from 'react';
 import {
   StyleSheet,
   Text,
@@ -17,9 +17,12 @@ import {API} from '../../config/apiConfig';
 import axios from 'axios';
 import {useSelector} from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { ColorContext } from '../../components/colortheme/colorTheme';
 
 const Costing = () => {
+  const { colors } = useContext(ColorContext);
+  const styles = getStyles(colors);
   const navigation = useNavigation(); // Use the useNavigation hook
   const [initialSelectedCompany, setInitialSelectedCompany] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -60,11 +63,18 @@ const Costing = () => {
     ? selectedCompany.id
     : initialSelectedCompany?.id;
 
-  useEffect(() => {
-    if (companyId) {
-      getAllOrders(true, 0, 20);
-    }
-  }, [companyId]);
+  // useEffect(() => {
+  //   if (companyId) {
+  //     getAllOrders(true, 0, 20);
+  //   }
+  // }, [companyId]);
+  useFocusEffect(
+    useCallback(() => {
+      if (companyId) {
+        getAllOrders(true, 0, 20);
+      }
+    }, [companyId])
+  );
 
   const getAllOrders = async (
     reset = false,
@@ -422,7 +432,7 @@ const Costing = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
@@ -489,7 +499,7 @@ const styles = StyleSheet.create({
     borderRadius: 15,
   },
   searchButton: {
-    backgroundColor: '#1F74BA',
+    backgroundColor:  colors.color2,
     borderRadius: 25,
     paddingHorizontal: 20,
     paddingVertical: 10,

@@ -1,12 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { StyleSheet, Text, View, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl, Image, TextInput, ScrollView, Alert, SafeAreaView } from 'react-native';
 import { API } from '../../config/apiConfig';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
+import { ColorContext } from '../../components/colortheme/colorTheme';
 
 const DistributorGrn = () => {
+  const { colors } = useContext(ColorContext);
+  const styles = getStyles(colors);
   const navigation = useNavigation();
   const [initialSelectedCompany, setInitialSelectedCompany] = useState(null);
   const [orders, setOrders] = useState([]);
@@ -494,7 +497,7 @@ const DistributorGrn = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors) => StyleSheet.create({
   container: {
     backgroundColor: 'white',
     flex: 1,
@@ -574,7 +577,7 @@ const styles = StyleSheet.create({
     borderRadius: 15,
   },
   searchButton: {
-    backgroundColor: '#1F74BA',
+    backgroundColor:  colors.color2,
     borderRadius: 25,
     paddingHorizontal: 20,
     paddingVertical: 10,

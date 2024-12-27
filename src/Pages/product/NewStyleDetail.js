@@ -11,18 +11,21 @@ import {
   Alert,
   SafeAreaView,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {useSelector} from 'react-redux';
 import {API} from '../../config/apiConfig';
 import axios from 'axios';
 import {useNavigation} from '@react-navigation/native';
 import CustomCheckBox from '../../components/CheckBox';
+import { ColorContext } from '../../components/colortheme/colorTheme';
 
 const NewStyleDetail = ({route}) => {
   const navigation = useNavigation();
   const selectedCompany = useSelector(state => state.selectedCompany);
   const userId = useSelector(state => state?.loggedInUser?.userId);
   const styleDetails = route?.params?.Style;
+  const { colors } = useContext(ColorContext);
+  const style = getStyles(colors);
 
   // const userData=useSelector(state=>state.loggedInUser);
   // const userId=userData?.userId;
@@ -3352,7 +3355,7 @@ const NewStyleDetail = ({route}) => {
                 <View style={style.modalContentt}>
                   <View
                     style={{
-                      backgroundColor: '#1F74BA',
+                      backgroundColor:   colors.color2,
                       borderRadius: 10,
                       marginHorizontal: 10,
                       flexDirection: 'row',
@@ -3423,7 +3426,7 @@ const NewStyleDetail = ({route}) => {
                 <View style={style.modalContentt}>
                   <View
                     style={{
-                      backgroundColor: '#1F74BA',
+                      backgroundColor:   colors.color2,
                       borderRadius: 10,
                       marginHorizontal: 10,
                       flexDirection: 'row',
@@ -3504,7 +3507,7 @@ const NewStyleDetail = ({route}) => {
                 <View style={style.modalContentt}>
                   <View
                     style={{
-                      backgroundColor: '#1F74BA',
+                      backgroundColor:   colors.color2,
                       borderRadius: 10,
                       marginHorizontal: 10,
                       flexDirection: 'row',
@@ -3576,7 +3579,7 @@ const NewStyleDetail = ({route}) => {
                 <View style={style.modalContentt}>
                   <View
                     style={{
-                      backgroundColor: '#1F74BA',
+                      backgroundColor:   colors.color2,
                       borderRadius: 10,
                       marginHorizontal: 10,
                       flexDirection: 'row',
@@ -3649,7 +3652,7 @@ const NewStyleDetail = ({route}) => {
                   <View style={style.modalContentt}>
                     <View
                       style={{
-                        backgroundColor: '#1F74BA',
+                        backgroundColor:   colors.color2,
                         borderRadius: 10,
                         marginHorizontal: 10,
                         flexDirection: 'row',
@@ -4186,7 +4189,7 @@ const NewStyleDetail = ({route}) => {
 
             <TouchableOpacity
               style={{
-                backgroundColor: nextButton ? '#1F74BA' : 'skyblue',
+                backgroundColor: nextButton ?  colors.color2 : 'skyblue',
                 padding: 10,
                 borderRadius: 5,
                 marginTop: 20,
@@ -4206,7 +4209,7 @@ const NewStyleDetail = ({route}) => {
   );
 };
 
-const style = StyleSheet.create({
+const getStyles = (colors) => StyleSheet.create({
   conatiner: {
     flex: 1,
     backgroundColor: '#fff',
@@ -4224,7 +4227,7 @@ const style = StyleSheet.create({
     borderColor: '#000',
     borderWidth: 1,
     paddingVertical: 10,
-    backgroundColor: '#1F74BA',
+    backgroundColor:  colors.color2,
   },
   headprductimage: {
     marginTop: 10,
@@ -4315,7 +4318,7 @@ const style = StyleSheet.create({
     color: '#000',
   },
   saveButton: {
-    backgroundColor: '#1F74BA',
+    backgroundColor:   colors.color2,
     padding: 10,
     borderRadius: 5,
     marginTop: 20,
@@ -4439,7 +4442,7 @@ const style = StyleSheet.create({
     // tintColor:'#1F74BA',
   },
   modalHeader: {
-    backgroundColor: '#1F74BA',
+    backgroundColor:   colors.color2,
     borderRadius: 10,
     marginHorizontal: 10,
     flexDirection: 'row',

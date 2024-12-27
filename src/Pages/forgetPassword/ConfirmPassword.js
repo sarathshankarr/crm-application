@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import {
     Alert,
     Image,
@@ -21,10 +21,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { encode as base64Encode } from 'base-64';
 import { useDispatch } from 'react-redux';
 import { setLoggedInUser, setUserRole } from '../../redux/actions/Actions';
+import { ColorContext } from '../../components/colortheme/colorTheme';
+import store from '../../redux/store/Store';
 
 
 
 const ConfirmPassword = ({ route, ...props }) => {
+    const { colors } = useContext(ColorContext);
+    const styles = getStyles(colors);
     const navigation = useNavigation();
     const [loading, setLoading] = useState(false);
     const [email, setEmail] = useState('');
@@ -38,7 +42,7 @@ const ConfirmPassword = ({ route, ...props }) => {
     const [showPassword2, setshowPassword2] = useState(true);
     const dispatch = useDispatch();
     const [code, setCode] = useState('');
-
+    const [roleMenu, setRoleMenu] = useState(null);
 
 
 
@@ -139,6 +143,7 @@ const ConfirmPassword = ({ route, ...props }) => {
                 await saveToken(data);
                 await getUsers(response.data, productURL);
 
+
                 LoginAudit(data);
 
                 navigation.reset({
@@ -160,6 +165,36 @@ const ConfirmPassword = ({ route, ...props }) => {
             Keyboard.dismiss();
         }
     };
+
+    const getRollMenu = async () => {
+        try {
+          const state = store.getState();
+          const roleIdd = state?.loggedInUser?.roleId;
+          const companyIdd = state?.loggedInUser?.companyId;
+      
+          // Ensure `companyId` is a single value or processed correctly
+          const companyIdArray = companyIdd?.split(',') || [];
+          const companyId = companyIdArray[0]; // Pick the first `companyId` as an example
+      
+          console.log('Role ID:', roleIdd, 'Company ID:', companyId);
+      
+          const apiUrl = `${global?.userData?.productURL}${API.GET_ALL_THE_ROLE_MENU}/${roleIdd}/${companyId}`;
+          console.log('apiUrl:', apiUrl);
+      
+          const response = await axios.get(apiUrl, {
+            headers: {
+              Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+            },
+          });
+      
+          const roleMenuData = response.data.response.roleMenuMapList;
+          await AsyncStorage.setItem('roleMenu', JSON.stringify(roleMenuData));
+          setRoleMenu(roleMenuData);
+          console.log('Role Menu Data:', roleMenuData);
+        } catch (err) {
+          console.error('Error fetching role menu:', err);
+        }
+      };
 
     const saveToken = async data => {
         console.log("saveToken==========>");
@@ -200,58 +235,101 @@ const ConfirmPassword = ({ route, ...props }) => {
         }
     };
 
+    // const getUsers = async (userData, productURL) => {
+    //     console.log('getUsers userData:', userData);
+    //     const apiUrl = `${productURL}${API.ADD_USERS}/${userData.userId}`; // Update API URL to include dynamic
+    //     console.log('apurl', apiUrl);
+    //     try {
+    //         const response = await axios.get(apiUrl, {
+    //             headers: { Authorization: `Bearer ${userData.access_token}` },
+    //         });
+    //         const loggedInUser = response.data.response.users[0]; // Since response is expected to have only one user with given
+    //         if (loggedInUser) {
+    //             console.log('Logged in user:', loggedInUser);
+    //             dispatch(setLoggedInUser(loggedInUser));
+    //             dispatch(setUserRole(loggedInUser.role));
+    //             await saveUserDataToStorage(loggedInUser);
+    //             // const roles = loggedInUser.role;
+    //             // let roleName = '';
+    //             // let roleId = '';
+    //             // for (const role of roles) {
+    //             //   const name = role.role;
+    //             //   if (name) {
+    //             //     if (
+    //             //       name === 'admin' ||
+    //             //       name === 'Distributor' ||
+    //             //       name === 'Retailer'
+    //             //     ) {
+    //             //       roleName = name;
+    //             //       roleId = role.id;
+    //             //       break;
+    //             //     }
+    //             //   }
+    //             // }
+    //             // if (roleName && roleId) {
+    //             //   await saveRoleToStorage({roleName, roleId});
+    //             // } 
+    //             // else {
+    //             //   Alert.alert(
+    //             //     'Unauthorized role',
+    //             //     'You do not have access to this application.',
+    //             //   );
+    //             // }
+    //         } else {
+    //             Alert.alert('No user data found', 'Failed to fetch user data.');
+    //         }
+    //     } catch (error) {
+    //         console.error('Error fetching user data:', error);
+    //         Alert.alert(
+    //             'Failed to fetch user data',
+    //             'An error occurred while fetching user data.',
+    //         );
+    //     }
+    // };
+
+
     const getUsers = async (userData, productURL) => {
         console.log('getUsers userData:', userData);
-        const apiUrl = `${productURL}${API.ADD_USERS}/${userData.userId}`; // Update API URL to include dynamic
-        console.log('apurl', apiUrl);
+        const apiUrl = `${productURL}${API.ADD_USERS}/${userData.userId}`; // Update API URL dynamically
+        console.log('apiUrl', apiUrl);
+      
         try {
-            const response = await axios.get(apiUrl, {
-                headers: { Authorization: `Bearer ${userData.access_token}` },
-            });
-            const loggedInUser = response.data.response.users[0]; // Since response is expected to have only one user with given
-            if (loggedInUser) {
-                console.log('Logged in user:', loggedInUser);
-                dispatch(setLoggedInUser(loggedInUser));
-                dispatch(setUserRole(loggedInUser.role));
-                await saveUserDataToStorage(loggedInUser);
-                // const roles = loggedInUser.role;
-                // let roleName = '';
-                // let roleId = '';
-                // for (const role of roles) {
-                //   const name = role.role;
-                //   if (name) {
-                //     if (
-                //       name === 'admin' ||
-                //       name === 'Distributor' ||
-                //       name === 'Retailer'
-                //     ) {
-                //       roleName = name;
-                //       roleId = role.id;
-                //       break;
-                //     }
-                //   }
-                // }
-                // if (roleName && roleId) {
-                //   await saveRoleToStorage({roleName, roleId});
-                // } 
-                // else {
-                //   Alert.alert(
-                //     'Unauthorized role',
-                //     'You do not have access to this application.',
-                //   );
-                // }
+          const response = await axios.get(apiUrl, {
+            headers: { Authorization: `Bearer ${userData.access_token}` },
+          });
+          const loggedInUser = response.data.response.users[0];
+      
+          if (loggedInUser) {
+            console.log('Logged in user:', loggedInUser);
+            await dispatch(setLoggedInUser(loggedInUser)); // Ensure Redux updates
+            await dispatch(setUserRole(loggedInUser.role)); // Ensure Redux updates
+            await saveUserDataToStorage(loggedInUser); // Save user data to storage
+      
+            // Extract roleId and companyId from the updated Redux state
+            const state = store.getState();
+            const roleIdd = state?.loggedInUser?.roleId;
+            const companyIdd = state?.loggedInUser?.companyId;
+      
+            if (roleIdd && companyIdd) {
+              console.log('Role ID:', roleIdd, 'Company ID:', companyIdd);
+              await getRollMenu(roleIdd, companyIdd); // Pass the IDs to getRollMenu
             } else {
-                Alert.alert('No user data found', 'Failed to fetch user data.');
+              console.error('Role ID or Company ID is missing');
+              Alert.alert('Error', 'Unable to fetch role or company details.');
             }
+          } else {
+            Alert.alert('No user data found', 'Failed to fetch user data.');
+          }
         } catch (error) {
-            console.error('Error fetching user data:', error);
-            Alert.alert(
-                'Failed to fetch user data',
-                'An error occurred while fetching user data.',
-            );
+          console.error('Error fetching user data:', error);
+          Alert.alert(
+            'Failed to fetch user data',
+            'An error occurred while fetching user data.',
+          );
         }
-    };
-
+      };
+  
+      
     const saveUserDataToStorage = async userData => {
         try {
             await AsyncStorage.setItem('userData', JSON.stringify(userData));
@@ -367,7 +445,7 @@ const ConfirmPassword = ({ route, ...props }) => {
     );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors) => StyleSheet.create({
     container: {
         flex: 1,
         paddingHorizontal: 20,
@@ -432,7 +510,7 @@ const styles = StyleSheet.create({
     button: {
         width: '100%',
         height: 50,
-        backgroundColor: '#1F74BA',
+        backgroundColor:  colors.color2,
         justifyContent: 'center',
         alignItems: 'center',
         borderRadius: 5,

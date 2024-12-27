@@ -4,6 +4,7 @@ import React, {
   useRef,
   useCallback,
   PureComponent,
+  useContext,
 } from 'react';
 import {
   Text,
@@ -25,13 +26,22 @@ import axios from 'axios';
 import {useSelector} from 'react-redux';
 import {RefreshControl} from 'react-native';
 import FastImage from 'react-native-fast-image';
+import {ColorContext} from '../../components/colortheme/colorTheme';
 
 class ProductItem extends PureComponent {
   render() {
     const {item, navigation, openModal} = this.props;
     return (
       <TouchableOpacity
-        style={styles.productItem}
+        style={{
+          flex: 1,
+          marginHorizontal: 2,
+          marginVertical: 5,
+          backgroundColor: '#fff',
+          borderRadius: 10,
+          elevation: 3,
+          overflow: 'hidden',
+        }}
         onPress={() =>
           navigation.navigate(
             item.categoryId === PRODUCT_DETAILS
@@ -42,32 +52,39 @@ class ProductItem extends PureComponent {
             },
           )
         }>
-        <View style={styles.productImageContainer}>
+        <View style={{position: 'relative', overflow: 'hidden'}}>
           {item.imageUrls && item.imageUrls.length > 0 ? (
             <FastImage
-              style={styles.productImage}
+              style={{width: '100%', height: 200, resizeMode: 'cover'}}
               source={{uri: item.imageUrls[0]}}
             />
           ) : (
             <Image
-              style={styles.productImage}
+              style={{width: '100%', height: 200, resizeMode: 'cover'}}
               source={require('../../../assets/NewNoImage.jpg')}
             />
           )}
           <Text
-            style={[
-              styles.productName,
-              {backgroundColor: 'rgba(0, 0, 0, 0.2)'},
-            ]}>
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              color: '#fff',
+              fontSize: 13,
+              fontWeight: 'bold',
+              padding: 5,
+              backgroundColor: 'rgba(0, 0, 0, 0.2)',
+            }}>
             {item.styleName}
           </Text>
         </View>
 
-        <View style={styles.additionalDetailsContainer}>
+        <View style={{paddingTop: 5}}>
           <Text style={{color: '#000'}} numberOfLines={1} ellipsizeMode="tail">
             Color Name: {item.colorName}
           </Text>
-          <View style={styles.notesContainer}>
+          <View style={{}}>
             <Text
               style={{color: '#000'}}
               numberOfLines={1}
@@ -77,7 +94,16 @@ class ProductItem extends PureComponent {
             <Text style={{color: '#000'}}>Price: {item.mrp}</Text>
             <TouchableOpacity
               onPress={() => openModal(item)}
-              style={styles.buttonqty}>
+              style={{
+                marginHorizontal: 3,
+                marginVertical: 3,
+                borderWidth: 1,
+                paddingVertical: 10,
+                borderRadius: 5,
+                flexDirection: 'row',
+                justifyContent: 'center',
+                backgroundColor: '#F09120',
+              }}>
               <Text style={{color: '#ffffff'}}>ADD QTY</Text>
             </TouchableOpacity>
           </View>
@@ -88,6 +114,8 @@ class ProductItem extends PureComponent {
 }
 
 const HomeAllProducts = ({navigation}) => {
+  const {colors} = useContext(ColorContext);
+  const styles = getStyles(colors);
   const [showSearchInput, setShowSearchInput] = useState(false);
   const [selectedDetails, setSelectedDetails] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
@@ -330,7 +358,7 @@ const HomeAllProducts = ({navigation}) => {
       Alert.alert('Please enter a min value less than the max value.');
       return;
     }
-  
+
     setSearchFilterFlag(true);
     setPageNo(1);
     setStopLoad(false); // Start loading
@@ -380,26 +408,23 @@ const HomeAllProducts = ({navigation}) => {
   const handleDropdownSelect = option => {
     // Trigger the refresh first
     onRefresh();
-  
+
     // After refresh, set the selected values
     setTimeout(() => {
       setSelectedSearchOption(option.label); // Update selected option label
-      setSearchKey(option.value);           // Update search key
-      setDropdownVisible(false);            // Close the dropdown
-      setSearchQuery('');                   // Clear search query
-      setMinPrice('');                      // Clear min price
-      setMaxPrice('');                      // Clear max price
-      
-      console.log("Selected option:", option.label);
+      setSearchKey(option.value); // Update search key
+      setDropdownVisible(false); // Close the dropdown
+      setSearchQuery(''); // Clear search query
+      setMinPrice(''); // Clear min price
+      setMaxPrice(''); // Clear max price
+
+      console.log('Selected option:', option.label);
     }, 0); // Ensure it runs immediately after the refresh is triggered
   };
 
-  
   const toggleDropdown = () => {
     setDropdownVisible(!dropdownVisible);
   };
-
-  
 
   const handleSearchInputChange = query => {
     setSearchQuery(query);
@@ -413,7 +438,7 @@ const HomeAllProducts = ({navigation}) => {
       onRefresh();
     }
   };
-  
+
   const handleMaxPriceChange = value => {
     setMaxPrice(value);
     if (value.trim() === '' && minPrice.trim() === '') {
@@ -568,156 +593,157 @@ const HomeAllProducts = ({navigation}) => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#faf7f6',
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 25,
-    paddingLeft: 10,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 4,
-    flex: 1,
-    marginRight: 10,
-  },
-  searchInput: {
-    flex: 1,
-    height: 40,
-    borderRadius: 25,
-    paddingHorizontal: 15,
-    color: '#000',
-    // backgroundColor: '#f1f1f1',
-    marginRight: 10,
-  },
-  dropdownButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 10,
-    backgroundColor: '#e6e6e6',
-    borderRadius: 15,
-  },
-  dropdownIcon: {
-    width: 15,
-    height: 15,
-    tintColor: '#000',
-  },
-  searchButton: {
-    backgroundColor: '#1F74BA',
-    borderRadius: 25,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    elevation: 3,
-  },
-  searchButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-  },
-  dropdownContent1: {
-    position: 'absolute',
-    top: 60,
-    width: '90%',
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    elevation: 5,
-    paddingVertical: 10,
-    paddingHorizontal: 5,
-    zIndex: 1,
-    alignSelf: 'center',
-    borderColor: 'lightgray', // Optional: Adds subtle border (for effect)
-    borderWidth: 1,
-  },
-  dropdownOption: {
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f1f1f1',
-  },
-  productList: {
-    paddingTop: 10,
-    paddingBottom: 70,
-  },
-  productItem: {
-    flex: 1,
-    marginHorizontal: 2,
-    marginVertical: 5,
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    elevation: 3,
-    overflow: 'hidden',
-  },
-  productImageContainer: {
-    position: 'relative',
-    overflow: 'hidden',
-  },
-  productImage: {
-    width: '100%',
-    height: 200,
-    resizeMode: 'cover',
-  },
-  productName: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    color: '#fff',
-    fontSize: 13,
-    fontWeight: 'bold',
-    padding: 5,
-  },
-  additionalDetailsContainer: {
-    paddingTop: 5,
-  },
-  notesContainer: {},
-  buttonqty: {
-    marginHorizontal: 3,
-    marginVertical: 3,
-    borderWidth: 1,
-    paddingVertical: 10,
-    borderRadius: 5,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    backgroundColor: '#F09120',
-    // backgroundColor:'#fc9c04',
-  },
-  noCategoriesText: {
-    top: 40,
-    textAlign: 'center',
-    color: '#000000',
-    fontSize: 20,
-    fontWeight: 'bold',
-    padding: 5,
-  },
-  minMaxInput: {
-    borderRightWidth: 1,
-    padding: 5,
-    width: 50,
-    borderRadius: 10,
-    width: 80,
-    color:"#000",
-    marginHorizontal:10
-  },
-  MaxInput: {
-    borderRightWidth: 1,
-    padding: 5,
-    width: 50,
-    borderRadius: 10,
-    width: 80,
-    color:"#000",
-    marginHorizontal:10
-  },
-  minMaxContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex:1
-  },
-});
+const getStyles = colors =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: '#faf7f6',
+    },
+    searchContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: '#fff',
+      borderRadius: 25,
+      paddingLeft: 10,
+      shadowColor: '#000',
+      shadowOffset: {width: 0, height: 2},
+      shadowOpacity: 0.1,
+      shadowRadius: 5,
+      elevation: 4,
+      flex: 1,
+      marginRight: 10,
+    },
+    searchInput: {
+      flex: 1,
+      height: 40,
+      borderRadius: 25,
+      paddingHorizontal: 15,
+      color: '#000',
+      // backgroundColor: '#f1f1f1',
+      marginRight: 10,
+    },
+    dropdownButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 10,
+      paddingHorizontal: 10,
+      backgroundColor: '#e6e6e6',
+      borderRadius: 15,
+    },
+    dropdownIcon: {
+      width: 15,
+      height: 15,
+      tintColor: '#000',
+    },
+    searchButton: {
+      backgroundColor:  colors.color2,
+      borderRadius: 25,
+      paddingHorizontal: 20,
+      paddingVertical: 10,
+      elevation: 3,
+    },
+    searchButtonText: {
+      color: '#fff',
+      fontWeight: 'bold',
+    },
+    dropdownContent1: {
+      position: 'absolute',
+      top: 60,
+      width: '90%',
+      backgroundColor: '#fff',
+      borderRadius: 10,
+      elevation: 5,
+      paddingVertical: 10,
+      paddingHorizontal: 5,
+      zIndex: 1,
+      alignSelf: 'center',
+      borderColor: 'lightgray', // Optional: Adds subtle border (for effect)
+      borderWidth: 1,
+    },
+    dropdownOption: {
+      paddingVertical: 10,
+      paddingHorizontal: 15,
+      borderBottomWidth: 1,
+      borderBottomColor: '#f1f1f1',
+    },
+    productList: {
+      paddingTop: 10,
+      paddingBottom: 70,
+    },
+    productItem: {
+      flex: 1,
+      marginHorizontal: 2,
+      marginVertical: 5,
+      backgroundColor: '#fff',
+      borderRadius: 10,
+      elevation: 3,
+      overflow: 'hidden',
+    },
+    productImageContainer: {
+      position: 'relative',
+      overflow: 'hidden',
+    },
+    productImage: {
+      width: '100%',
+      height: 200,
+      resizeMode: 'cover',
+    },
+    productName: {
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      right: 0,
+      color: '#fff',
+      fontSize: 13,
+      fontWeight: 'bold',
+      padding: 5,
+    },
+    additionalDetailsContainer: {
+      paddingTop: 5,
+    },
+    notesContainer: {},
+    buttonqty: {
+      marginHorizontal: 3,
+      marginVertical: 3,
+      borderWidth: 1,
+      paddingVertical: 10,
+      borderRadius: 5,
+      flexDirection: 'row',
+      justifyContent: 'center',
+      backgroundColor: '#F09120',
+      // backgroundColor:'#fc9c04',
+    },
+    noCategoriesText: {
+      top: 40,
+      textAlign: 'center',
+      color: '#000000',
+      fontSize: 20,
+      fontWeight: 'bold',
+      padding: 5,
+    },
+    minMaxInput: {
+      borderRightWidth: 1,
+      padding: 5,
+      width: 50,
+      borderRadius: 10,
+      width: 80,
+      color: '#000',
+      marginHorizontal: 10,
+    },
+    MaxInput: {
+      borderRightWidth: 1,
+      padding: 5,
+      width: 50,
+      borderRadius: 10,
+      width: 80,
+      color: '#000',
+      marginHorizontal: 10,
+    },
+    minMaxContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      flex: 1,
+    },
+  });
 
 export default HomeAllProducts;

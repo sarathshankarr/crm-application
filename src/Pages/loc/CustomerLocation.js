@@ -479,7 +479,7 @@
 
 // export default CustomerLocation;
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import {
   Text,
   TouchableOpacity,
@@ -503,8 +503,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import { API } from '../../config/apiConfig';
 import { RadioButton } from 'react-native-radio-buttons-group';
+import { ColorContext } from '../../components/colortheme/colorTheme';
 
 const CustomerLocation = ({ navigation }) => {
+  const { colors } = useContext(ColorContext);
+  const styles = getStyles(colors);
   const userData = useSelector(state => state.loggedInUser);
   const [mLat, setMLat] = useState(null);
   const [mLong, setMLong] = useState(null);
@@ -1042,7 +1045,7 @@ const CustomerLocation = ({ navigation }) => {
       <View
         style={{
           paddingVertical: 10,
-          backgroundColor: '#1F74BA',
+          backgroundColor:  colors.color2,
           marginVertical: 5,
         }}>
         <Text
@@ -1132,7 +1135,7 @@ const CustomerLocation = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors) => StyleSheet.create({
   Container: {
     flex: 1,
     backgroundColor: '#fff',

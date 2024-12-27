@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import {
   Image,
   SafeAreaView,
@@ -11,10 +11,13 @@ import { createMaterialTopTabNavigator } from '@react-navigation/material-top-ta
 import { useNavigation } from '@react-navigation/native';
 import NewStyleDetail from './NewStyleDetail';
 import UploadProductImage from './UploadProductImage';
+import { ColorContext } from '../../components/colortheme/colorTheme';
 
 const Tab = createMaterialTopTabNavigator();
 
 const CustomTabBar = ({ state, descriptors, navigation }) => {
+   const { colors } = useContext(ColorContext);
+  const styles = getStyles(colors);
 
   return (
     <View style={styles.tabContainer}>
@@ -82,7 +85,7 @@ const AddNewStyle = ({ route }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
@@ -117,7 +120,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   activeTabButton: {
-    backgroundColor: '#1F74BA',
+    backgroundColor:  colors.color2,
     borderBottomColor: '#000',
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,

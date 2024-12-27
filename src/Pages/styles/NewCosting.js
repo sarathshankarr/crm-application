@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {
   Alert,
   Image,
@@ -18,11 +18,14 @@ import {API} from '../../config/apiConfig';
 import {useSelector} from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import {ColorContext} from '../../components/colortheme/colorTheme';
 
 const NewCosting = ({navigation, route}) => {
+  const {colors} = useContext(ColorContext);
+  const styles = getStyles(colors);
   const {costingRequest} = route?.params || {};
   const [costId, setCostId] = useState(null); // Initialize costId in the state
-  
+
   useEffect(() => {
     // Get the costId when the component loads
     const id = costingRequest?.costingRequest?.[0]?.costId;
@@ -56,8 +59,16 @@ const NewCosting = ({navigation, route}) => {
     {material: '', price: '', consumption: ''},
   ]);
   const [inputFields, setInputFields] = useState([
-    {id: Date.now(), description: '', amnt: '', total: '0.00'},
+    {
+      id: `${Date.now()}-${Math.random()}`,
+      description: '',
+      amnt: '',
+      total: '0.00',
+    },
   ]);
+
+  const [nextId, setNextId] = useState(1); // Track the next unique ID for new fields
+  const [showInputs, setShowInputs] = useState(false);
   const [amnt, setAmnt] = useState(0); // Default to 0
   const [overheadsPercent, setOverheadsPercent] = useState(''); // Default to 0%
   const [fridge1, setFridge1] = useState('');
@@ -78,7 +89,7 @@ const NewCosting = ({navigation, route}) => {
       label: 'Bathmat',
       value: 'bathmat',
       labelStyle: styles.radioLabel,
-      color: '#1F74BA',
+      color: colors.color2,
       disabled: false, // Add disabled property
     },
     {
@@ -86,7 +97,7 @@ const NewCosting = ({navigation, route}) => {
       label: 'Cushion',
       value: 'cushion',
       labelStyle: styles.radioLabel,
-      color: '#1F74BA',
+      color: colors.color2,
       disabled: false, // Add disabled property
     },
   ]);
@@ -139,12 +150,13 @@ const NewCosting = ({navigation, route}) => {
     // Map through totalInputs to populate inputFields
     if (Array.isArray(requestData.totalInputs)) {
       const populatedFields = requestData.totalInputs.map(item => ({
-        id: item.ksCostId || Date.now(), // Use ksCostId for a unique ID if available
+        id: `${item.ksCostId}-${Date.now()}-${Math.random()}`, // Ensure uniqueness with ksCostId and timestamp
         description: item.description || '',
         amnt: item.amount?.toString() || '',
-        total: (item.amount * (item.unit || 1)).toFixed(2), // Calculate total as amount * unit
+        total: (item.amount * (item.unit || 1)).toFixed(2),
       }));
       setInputFields(populatedFields); // Set state with pre-populated values
+      setShowInputs(true);
     }
 
     // Populate gallery images if ksImageUrls is available
@@ -334,10 +346,29 @@ const NewCosting = ({navigation, route}) => {
   };
 
   const handleAddInput = () => {
-    setInputFields([
-      ...inputFields,
-      {id: Date.now(), description: '', amnt: '', total: ''}, // Add a unique ID
-    ]);
+    if (!showInputs) {
+      // Show input fields and add the first input field only when inputs are not shown
+      setShowInputs(true);
+      setInputFields([
+        {
+          id: `${Date.now()}-${Math.random()}`,
+          description: '',
+          amnt: '',
+          total: '',
+        },
+      ]);
+    } else {
+      // Add another input field if inputs are already shown
+      setInputFields(prevFields => [
+        ...prevFields,
+        {
+          id: `${Date.now()}-${Math.random()}`,
+          description: '',
+          amnt: '',
+          total: '',
+        },
+      ]);
+    }
   };
 
   const handleAmntChange = (id, amntValue) => {
@@ -355,10 +386,20 @@ const NewCosting = ({navigation, route}) => {
       ),
     );
   };
+  useEffect(() => {
+    setInputFields(prevFields =>
+      prevFields.map(field => ({
+        ...field,
+        total: (
+          parseFloat(field.amnt || 0) * parseFloat(squareFeet || 0)
+        ).toFixed(2),
+      })),
+    );
+  }, [squareFeet]); // Recalculate whenever squareFeet changes
 
   // Function to handle removing an input field
   const handleRemoveInput = id => {
-    setInputFields(inputFields.filter(field => field.id !== id));
+    setInputFields(prevFields => prevFields.filter(field => field.id !== id));
   };
 
   const calculateTotalForAddInput = () => {
@@ -572,10 +613,10 @@ const NewCosting = ({navigation, route}) => {
         costingRequest?.costingRequest?.[0]?.createOn || 0,
       );
       const ksImageName = String(
-        costingRequest?.costingRequest?.[0]?.ksImageName ||'',
+        costingRequest?.costingRequest?.[0]?.ksImageName || '',
       );
       console.log('ksImageName:', ksImageName);
-      
+
       // Append individual fields
       formData.append('costId', costId);
       formData.append('locationLength', length || '');
@@ -665,7 +706,7 @@ const NewCosting = ({navigation, route}) => {
       //     });
       //   });
       // }
-      
+
       if (galleryImages && Array.isArray(galleryImages)) {
         galleryImages.forEach(image => {
           formData.append('files', {
@@ -721,8 +762,8 @@ const NewCosting = ({navigation, route}) => {
                 />
               </TouchableOpacity>
               <Text style={styles.headerText}>
-          {costId === 0 || !costId ? 'New Costing' : ` ${costId}`}
-        </Text>
+                {costId === 0 || !costId ? 'New Costing' : ` ${costId}`}
+              </Text>
             </View>
             <TouchableOpacity
               onPress={!isSubmitting ? handleSubmit : null} // Prevent multiple submissions
@@ -732,8 +773,12 @@ const NewCosting = ({navigation, route}) => {
                 {opacity: isSubmitting ? 0.5 : 1}, // Dim button when disabled
               ]}>
               <Text style={styles.addCostingText}>
-          {isSubmitting ? 'Submitting...' : costId === 0 || !costId ? 'Add' : 'Save'}
-        </Text>
+                {isSubmitting
+                  ? 'Submitting...'
+                  : costId === 0 || !costId
+                  ? 'Add'
+                  : 'Save'}
+              </Text>
             </TouchableOpacity>
           </View>
           <View style={styles.radiobutheader}>
@@ -876,14 +921,14 @@ const NewCosting = ({navigation, route}) => {
               </View>
             ))}
 
-            <View style={styles.yarnFooter}>
+            <View style={styles.yarnFooteryarn}>
               <View>
                 <Text style={styles.totalText}>Total : </Text>
               </View>
 
               <View>
                 <TextInput
-                  style={styles.totalPricetext}
+                  style={styles.totalPricetextyarn}
                   placeholder="Total Consumption"
                   placeholderTextColor="#000"
                   keyboardType="numeric"
@@ -893,7 +938,7 @@ const NewCosting = ({navigation, route}) => {
               </View>
               <View>
                 <TextInput
-                  style={styles.totalPricetext}
+                  style={styles.totalPricetextyarn}
                   placeholder="Total Price"
                   placeholderTextColor="#000"
                   keyboardType="numeric"
@@ -903,7 +948,7 @@ const NewCosting = ({navigation, route}) => {
               </View>
               <View>
                 <TextInput
-                  style={styles.totalPricetext1}
+                  style={styles.totalPricetext1yarn}
                   placeholder="0.00"
                   placeholderTextColor="#000"
                   value={calculateTotalPercentage()} // Dynamically update the percentage
@@ -1060,51 +1105,52 @@ const NewCosting = ({navigation, route}) => {
             style={styles.addinputhead}>
             <Text>Add Input</Text>
           </TouchableOpacity>
-          {inputFields.map(field => (
-            <View key={field.id} style={styles.headSizeadd}>
-              <View style={styles.inputContainer}>
-                <View style={styles.lengthHead}>
-                  <TextInput
-                    style={styles.lengthText}
-                    placeholder="Description"
-                    placeholderTextColor="#000"
-                    value={field.description}
-                    onChangeText={text =>
-                      setInputFields(prevFields =>
-                        prevFields.map(f =>
-                          f.id === field.id ? {...f, description: text} : f,
-                        ),
-                      )
-                    }
-                  />
+          {showInputs &&
+            inputFields.map(field => (
+              <View key={field.id} style={styles.headSizeadd}>
+                <View style={styles.inputContainer}>
+                  <View style={styles.lengthHead}>
+                    <TextInput
+                      style={styles.lengthText}
+                      placeholder="Description"
+                      placeholderTextColor="#000"
+                      value={field.description}
+                      onChangeText={text =>
+                        setInputFields(prevFields =>
+                          prevFields.map(f =>
+                            f.id === field.id ? {...f, description: text} : f,
+                          ),
+                        )
+                      }
+                    />
+                  </View>
+                  <View style={styles.DescriptionInput1}>
+                    <TextInput
+                      style={styles.breadthText}
+                      placeholder="Amnt"
+                      placeholderTextColor="#000"
+                      value={field.amnt}
+                      onChangeText={text => handleAmntChange(field.id, text)}
+                    />
+                  </View>
+                  <View style={styles.DescriptionInput2}>
+                    <TextInput
+                      style={styles.breadthText}
+                      placeholder="Total"
+                      placeholderTextColor="#000"
+                      value={field.total}
+                      editable={false}
+                    />
+                  </View>
+                  <TouchableOpacity onPress={() => handleRemoveInput(field.id)}>
+                    <Image
+                      style={styles.buttonIcon}
+                      source={require('../../../assets/del.png')}
+                    />
+                  </TouchableOpacity>
                 </View>
-                <View style={styles.DescriptionInput1}>
-                  <TextInput
-                    style={styles.breadthText}
-                    placeholder="Amnt"
-                    placeholderTextColor="#000"
-                    value={field.amnt}
-                    onChangeText={text => handleAmntChange(field.id, text)} // Update Amnt and Total
-                  />
-                </View>
-                <View style={styles.DescriptionInput2}>
-                  <TextInput
-                    style={styles.breadthText}
-                    placeholder="Total"
-                    placeholderTextColor="#000"
-                    value={field.total} // Display the dynamically calculated Total
-                    editable={false} // Prevent manual editing
-                  />
-                </View>
-                <TouchableOpacity onPress={() => handleRemoveInput(field.id)}>
-                  <Image
-                    style={styles.buttonIcon}
-                    source={require('../../../assets/del.png')}
-                  />
-                </TouchableOpacity>
               </View>
-            </View>
-          ))}
+            ))}
 
           <View style={styles.headSquare}>
             <Text style={styles.labelSquare}>Total:</Text>
@@ -1206,6 +1252,7 @@ const NewCosting = ({navigation, route}) => {
                   placeholderTextColor="#000"
                   value={fridge1cal} // Dynamically display the calculated fridge1cal
                   editable={false} // Prevent manual editing of the result
+                
                 />
               </View>
               <View style={styles.lengthheadfridgenoneditable}>
@@ -1262,10 +1309,10 @@ const NewCosting = ({navigation, route}) => {
           </View>
           <View style={styles.headSizefridge}>
             <View style={styles.headercal}>
-              <Text>L</Text>
-              <Text>B</Text>
-              <Text>sq ft</Text>
-              <Text>price/sq ft</Text>
+              <Text style={{color: '#000'}}>L</Text>
+              <Text style={{color: '#000'}}>B</Text>
+              <Text style={{color: '#000'}}>sq ft</Text>
+              <Text style={{color: '#000'}}>price/sq ft</Text>
             </View>
             <View style={styles.inputContainer}>
               <View style={styles.lengthheadfridgenoneditable}>
@@ -1306,10 +1353,10 @@ const NewCosting = ({navigation, route}) => {
               </View>
             </View>
             <View style={styles.headercal1}>
-              <Text>packing</Text>
-              <Text>freight</Text>
-              <Text>total</Text>
-              <Text>margin</Text>
+              <Text style={{color: '#000'}}>packing</Text>
+              <Text style={{color: '#000'}}>freight</Text>
+              <Text style={{color: '#000'}}>total</Text>
+              <Text style={{color: '#000'}}>margin</Text>
             </View>
             <View style={styles.inputContainer}>
               <View style={styles.lengthheadfridge}>
@@ -1352,10 +1399,10 @@ const NewCosting = ({navigation, route}) => {
               </View>
             </View>
             <View style={styles.headercal2}>
-              <Text>FOB</Text>
-              <Text>per sq ft</Text>
-              <Text>per sq mtr</Text>
-              <Text>per kg</Text>
+              <Text style={{color: '#000'}}>FOB</Text>
+              <Text style={{color: '#000'}}>per sq ft</Text>
+              <Text style={{color: '#000'}}>per sq mtr</Text>
+              <Text style={{color: '#000'}}>per kg</Text>
             </View>
             <View style={styles.inputContainer}>
               <View style={styles.lengthheadfridgenoneditable}>
@@ -1423,470 +1470,503 @@ const NewCosting = ({navigation, route}) => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  Topheader: {
-    flexDirection: 'row',
-    alignItems: 'center', // Vertical alignment for items
-    justifyContent: 'space-between', // Space left and right sections
-    marginHorizontal: 10,
-    marginVertical: 10,
-  },
-  leftSection: {
-    flexDirection: 'row',
-    alignItems: 'center', // Vertically align back button and "Costing" text
-  },
-  backButton: {
-    marginRight: 10, // Add spacing between back button and "Costing" text
-  },
-  backImage: {
-    height: 25,
-    width: 25,
-  },
-  headerText: {
-    fontSize: 19,
-    fontWeight: 'bold',
-    color: '#000',
-  },
-  rightSection: {
-    borderWidth: 1,
-    justifyContent: 'flex-end',
-    marginHorizontal: 5,
-    paddingHorizontal: 10,
-    paddingVertical: 3,
-    borderRadius: 10,
-    backgroundColor: 'lightgray',
-  },
-  radioGroup: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-  },
-  radiobutheader: {
-    paddingVertical: 10,
-    backgroundColor: '#fff',
-    borderTopWidth: 1,
-    borderColor: '#ddd',
-    elevation: 2,
-  },
-  headSizeadd: {
-    marginHorizontal: 10,
-    marginVertical: 10,
-  },
-  headSize: {
-    marginBottom: 10,
-    marginHorizontal: 15,
-  },
-  lengthHead: {
-    flex: 2,
-    marginRight: 5,
-  },
-  lengthText: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    padding: 8,
-    borderRadius: 4,
-  },
-  DescriptionInput1: {
-    flex: 1,
-    marginRight: 5,
-  },
-  DescriptionInput2: {
-    flex: 1,
-    marginRight: 5,
-  },
-  breadthText: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    padding: 8,
-    borderRadius: 4,
-    textAlign: 'center',
-  },
-  buttonIcon: {
-    width: 24,
-    height: 24,
-  },
-  Pipinghead: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  addinputhead: {
-    borderWidth: 1,
-    marginHorizontal: 5,
-    padding: 5,
-    borderRadius: 5,
-    backgroundColor: '#1F74BA',
-    alignSelf: 'flex-end',
-    marginRight: 15,
-    marginTop: 10,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 5,
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  lengthhead: {
-    flex: 1,
-    marginRight: 10,
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    padding: 10,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    elevation: 1,
-  },
-  lengthheadyarn: {
-    flex: 1,
-    marginRight: 10,
-    backgroundColor: '##f0f0f0',
-    borderRadius: 10,
-    padding: 10,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    elevation: 1,
-  },
-  Breadthhead: {
-    flex: 1,
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    padding: 10,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    elevation: 1,
-  },
-  lengthtext: {
-    color: '#333',
-  },
-  Breadthtext: {
-    color: '#333',
-  },
-  headSquare: {
-    marginHorizontal: 15,
-    marginTop: 20,
-  },
-  labelSquare: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 5,
-  },
-  inputContainerSquare: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  lengthheadSquare: {
-    flex: 1,
-    backgroundColor: '#f0f0f0',
-    borderRadius: 10,
-    padding: 10,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    elevation: 1,
-  },
-  lengthtextSquare: {
-    color: '#333',
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  headQuality: {
-    marginHorizontal: 15,
-    marginTop: 20,
-  },
-  labelQuality: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 5,
-  },
-  inputContainerQuality: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  lengthheadQuality: {
-    flex: 1,
-    backgroundColor: '#f0f0f0',
-    borderRadius: 10,
-    padding: 10,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    elevation: 1,
-  },
-  lengthtextQuality: {
-    color: '#333',
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  yarnhead: {
-    marginHorizontal: 15,
-    marginTop: 20,
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    padding: 10,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    elevation: 3,
-  },
-  yarntxt: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#1F74BA',
-    marginVertical: 10,
-    paddingVertical: 5,
-  },
-  yarnheaders: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 10,
-    alignItems: 'center',
-  },
-  addyarnbtn: {
-    backgroundColor: '#1F74BA',
-    borderRadius: 10,
-    padding: 10,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    alignItems: 'center',
-    marginLeft: 10,
-  },
-  buttonIcon: {
-    width: 25,
-    height: 25,
-    marginHorizontal: 5,
-  },
-  Materialhead: {
-    flex: 1,
-    marginRight: 10,
-    marginLeft: 5,
-    backgroundColor: '#f9f9f9',
-    borderRadius: 10,
-    padding: 10,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    elevation: 1,
-  },
-  Materialtext: {
-    color: '#333',
-  },
-  Pricehead: {
-    flex: 1,
-    marginRight: 10,
-    backgroundColor: '#f9f9f9',
-    borderRadius: 10,
-    padding: 10,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    elevation: 1,
-  },
-  Pricetext: {
-    color: '#333',
-  },
-  totalPricetext: {
-    marginHorizontal: 8,
-  },
-  totalPricetext1: {
-    marginHorizontal: 8,
-    alignSelf: 'flex-end',
-  },
-  Consumptionhead: {
-    flex: 1,
-    backgroundColor: '#f9f9f9',
-    borderRadius: 10,
-    padding: 10,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    elevation: 1,
-  },
-  Consumptiontext: {
-    color: '#333',
-  },
+const getStyles = colors =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: '#fff',
+    },
+    Topheader: {
+      flexDirection: 'row',
+      alignItems: 'center', // Vertical alignment for items
+      justifyContent: 'space-between', // Space left and right sections
+      marginHorizontal: 10,
+      marginVertical: 10,
+    },
+    leftSection: {
+      flexDirection: 'row',
+      alignItems: 'center', // Vertically align back button and "Costing" text
+    },
+    backButton: {
+      marginRight: 10, // Add spacing between back button and "Costing" text
+    },
+    backImage: {
+      height: 25,
+      width: 25,
+    },
+    headerText: {
+      fontSize: 19,
+      fontWeight: 'bold',
+      color: '#000',
+    },
+    addCostingText: {
+      color: '#000',
+    },
+    rightSection: {
+      borderWidth: 1,
+      justifyContent: 'flex-end',
+      marginHorizontal: 5,
+      paddingHorizontal: 10,
+      paddingVertical: 3,
+      borderRadius: 10,
+      backgroundColor: 'lightgray',
+    },
+    radioGroup: {
+      flexDirection: 'row',
+      justifyContent: 'space-around',
+    },
+    radiobutheader: {
+      paddingVertical: 10,
+      backgroundColor: '#fff',
+      borderTopWidth: 1,
+      borderColor: '#ddd',
+      elevation: 2,
+    },
+    headSizeadd: {
+      marginHorizontal: 10,
+      marginVertical: 10,
+    },
+    headSize: {
+      marginBottom: 10,
+      marginHorizontal: 15,
+    },
+    lengthHead: {
+      flex: 1,
+      marginRight: 5,
+    },
+    lengthText: {
+      borderWidth: 1,
+      borderColor: '#ccc',
+      padding: 8,
+      borderRadius: 4,
+      color: '#000',
+    },
+    DescriptionInput1: {
+      flex: 0.7,
+      marginRight: 5,
+      color: '#000',
+    },
+    DescriptionInput2: {
+      flex: 1,
+      marginRight: 5,
+      color: '#000',
+    },
+    breadthText: {
+      borderWidth: 1,
+      borderColor: '#ccc',
+      padding: 8,
+      borderRadius: 4,
+      textAlign: 'center',
+      color: '#000',
+    },
+    Pipinghead: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    addinputhead: {
+      borderWidth: 1,
+      marginHorizontal: 5,
+      padding: 5,
+      borderRadius: 5,
+      backgroundColor: colors.color2,
+      alignSelf: 'flex-end',
+      marginRight: 15,
+      marginTop: 10,
+    },
+    label: {
+      fontSize: 16,
+      fontWeight: 'bold',
+      color: '#333',
+      marginBottom: 5,
+    },
+    inputContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    lengthhead: {
+      flex: 1,
+      marginRight: 10,
+      backgroundColor: '#fff',
+      borderRadius: 10,
+      borderWidth: 1,
+      borderColor: '#ddd',
+      elevation: 1,
+    },
+    lengthheadyarn: {
+      flex: 1,
+      marginRight: 10,
+      borderRadius: 10,
+      borderWidth: 1,
+      borderColor: '#ddd',
+      backgroundColor: '#f0f0f0',
+    },
+    Breadthhead: {
+      flex: 1,
+      backgroundColor: '#fff',
+      borderRadius: 10,
+      borderWidth: 1,
+      borderColor: '#ddd',
+      elevation: 1,
+    },
+    lengthtext: {
+      color: '#000',
+    },
+    Breadthtext: {
+      color: '#000',
+      paddingHorizontal: 5, // Add some padding to avoid text being cut off
+    },
 
-  addButton: {
-    marginTop: 10,
-    paddingVertical: 10,
-    backgroundColor: '#1F74BA',
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  addButtonText: {
-    fontSize: 16,
-    color: '#fff',
-    fontWeight: 'bold',
-  },
-  pricemultiplyConsumptiontotalhead: {
-    elevation: 1,
-    marginLeft: 10,
-    flex: 0.8,
-  },
-  radioLabel: {
-    color: '#000',
-  },
-  yarnHeaderContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  yarnRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 5,
-  },
-  yarnFooter: {
-    flexDirection: 'row',
-    marginVertical: 10,
-  },
-  totalText: {
-    marginLeft: 6,
-  },
-  yarnHeaderTextAction: {
-    flex: 0.5,
-  },
-  yarnHeaderTextMaterial: {
-    flex: 0.9,
-  },
-  yarnHeaderTextPrice: {
-    flex: 1,
-  },
-  yarnHeaderTextConsumption: {
-    flex: 1.5,
-  },
-  Descriptioninput1: {
-    flex: 1,
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    padding: 10,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    elevation: 1,
-  },
-  Descriptioninpuut2: {
-    flex: 1,
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    padding: 10,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    elevation: 1,
-    marginLeft: 5,
-  },
-  headSizefridge: {
-    marginHorizontal: 15,
-    marginTop: 10,
-    borderWidth: 1,
-    marginHorizontal: 10,
-    padding: 5,
-    borderRadius: 5,
-    borderColor: 'gray',
-  },
-  headercal: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginHorizontal: 10,
-    marginVertical: 5,
-  },
-  headercal1: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginHorizontal: 10,
-    marginVertical: 5,
-  },
-  headercal2: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginHorizontal: 10,
-    marginVertical: 5,
-  },
-  Pipingheadfridge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  lengthheadfridge: {
-    flex: 1,
-    marginRight: 10,
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    padding: 10,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    elevation: 1,
-    marginVertical: 5,
-  },
-  lengthheadfridgenoneditable: {
-    flex: 1,
-    marginRight: 10,
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    padding: 10,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    elevation: 1,
-    marginVertical: 5,
-    backgroundColor: '#ddd',
-  },
-  descriptionhead: {
-    borderWidth: 1,
-    borderColor: '#000',
-    marginHorizontal: 15,
-    marginVertical: 10,
-    borderRadius: 5,
-    paddingVertical: 25,
-  },
-  descriptiontxt: {
-    marginHorizontal: 10,
-    fontWeight: 'bold',
-    color: '#000',
-    fontSize: 15,
-  },
-  chooseimghead: {
-    borderWidth: 1,
-    marginHorizontal: 15,
-    padding: 10,
-    borderRadius: 5,
-    backgroundColor: '#1F74BA',
-    alignSelf: 'flex-start',
-    marginRight: 15,
-    marginTop: 10,
-  },
-  choosetxt: {
-    color: '#fff',
-  },
-  imagePreviewContainer: {
-    flexDirection: 'row',
-    marginVertical: 5,
-    marginHorizontal: 10,
-  },
-  imagePreview: {
-    width: 70,
-    height: 70,
-    marginHorizontal: 5,
-    borderRadius: 10,
-    backgroundColor: '#f0f0f0',
-  },
-  removeButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 14,
-  },
-  removeButton: {
-    position: 'absolute',
-    top: 0, // Position the button at the top edge of the image
-    right: 0, // Align the button to the right edge
-    backgroundColor: 'gray',
-    borderRadius: 15,
-    width: 25,
-    height: 25,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-});
+    yarnFooteryarn: {
+      flexDirection: 'row',
+      alignItems: 'center', // Align items vertically
+      marginVertical: 5,
+      flexWrap: 'wrap',
+    },
+    totalText: {
+      marginLeft: 6,
+      fontSize: 14,
+    },
+    totalPricetextyarn: {
+      borderWidth: 1,
+      borderColor: '#ccc',
+      borderRadius: 4,
+      padding: 5,
+      textAlign: 'center',
+      marginHorizontal: 8,
+      marginVertical: 8,
+      color: '#000',
+    },
+    totalPricetext1yarn: {
+      borderWidth: 1,
+      borderColor: '#ccc',
+      borderRadius: 4,
+      padding: 5,
+      textAlign: 'center',
+      marginHorizontal: 8,
+      color: '#000',
+    },
+
+    headSquare: {
+      marginHorizontal: 15,
+      marginTop: 5,
+    },
+    labelSquare: {
+      fontSize: 16,
+      fontWeight: 'bold',
+      color: '#333',
+      marginBottom: 5,
+    },
+    inputContainerSquare: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+    },
+    lengthheadSquare: {
+      flex: 1,
+      backgroundColor: '#f0f0f0',
+      borderRadius: 10,
+      borderWidth: 1,
+      borderColor: '#ddd',
+      elevation: 1,
+    },
+    lengthtextSquare: {
+      color: '#333',
+      fontWeight: 'bold',
+      textAlign: 'center',
+    },
+    headQuality: {
+      marginHorizontal: 15,
+      marginTop: 20,
+    },
+    labelQuality: {
+      fontSize: 16,
+      fontWeight: 'bold',
+      color: '#333',
+      marginBottom: 5,
+    },
+    inputContainerQuality: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+    },
+    lengthheadQuality: {
+      flex: 1,
+      backgroundColor: '#f0f0f0',
+      borderRadius: 10,
+      borderWidth: 1,
+      borderColor: '#ddd',
+      elevation: 1,
+    },
+    lengthtextQuality: {
+      fontWeight: 'bold',
+      textAlign: 'center',
+      color: '#000',
+    },
+    yarnhead: {
+      marginHorizontal: 15,
+      marginTop: 20,
+      backgroundColor: '#fff',
+      borderRadius: 10,
+      borderWidth: 1,
+      borderColor: '#ddd',
+      elevation: 3,
+    },
+    yarntxt: {
+      fontSize: 16,
+      fontWeight: 'bold',
+      color: colors.color2,
+      marginVertical: 10,
+      paddingVertical: 5,
+      marginHorizontal: 10,
+    },
+    yarnheaders: {
+      flexDirection: 'row',
+      marginBottom: 5,
+      alignItems: 'center',
+      marginHorizontal: 5,
+    },
+    addyarnbtn: {
+      backgroundColor: colors.color2,
+      borderRadius: 10,
+      padding: 10,
+      borderWidth: 1,
+      borderColor: '#ddd',
+      alignItems: 'center',
+      marginLeft: 10,
+      marginHorizontal: 10,
+    },
+    buttonIcon: {
+      width: 25,
+      height: 25,
+      marginLeft: 5,
+    },
+    Materialhead: {
+      flex: 0.7,
+      marginRight: 5,
+      marginLeft: 5,
+      backgroundColor: '#f9f9f9',
+      borderRadius: 10,
+      borderWidth: 1,
+      borderColor: '#ddd',
+      marginLeft: 15,
+    },
+    Materialtext: {
+      color: '#000',
+    },
+    Pricehead: {
+      flex: 0.7,
+      marginRight: 10,
+      marginLeft: 10,
+      backgroundColor: '#f9f9f9',
+      borderRadius: 10,
+      borderWidth: 1,
+      borderColor: '#ddd',
+      elevation: 1,
+    },
+    Pricetext: {
+      color: '#000',
+    },
+    totalPricetext: {
+      marginHorizontal: 8,
+      color: '#000',
+    },
+    totalPricetext1: {
+      marginHorizontal: 8,
+      alignSelf: 'flex-end',
+    },
+    Consumptionhead: {
+      flex: 0.7,
+      backgroundColor: '#f9f9f9',
+      borderRadius: 10,
+      borderWidth: 1,
+      borderColor: '#ddd',
+      elevation: 1,
+    },
+    Consumptiontext: {
+      color: '#000',
+    },
+
+    addButton: {
+      marginTop: 10,
+      paddingVertical: 10,
+      backgroundColor: colors.color2,
+      borderRadius: 10,
+      alignItems: 'center',
+    },
+    addButtonText: {
+      fontSize: 16,
+      color: '#fff',
+      fontWeight: 'bold',
+    },
+    pricemultiplyConsumptiontotalhead: {
+      elevation: 1,
+      marginLeft: 10,
+      flex: 1,
+    },
+    pricemultiplyConsumptiontotal: {
+      fontSize: 16, // Ensure font size is appropriate
+      color: '#000',
+    },
+    radioLabel: {
+      color: '#000',
+    },
+    yarnHeaderContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    yarnRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginVertical: 5,
+    },
+    yarnFooter: {
+      flexDirection: 'row',
+      marginVertical: 5,
+    },
+    totalText: {
+      marginLeft: 6,
+      color: '#000',
+    },
+    yarnHeaderTextAction: {
+      flex: 0.6,
+      color: '#000',
+    },
+    yarnHeaderTextMaterial: {
+      flex: 0.8,
+      color: '#000',
+    },
+    yarnHeaderTextPrice: {
+      flex: 1,
+      marginLeft: 10,
+      color: '#000',
+    },
+    yarnHeaderTextConsumption: {
+      flex: 1.8,
+      marginRight: 15,
+      color: '#000',
+    },
+    Descriptioninput1: {
+      flex: 1,
+      backgroundColor: '#fff',
+      borderRadius: 10,
+      padding: 10,
+      borderWidth: 1,
+      borderColor: '#ddd',
+      elevation: 1,
+    },
+    Descriptioninpuut2: {
+      flex: 1,
+      backgroundColor: '#fff',
+      borderRadius: 10,
+      padding: 10,
+      borderWidth: 1,
+      borderColor: '#ddd',
+      elevation: 1,
+      marginLeft: 5,
+    },
+    headSizefridge: {
+      marginHorizontal: 15,
+      marginTop: 10,
+      borderWidth: 1,
+      marginHorizontal: 10,
+      padding: 5,
+      borderRadius: 5,
+      borderColor: 'gray',
+    },
+    headercal: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginHorizontal: 10,
+    },
+    headercal1: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginHorizontal: 10,
+    },
+    headercal2: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginHorizontal: 10,
+    },
+    Pipingheadfridge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    lengthheadfridge: {
+      flex: 1,
+      marginRight: 10,
+      backgroundColor: '#fff',
+      borderRadius: 10,
+      borderWidth: 1,
+      borderColor: '#ddd',
+    },
+    lengthheadfridgenoneditable: {
+      flex: 1,
+      marginRight: 10,
+      backgroundColor: '#fff',
+      borderRadius: 10,
+      borderWidth: 1,
+      borderColor: '#ddd',
+      marginVertical: 5,
+      backgroundColor: '#ddd',
+    },
+    descriptionhead: {
+      borderWidth: 1,
+      borderColor: '#000',
+      marginHorizontal: 15,
+      marginVertical: 10,
+      borderRadius: 5,
+      paddingVertical: 25,
+    },
+    descriptiontxt: {
+      marginHorizontal: 10,
+      fontWeight: 'bold',
+      color: '#000',
+      fontSize: 15,
+    },
+    chooseimghead: {
+      borderWidth: 1,
+      marginHorizontal: 15,
+      padding: 10,
+      borderRadius: 5,
+      backgroundColor: colors.color2,
+      alignSelf: 'flex-start',
+      marginRight: 15,
+      marginTop: 10,
+    },
+    choosetxt: {
+      color: '#fff',
+    },
+    imagePreviewContainer: {
+      flexDirection: 'row',
+      marginVertical: 5,
+      marginHorizontal: 10,
+    },
+    imagePreview: {
+      width: 70,
+      height: 70,
+      marginHorizontal: 5,
+      borderRadius: 10,
+      backgroundColor: '#f0f0f0',
+    },
+    removeButtonText: {
+      color: '#fff',
+      fontWeight: 'bold',
+      fontSize: 14,
+    },
+    removeButton: {
+      position: 'absolute',
+      top: 0, // Position the button at the top edge of the image
+      right: 0, // Align the button to the right edge
+      backgroundColor: 'gray',
+      borderRadius: 15,
+      width: 25,
+      height: 25,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+  });
 
 export default NewCosting;

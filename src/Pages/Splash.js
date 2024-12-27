@@ -65,7 +65,7 @@
 // export default Splash;
 
 
-import React, { useEffect } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { View, StyleSheet, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
@@ -78,8 +78,11 @@ import Animated, {
   withRepeat,
   Easing,
 } from 'react-native-reanimated';
+import { ColorContext } from '../components/colortheme/colorTheme';
 
 const Splash = () => {
+  const { colors } = useContext(ColorContext);
+  const styles = getStyles(colors);
   const navigation = useNavigation();
 
   // Shared values for animation
@@ -167,7 +170,7 @@ const Splash = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors) => StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
@@ -187,7 +190,7 @@ const styles = StyleSheet.create({
     width: 12,
     height: 12,
     borderRadius: 6,
-    backgroundColor: '#1F74BA',
+    backgroundColor:  colors.color2,
     marginHorizontal: 8,
   },
 });

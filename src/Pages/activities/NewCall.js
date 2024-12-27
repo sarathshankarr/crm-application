@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useCallback} from 'react';
+import React, {useState, useEffect, useCallback, useContext} from 'react';
 import {
   StyleSheet,
   Text,
@@ -21,9 +21,12 @@ import {useSelector} from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {formatDateIntoDMY} from '../../Helper/Helper';
 import CustomCheckBox from '../../components/CheckBox';
+import { ColorContext } from '../../components/colortheme/colorTheme';
 
 
 const NewCall = () => {
+  const { colors } = useContext(ColorContext);
+  const styles = getStyles(colors);
   const route = useRoute();
   const userData = useSelector(state => state.loggedInUser);
   const userId=userData?.userId;
@@ -1331,7 +1334,7 @@ const NewCall = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors) => StyleSheet.create({
   container: {
     backgroundColor: '#fff',
   },
@@ -1349,7 +1352,7 @@ const styles = StyleSheet.create({
   },
   addButton: {
     // backgroundColor: '#390050',
-    backgroundColor: '#1F74BA',
+    backgroundColor: colors.color2,
     borderRadius: 5,
     paddingHorizontal: 15,
     paddingVertical: 10,

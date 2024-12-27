@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useMemo, useCallback} from 'react';
+import React, {useState, useEffect, useMemo, useCallback, useContext} from 'react';
 import {
   StyleSheet,
   Text,
@@ -21,8 +21,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {formatDateIntoDMY} from '../../Helper/Helper';
 import CustomCheckBox from '../../components/CheckBox';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { ColorContext } from '../../components/colortheme/colorTheme';
 
 const NewTask = () => {
+  const { colors } = useContext(ColorContext);
+  const styles = getStyles(colors);
   const dispatch = useDispatch(); // Get dispatch function from useDispatch hook
   const userData = useSelector(state => state.loggedInUser);
   const userId = userData?.userId;
@@ -1252,7 +1255,7 @@ const NewTask = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors) => StyleSheet.create({
   modalContainer: {
     backgroundColor: '#fff',
     flex: 1,
@@ -1271,7 +1274,7 @@ const styles = StyleSheet.create({
   },
   addButton: {
     // backgroundColor: '#390050',
-    backgroundColor: '#1F74BA',
+    backgroundColor: colors.color2,
     borderRadius: 5,
     paddingHorizontal: 15,
     paddingVertical: 10,

@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useCallback} from 'react';
+import React, {useState, useEffect, useCallback, useContext} from 'react';
 import {
   Text,
   View,
@@ -17,6 +17,7 @@ import {useSelector} from 'react-redux';
 import axios from 'axios';
 import {API} from '../config/apiConfig';
 import FastImage from 'react-native-fast-image';
+import { ColorContext } from '../components/colortheme/colorTheme';
 
 // const Categories = ({navigation}) => {
 //   const [selectedDetails, setSelectedDetails] = useState([]);
@@ -207,6 +208,8 @@ import FastImage from 'react-native-fast-image';
 // };
 
 const Categories = ({navigation}) => {
+   const { colors } = useContext(ColorContext);
+  const styles = getStyles(colors);
   const [selectedDetails, setSelectedDetails] = useState([]);
   const [showSearchInput, setShowSearchInput] = useState(false);
   // const [from, setFrom] = useState(1);
@@ -630,7 +633,7 @@ const Categories = ({navigation}) => {
     </View>
   );
 };
-const styles = StyleSheet.create({
+const getStyles = (colors) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#faf7f6',
@@ -764,7 +767,7 @@ const styles = StyleSheet.create({
     tintColor: '#000',
   },
   searchButton: {
-    backgroundColor: '#1F74BA',
+    backgroundColor: colors.color2,
     borderRadius: 25,
     paddingHorizontal: 20,
     paddingVertical: 10,

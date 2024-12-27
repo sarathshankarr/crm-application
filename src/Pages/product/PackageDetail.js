@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import {
   FlatList,
   StyleSheet,
@@ -20,8 +20,11 @@ import {
   setSourceScreen,
   updateCartItem,
 } from '../../redux/actions/Actions';
+import { ColorContext } from '../../components/colortheme/colorTheme';
 
 const PackageDetail = ({ route }) => {
+  const { colors } = useContext(ColorContext);
+  const styles = getStyles(colors);
   const { packageId } = route.params;
   const [stylesData, setStylesData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -332,7 +335,7 @@ const PackageDetail = ({ route }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors) => StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -427,7 +430,7 @@ const styles = StyleSheet.create({
   closeButton: {
     marginTop: 20,
     padding: 10,
-    backgroundColor: '#2196F3',
+    backgroundColor: colors.color2,
     borderRadius: 5,
   },
   closeButtonText: {

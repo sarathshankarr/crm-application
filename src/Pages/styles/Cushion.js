@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {
   Alert,
   Image,
@@ -18,8 +18,11 @@ import {API} from '../../config/apiConfig';
 import {useSelector} from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import { ColorContext } from '../../components/colortheme/colorTheme';
 
 const Cushion = ({navigation, route}) => {
+  const { colors } = useContext(ColorContext);
+  const styles = getStyles(colors);
   const {costingRequest} = route?.params || {};
   const [costId, setCostId] = useState(null); // Initialize costId in the state
 
@@ -97,7 +100,7 @@ const Cushion = ({navigation, route}) => {
       label: 'Bathmat',
       value: 'bathmat',
       labelStyle: styles.radioLabel,
-      color: '#1F74BA',
+      color:  colors.color2,
       disabled: false, // Add disabled property
     },
     {
@@ -105,7 +108,7 @@ const Cushion = ({navigation, route}) => {
       label: 'Cushion',
       value: 'cushion',
       labelStyle: styles.radioLabel,
-      color: '#1F74BA',
+      color:  colors.color2,
       disabled: false, // Add disabled property
     },
   ]);
@@ -257,7 +260,7 @@ const Cushion = ({navigation, route}) => {
         costingRequest?.costingRequest?.[0]?.createOn || 0,
       );
       const ksImageName = String(
-        costingRequest?.costingRequest?.[0]?.ksImageName,
+        costingRequest?.costingRequest?.[0]?.ksImageName || '',
       );
       // Append all form fields to formData
       formData.append('costId', costId);
@@ -1199,7 +1202,7 @@ const Cushion = ({navigation, route}) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
@@ -1238,6 +1241,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#000',
   },
+  radioLabel: {
+    color: '#000',
+  },
   rightSection: {
     borderWidth: 1,
     justifyContent: 'flex-end',
@@ -1246,6 +1252,9 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     borderRadius: 10,
     backgroundColor: 'lightgray',
+  },
+  addCostingText:{
+    color:'#000'
   },
   headSize: {
     marginBottom: 10,
@@ -1277,7 +1286,6 @@ const styles = StyleSheet.create({
     marginRight: 10,
     backgroundColor: '#fff',
     borderRadius: 10,
-    padding: 10,
     borderWidth: 1,
     borderColor: '#ddd',
     elevation: 1,
@@ -1304,7 +1312,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 15,
     padding: 10,
     borderRadius: 5,
-    backgroundColor: '#1F74BA',
+    backgroundColor:  colors.color2,
     alignSelf: 'flex-start',
     marginRight: 15,
     marginTop: 10,

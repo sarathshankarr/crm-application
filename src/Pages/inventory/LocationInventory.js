@@ -1,5 +1,5 @@
 import { useNavigation } from '@react-navigation/native';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -17,8 +17,11 @@ import { API } from '../../config/apiConfig';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { ColorContext } from '../../components/colortheme/colorTheme';
 
 const LocationInventory = () => {
+  const { colors } = useContext(ColorContext);
+  const styles = getStyles(colors);
   const navigation = useNavigation();
   const [searchQuery, setSearchQuery] = useState('');
   const [inventoryData, setInventoryData] = useState([]);
@@ -363,7 +366,7 @@ const LocationInventory = () => {
 
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
@@ -491,7 +494,7 @@ const styles = StyleSheet.create({
     borderRadius: 15,
   },
   searchButton: {
-    backgroundColor: '#1F74BA',
+    backgroundColor:   colors.color2,
     borderRadius: 25,
     paddingHorizontal: 20,
     paddingVertical: 10,

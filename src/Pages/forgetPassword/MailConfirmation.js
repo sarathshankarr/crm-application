@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import {
     Alert,
     Image,
@@ -18,9 +18,12 @@ import axios from 'axios';
 import { API } from '../../config/apiConfig';
 import { CUSTOMER_URL } from '../../config/apiConfig';
 import { isValidString } from '../../Helper/Helper';
+import { ColorContext } from '../../components/colortheme/colorTheme';
 
 
 const MailConfirmation = () => {
+    const { colors } = useContext(ColorContext);
+  const styles = getStyles(colors);
     const navigation = useNavigation();
     const [loading, setLoading] = useState(false);
     const [email, setEmail] = useState('');
@@ -174,7 +177,7 @@ const MailConfirmation = () => {
     );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors) => StyleSheet.create({
     container: {
         flex: 1,
         paddingHorizontal: 20,
@@ -226,7 +229,7 @@ const styles = StyleSheet.create({
     button: {
         width: '100%',
         height: 50,
-        backgroundColor: '#1F74BA',
+        backgroundColor: colors.color2,
         justifyContent: 'center',
         alignItems: 'center',
         borderRadius: 5,

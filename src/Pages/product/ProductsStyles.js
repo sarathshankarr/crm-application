@@ -1274,7 +1274,7 @@
 
 import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import {
   Image,
   StyleSheet,
@@ -1297,11 +1297,13 @@ import CustomCheckBox from '../../components/CheckBox';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSelector } from 'react-redux';
 import { debounce } from 'lodash';
+import { ColorContext } from '../../components/colortheme/colorTheme';
 
 const ProductsStyles = ({ route }) => {
   const navigation = useNavigation();
   const [searchQueryStylesData, setSearchQueryStylesData] = useState('');
-
+  const { colors } = useContext(ColorContext);
+  const styles = getStyles(colors);
   const [selectedId, setSelectedId] = useState('1');
   const [loading, setLoading] = useState(false);
   const [stylesData, setStylesData] = useState([]);
@@ -1412,14 +1414,14 @@ const ProductsStyles = ({ route }) => {
       label: 'Distributor',
       value: 'distributor',
       labelStyle: {color: '#000'},
-      color: '#1F74BA',
+      color:  colors.color2,
     },
     {
       id: '2',
       label: 'Retailer',
       value: 'retailer',
       labelStyle: {color: '#000'},
-      color: '#1F74BA',
+      color:  colors.color2,
     },
   ];
 
@@ -2057,7 +2059,7 @@ const ProductsStyles = ({ route }) => {
           style={[
             styles.head2,
             {
-              backgroundColor: isAnyCheckboxSelected() ? '#1F74BA' : '#f0f0f0', // Example colors
+              backgroundColor: isAnyCheckboxSelected() ?  colors.color2 : '#f0f0f0', // Example colors
               opacity: isAnyCheckboxSelected() ? 1 : 1,
             },
           ]}
@@ -2183,7 +2185,7 @@ const ProductsStyles = ({ route }) => {
           <View style={styles.modalContent1}>
             <View
               style={{
-                backgroundColor: '#1F74BA',
+                backgroundColor:  colors.color2,
                 borderRadius: 10,
                 marginHorizontal: 10,
                 flexDirection: 'row',
@@ -2276,7 +2278,7 @@ const ProductsStyles = ({ route }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
@@ -2308,7 +2310,7 @@ const styles = StyleSheet.create({
     padding: 6,
     borderRadius: 10,
     marginLeft: 5,
-    backgroundColor: '#1F74BA',
+    backgroundColor: colors.color2,
   },
   txt2: {
     color: '#000',
@@ -2430,7 +2432,7 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     alignItems: 'center',
-    backgroundColor: '#1F74BA',
+    backgroundColor:  colors.color2,
     borderRadius: 5,
     marginHorizontal: 10,
     marginVertical: 10,
@@ -2492,7 +2494,7 @@ const styles = StyleSheet.create({
     color: 'red',
   },
   saveButton: {
-    backgroundColor: '#1F74BA',
+    backgroundColor:  colors.color2,
     padding: 10,
     borderRadius: 5,
     marginTop: 20,
@@ -2584,7 +2586,7 @@ const styles = StyleSheet.create({
     tintColor: '#000',
   },
   searchButton: {
-    backgroundColor: '#1F74BA',
+    backgroundColor:  colors.color2,
     borderRadius: 25,
     paddingHorizontal: 20,
     paddingVertical: 10,

@@ -1,6 +1,6 @@
 import {useNavigation} from '@react-navigation/native';
 import axios from 'axios';
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useContext} from 'react';
 import {
   Image,
   StyleSheet,
@@ -22,9 +22,12 @@ import {API} from '../../config/apiConfig';
 import CustomCheckBox from '../../components/CheckBox';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useSelector} from 'react-redux';
+import { ColorContext } from '../../components/colortheme/colorTheme';
 
 const ProductPackagePublish = () => {
   const navigation = useNavigation();
+  const { colors } = useContext(ColorContext);
+  const styles = getStyles(colors);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchQueryStylesData, setSearchQueryStylesData] = useState('');
 
@@ -360,14 +363,14 @@ const ProductPackagePublish = () => {
       label: 'Distributor',
       value: 'distributor',
       labelStyle: {color: '#000'},
-      color: '#1F74BA',
+      color: colors.color2,
     },
     {
       id: '2',
       label: 'Retailer',
       value: 'retailer',
       labelStyle: {color: '#000'},
-      color: '#1F74BA',
+      color:colors.color2,
     },
   ];
 
@@ -516,8 +519,8 @@ const ProductPackagePublish = () => {
 
   const searchOption = [
     {label: 'id', value: 1},
-    {label: 'Sty Nme', value: 3},
-    {label: 'Sty Des', value: 4},
+    {label: 'Style Name', value: 3},
+    {label: 'Style Descrption', value: 4},
     {label: 'Color', value: 5},
   ];
 
@@ -854,7 +857,7 @@ const ProductPackagePublish = () => {
           style={[
             styles.head2,
             {
-              backgroundColor: isAnyCheckboxSelected() ? '#1F74BA' : '#f0f0f0', // Example colors
+              backgroundColor: isAnyCheckboxSelected() ? colors.color2 : '#f0f0f0', // Example colors
               opacity: isAnyCheckboxSelected() ? 1 : 1,
             },
           ]}
@@ -982,7 +985,7 @@ const ProductPackagePublish = () => {
           <View style={styles.modalContent1}>
             <View
               style={{
-                backgroundColor: '#1F74BA',
+                backgroundColor:colors.color2,
                 borderRadius: 10,
                 marginHorizontal: 10,
                 flexDirection: 'row',
@@ -1109,7 +1112,7 @@ const ProductPackagePublish = () => {
             </View> */}
             <View
               style={{
-                backgroundColor: '#1F74BA',
+                backgroundColor: colors.color2,
                 borderRadius: 10,
                 marginHorizontal: 10,
                 flexDirection: 'row',
@@ -1314,7 +1317,7 @@ const ProductPackagePublish = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
@@ -1346,7 +1349,7 @@ const styles = StyleSheet.create({
     padding: 6,
     borderRadius: 10,
     marginLeft: 5,
-    backgroundColor: '#1F74BA',
+    backgroundColor: colors.color2,
   },
   txt2: {
     color: '#000',
@@ -1393,7 +1396,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   searchButton: {
-    backgroundColor: '#1F74BA',
+    backgroundColor:colors.color2,
     borderRadius: 25,
     paddingHorizontal: 20,
     paddingVertical: 10,
@@ -1497,7 +1500,7 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     alignItems: 'center',
-    backgroundColor: '#1F74BA',
+    backgroundColor:colors.color2,
     borderRadius: 5,
     marginHorizontal: 10,
     marginVertical: 10,
@@ -1561,7 +1564,7 @@ marginHorizontal:10
     color: 'red',
   },
   saveButton: {
-    backgroundColor: '#1F74BA',
+    backgroundColor: colors.color2,
     padding: 10,
     borderRadius: 5,
     marginTop: 20,

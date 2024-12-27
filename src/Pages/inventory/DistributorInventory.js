@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {
   StyleSheet,
   Text,
@@ -17,8 +17,11 @@ import axios from 'axios';
 import {useSelector} from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useNavigation} from '@react-navigation/native';
+import { ColorContext } from '../../components/colortheme/colorTheme';
 
 const DistributorInventory = () => {
+  const { colors } = useContext(ColorContext);
+  const styles = getStyles(colors);
   const navigation = useNavigation();
   const [initialSelectedCompany, setInitialSelectedCompany] = useState(null);
   const [orders, setOrders] = useState([]);
@@ -352,7 +355,7 @@ const DistributorInventory = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors) => StyleSheet.create({
   container: {
     backgroundColor: 'white',
     flex: 1,
@@ -450,7 +453,7 @@ const styles = StyleSheet.create({
     borderRadius: 15,
   },
   searchButton: {
-    backgroundColor: '#1F74BA',
+    backgroundColor: colors.color2,
     borderRadius: 25,
     paddingHorizontal: 20,
     paddingVertical: 10,

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet, ScrollView, FlatList, TextInput, ActivityIndicator } from 'react-native';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
@@ -7,9 +7,12 @@ import { API } from '../../config/apiConfig';
 import { RefreshControl } from 'react-native';
 import ModalComponent from '../../components/ModelComponent';
 import { useNavigation } from '@react-navigation/native';
+import { ColorContext } from '../../components/colortheme/colorTheme';
 // import NotificationModal from '../../components/NotificationModal';
 
 const NewCategoryUi = () => {
+  const { colors } = useContext(ColorContext);
+  const styles = getStyles(colors);
   const navigation = useNavigation();
   const [selectedCategory, setSelectedCategory] = useState('');
   const [initialSelectedCompany, setInitialSelectedCompany] = useState(null);
@@ -461,7 +464,7 @@ const NewCategoryUi = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors) => StyleSheet.create({
   container: {
     flex: 1,
     flexDirection: 'row',
@@ -492,7 +495,7 @@ const styles = StyleSheet.create({
   activeCategoryButton: {
     backgroundColor: '#fff',
     borderWidth: 2,
-    borderColor: '#1F74BA',
+    borderColor: colors.color2,
   },
   activeCategoryText: {
     color: '#000',

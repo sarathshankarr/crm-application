@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {useNavigation, useFocusEffect} from '@react-navigation/native';
 import {
   StyleSheet,
@@ -19,8 +19,11 @@ import {API} from '../../config/apiConfig';
 import {formatDateIntoDMY} from '../../Helper/Helper';
 import {useSelector} from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { ColorContext } from '../../components/colortheme/colorTheme';
 
 const Tasks = () => {
+  const { colors } = useContext(ColorContext);
+  const styles = getStyles(colors);
   const navigation = useNavigation();
   const [tasks, setTasks] = useState([]);
   const [filteredTasks, setFilteredTasks] = useState([]);
@@ -496,7 +499,7 @@ const Tasks = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
@@ -545,7 +548,7 @@ const styles = StyleSheet.create({
   addButton: {
     paddingHorizontal: 15,
     padding: 10,
-    backgroundColor: '#1F74BA',
+    backgroundColor:colors.color2,
     borderRadius: 5,
     marginLeft: 10,
   },

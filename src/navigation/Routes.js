@@ -50,6 +50,8 @@ import QRCodeScanner from '../Pages/scan/QrScanner';
 import Costing from '../Pages/styles/Costing';
 import NewCosting from '../Pages/styles/NewCosting';
 import Cushion from '../Pages/styles/Cushion';
+import { Settings } from 'react-native';
+import SettingsScreen from '../settings/SettingsScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -354,6 +356,11 @@ const Routes = () => {
       <Stack.Screen
         name="Cushion"
         component={Cushion}
+        options={{ headerShown: false }}
+      />
+        <Stack.Screen
+        name="SettingsScreen"
+        component={SettingsScreen}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

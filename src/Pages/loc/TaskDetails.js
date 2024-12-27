@@ -1,5 +1,5 @@
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import {
   Image,
   PermissionsAndroid,
@@ -24,6 +24,7 @@ import ImagePicker from 'react-native-image-crop-picker';
 import DocumentPicker from 'react-native-document-picker';
 import CustomCheckBox from '../../components/CheckBox';
 import { formatDateIntoDMY } from '../../Helper/Helper';
+import { ColorContext } from '../../components/colortheme/colorTheme';
 
 const TaskDetails = ({ route }) => {
   const {
@@ -44,6 +45,8 @@ const TaskDetails = ({ route }) => {
   } = route.params;
 
   const navigation = useNavigation();
+  const { colors } = useContext(ColorContext);
+  const styles = getStyles(colors);
   const [selectedRadioButtonId, setSelectedRadioButtonId] = useState(null);
   const [isSwitchOn, setIsSwitchOn] = useState(false);
   const [description, setDescription] = useState(desc);
@@ -1435,7 +1438,7 @@ const TaskDetails = ({ route }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
@@ -1481,7 +1484,7 @@ const styles = StyleSheet.create({
   },
   sectionHeader: {
     paddingVertical: 10,
-    backgroundColor: '#1F74BA',
+    backgroundColor: colors.color2,
     marginVertical: 5,
   },
   sectionHeaderText: {
@@ -1661,7 +1664,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f0f0f0',
   },
   uploadButton: {
-    backgroundColor: '#1F74BA',
+    backgroundColor:  colors.color2,
     paddingHorizontal: 20,
     borderRadius: 10,
   },

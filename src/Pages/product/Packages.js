@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -19,8 +19,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { debounce } from 'lodash';
 import ImageSliderPackages from '../../components/ImageSliderPackages';
+import { ColorContext } from '../../components/colortheme/colorTheme';
 
 const Packages = ({ navigation }) => {
+  const { colors } = useContext(ColorContext);
+  const styles = getStyles(colors);
   const selectedCompany = useSelector(state => state.selectedCompany);
   const [initialSelectedCompany, setInitialSelectedCompany] = useState(null);
   const [packagesList, setPackagesList] = useState([]);
@@ -467,7 +470,7 @@ const Packages = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
@@ -542,7 +545,7 @@ const styles = StyleSheet.create({
     borderRadius: 15,
   },
   searchButton: {
-    backgroundColor: '#1F74BA',
+    backgroundColor: colors.color2,
     borderRadius: 25,
     paddingHorizontal: 20,
     paddingVertical: 10,

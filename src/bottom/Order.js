@@ -601,7 +601,7 @@
 
 
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useContext } from 'react';
 import {
   Text,
   View,
@@ -621,8 +621,11 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { API } from '../config/apiConfig';
 import { useSelector } from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { ColorContext } from '../components/colortheme/colorTheme';
 
 const Order = () => {
+  const { colors } = useContext(ColorContext);
+  const style = getStyles(colors);
   const [orders, setOrders] = useState([]);
   const [pageNo, setPageNo] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -1163,7 +1166,7 @@ const Order = () => {
   );
 };
 
-const style = StyleSheet.create({
+const getStyles = (colors) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#ffffff',
@@ -1290,7 +1293,7 @@ const style = StyleSheet.create({
     borderRadius: 15,
   },
   searchButton: {
-    backgroundColor: '#1F74BA',
+    backgroundColor: colors.color2,
     borderRadius: 25,
     paddingHorizontal: 20,
     paddingVertical: 10,

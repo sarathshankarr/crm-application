@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useMemo, useRef, useState} from 'react';
 import {
   Image,
   StyleSheet,
@@ -8,6 +8,7 @@ import {
   Modal,
   ScrollView,
   SafeAreaView,
+  Animated,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -16,9 +17,12 @@ import {API} from './config/apiConfig';
 import axios, {all} from 'axios';
 import {useDispatch, useSelector} from 'react-redux';
 import {CLEAR_CART} from './redux/ActionTypes';
+import { ColorContext, ColorProvider } from './components/colortheme/colorTheme';
 
 const Sidebar = ({navigation, route}) => {
   const userRole = useSelector(state => state.userRole) || '';
+  const { colors } = useContext(ColorContext);
+  const styles = getStyles(colors);
   const [modalVisible, setModalVisible] = useState(false);
   const [image, setImage] = useState(require('../assets/profile.png'));
   const [userData, setUserData] = useState(null);
@@ -39,6 +43,10 @@ const Sidebar = ({navigation, route}) => {
   const [initialSelectedCompany, setInitialSelectedCompany] = useState(null);
   const selectedCompany = useSelector(state => state.selectedCompany);
   const [roleMenusLoaded, setRoleMenusLoaded] = useState(false);
+
+  const [openDropdown, setOpenDropdown] = React.useState(null);
+  const [selectedDropdown, setSelectedDropdown] = useState(null);
+  const [tempBackgroundEffect, setTempBackgroundEffect] = useState({});
 
   const fetchInitialSelectedCompany = async () => {
     try {
@@ -69,11 +77,11 @@ const Sidebar = ({navigation, route}) => {
   const isAdmin = loginuser?.role?.some(
     role => role.role.toLowerCase() === 'admin',
   );
-  
+
   // const isDistributor = loginuser?.role?.some(
   //   role => role.role.toLowerCase() === 'distributor',
   // );
-  // isDistributor! && 
+  // isDistributor! &&
 
   // console.log('isAdmin============>', isAdmin);
   // console.log('isDistributor============>', isDistributor);
@@ -127,13 +135,16 @@ const Sidebar = ({navigation, route}) => {
       });
   };
 
-  const toggleDropdown = () => {
-    setDropdownVisible(!dropdownVisible);
-    setDropdownVisiblee(false);
-    setDropdownVisiblePublish(false);
-    setDropdownVisibleProduct(false);
-    setdropdownVisibleOrder(false);
-    setDropdownVisibleeStyel(false);
+  // const toggleDropdown = () => {
+  //   setDropdownVisible(!dropdownVisible);
+  //   setDropdownVisiblee(false);
+  //   setDropdownVisiblePublish(false);
+  //   setDropdownVisibleProduct(false);
+  //   setdropdownVisibleOrder(false);
+  //   setDropdownVisibleeStyel(false);
+  // };
+  const toggleDropdown = key => {
+    setOpenDropdown(prev => (prev === key ? null : key));
   };
 
   const toggleDropdownSecond = () => {
@@ -235,6 +246,10 @@ const Sidebar = ({navigation, route}) => {
     navigation.navigate('Attendence');
   };
 
+  const goToSettingsScreen = () => {
+    navigation.navigate('SettingsScreen');
+  };
+
   const takePhotoFromCamera = () => {
     ImagePicker.openCamera({
       width: 300,
@@ -297,7 +312,6 @@ const Sidebar = ({navigation, route}) => {
       await AsyncStorage.removeItem('loggedInUser'); // Remove the logged-in user data from AsyncStorage
       await AsyncStorage.removeItem('selectedCompany'); // Remove the logged-in user data from AsyncStorage
       await AsyncStorage.removeItem('roleMenu');
-    
 
       dispatch({type: CLEAR_CART});
 
@@ -391,6 +405,7 @@ const Sidebar = ({navigation, route}) => {
   const Activities = menuMap[11];
   const LocationTask = menuMap[12];
   const attendance = menuMap[13];
+  const costing = menuMap[15];
 
   const hasDropdownhome = home;
   const hasDropdowncategories = Categories;
@@ -413,10 +428,254 @@ const Sidebar = ({navigation, route}) => {
     ProductInventory || locationwiseinventory || distributorwiseinventory;
   const hasDropdowncompaign = Activities;
 
+  const dropdownMenus = useMemo(() => {
+    const hasProductStyle = Productstyle?.menuName;
+    const hasPackages = Packages?.menuName;
+    const hasProductPublish = productpublish?.menuName;
+    const hasOrders = orders?.menuName || packingorders?.menuName;
+    const hasProductInventory = ProductInventory?.menuName;
+    const hasLocationwiseInventory = locationwiseinventory?.menuName;
+    const hasDistributorwiseInventory = distributorwiseinventory?.menuName;
+    const hasActivities = Activities?.menuName; // Campaign Management
+    const hasCosting = costing?.menuName; // Styles
+
+    return {
+      style: {
+        label:
+          hasProductStyle || hasPackages || hasProductPublish
+            ? 'Products'
+            : null,
+        icon:
+          hasProductStyle || hasPackages || hasProductPublish
+            ? require('../assets/box.png')
+            : null,
+        style: [
+          hasProductStyle
+            ? {
+                label: Productstyle.menuName,
+                route: 'ProductsStyles',
+                src: require('../assets/package.png'),
+              }
+            : null,
+          hasPackages
+            ? {
+                label: Packages.menuName,
+                route: 'Packages',
+                src: require('../assets/package.png'),
+              }
+            : null,
+          hasProductPublish
+            ? {
+                label: productpublish.menuName,
+                route: 'ProductPackagePublish',
+                src: require('../assets/package.png'),
+              }
+            : null,
+        ].filter(Boolean),
+      },
+      ordersAndReturns: {
+        label: hasOrders ? 'Orders' : null,
+        icon: hasOrders ? require('../assets/orderr.png') : null,
+        style: [
+          orders
+            ? {
+                label: orders.menuName,
+                route: 'Order',
+                src: require('../assets/orderr.png'),
+              }
+            : null,
+          packingorders
+            ? {
+                label: packingorders.menuName,
+                route: 'Packing orders',
+                src: require('../assets/packing.png'),
+              }
+            : null,
+        ].filter(Boolean),
+      },
+      inventory: {
+        label:
+          hasProductInventory ||
+          hasLocationwiseInventory ||
+          hasDistributorwiseInventory
+            ? 'Inventory'
+            : null,
+        icon:
+          hasProductInventory ||
+          hasLocationwiseInventory ||
+          hasDistributorwiseInventory
+            ? require('../assets/inventory.png')
+            : null,
+        style: [
+          hasProductInventory
+            ? {
+                label: ProductInventory.menuName,
+                route: 'ProductInventory',
+                src: require('../assets/product-management.png'),
+              }
+            : null,
+          hasLocationwiseInventory
+            ? {
+                label: locationwiseinventory.menuName,
+                route: 'LocationInventory',
+                src: require('../assets/locationinv.png'),
+              }
+            : null,
+          hasDistributorwiseInventory
+            ? {
+                label: distributorwiseinventory.menuName,
+                route: 'DistributorInventory',
+                src: require('../assets/disinventory.png'),
+              }
+            : null,
+        ].filter(Boolean),
+      },
+      campaignManagement: {
+        label: hasActivities ? 'Campaign Management' : null,
+        icon: hasActivities ? require('../assets/activity.png') : null,
+        style: [
+          hasActivities
+            ? {
+                label: Activities.menuName,
+                route: 'Activities',
+                src: require('../assets/acticityone.png'),
+              }
+            : null,
+        ].filter(Boolean),
+      },
+      styles: {
+        label: hasCosting ? 'Styles' : null,
+        icon: hasCosting ? require('../assets/style.png') : null,
+        style: [
+          hasCosting
+            ? {
+                label: costing.menuName,
+                route: 'Costing',
+                src: require('../assets/dollar.png'),
+              }
+            : null,
+        ].filter(Boolean),
+      },
+    };
+  }, [
+    Productstyle,
+    Packages,
+    productpublish,
+    orders,
+    packingorders,
+    ProductInventory,
+    locationwiseinventory,
+    distributorwiseinventory,
+    Activities,
+    costing,
+  ]);
+
+  const renderDropdown = (key, menu) => {
+    const isSelected = selectedDropdown === key;
+    const hasTempBackgroundEffect = tempBackgroundEffect[key];
+    const animationValue = useRef(new Animated.Value(0)).current;
+
+    const handleDropdownPress = () => {
+      setSelectedDropdown(isSelected ? null : key);
+      toggleDropdown(key);
+
+      // Trigger background color effect for this dropdown
+      setTempBackgroundEffect({[key]: true});
+      setTimeout(() => setTempBackgroundEffect({[key]: false}), 2000);
+
+      // console.log("slected dropdown ====> ", menu.style[0].label==="Location Wise Style Inventory");
+      // Animate dropdown height
+      Animated.timing(animationValue, {
+        toValue: isSelected
+          ? 0
+          : menu.style[0]?.label === 'Location Wise Style Inventory'
+          ? menu.style.length * 80
+          : menu.style.length * 60,
+        duration: 300,
+        useNativeDriver: false,
+      }).start();
+    };
+
+    return (
+      <View>
+        {/* Parent Dropdown */}
+        {(menu.label || menu.icon) && (
+          <TouchableOpacity
+            style={[
+              styles.dropdownHeader,
+              isSelected && styles.selectedDropdownHeader,
+              hasTempBackgroundEffect && styles.tempBackgroundEffect,
+              !menu.label && {display: 'none'}, // Hide the dropdown if there's no label
+            ]}
+            onPress={handleDropdownPress}>
+            <View style={styles.dropdownTitle}>
+              <View style={styles.navIconContainer}>
+                {menu.icon && (
+                  <Image
+                    style={[styles.navIcon, isSelected && styles.selectedIcon]}
+                    source={menu.icon}
+                  />
+                )}
+              </View>
+              {menu.label && (
+                <Text
+                  style={[styles.navText, isSelected && styles.selectedText]}>
+                  {menu.label}
+                </Text>
+              )}
+            </View>
+            {menu.label && (
+              <View style={{marginLeft: -10}}>
+                <Image
+                  style={styles.dropdownIcon}
+                  source={
+                    openDropdown === key
+                      ? require('../assets/down-arrow.png')
+                      : require('../assets/chevron.png')
+                  }
+                />
+              </View>
+            )}
+          </TouchableOpacity>
+        )}
+
+        {/* Child Items */}
+        {openDropdown === key && (
+          <Animated.View
+            style={[
+              styles.animatedDropdownContent,
+              {height: animationValue},
+              styles.dropdownContent,
+            ]}>
+            {menu.style.map((item, index) => (
+              <TouchableOpacity
+                key={`${index}-${item?.route}`}
+                style={styles.dropdownItem}
+                onPress={() => navigation.navigate(item.route)}>
+                <View style={styles.navIconContainer}>
+                  <Image style={styles?.navIcon} source={item?.src} />
+                </View>
+                <Text style={styles.navText}>{item?.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </Animated.View>
+        )}
+      </View>
+    );
+  };
+
+  const NavItem = ({title, icon, onPress}) => (
+    <TouchableOpacity style={styles.navItem} onPress={onPress}>
+      <View style={styles.navIconContainer}>
+        <Image style={styles.navIcon} source={icon} />
+      </View>
+      <Text style={styles.navText}>{title}</Text>
+    </TouchableOpacity>
+  );
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <View style={{backgroundColor: '#1F74BA'}}>
+        <View style={{backgroundColor: colors.color2,}}>
           <View style={styles.header}>
             <TouchableOpacity onPress={() => setModalVisible(true)}>
               <Image style={[styles.img, {borderRadius: 30}]} source={image} />
@@ -431,7 +690,7 @@ const Sidebar = ({navigation, route}) => {
             )}
           </View>
         </View>
-        {hasDropdownhome && (
+        {/* {hasDropdownhome && (
           <TouchableOpacity onPress={goToHome} style={styles.homeheader}>
             <Image
               style={styles.homeimg}
@@ -440,8 +699,88 @@ const Sidebar = ({navigation, route}) => {
 
             <Text style={styles.hometxt}>{home?.menuName}</Text>
           </TouchableOpacity>
+        )} */}
+
+        {hasDropdownhome && (
+          <View style={styles.navContainer}>
+            <NavItem
+              title={home?.menuName}
+              icon={require('../assets/store.png')}
+              onPress={goToHome}
+            />
+          </View>
         )}
+
         {hasDropdowncategories && (
+          <View style={styles.navContainer}>
+            <NavItem
+              title={Categories?.menuName}
+              icon={require('../assets/menu-1.png')}
+              onPress={goToCategories}
+            />
+          </View>
+        )}
+        {Object.entries(dropdownMenus).map(([key, menu], index) => (
+          <View key={index}>{renderDropdown(key, menu)}</View>
+        ))}
+        {hasDropdowndistributorgrn && (
+          <View style={styles.navContainer}>
+            <NavItem
+              title={distributorgrn?.menuName}
+              icon={require('../assets/distributor.png')}
+              onPress={goToDistributorGrn}
+            />
+          </View>
+        )}
+
+        {/* <TouchableOpacity
+          style={styles.inventoryhead}
+          onPress={toggleDropdownStyle}>
+          <Image
+            style={styles.orderimg}
+            source={require('../assets/style.png')}
+          />
+          <Text style={styles.ordertxt}>Styles</Text>
+          <View style={{marginLeft: 'auto'}}>
+            <Image
+              source={require('../assets/dropdown.png')}
+              style={{width: 20, height: 20}}
+            />
+          </View>
+        </TouchableOpacity> */}
+        {/* {dropdownVisibleStyle && (
+          <View style={styles.dropdown}>
+            <TouchableOpacity
+              style={styles.inventoryhead}
+              onPress={goToCosting}>
+              <Image
+                style={styles.prodimg}
+                source={require('../assets/dollar.png')}
+              />
+              <Text style={styles.dropdownItem}>Costing</Text>
+            </TouchableOpacity>
+          </View>
+        )} */}
+        {hasDropdownLocationTask && (
+          <View style={styles.navContainer}>
+            <NavItem
+              title={LocationTask?.menuName}
+              icon={require('../assets/location-pin.png')}
+              onPress={goToCustomerLocation}
+            />
+          </View>
+        )}
+        {hasDropdownattendance && (
+          <View style={styles.navContainer}>
+            <NavItem
+              title={attendance?.menuName}
+              icon={require('../assets/attendence.png')}
+              onPress={goToAttendence}
+            />
+          </View>
+        )}
+
+        {/* {hasDropdowncategories && (
           <TouchableOpacity
             onPress={goToCategories}
             style={styles.categorieshead}>
@@ -451,8 +790,9 @@ const Sidebar = ({navigation, route}) => {
             />
             <Text style={styles.categoriestxt}>{Categories?.menuName}</Text>
           </TouchableOpacity>
-        )}
-        {hasDropdownItemsprodust && (
+        )} */}
+
+        {/* {hasDropdownItemsprodust && (
           <TouchableOpacity
             style={styles.inventoryhead}
             onPress={toggleDropdownfourth}>
@@ -509,8 +849,8 @@ const Sidebar = ({navigation, route}) => {
               </TouchableOpacity>
             )}
           </View>
-        )}
-        {hasDropdownItemsOrders && (
+        )} */}
+        {/* {hasDropdownItemsOrders && (
           <TouchableOpacity
             style={styles.inventoryhead}
             onPress={toggleDropdownOrder}>
@@ -552,8 +892,8 @@ const Sidebar = ({navigation, route}) => {
               </TouchableOpacity>
             )}
           </View>
-        )}
-        {hasDropdownItemsInvetory && (
+        )} */}
+        {/* {hasDropdownItemsInvetory && (
           <TouchableOpacity
             style={styles.inventoryhead}
             onPress={toggleDropdown}>
@@ -616,8 +956,8 @@ const Sidebar = ({navigation, route}) => {
               </TouchableOpacity>
             )}
           </View>
-        )}
-        {hasDropdowndistributorgrn && (
+        )} */}
+        {/* {hasDropdowndistributorgrn && (
           <TouchableOpacity
             onPress={goToDistributorGrn}
             style={styles.distributorhead}>
@@ -627,8 +967,8 @@ const Sidebar = ({navigation, route}) => {
             />
             <Text style={styles.ordertxt}>{distributorgrn?.menuName}</Text>
           </TouchableOpacity>
-        )}
-        { hasDropdowncompaign && (
+        )} */}
+        {/* {hasDropdowncompaign && (
           <TouchableOpacity
             style={styles.inventoryhead}
             onPress={toggleDropdownSecond}>
@@ -658,39 +998,10 @@ const Sidebar = ({navigation, route}) => {
                 <Text style={styles.dropdownItem}>{Activities?.menuName}</Text>
               </TouchableOpacity>
             )}
-            {/* Add more dropdown items here */}
           </View>
-        )}
-        <TouchableOpacity
-          style={styles.inventoryhead}
-          onPress={toggleDropdownStyle}>
-          <Image
-            style={styles.orderimg}
-            source={require('../assets/style.png')}
-          />
-          <Text style={styles.ordertxt}>Styles</Text>
-          <View style={{marginLeft: 'auto'}}>
-            <Image
-              source={require('../assets/dropdown.png')}
-              style={{width: 20, height: 20}}
-            />
-          </View>
-        </TouchableOpacity>
-        {dropdownVisibleStyle && (
-          <View style={styles.dropdown}>
-            <TouchableOpacity
-              style={styles.inventoryhead}
-              onPress={goToCosting}>
-              <Image
-                style={styles.prodimg}
-                source={require('../assets/dollar.png')}
-              />
-              <Text style={styles.dropdownItem}>Costing</Text>
-            </TouchableOpacity>
-            {/* Add more dropdown items here */}
-          </View>
-        )}
-        {hasDropdownLocationTask && (
+        )} */}
+
+        {/* {hasDropdownLocationTask && (
           <TouchableOpacity
             onPress={goToCustomerLocation}
             style={styles.inventoryhead}>
@@ -700,8 +1011,8 @@ const Sidebar = ({navigation, route}) => {
             />
             <Text style={styles.ordertxt}>{LocationTask?.menuName}</Text>
           </TouchableOpacity>
-        )}
-        {hasDropdownattendance && (
+        )} */}
+        {/* {hasDropdownattendance && (
           <TouchableOpacity
             onPress={goToAttendence}
             style={styles.inventoryhead}>
@@ -711,10 +1022,21 @@ const Sidebar = ({navigation, route}) => {
             />
             <Text style={styles.ordertxt}>{attendance?.menuName}</Text>
           </TouchableOpacity>
-        )}
+        )} */}
       </ScrollView>
 
-      <View style={styles.logoutContainer}>
+      <TouchableOpacity onPress={goToSettingsScreen} style={styles.logoutbox}>
+          <Image
+            resizeMode="contain"
+            style={[
+              styles.logoutimg,
+              {tintColor: '#fff', height: 20, width: 20},
+            ]}
+            source={require('../assets/settings.png')}
+          />
+          <Text style={styles.logouttxt}>Settings</Text>
+        </TouchableOpacity>
+      {/* <View style={styles.logoutContainer}>
         <TouchableOpacity onPress={handleLogout} style={styles.logoutbox}>
           <Image
             resizeMode="contain"
@@ -743,7 +1065,7 @@ const Sidebar = ({navigation, route}) => {
             Delete Account
           </Text>
         </TouchableOpacity>
-      </View>
+      </View> */}
       <Modal
         animationType="slide"
         transparent={true}
@@ -751,20 +1073,22 @@ const Sidebar = ({navigation, route}) => {
         onRequestClose={() => {
           setModalVisible(!modalVisible);
         }}>
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
+        <View style={styles.modalContainerProfile}>
+          <View style={styles.modalContentProfile}>
             <TouchableOpacity
-              style={styles.modalButton}
+              style={styles.modalButtonProfile}
               onPress={takePhotoFromCamera}>
-              <Text style={styles.modalButtonText}>Take Photo</Text>
+              <Text style={styles.modalButtonTextProfile}>Take Photo</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={styles.modalButton}
+              style={styles.modalButtonProfile}
               onPress={choosePhotoFromLibrary}>
-              <Text style={styles.modalButtonText}>Choose from Gallery</Text>
+              <Text style={styles.modalButtonTextProfile}>
+                Choose from Gallery
+              </Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={styles.modalCancelButton}
+              style={styles.modalCancelButtonProfile}
               onPress={() => setModalVisible(false)}>
               <Text style={{color: 'white'}}>Cancel</Text>
             </TouchableOpacity>
@@ -776,25 +1100,25 @@ const Sidebar = ({navigation, route}) => {
         transparent={true}
         visible={deleteModalVisible}
         onRequestClose={() => setDeleteModalVisible(false)}>
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Are you sure?</Text>
-            <Text style={styles.modalMessage}>
+        <View style={styles.modalContainerProfile}>
+          <View style={styles.modalContentProfile}>
+            <Text style={styles.modalTitleProfile}>Are you sure?</Text>
+            <Text style={styles.modalMessageProfile}>
               User information will be deleted.
             </Text>
-            <View style={styles.modalButtonContainer}>
+            <View style={styles.modalButtonContainerProfile}>
               <TouchableOpacity
-                style={styles.modalButton1}
+                style={styles.modalButtonProfilecancel}
                 onPress={() => setDeleteModalVisible(false)}>
-                <Text style={styles.modalButtonText}>Cancel</Text>
+                <Text style={styles.modalButtonProfileCancel}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.modalButton1, styles.modalDeleteButton]}
+                style={[styles.modalButton1Profile, styles.modalDeleteButtonProfile]}
                 onPress={() => {
                   getUserInActive();
                   setDeleteModalVisible(false);
                 }}>
-                <Text style={styles.modalButtonText}>Delete</Text>
+                <Text style={styles.modalButtonTextProfile}>Delete</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -804,7 +1128,7 @@ const Sidebar = ({navigation, route}) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
@@ -934,8 +1258,7 @@ const styles = StyleSheet.create({
   },
   logoutbox: {
     borderWidth: 1,
-    borderColor: '#f55951',
-    backgroundColor: '#1F74BA',
+    backgroundColor: colors.color2,
     // backgroundColor: '#543c52',
     borderRadius: 15,
     paddingVertical: 12,
@@ -966,58 +1289,190 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: 'bold',
   },
-  modalContainer: {
+  modalContainerProfile: {
     flex: 1,
     justifyContent: 'flex-end',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
-  modalContent: {
+  modalContentProfile: {
     backgroundColor: '#fff',
     padding: 20,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
   },
-  modalButton: {
+  modalButtonProfile: {
     paddingVertical: 15,
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
+    borderRadius:10
   },
-  modalCancelButton: {
+  modalButtonProfilecancel:{
+    paddingVertical: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+    borderRadius:10,
+    backgroundColor:"gray"
+  },
+  modalButtonProfileCancel:{
+paddingHorizontal:35,
+marginRight:40
+  },
+  modalCancelButtonProfile: {
     paddingVertical: 15,
     alignItems: 'center',
-    backgroundColor: 'red',
+    backgroundColor: colors.color2,
     borderRadius: 10,
     marginTop: 10,
   },
-  modalTitle: {
+  modalTitleProfile: {
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 10,
     color: '#000',
   },
-  modalMessage: {
+  modalMessageProfile: {
     fontSize: 16,
     marginBottom: 20,
     color: '#000',
   },
-  modalButtonContainer: {
+  modalButtonContainerProfile: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     color: '#000',
+    marginHorizontal:10
   },
-  modalButton1: {
+  modalButton1Profile: {
     flex: 1,
     paddingVertical: 15,
     borderRadius: 10,
     alignItems: 'center',
     marginHorizontal: 5,
   },
-  modalButtonText: {
+  modalButtonTextProfile: {
     color: '#000',
   },
 
-  modalDeleteButton: {
+  modalDeleteButtonProfile: {
     backgroundColor: 'red',
+  },
+  dropdownItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 5,
+    paddingVertical: 3,
+    marginLeft: 25,
+  },
+
+  profileImage: {width: 50, height: 50, marginRight: 15, borderRadius: 25},
+  userName: {fontSize: 18, fontWeight: 'bold', color: '#fff'},
+  navContainer: {marginTop: 10, paddingHorizontal: 15},
+  dropdownTitle: {flexDirection: 'row', alignItems: 'center'},
+  navIconContainer: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#e9ecef',
+    borderRadius: 20,
+    marginRight: 15,
+  },
+  navItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 5,
+    borderRadius: 5,
+    marginVertical: 5,
+    borderBottomWidth: 1,
+    borderColor: '#EAEAEA',
+  },
+  navIcon: {width: 20, height: 20, tintColor: colors.color2},
+  dropdownIcon: {
+    width: 15,
+    height: 15,
+  },
+  navText: {
+    fontSize: 16,
+    color: '#333',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    flex: 1,
+    textAlign: 'left',
+  },
+  bottomSection: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: 'auto',
+    padding: 20,
+  },
+  logoutButton: {alignItems: 'center'},
+  logoutIcon: {width: 30, height: 30, tintColor: colors.color2,},
+  logoutText: {color: '#333', marginTop: 5, fontSize: 14},
+  deleteButton: {alignItems: 'center'},
+  deleteIcon: {width: 30, height: 30, tintColor: colors.color2,},
+  deleteText: {color: '#f00', marginTop: 5, fontSize: 14},
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  modalContent: {
+    width: 300,
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  modalText: {fontSize: 16, marginBottom: 20, textAlign: 'center'},
+  modalActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  modalButton: {
+    flex: 1,
+    padding: 10,
+    alignItems: 'center',
+    borderRadius: 5,
+    backgroundColor: '#4CAF50',
+    margin: 5,
+  },
+  cancelButton: {backgroundColor: '#d9534f'},
+  modalButtonText: {color: '#fff', fontSize: 14, fontWeight: 'bold'},
+
+  dropdownHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 5,
+    paddingHorizontal: 15,
+    // backgroundColor: '#f7f7f7',
+    borderRadius: 5,
+    marginVertical: 5,
+    borderBottomWidth: 1,
+    borderColor: '#EAEAEA',
+  },
+  selectedDropdownHeader: {
+    borderLeftWidth: 5,
+    borderColor: colors.color2,
+    elevation: 5,
+    backgroundColor: '#fff',
+  },
+  tempBackgroundEffect: {
+    backgroundColor: '#f7f7f7',
+  },
+  selectedIcon: {
+    tintColor: colors.color2,
+  },
+
+  selectedText: {
+    color: colors.color2,
+  },
+  animatedDropdownContent: {
+    overflow: 'hidden', // Ensures content is clipped during animation
+    backgroundColor: '#fff', // Optional: Subtle background color
+    borderRadius: 5, // Optional: Rounded edges for dropdown
+    marginTop: 5,
   },
 });
 

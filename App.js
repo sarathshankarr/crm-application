@@ -1,19 +1,24 @@
-import React, { useEffect } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { Provider, useDispatch } from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import store from './src/redux/store/Store';
 import Routes from './src/navigation/Routes';
-import 'react-native-gesture-handler';
-import { NavigationContainer, useNavigation } from '@react-navigation/native'; 
+import { NavigationContainer, useNavigation } from '@react-navigation/native';
 import { CLEAR_CART } from './src/redux/ActionTypes';
+import { ColorContext, ColorProvider } from './src/components/colortheme/colorTheme';
+import { View } from 'react-native';
+// import { ColorProvider, ColorContext } from './src/components/colorTheme/colorTheme'; // Import ColorProvider
+
 
 const App = () => {
   return (
     <Provider store={store}>
-      <NavigationContainer> 
-        <MainApp />
-      </NavigationContainer>
+      <ColorProvider>
+        <NavigationContainer>
+          <MainApp />
+        </NavigationContainer>
+      </ColorProvider>
     </Provider>
   );
 };
@@ -21,6 +26,7 @@ const App = () => {
 const MainApp = () => {
   const navigation = useNavigation();
   const dispatch = useDispatch();
+  const { colors } = useContext(ColorContext); // Access colors from ColorContext
 
   useEffect(() => {
     const interceptor = axios.interceptors.response.use(
@@ -28,12 +34,12 @@ const MainApp = () => {
       async (error) => {
         if (error.response && error.response.status === 401) {
           await AsyncStorage.multiRemove([
-            'userdata', 
-            'loggedIn', 
-            'userRole', 
-            'userRoleId', 
-            'loggedInUser', 
-            'selectedCompany'
+            'userdata',
+            'loggedIn',
+            'userRole',
+            'userRoleId',
+            'loggedInUser',
+            'selectedCompany',
           ]);
           dispatch({ type: CLEAR_CART });
           navigation.reset({
@@ -52,7 +58,11 @@ const MainApp = () => {
     };
   }, [navigation]);
 
-  return <Routes />;
+  return (
+    <View style={{ flex: 1, backgroundColor: colors.color2 }}>
+      <Routes />
+    </View>
+  );
 };
 
 export default App;
