@@ -1292,6 +1292,7 @@ const getStyles = (colors) => StyleSheet.create({
   },
   lengthtext: {
     color: '#333',
+    ...(Platform.OS === 'ios' && { marginVertical: 7 }), 
   },
   descriptionhead: {
     borderWidth: 1,

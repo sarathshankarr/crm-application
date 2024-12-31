@@ -16,12 +16,14 @@ import ImagePicker from 'react-native-image-crop-picker';
 import {API} from './config/apiConfig';
 import axios, {all} from 'axios';
 import {useDispatch, useSelector} from 'react-redux';
-import {CLEAR_CART} from './redux/ActionTypes';
-import { ColorContext, ColorProvider } from './components/colortheme/colorTheme';
+import {CLEAR_CART, SET_SELECTED_COMPANY} from './redux/ActionTypes';
+import {ColorContext, ColorProvider} from './components/colortheme/colorTheme';
+import FastImage from 'react-native-fast-image';
+import { setLoggedInUser } from './redux/actions/Actions';
 
 const Sidebar = ({navigation, route}) => {
   const userRole = useSelector(state => state.userRole) || '';
-  const { colors } = useContext(ColorContext);
+  const {colors} = useContext(ColorContext);
   const styles = getStyles(colors);
   const [modalVisible, setModalVisible] = useState(false);
   const [image, setImage] = useState(require('../assets/profile.png'));
@@ -47,6 +49,67 @@ const Sidebar = ({navigation, route}) => {
   const [openDropdown, setOpenDropdown] = React.useState(null);
   const [selectedDropdown, setSelectedDropdown] = useState(null);
   const [tempBackgroundEffect, setTempBackgroundEffect] = useState({});
+
+  const companyName = selectedCompany ? selectedCompany.companyName : '';
+  const companyCode = selectedCompany ? selectedCompany.companyCode : '';
+  const [selectedCompanyy, setSelectedCompany] = useState(null);
+
+
+  const [companyLogo, setCompanyLogo] = useState(null);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const storedUserData = await AsyncStorage.getItem('userData');
+        if (storedUserData) {
+          const userData = JSON.parse(storedUserData);
+          dispatch(setLoggedInUser(userData));
+          if (userData && userData.compList && userData.compList.length > 0) {
+            const initialCompany = userData.compList[0];
+            setSelectedCompany(initialCompany);
+            setCompanyLogo(initialCompany.companyLogo);
+            dispatch({type: SET_SELECTED_COMPANY, payload: initialCompany});
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+
+    fetchUserData();
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (selectedCompany && selectedCompany.id) {
+      getCompany(selectedCompany.id);
+    }
+  }, [selectedCompany]);
+
+
+
+  const getCompany = companyId => {
+    const apiUrl = `${global?.userData?.productURL}${API.GET_COMPANY}/${companyId}`;
+    axios
+      .get(apiUrl, {
+        headers: {
+          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+        },
+      })
+      .then(response => {
+        const companyList = response.data.response.companyList;
+        // console.log("getCompany",response.data.response.companyList)
+        if (companyList && companyList.length > 0) {
+          const company = companyList[0];
+          setCompanyLogo(company.companyLogo);
+        } else {
+          console.log('No company data found');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        setCompanyLogo(null);
+      });
+  };
 
   const fetchInitialSelectedCompany = async () => {
     try {
@@ -674,8 +737,7 @@ const Sidebar = ({navigation, route}) => {
   );
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <View style={{backgroundColor: colors.color2,}}>
+        {/* <View style={{backgroundColor: colors.color2,}}>
           <View style={styles.header}>
             <TouchableOpacity onPress={() => setModalVisible(true)}>
               <Image style={[styles.img, {borderRadius: 30}]} source={image} />
@@ -689,6 +751,34 @@ const Sidebar = ({navigation, route}) => {
               </Text>
             )}
           </View>
+        </View> */}
+
+        <View style={styles.headerContainer}>
+          <View style={styles.header}>
+            <TouchableOpacity onPress={() => setModalVisible(true)}>
+              <Image style={[styles.img, {borderRadius: 30}]} source={image} />
+            </TouchableOpacity>
+            <View>
+              <Text style={styles.headerTitle}>Profile</Text>
+              {userData && (
+                <Text style={styles.usertxt}>
+                  {userData.token.firstName} {userData.token.lastName}
+                </Text>
+              )}
+            </View>
+          </View>
+          <View style={styles.companyInfo}>
+          <FastImage
+            source={
+              companyLogo
+                ? {uri: `data:image/png;base64,${companyLogo}`}
+                : require('../assets/NewNoImage.jpg')
+            }
+            resizeMode='cover'
+            style={{height: 30, width: 45,marginHorizontal:5}}
+          />
+            <Text style={styles.headerSubtitle}>{companyName} ({companyCode})</Text>
+          </View>
         </View>
         {/* {hasDropdownhome && (
           <TouchableOpacity onPress={goToHome} style={styles.homeheader}>
@@ -700,6 +790,7 @@ const Sidebar = ({navigation, route}) => {
             <Text style={styles.hometxt}>{home?.menuName}</Text>
           </TouchableOpacity>
         )} */}
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
 
         {hasDropdownhome && (
           <View style={styles.navContainer}>
@@ -1026,16 +1117,13 @@ const Sidebar = ({navigation, route}) => {
       </ScrollView>
 
       <TouchableOpacity onPress={goToSettingsScreen} style={styles.logoutbox}>
-          <Image
-            resizeMode="contain"
-            style={[
-              styles.logoutimg,
-              {tintColor: '#fff', height: 20, width: 20},
-            ]}
-            source={require('../assets/settings.png')}
-          />
-          <Text style={styles.logouttxt}>Settings</Text>
-        </TouchableOpacity>
+        <Image
+          resizeMode="contain"
+          style={[styles.logoutimg, {tintColor: '#fff', height: 20, width: 20}]}
+          source={require('../assets/settings.png')}
+        />
+        <Text style={styles.logouttxt}>Settings</Text>
+      </TouchableOpacity>
       {/* <View style={styles.logoutContainer}>
         <TouchableOpacity onPress={handleLogout} style={styles.logoutbox}>
           <Image
@@ -1113,7 +1201,10 @@ const Sidebar = ({navigation, route}) => {
                 <Text style={styles.modalButtonProfileCancel}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.modalButton1Profile, styles.modalDeleteButtonProfile]}
+                style={[
+                  styles.modalButton1Profile,
+                  styles.modalDeleteButtonProfile,
+                ]}
                 onPress={() => {
                   getUserInActive();
                   setDeleteModalVisible(false);
@@ -1128,352 +1219,391 @@ const Sidebar = ({navigation, route}) => {
   );
 };
 
-const getStyles = (colors) => StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  scrollContainer: {
-    flexGrow: 1,
-    paddingBottom: 100,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  img: {
-    height: 60,
-    width: 60,
-    marginHorizontal: 20,
-    marginVertical: 10,
-  },
-  usertxt: {
-    marginLeft: 20,
-    fontSize: 20,
-    marginHorizontal: 10,
-    marginVertical: 10,
-    color: '#fff',
-  },
-  homeheader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginHorizontal: 10,
-    marginTop: 25,
-  },
-  homeimg: {
-    height: 30,
-    width: 30,
-    // tintColor:'#1F74BA',
-    tintColor: '#5177c0',
-  },
-  hometxt: {
-    fontSize: 16,
-    marginLeft: 10,
-    color: '#000',
-  },
-  categorieshead: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginHorizontal: 10,
-    marginTop: 25,
-  },
-  categoriesimg: {
-    height: 25,
-    width: 25,
-    tintColor: '#5177c0',
-  },
-  categoriestxt: {
-    fontSize: 16,
-    marginLeft: 10,
-    color: '#000',
-  },
-  orderhead: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginHorizontal: 10,
-    marginTop: 25,
-  },
-  orderhead1: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginHorizontal: 10,
-    marginBottom: 7,
-    justifyContent: 'center',
-  },
-  inventoryhead: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginHorizontal: 10,
-    marginTop: 20,
-  },
-  distributorhead: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginHorizontal: 10,
-    marginTop: 25,
-  },
-  orderimg: {
-    height: 30,
-    width: 30,
-    tintColor: '#5177c0',
-  },
-  prodimg: {
-    height: 30,
-    width: 30,
-    marginLeft: 40,
-    tintColor: '#5177c0',
-  },
-  distributorimg: {
-    height: 35,
-    width: 35,
-    tintColor: '#5177c0',
-  },
-  locimg: {
-    height: 30,
-    width: 30,
-    tintColor: '#5177c0',
-  },
-  ordertxt: {
-    fontSize: 16,
-    marginLeft: 10,
-    color: '#000',
-  },
-  dropdownItem: {
-    fontSize: 16,
-    marginHorizontal: 10,
-    marginTop: 10,
-    color: '#000',
-  },
-  dropdownItemm: {
-    fontSize: 16,
-    marginHorizontal: 10,
-    marginTop: 15,
-    color: '#000',
-  },
-  logoutContainer: {
-    backgroundColor: '#fff',
-    paddingVertical: 10,
+const getStyles = colors =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: '#fff',
+    },
+    scrollContainer: {
+      flexGrow: 1,
+      paddingBottom: 100,
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    usertxt: {
+      fontSize: 20,
+      color: '#fff',
+      marginBottom:5,
+      marginTop:3
+    },
+    homeheader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginHorizontal: 10,
+      marginTop: 25,
+    },
+    homeimg: {
+      height: 30,
+      width: 30,
+      // tintColor:'#1F74BA',
+      tintColor: '#5177c0',
+    },
+    hometxt: {
+      fontSize: 16,
+      marginLeft: 10,
+      color: '#000',
+    },
+    categorieshead: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginHorizontal: 10,
+      marginTop: 25,
+    },
+    categoriesimg: {
+      height: 25,
+      width: 25,
+      tintColor: '#5177c0',
+    },
+    categoriestxt: {
+      fontSize: 16,
+      marginLeft: 10,
+      color: '#000',
+    },
+    orderhead: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginHorizontal: 10,
+      marginTop: 25,
+    },
+    orderhead1: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginHorizontal: 10,
+      marginBottom: 7,
+      justifyContent: 'center',
+    },
+    inventoryhead: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginHorizontal: 10,
+      marginTop: 20,
+    },
+    distributorhead: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginHorizontal: 10,
+      marginTop: 25,
+    },
+    orderimg: {
+      height: 30,
+      width: 30,
+      tintColor: '#5177c0',
+    },
+    prodimg: {
+      height: 30,
+      width: 30,
+      marginLeft: 40,
+      tintColor: '#5177c0',
+    },
+    distributorimg: {
+      height: 35,
+      width: 35,
+      tintColor: '#5177c0',
+    },
+    locimg: {
+      height: 30,
+      width: 30,
+      tintColor: '#5177c0',
+    },
+    ordertxt: {
+      fontSize: 16,
+      marginLeft: 10,
+      color: '#000',
+    },
+    dropdownItem: {
+      fontSize: 16,
+      marginHorizontal: 10,
+      marginTop: 10,
+      color: '#000',
+    },
+    dropdownItemm: {
+      fontSize: 16,
+      marginHorizontal: 10,
+      marginTop: 15,
+      color: '#000',
+    },
+    logoutContainer: {
+      backgroundColor: '#fff',
+      paddingVertical: 10,
 
-    borderColor: '#ddd',
-  },
-  logoutbox: {
-    borderWidth: 1,
-    backgroundColor: colors.color2,
-    // backgroundColor: '#543c52',
-    borderRadius: 15,
-    paddingVertical: 12,
-    flexDirection: 'row',
-    marginHorizontal: 30,
-    justifyContent: 'center',
-    marginBottom: 10,
-  },
-  logoutbox1: {
-    borderWidth: 1,
-    borderColor: '#f55951',
-    backgroundColor: '#f55951',
-    borderRadius: 15,
-    paddingVertical: 5,
-    flexDirection: 'row',
-    marginHorizontal: 30,
-    justifyContent: 'center',
-    marginBottom: 10,
-  },
-  logoutimg: {
-    height: 20,
-    width: 15,
-    marginRight: 8,
-  },
-  logouttxt: {
-    textAlign: 'center',
-    color: '#fff',
-    fontSize: 15,
-    fontWeight: 'bold',
-  },
-  modalContainerProfile: {
-    flex: 1,
-    justifyContent: 'flex-end',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
-  modalContentProfile: {
-    backgroundColor: '#fff',
-    padding: 20,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-  },
-  modalButtonProfile: {
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
-    borderRadius:10
-  },
-  modalButtonProfilecancel:{
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
-    borderRadius:10,
-    backgroundColor:"gray"
-  },
-  modalButtonProfileCancel:{
-paddingHorizontal:35,
-marginRight:40
-  },
-  modalCancelButtonProfile: {
-    paddingVertical: 15,
-    alignItems: 'center',
-    backgroundColor: colors.color2,
-    borderRadius: 10,
-    marginTop: 10,
-  },
-  modalTitleProfile: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    color: '#000',
-  },
-  modalMessageProfile: {
-    fontSize: 16,
-    marginBottom: 20,
-    color: '#000',
-  },
-  modalButtonContainerProfile: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    color: '#000',
-    marginHorizontal:10
-  },
-  modalButton1Profile: {
-    flex: 1,
-    paddingVertical: 15,
-    borderRadius: 10,
-    alignItems: 'center',
-    marginHorizontal: 5,
-  },
-  modalButtonTextProfile: {
-    color: '#000',
-  },
+      borderColor: '#ddd',
+    },
+    logoutbox: {
+      borderWidth: 1,
+      backgroundColor: colors.color2,
+      // backgroundColor: '#543c52',
+      borderRadius: 15,
+      paddingVertical: 12,
+      flexDirection: 'row',
+      marginHorizontal: 30,
+      justifyContent: 'center',
+      marginBottom: 10,
+    },
+    logoutbox1: {
+      borderWidth: 1,
+      borderColor: '#f55951',
+      backgroundColor: '#f55951',
+      borderRadius: 15,
+      paddingVertical: 5,
+      flexDirection: 'row',
+      marginHorizontal: 30,
+      justifyContent: 'center',
+      marginBottom: 10,
+    },
+    logoutimg: {
+      height: 20,
+      width: 15,
+      marginRight: 8,
+    },
+    logouttxt: {
+      textAlign: 'center',
+      color: '#fff',
+      fontSize: 15,
+      fontWeight: 'bold',
+    },
+    modalContainerProfile: {
+      flex: 1,
+      justifyContent: 'flex-end',
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    },
+    modalContentProfile: {
+      backgroundColor: '#fff',
+      padding: 20,
+      borderTopLeftRadius: 20,
+      borderTopRightRadius: 20,
+    },
+    modalButtonProfile: {
+      paddingVertical: 15,
+      borderBottomWidth: 1,
+      borderBottomColor: '#ccc',
+      borderRadius: 10,
+    },
+    modalButtonProfilecancel: {
+      paddingVertical: 15,
+      borderBottomWidth: 1,
+      borderBottomColor: '#ccc',
+      borderRadius: 10,
+      backgroundColor: 'gray',
+    },
+    modalButtonProfileCancel: {
+      paddingHorizontal: 35,
+      marginRight: 40,
+    },
+    modalCancelButtonProfile: {
+      paddingVertical: 15,
+      alignItems: 'center',
+      backgroundColor: colors.color2,
+      borderRadius: 10,
+      marginTop: 10,
+    },
+    modalTitleProfile: {
+      fontSize: 20,
+      fontWeight: 'bold',
+      marginBottom: 10,
+      color: '#000',
+    },
+    modalMessageProfile: {
+      fontSize: 16,
+      marginBottom: 20,
+      color: '#000',
+    },
+    modalButtonContainerProfile: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      color: '#000',
+      marginHorizontal: 10,
+    },
+    modalButton1Profile: {
+      flex: 1,
+      paddingVertical: 15,
+      borderRadius: 10,
+      alignItems: 'center',
+      marginHorizontal: 5,
+    },
+    modalButtonTextProfile: {
+      color: '#000',
+    },
 
-  modalDeleteButtonProfile: {
-    backgroundColor: 'red',
-  },
-  dropdownItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 5,
-    paddingVertical: 3,
-    marginLeft: 25,
-  },
+    modalDeleteButtonProfile: {
+      backgroundColor: 'red',
+    },
+    dropdownItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginVertical: 5,
+      paddingVertical: 3,
+      marginLeft: 25,
+    },
 
-  profileImage: {width: 50, height: 50, marginRight: 15, borderRadius: 25},
-  userName: {fontSize: 18, fontWeight: 'bold', color: '#fff'},
-  navContainer: {marginTop: 10, paddingHorizontal: 15},
-  dropdownTitle: {flexDirection: 'row', alignItems: 'center'},
-  navIconContainer: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#e9ecef',
-    borderRadius: 20,
-    marginRight: 15,
-  },
-  navItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 5,
-    borderRadius: 5,
-    marginVertical: 5,
-    borderBottomWidth: 1,
-    borderColor: '#EAEAEA',
-  },
-  navIcon: {width: 20, height: 20, tintColor: colors.color2},
-  dropdownIcon: {
-    width: 15,
-    height: 15,
-  },
-  navText: {
-    fontSize: 16,
-    color: '#333',
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    flex: 1,
-    textAlign: 'left',
-  },
-  bottomSection: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginTop: 'auto',
-    padding: 20,
-  },
-  logoutButton: {alignItems: 'center'},
-  logoutIcon: {width: 30, height: 30, tintColor: colors.color2,},
-  logoutText: {color: '#333', marginTop: 5, fontSize: 14},
-  deleteButton: {alignItems: 'center'},
-  deleteIcon: {width: 30, height: 30, tintColor: colors.color2,},
-  deleteText: {color: '#f00', marginTop: 5, fontSize: 14},
-  modalContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.5)',
-  },
-  modalContent: {
-    width: 300,
-    backgroundColor: '#fff',
-    padding: 20,
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  modalText: {fontSize: 16, marginBottom: 20, textAlign: 'center'},
-  modalActions: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
-  },
-  modalButton: {
-    flex: 1,
-    padding: 10,
-    alignItems: 'center',
-    borderRadius: 5,
-    backgroundColor: '#4CAF50',
-    margin: 5,
-  },
-  cancelButton: {backgroundColor: '#d9534f'},
-  modalButtonText: {color: '#fff', fontSize: 14, fontWeight: 'bold'},
+    profileImage: {width: 50, height: 50, marginRight: 15, borderRadius: 25},
+    userName: {fontSize: 18, fontWeight: 'bold', color: '#fff'},
+    navContainer: {marginTop: 3, paddingHorizontal: 15},
+    dropdownTitle: {flexDirection: 'row', alignItems: 'center'},
+    navIconContainer: {
+      width: 40,
+      height: 40,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: '#e9ecef',
+      borderRadius: 20,
+      marginRight: 15,
+    },
+    headerContainer: {
+      backgroundColor: colors.color2,
+      paddingVertical: 5,
+      paddingHorizontal: 15,
+      borderBottomLeftRadius: 20,
+      borderBottomRightRadius: 20,
+      margin: 15,
+      // borderRadius:5,
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 7,
+    },
+    img: {
+      height: 50,
+      width: 50,
+      borderRadius: 25,
+      marginRight: 15,
+      backgroundColor: '#ffffff50',
+      borderWidth: 1,
+      borderColor: '#fff',
+    },
+    headerTitle: {
+      color: '#fff',
+      fontSize: 20,
+      fontWeight: '600',
+    },
+    headerSubtitle: {
+      color: '#fff',
+      fontSize: 14,
+      marginTop: 2,
+      fontWeight: '600',
+    },
+    companyInfo: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingTop: 5,
+      paddingBottom: 2,
+      borderTopWidth: 1,
+      justifyContent: 'center',
+      borderTopColor: '#ffffff50',
+      marginTop: 2,
+      paddingHorizontal: 15,
+    },
+    navItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 5,
+      borderRadius: 5,
+      marginVertical: 5,
+      borderBottomWidth: 1,
+      borderColor: '#EAEAEA',
+    },
+    navIcon: {width: 20, height: 20, tintColor: colors.color2},
+    dropdownIcon: {
+      width: 15,
+      height: 15,
+    },
+    navText: {
+      fontSize: 16,
+      color: '#333',
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      flex: 1,
+      textAlign: 'left',
+    },
+    bottomSection: {
+      flexDirection: 'row',
+      justifyContent: 'space-around',
+      marginTop: 'auto',
+      padding: 20,
+    },
+    logoutButton: {alignItems: 'center'},
+    logoutIcon: {width: 30, height: 30, tintColor: colors.color2},
+    logoutText: {color: '#333', marginTop: 5, fontSize: 14},
+    deleteButton: {alignItems: 'center'},
+    deleteIcon: {width: 30, height: 30, tintColor: colors.color2},
+    deleteText: {color: '#f00', marginTop: 5, fontSize: 14},
+    modalContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: 'rgba(0,0,0,0.5)',
+    },
+    modalContent: {
+      width: 300,
+      backgroundColor: '#fff',
+      padding: 20,
+      borderRadius: 10,
+      alignItems: 'center',
+    },
+    modalText: {fontSize: 16, marginBottom: 20, textAlign: 'center'},
+    modalActions: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      width: '100%',
+    },
+    modalButton: {
+      flex: 1,
+      padding: 10,
+      alignItems: 'center',
+      borderRadius: 5,
+      backgroundColor: '#4CAF50',
+      margin: 5,
+    },
+    cancelButton: {backgroundColor: '#d9534f'},
+    modalButtonText: {color: '#fff', fontSize: 14, fontWeight: 'bold'},
 
-  dropdownHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 5,
-    paddingHorizontal: 15,
-    // backgroundColor: '#f7f7f7',
-    borderRadius: 5,
-    marginVertical: 5,
-    borderBottomWidth: 1,
-    borderColor: '#EAEAEA',
-  },
-  selectedDropdownHeader: {
-    borderLeftWidth: 5,
-    borderColor: colors.color2,
-    elevation: 5,
-    backgroundColor: '#fff',
-  },
-  tempBackgroundEffect: {
-    backgroundColor: '#f7f7f7',
-  },
-  selectedIcon: {
-    tintColor: colors.color2,
-  },
+    dropdownHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingVertical: 5,
+      paddingHorizontal: 15,
+      // backgroundColor: '#f7f7f7',
+      borderRadius: 5,
+      marginVertical: 5,
+      borderBottomWidth: 1,
+      borderColor: '#EAEAEA',
+    },
+    selectedDropdownHeader: {
+      borderLeftWidth: 5,
+      borderColor: colors.color2,
+      elevation: 5,
+      backgroundColor: '#fff',
+    },
+    tempBackgroundEffect: {
+      backgroundColor: '#f7f7f7',
+    },
+    selectedIcon: {
+      tintColor: colors.color2,
+    },
 
-  selectedText: {
-    color: colors.color2,
-  },
-  animatedDropdownContent: {
-    overflow: 'hidden', // Ensures content is clipped during animation
-    backgroundColor: '#fff', // Optional: Subtle background color
-    borderRadius: 5, // Optional: Rounded edges for dropdown
-    marginTop: 5,
-  },
-});
+    selectedText: {
+      color: colors.color2,
+    },
+    animatedDropdownContent: {
+      overflow: 'hidden', // Ensures content is clipped during animation
+      backgroundColor: '#fff', // Optional: Subtle background color
+      borderRadius: 5, // Optional: Rounded edges for dropdown
+      marginTop: 5,
+    },
+  });
 
 export default Sidebar;

@@ -83,13 +83,13 @@ const Costing = () => {
   ) => {
     if (loading || loadingMore) return;
     setLoading(reset);
-
+  
     if (reset) {
       setFrom(0);
       setTo(20);
       setHasMoreTasks(true);
     }
-
+  
     const apiUrl = `${global?.userData?.productURL}${API.GET_COSTING}/${customFrom}/${customTo}/${companyId}`;
     try {
       const response = await axios.get(apiUrl, {
@@ -97,22 +97,31 @@ const Costing = () => {
           Authorization: `Bearer ${global?.userData?.token?.access_token}`,
         },
       });
+      
       const newTasks = response?.data?.response?.costingRequest || [];
-
-        console.log('response.data costingg====>', response?.data?.response?.costingRequest);
-
+      console.log('response.data costingg====>', newTasks);
+  
+      // Filter out null or empty tasks
+      const filteredTasks = newTasks.filter(item => item !== null && item !== undefined);
+  
       if (reset) {
-        setFilteredOrdersList(newTasks);
+        setFilteredOrdersList(filteredTasks);
       } else {
-        setFilteredOrdersList(prevTasks => [...(prevTasks || []), ...newTasks]);
+        setFilteredOrdersList(prevTasks => [
+          ...(prevTasks || []),
+          ...filteredTasks,
+        ]);
       }
-      newTasks.forEach(task => {
+  
+      // Fetch costing details if costId exists
+      filteredTasks.forEach(task => {
         if (task.costId) {
           getAlladdedCostinDetails(task.costId);
         }
       });
-      
-      if (newTasks.length < 20) {
+  
+      // Set hasMoreTasks based on the response
+      if (filteredTasks.length < 20) {
         setHasMoreTasks(false);
       }
     } catch (error) {
@@ -122,6 +131,7 @@ const Costing = () => {
       setLoadingMore(false);
     }
   };
+  
 
   const getAlladdedCostinDetails = async (costingId) => {
     const apiUrl = `${global?.userData?.productURL}${API.GET_ALL_ADDED_COSTING_DETAILSL}/${costingId}`;
@@ -403,31 +413,23 @@ const Costing = () => {
         <Text style={styles.qtyText}>Created Date</Text>
       </View>
       {loading ? (
-        <ActivityIndicator
-          size="large"
-          color="#0000ff"
-          style={styles.activityIndicator}
-        />
-      ) : filteredOrdersList.length === 0 ||
-        filteredOrdersList.every(item => item === null) ? (
-        <Text style={styles.noResultsText}>Sorry, no results found!</Text>
-      ) : (
-        <FlatList
-          data={filteredOrdersList}
-          renderItem={renderOrderItem}
-          keyExtractor={(item, index) => `${item?.id}-${index}`}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
-          onEndReached={loadMoreTasks}
-          onEndReachedThreshold={0.2}
-          ListFooterComponent={
-            loadingMore ? (
-              <ActivityIndicator size="small" color="#0000ff" />
-            ) : null
-          }
-        />
-      )}
+  <ActivityIndicator size="large" color="#0000ff" style={styles.activityIndicator} />
+) : (filteredOrdersList.length === 0) ? (
+  <Text style={styles.noCategoriesText}>Sorry, no results found!</Text>
+) : (
+  <FlatList
+    data={filteredOrdersList} // No need to filter null values here since it's done earlier
+    renderItem={renderOrderItem}
+    keyExtractor={(item, index) => `${item?.id}-${index}`}
+    refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+    onEndReached={loadMoreTasks}
+    onEndReachedThreshold={0.2}
+    ListFooterComponent={
+      loadingMore ? <ActivityIndicator size="small" color="#0000ff" /> : null
+    }
+  />
+)}
+
     </SafeAreaView>
   );
 };
@@ -563,6 +565,13 @@ const getStyles = (colors) => StyleSheet.create({
     flex: 0.9,
     textAlign: 'center',
     color: '#000',
+  },
+  noCategoriesText: {
+    textAlign: 'center',
+    marginTop: 20,
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#000000',
   },
 });
 

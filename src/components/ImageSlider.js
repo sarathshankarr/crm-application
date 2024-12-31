@@ -1,26 +1,33 @@
-import React, { useRef, useState } from 'react';
+import React, { useContext, useRef } from 'react';
 import {
   StyleSheet,
   View,
   ScrollView,
   Animated,
-  Dimensions,
+  useWindowDimensions,
 } from 'react-native';
 import FastImage from 'react-native-fast-image';
-
-const { width, height } = Dimensions.get('window');
-const cardWidth = width - 20;
-const cardMargin = (width - cardWidth) / 2;
+import { ColorContext } from './colortheme/colorTheme';
 
 const ImageSlider = ({ fullImageUrls }) => {
+  const { colors } = useContext(ColorContext);
+  const styles = getStyles(colors);
   const scrollX = useRef(new Animated.Value(0)).current;
+  const { width, height } = useWindowDimensions(); // Dynamically get dimensions
+
+  // Calculate cardWidth based on orientation
+  const isLandscape = width > height;
+  const cardWidth = isLandscape ? width - 175 : width - 40; // Dynamic card width
+  const cardMargin = 20; // Equal margin on both sides
+  const totalCardWidth = cardWidth + 2 * cardMargin; // Total width including margin
 
   return (
-    <View style={styles.sliderContainer}>
+    <View style={[styles.sliderContainer, { height: height / 2 }]}>
       <ScrollView
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ alignItems: 'center' }}
         onScroll={Animated.event(
           [{ nativeEvent: { contentOffset: { x: scrollX } } }],
           { useNativeDriver: false },
@@ -29,25 +36,36 @@ const ImageSlider = ({ fullImageUrls }) => {
       >
         {fullImageUrls?.length > 0 ? (
           fullImageUrls.map((url, index) => (
-            <View key={index} style={styles.card}>
-              <FastImage 
-                source={{ uri: url }} 
+            <View
+              key={index}
+              style={[
+                styles.card,
+                {
+                  width: cardWidth,
+                  height: height / 2.3,
+                  marginHorizontal: cardMargin,
+                },
+              ]}
+            >
+              <FastImage
+                source={{ uri: url }}
                 style={styles.image}
                 resizeMode={FastImage.resizeMode.contain}
-                onLoadStart={() => {
-                  // Optionally show a placeholder while loading
-                  console.log('Image loading started');
-                }}
-                onLoad={() => {
-                  // Handle the image load success if needed
-                  console.log('Image loaded:', url);
-                }}
               />
             </View>
           ))
         ) : (
-          <View style={styles.card}>
-            <FastImage 
+          <View
+            style={[
+              styles.card,
+              {
+                width: cardWidth,
+                height: height / 2.3,
+                marginHorizontal: cardMargin,
+              },
+            ]}
+          >
+            <FastImage
               source={require('../../assets/NewNoImage.jpg')} // Placeholder image
               style={styles.image}
               resizeMode={FastImage.resizeMode.contain}
@@ -60,9 +78,9 @@ const ImageSlider = ({ fullImageUrls }) => {
         {fullImageUrls?.map((_, i) => {
           const translateX = scrollX.interpolate({
             inputRange: [
-              (i - 1) * width,
-              i * width,
-              (i + 1) * width,
+              (i - 1) * totalCardWidth,
+              i * totalCardWidth,
+              (i + 1) * totalCardWidth,
             ],
             outputRange: [0, 10, 0],
             extrapolate: 'clamp',
@@ -84,15 +102,13 @@ const ImageSlider = ({ fullImageUrls }) => {
   );
 };
 
-
-const styles = StyleSheet.create({
+const getStyles = (colors) => StyleSheet.create({
   sliderContainer: {
-    marginVertical: height / 50,
+    flex: 1,
+    alignItems: 'center', // Center items horizontally
+    justifyContent: 'center', // Center items vertically
   },
   card: {
-    width: cardWidth,
-    height: height / 2.3,
-    marginHorizontal: cardMargin,
     borderRadius: 5,
     overflow: 'hidden',
   },
@@ -110,7 +126,7 @@ const styles = StyleSheet.create({
   dot: {
     height: 10,
     width: 10,
-    backgroundColor: '#F09120',
+    backgroundColor: colors.color2,
     borderRadius: 5,
     marginHorizontal: 5,
     overflow: 'hidden',
@@ -124,4 +140,3 @@ const styles = StyleSheet.create({
 });
 
 export default ImageSlider;
-

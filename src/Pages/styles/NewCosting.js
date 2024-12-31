@@ -1250,18 +1250,26 @@ const NewCosting = ({navigation, route}) => {
                   style={styles.Breadthtext}
                   placeholder="fridge1cal"
                   placeholderTextColor="#000"
-                  value={fridge1cal} // Dynamically display the calculated fridge1cal
+                  value={
+                    fridge1cal?.length > 6
+                      ? fridge1cal.substring(0, 6)
+                      : fridge1cal
+                  } // Truncate if length > 6
                   editable={false} // Prevent manual editing of the result
-                
                 />
               </View>
+
               <View style={styles.lengthheadfridgenoneditable}>
                 <TextInput
                   style={styles.totalPricetext}
                   placeholder="Total Consumption"
                   placeholderTextColor="#000"
                   keyboardType="numeric"
-                  value={calculateTotalConsumption()} // Dynamically compute the total consumption
+                  value={
+                    calculateTotalConsumption().toString().length > 6
+                      ? calculateTotalConsumption().toString().substring(0, 6)
+                      : calculateTotalConsumption().toString()
+                  } // Truncate if length > 6
                   editable={false} // Prevent manual editing
                 />
               </View>
@@ -1272,10 +1280,15 @@ const NewCosting = ({navigation, route}) => {
                   style={styles.Breadthtext}
                   placeholder="fridge5"
                   placeholderTextColor="#000"
-                  value={fridge5} // Display the calculated fridge5
+                  value={
+                    fridge5.toString().length > 6
+                      ? fridge5.toString().substring(0, 6)
+                      : fridge5.toString()
+                  } // Truncate if length > 6
                   editable={false} // Prevent manual editing of the result
                 />
               </View>
+
               <View style={styles.lengthheadfridge}>
                 <TextInput
                   style={styles.Breadthtext}
@@ -1320,26 +1333,40 @@ const NewCosting = ({navigation, route}) => {
                   style={styles.lengthtext}
                   placeholder="Length"
                   placeholderTextColor="#000"
-                  value={length}
+                  value={
+                    length.toString().length > 6
+                      ? length.toString().substring(0, 6)
+                      : length.toString()
+                  } // Truncate if length > 6
                   onChangeText={handleLengthChange}
-                  editable={false}
+                  editable={false} // Prevent manual editing
                 />
               </View>
+
               <View style={styles.lengthheadfridgenoneditable}>
                 <TextInput
                   style={styles.Breadthtext}
                   placeholder="Breadth"
                   placeholderTextColor="#000"
-                  value={breadth}
-                  editable={false}
+                  value={
+                    breadth.toString().length > 6
+                      ? breadth.toString().substring(0, 6)
+                      : breadth.toString()
+                  } // Truncate if length > 6
                   onChangeText={handleBreadthChange}
+                  editable={false} // Prevent manual editing
                 />
               </View>
+
               <View style={styles.lengthheadfridgenoneditable}>
                 <TextInput
                   style={styles.Breadthtext}
-                  value={squareFeet.toString()}
-                  editable={false}
+                  value={
+                    squareFeet.toString().length > 6
+                      ? squareFeet.toString().substring(0, 6)
+                      : squareFeet.toString()
+                  } // Truncate if length > 6
+                  editable={false} // Prevent manual editing
                 />
               </View>
               <View style={styles.lengthheadfridgenoneditable}>
@@ -1347,8 +1374,12 @@ const NewCosting = ({navigation, route}) => {
                   style={styles.Breadthtext}
                   placeholder="INR per sq ft"
                   placeholderTextColor="#000"
-                  value={calculateINRPerSqFt()} // Display calculated INR per sq ft
-                  editable={false}
+                  value={
+                    calculateINRPerSqFt().toString().length > 6
+                      ? calculateINRPerSqFt().toString().substring(0, 6)
+                      : calculateINRPerSqFt().toString()
+                  } // Truncate if length > 6
+                  editable={false} // Prevent manual editing
                 />
               </View>
             </View>
@@ -1374,19 +1405,29 @@ const NewCosting = ({navigation, route}) => {
                   style={styles.Breadthtext}
                   placeholder="freight"
                   placeholderTextColor="#000"
-                  value={freight} // Dynamically display the calculated freight
+                  value={
+                    freight.toString().length > 6
+                      ? freight.toString().substring(0, 6)
+                      : freight.toString()
+                  } // Truncate if length > 6
                   editable={false} // Prevent manual editing
                 />
               </View>
+
               <View style={styles.lengthheadfridgenoneditable}>
                 <TextInput
                   style={styles.Breadthtext}
                   placeholder="Total Cost"
                   placeholderTextColor="#000"
-                  value={calculateTotalCost()} // Display calculated total cost
+                  value={
+                    calculateTotalCost().toString().length > 6
+                      ? calculateTotalCost().toString().substring(0, 6)
+                      : calculateTotalCost().toString()
+                  } // Truncate if length > 6
                   editable={false} // Prevent manual editing
                 />
               </View>
+
               <View style={styles.lengthheadfridge}>
                 <TextInput
                   style={styles.Breadthtext}
@@ -1410,34 +1451,53 @@ const NewCosting = ({navigation, route}) => {
                   style={styles.Breadthtext}
                   placeholder="FOB"
                   placeholderTextColor="#000"
-                  value={calculateFOB()} // Display calculated FOB
+                  value={
+                    calculateFOB().toString().length > 6
+                      ? calculateFOB().toString().substring(0, 6)
+                      : calculateFOB().toString()
+                  } // Truncate if length > 6
                   editable={false} // Prevent manual editing
                 />
               </View>
+
               <View style={styles.lengthheadfridgenoneditable}>
                 <TextInput
                   style={styles.Breadthtext}
                   placeholder="per sq ft"
                   placeholderTextColor="#000"
-                  value={calculatePerSqFt()} // Display calculated "per sq ft" value
+                  value={
+                    calculatePerSqFt().toString().length > 6
+                      ? calculatePerSqFt().toString().substring(0, 6)
+                      : calculatePerSqFt().toString()
+                  } // Truncate if length > 6
                   editable={false} // Prevent manual editing
                 />
               </View>
+
               <View style={styles.lengthheadfridgenoneditable}>
                 <TextInput
                   style={styles.Breadthtext}
                   placeholder="per sq mtr"
                   placeholderTextColor="#000"
-                  value={calculatePerSqMtr()} // Display calculated "per sq mtr" value
+                  value={
+                    calculatePerSqMtr().toString().length > 6
+                      ? calculatePerSqMtr().toString().substring(0, 6)
+                      : calculatePerSqMtr().toString()
+                  } // Truncate if length > 6
                   editable={false} // Prevent manual editing
                 />
               </View>
+
               <View style={styles.lengthheadfridgenoneditable}>
                 <TextInput
                   style={styles.Breadthtext}
                   placeholder="per kg"
                   placeholderTextColor="#000"
-                  value={calculatePerKg()} // Display calculated "per kg" value
+                  value={
+                    calculatePerKg().toString().length > 6
+                      ? calculatePerKg().toString().substring(0, 6)
+                      : calculatePerKg().toString()
+                  } // Truncate if length > 6
                   editable={false} // Prevent manual editing
                 />
               </View>
@@ -1612,10 +1672,12 @@ const getStyles = colors =>
     },
     lengthtext: {
       color: '#000',
+      ...(Platform.OS === 'ios' && {marginVertical: 7}),
     },
     Breadthtext: {
       color: '#000',
       paddingHorizontal: 5, // Add some padding to avoid text being cut off
+      ...(Platform.OS === 'ios' && {marginVertical: 7}),
     },
 
     yarnFooteryarn: {
@@ -1674,6 +1736,7 @@ const getStyles = colors =>
       color: '#333',
       fontWeight: 'bold',
       textAlign: 'center',
+      ...(Platform.OS === 'ios' && {marginVertical: 7}),
     },
     headQuality: {
       marginHorizontal: 15,
@@ -1701,6 +1764,7 @@ const getStyles = colors =>
       fontWeight: 'bold',
       textAlign: 'center',
       color: '#000',
+      ...(Platform.OS === 'ios' && {marginVertical: 7}),
     },
     yarnhead: {
       marginHorizontal: 15,
@@ -1752,6 +1816,7 @@ const getStyles = colors =>
     },
     Materialtext: {
       color: '#000',
+      ...(Platform.OS === 'ios' && {marginVertical: 7}),
     },
     Pricehead: {
       flex: 0.7,
@@ -1765,6 +1830,7 @@ const getStyles = colors =>
     },
     Pricetext: {
       color: '#000',
+      ...(Platform.OS === 'ios' && {marginVertical: 7}),
     },
     totalPricetext: {
       marginHorizontal: 8,
@@ -1784,6 +1850,7 @@ const getStyles = colors =>
     },
     Consumptiontext: {
       color: '#000',
+      ...(Platform.OS === 'ios' && {marginVertical: 7}),
     },
 
     addButton: {

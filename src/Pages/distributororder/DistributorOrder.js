@@ -294,6 +294,8 @@ const DistributorOrder = () => {
       customerLocation: order.customerLocation,
       customerId: order.customerId,
       tQty: order.tQty,
+      d_pkg_flag:order.d_pkg_flag,
+      linkType: 2,
       orderLineItems: order.orderLineItems.map(item => {
         const shippedQty = parseInt(item.shipQty);
         const receivedQty = parseInt(item.grnQty);
@@ -333,11 +335,10 @@ const DistributorOrder = () => {
           tsiId: item.tsiId,
           companyId:companyId,
           userId:userId,
-          linkType: 1
         };
       }),
     };
-
+console.log('requestData==ljkj>',requestData)
     axios
       .post(global?.userData?.productURL + API.ADD_GRN_ORDER, requestData, {
         headers: {
