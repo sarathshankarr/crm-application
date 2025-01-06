@@ -353,12 +353,12 @@ const Costing = () => {
     <SafeAreaView style={styles.container}>
       <View style={styles.Topheader}>
         <View style={styles.leftSection}>
-          <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
+          {/* <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
             <Image
               style={styles.backImage}
               source={require('../../../assets/back_arrow.png')}
             />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
           <Text style={styles.headerText}>Costing</Text>
         </View>
         <TouchableOpacity

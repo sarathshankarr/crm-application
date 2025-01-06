@@ -117,7 +117,7 @@ const CustomTabBar = ({state, descriptors, route}) => {
 
   return (
     <View style={{backgroundColor: '#fff', zIndex: 1}}>
-      <View style={[styles.container, {zIndex: 100}]}>
+      {/* <View style={[styles.container, {zIndex: 100}]}>
         <TouchableOpacity onPress={() => navigation.openDrawer()}>
           <Image
             resizeMode="contain"
@@ -215,7 +215,7 @@ const CustomTabBar = ({state, descriptors, route}) => {
           showCartIcon={true}
           showLocationIcon={true}
         />
-      </View>
+      </View> */}
 
       <View style={styles.tabContainer}>
         {state.routes.map((route, index) => {

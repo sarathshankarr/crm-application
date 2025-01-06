@@ -829,12 +829,12 @@ const ProductPackagePublish = () => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.head1}>
-        <TouchableOpacity onPress={handleGoBack}>
+        {/* <TouchableOpacity onPress={handleGoBack}>
           <Image
             style={{height: 25, width: 25, marginLeft: 2}}
             source={require('../../../assets/back_arrow.png')}
           />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
         <Text style={styles.txt1}>Product Publish</Text>
         <View style={styles.flexSpacer} />
         {selectedId === '1' && (

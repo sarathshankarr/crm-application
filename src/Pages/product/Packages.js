@@ -364,6 +364,11 @@ const Packages = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <View>
+            <Text style={{color:"#000",fontSize:20,fontWeight:"bold",marginHorizontal:10}}>
+              Packages
+            </Text>
+          </View>
       <View
         style={{
           flexDirection: 'row',
@@ -372,6 +377,7 @@ const Packages = ({ navigation }) => {
           paddingHorizontal: 10,
           marginVertical: 10,
         }}>
+          
         <View style={styles.searchContainer}>
           <TextInput
             style={styles.searchInput}

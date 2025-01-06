@@ -87,8 +87,8 @@
 // const styles = StyleSheet.create({
 //   container:{
 //     flex:1,
-//     backgroundColor: 'transparent', 
-    
+//     backgroundColor: 'transparent',
+
 //   },
 //   tabIconContainer: {
 //     alignItems: 'center',
@@ -104,19 +104,27 @@
 
 // export default HomeScreen;
 
-import React, { useContext } from 'react';
-import {View, TouchableOpacity, Image, StyleSheet, SafeAreaView} from 'react-native';
+import React, {useContext} from 'react';
+import {
+  View,
+  TouchableOpacity,
+  Image,
+  StyleSheet,
+  SafeAreaView,
+} from 'react-native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import Categories from '../bottom/Categories';
 import Order from '../bottom/Order';
 import CommonHeader from '../components/CommonHeader';
 import Home from '../bottom/Home';
-import { ColorContext } from '../components/colortheme/colorTheme';
+import {ColorContext} from '../components/colortheme/colorTheme';
+import CompanyDropdown from '../components/CompanyDropdown';
+import CommenHeaderHomeScreen from '../components/CommenHeaderHomeScreen';
 
 const Bottom = createBottomTabNavigator();
 
 const HomeScreen = ({navigation}) => {
-  const { colors } = useContext(ColorContext);
+  const {colors} = useContext(ColorContext);
   const styles = getStyles(colors);
   return (
     <SafeAreaView style={styles.container}>
@@ -133,7 +141,10 @@ const HomeScreen = ({navigation}) => {
             }
             return (
               <View
-                style={[styles.tabIconContainer, focused && styles.selectedTab]}>
+                style={[
+                  styles.tabIconContainer,
+                  focused && styles.selectedTab,
+                ]}>
                 <Image
                   source={icon}
                   style={{
@@ -146,20 +157,25 @@ const HomeScreen = ({navigation}) => {
             );
           },
           headerShown: true,
+
           headerTitle: route.name,
           header: ({navigation, route}) => {
-            const showDrawerButton = !['Login', 'Main', 'Cart'].includes(route.name);
-            const showHeader = route.name !== 'Home';
-            return showHeader ? (
-              <CommonHeader
-                navigation={navigation}
-                title={route.name}
-                showDrawerButton={showDrawerButton}
-                showMessageIcon={true}
-                showCartIcon={true}
-                showLocationIcon={true}
-              />
-            ) : null;
+            const showDrawerButton = !['Login', 'Main', 'Cart'].includes(
+              route.name,
+            );
+
+            return (
+              <>
+                <CommenHeaderHomeScreen
+                  navigation={navigation}
+                  title={route.name}
+                  showDrawerButton={showDrawerButton}
+                  showMessageIcon={true}
+                  showCartIcon={true}
+                  showLocationIcon={true}
+                />
+              </>
+            );
           },
           tabBarActiveTintColor: colors.color2,
           tabBarInactiveTintColor: '#000',
@@ -168,19 +184,27 @@ const HomeScreen = ({navigation}) => {
             marginHorizontal: 10,
             marginBottom: 10,
             height: 60,
-            position: "absolute",
+            position: 'absolute',
             paddingBottom: 5, // Adjusted for better alignment
           },
         })}>
-        <Bottom.Screen
+       <Bottom.Screen
           name="Home"
           component={Home}
-          options={{headerTitle: 'Home', headerShown: false,}}
+          options={{
+            headerShown: true,
+            headerTitle: () => <CompanyDropdown title="Home" />,
+          }}
         />
+
+
         <Bottom.Screen
           name="Categories"
           component={Categories}
-          options={{headerTitle: 'Categories'}}
+          options={{
+            headerShown: true,
+            headerTitle: () => <CompanyDropdown title="Categories" />,
+          }}
         />
         <Bottom.Screen
           name="Order"
@@ -192,21 +216,22 @@ const HomeScreen = ({navigation}) => {
   );
 };
 
-const getStyles = (colors) => StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: 'transparent', 
-  },
-  tabIconContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 5, // Use padding instead of height
-  },
-  selectedTab: {
-    borderTopWidth: 4,
-    borderTopColor:  colors.color2,
-    width: '70%',
-  },
-});
+const getStyles = colors =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: 'transparent',
+    },
+    tabIconContainer: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 5, // Use padding instead of height
+    },
+    selectedTab: {
+      borderTopWidth: 4,
+      borderTopColor: colors.color2,
+      width: '70%',
+    },
+  });
 
 export default HomeScreen;

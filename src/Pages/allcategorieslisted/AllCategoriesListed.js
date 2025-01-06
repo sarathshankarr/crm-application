@@ -453,6 +453,11 @@ const AllCategoriesListed = ({navigation, route}) => {
 
   return (
     <View style={styles.container}>
+       <View style={{backgroundColor:"#fff"}}>
+            <Text style={{color:"#000",fontSize:20,fontWeight:"bold",marginHorizontal:10,alignSelf:"center"}}>
+            {route.params.categoryDesc}
+            </Text>
+          </View>
       <View
         style={{
           flexDirection: 'row',
@@ -461,6 +466,7 @@ const AllCategoriesListed = ({navigation, route}) => {
           paddingHorizontal: 10,
           marginVertical: 10,
         }}>
+         
         <View style={styles.searchContainer}>
           {searchKey !== 3 && searchKey !== 4 && (
             <TextInput

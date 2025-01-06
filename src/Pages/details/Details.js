@@ -103,6 +103,11 @@ const Details = ({ route }) => {
 
   return (
     <SafeAreaView style={styles.container}>
+       <View>
+            <Text style={{color:"#000",fontSize:20,fontWeight:"bold",marginHorizontal:10}}>
+            Product Details
+            </Text>
+          </View>
       <ScrollView contentContainerStyle={styles.scrollView}>
        {loading ? (
         <ActivityIndicator size="large" color="#0000ff" />

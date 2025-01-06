@@ -22,12 +22,12 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
   return (
     <View style={styles.tabContainer}>
        <View style={styles.header}>
-        <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
+        {/* <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
           <Image
             style={{height: 25, width: 25}}
             source={require('../../../assets/back_arrow.png')}
           />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
       {state.routes.map((route, index) => {
         const label = route.name;

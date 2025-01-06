@@ -409,7 +409,11 @@ const DistributorGrn = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-
+  <View>
+            <Text style={{color:"#000",fontSize:20,fontWeight:"bold",marginHorizontal:10}}>
+            Distributor GRN
+            </Text>
+          </View>
       <View style={styles.searchContainer}>
         <View style={styles.searchInputContainer}>
           <TextInput

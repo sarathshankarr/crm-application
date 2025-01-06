@@ -753,14 +753,14 @@ const NewCosting = ({navigation, route}) => {
         <ScrollView>
           <View style={styles.Topheader}>
             <View style={styles.leftSection}>
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 onPress={handleGoBack}
                 style={styles.backButton}>
                 <Image
                   style={styles.backImage}
                   source={require('../../../assets/back_arrow.png')}
                 />
-              </TouchableOpacity>
+              </TouchableOpacity> */}
               <Text style={styles.headerText}>
                 {costId === 0 || !costId ? 'New Costing' : ` ${costId}`}
               </Text>

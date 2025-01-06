@@ -698,11 +698,13 @@ const Order = () => {
       // Reset orders and fetch new data
       setFrom(0); // Reset the starting index
       setTo(10); // Reset the ending index
-      getAllOrders(true, 0, 10); // Fetch the first 20 orders
+      if (companyId) {
+        getAllOrders(true, 0, 10);
+      }
       setFilterFlag(false);
     });
     return unsubscribe;
-  }, [navigation]);
+  }, [navigation,companyId]);
 
 
   useEffect(() => {

@@ -381,11 +381,13 @@ const Categories = ({navigation}) => {
       // Reset orders and fetch new data
       setFrom(0); // Reset the starting index
       setTo(15); // Reset the ending index
-      fetchCategories(true, 0, 15); // Fetch the first 20 orders
+      if (companyId) {
+        fetchCategories(true, 0, 20);
+      }
       setFilterFlag(false);
     });
     return unsubscribe;
-  }, [navigation]);
+  }, [navigation,companyId]);
 
   useEffect(() => {
     if (companyId) {

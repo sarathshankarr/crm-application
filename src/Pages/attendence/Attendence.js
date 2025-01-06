@@ -1141,6 +1141,17 @@ const Attendance = () => {
 
   return (
     <SafeAreaView style={{flex: 1, backgroundColor: '#fff'}}>
+       <View>
+        <Text
+          style={{
+            color: '#000',
+            fontSize: 20,
+            fontWeight: 'bold',
+            marginHorizontal: 10,
+          }}>
+       Attendence
+        </Text>
+      </View>
       <View style={styles.greetingContainer}>
         <Text style={styles.greetingText}>Hello 👋</Text>
       </View>

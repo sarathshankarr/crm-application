@@ -284,6 +284,11 @@ const ProductInventory = () => {
 
   return (
     <View style={styles.container}>
+       <View>
+            <Text style={{color:"#000",fontSize:20,fontWeight:"bold",marginHorizontal:10}}>
+            Product Inventory
+            </Text>
+          </View>
       <View style={styles.searchContainer}>
         <View style={styles.searchInputContainer}>
           <TextInput

@@ -1026,12 +1026,12 @@ const CustomerLocation = ({ navigation }) => {
     <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
 
       <View style={styles.header}>
-        <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
+        {/* <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
           <Image
             style={{ height: 25, width: 25 }}
             source={require('../../../assets/back_arrow.png')}
           />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
         <Text
           style={{
             marginLeft: 10,

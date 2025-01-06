@@ -1,5 +1,5 @@
-import { useNavigation } from '@react-navigation/native';
-import React, { useContext, useEffect, useState } from 'react';
+import {useNavigation} from '@react-navigation/native';
+import React, {useContext, useEffect, useState} from 'react';
 import {
   StyleSheet,
   Text,
@@ -13,14 +13,14 @@ import {
   RefreshControl,
   ScrollView,
 } from 'react-native';
-import { API } from '../../config/apiConfig';
+import {API} from '../../config/apiConfig';
 import axios from 'axios';
-import { useSelector } from 'react-redux';
+import {useSelector} from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ColorContext } from '../../components/colortheme/colorTheme';
+import {ColorContext} from '../../components/colortheme/colorTheme';
 
 const LocationInventory = () => {
-  const { colors } = useContext(ColorContext);
+  const {colors} = useContext(ColorContext);
   const styles = getStyles(colors);
   const navigation = useNavigation();
   const [searchQuery, setSearchQuery] = useState('');
@@ -43,8 +43,6 @@ const LocationInventory = () => {
   const [to, setTo] = useState(20);
   const [hasMoreTasks, setHasMoreTasks] = useState(true);
   const [searchFilterFlag, setsearchFilterFlag] = useState(false);
-
-
 
   const selectedCompany = useSelector(state => state.selectedCompany);
   const hold_flag = useSelector(state => state.selectedCompany.hold_qty_flag);
@@ -76,15 +74,17 @@ const LocationInventory = () => {
     getLocationInventory(true, 0, 20);
   }, []);
 
-
-
-  const getLocationInventory = async (reset = false, customFrom = from, customTo = to) => {
+  const getLocationInventory = async (
+    reset = false,
+    customFrom = from,
+    customTo = to,
+  ) => {
     if (loading || loadingMore) return;
     setLoading(reset);
 
     const apiUrl = `${global?.userData?.productURL}${API.ADD_LOCATION_INVENTORY_LAZY}`;
 
-    console.log("getLocationInventory", customFrom, customTo);
+    console.log('getLocationInventory', customFrom, customTo);
 
     try {
       const response = await axios.post(
@@ -127,7 +127,11 @@ const LocationInventory = () => {
     }
   };
 
-  const gettasksearch = async (reset = false, customFrom = from, customTo = to) => {
+  const gettasksearch = async (
+    reset = false,
+    customFrom = from,
+    customTo = to,
+  ) => {
     const apiUrl = `${global?.userData?.productURL}${API.GET_ALL_LOCATION_INVENTORY_SEARCH}`;
     const requestBody = {
       dropdownId: searchKey,
@@ -137,7 +141,7 @@ const LocationInventory = () => {
       companyId: companyId,
     };
 
-    console.log("gettasksearch==> ", customFrom, customTo);
+    console.log('gettasksearch==> ', customFrom, customTo);
 
     try {
       const response = await axios.post(apiUrl, requestBody, {
@@ -148,11 +152,12 @@ const LocationInventory = () => {
       });
 
       if (response.data.gsCodesList) {
-        
-        const newOrders = response.data.gsCodesList.filter(order => order !== null);
+        const newOrders = response.data.gsCodesList.filter(
+          order => order !== null,
+        );
 
-        setInventoryData((prevDetails) =>
-          reset ? newOrders : [...prevDetails, ...newOrders]
+        setInventoryData(prevDetails =>
+          reset ? newOrders : [...prevDetails, ...newOrders],
         );
         setHasMoreData(newOrders?.length >= 20);
       } else {
@@ -167,7 +172,7 @@ const LocationInventory = () => {
   //   setSelectedSearchOption(option.label);
   //   setSearchKey(option.value);
   //   setDropdownVisible(false);
-  //   setSearchQuery(''); 
+  //   setSearchQuery('');
   // };
 
   const handleDropdownSelect = option => {
@@ -176,10 +181,9 @@ const LocationInventory = () => {
       setSelectedSearchOption(option.label);
       setSearchKey(option.value);
       setDropdownVisible(false);
-      setSearchQuery(''); 
+      setSearchQuery('');
     }, 0);
   };
-
 
   const toggleDropdown = () => {
     setDropdownVisible(!dropdownVisible);
@@ -204,42 +208,40 @@ const LocationInventory = () => {
 
     setsearchFilterFlag(true);
     setFrom(0);
-    setTo(20)
-    gettasksearch(true, 0, 20); 
+    setTo(20);
+    gettasksearch(true, 0, 20);
   };
 
   const handleSearchInputChange = query => {
     setSearchQuery(query);
     if (query.trim() === '') {
       getLocationInventory(true, 0, 20);
-      setFrom(0),
-      setTo(20);
+      setFrom(0), setTo(20);
     }
   };
 
   const searchOption = [
-    { label: 'Type', value: 1 },
-    { label: 'Customer Level', value: 2 },
-    { label: 'Location Name', value: 3 },
-    { label: 'Style Name', value: 4 },
-    { label: 'Size', value: 5 },
-    { label: 'Sku', value: 6 },
-
+    {label: 'Type', value: 1},
+    {label: 'Customer Level', value: 2},
+    {label: 'Location Name', value: 3},
+    {label: 'Style Name', value: 4},
+    {label: 'Size', value: 5},
+    {label: 'Sku', value: 6},
   ];
   const onRefresh = async () => {
     setRefreshing(true);
     setsearchFilterFlag(false);
-    setHasMoreData(true); 
+    setHasMoreData(true);
     setSearchQuery('');
     setFrom(0);
     setSearchKey(0);
     setSelectedSearchOption('');
     setTo(20);
-    await getLocationInventory(true, 0, 20); 
+    await getLocationInventory(true, 0, 20);
     setRefreshing(false);
   };
 
-  const loadMoreTasks = async() => {
+  const loadMoreTasks = async () => {
     if (!hasMoreData || loadingMore) return;
 
     setLoadingMore(true);
@@ -269,23 +271,35 @@ const LocationInventory = () => {
     }
   };
 
-
-  const renderItem = ({ item }) => (
+  const renderItem = ({item}) => (
     <View>
       <View style={styles.inventoryItem}>
         <Text style={styles.itemText}> {item.locationName}</Text>
         <Text style={styles.itemText1}>{item.styleName}</Text>
         <Text style={styles.itemText2}>{item.sizeCode}</Text>
         <Text style={styles.itemText3}>{item.availQty}</Text>
-        {(comp_flag && hold_flag) ? (<Text style={styles.itemText4}>{item.holdQty}</Text>):null}
+        {comp_flag && hold_flag ? (
+          <Text style={styles.itemText4}>{item.holdQty}</Text>
+        ) : null}
       </View>
       <View
-        style={{ borderBottomWidth: 1, borderBottomColor: 'lightgray' }}></View>
+        style={{borderBottomWidth: 1, borderBottomColor: 'lightgray'}}></View>
     </View>
   );
 
   return (
     <View style={styles.container}>
+      <View>
+        <Text
+          style={{
+            color: '#000',
+            fontSize: 20,
+            fontWeight: 'bold',
+            marginHorizontal: 10,
+          }}>
+        Location Inventory
+        </Text>
+      </View>
       <View style={styles.searchContainer}>
         <View style={styles.searchInputContainer}>
           <TextInput
@@ -298,7 +312,7 @@ const LocationInventory = () => {
           <TouchableOpacity
             style={styles.dropdownButton}
             onPress={toggleDropdown}>
-            <Text style={{ color: '#000' }}>
+            <Text style={{color: '#000'}}>
               {selectedSearchOption || 'Select'}
             </Text>
             <Image
@@ -306,7 +320,6 @@ const LocationInventory = () => {
               source={require('../../../assets/dropdown.png')}
             />
           </TouchableOpacity>
-
         </View>
         <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
           <Text
@@ -326,7 +339,7 @@ const LocationInventory = () => {
                 style={styles.dropdownOption}
                 key={index}
                 onPress={() => handleDropdownSelect(option)}>
-                <Text style={{ color: '#000' }}>{option.label}</Text>
+                <Text style={{color: '#000'}}>{option.label}</Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
@@ -338,7 +351,9 @@ const LocationInventory = () => {
         <Text style={styles.headerText1}>Style Name</Text>
         <Text style={styles.headerText2}>Size</Text>
         <Text style={styles.headerText3}>Avail Qty</Text>
-        {(comp_flag && hold_flag) ? (<Text style={styles.headerText4}>Hold Qty</Text>):null}
+        {comp_flag && hold_flag ? (
+          <Text style={styles.headerText4}>Hold Qty</Text>
+        ) : null}
       </View>
       {loading && !inventoryData.length ? (
         <ActivityIndicator size="large" color="#000" />
@@ -363,166 +378,166 @@ const LocationInventory = () => {
       )}
     </View>
   );
-
 };
 
-const getStyles = (colors) => StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 10,
-    marginVertical: 10,
-  },
-  backIcon: {
-    height: 25,
-    width: 25,
-  },
-  searchInputContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'lightgray',
-    borderRadius: 15,
-    marginHorizontal: 10,
-  },
-  searchInput: {
-    flex: 1,
-    height: 40,
-    paddingHorizontal: 10,
-    color:'#000'
-  },
-  searchIconContainer: {
-    padding: 10,
-  },
-  searchIcon: {
-    height: 20,
-    width: 20,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 10,
-    paddingVertical: 10,
-    backgroundColor: '#f0f0f0',
-  },
-  headerText: {
-    flex: 1.2,
-    textAlign: 'center',
-    color: "#000"
-  },
-  headerText1: {
-    flex: 2,
-    textAlign: 'center',
-    color: "#000"
-  },
-  headerText2: {
-    flex: 1,
-    textAlign: 'center',
-    color: "#000"
-  },
-  headerText3: {
-    flex: 1,
-    textAlign: 'center',
-    color: "#000"
-  },
-  noResultsText: {
-    top: 40,
-    textAlign: 'center',
-    color: '#000000',
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#000',
-    padding: 5,
-  },
-  headerText4: {
-    flex: 1,
-    textAlign: 'center',
-    color:"#000"
-  },
-  listContainer: {
-    paddingHorizontal: 20,
-  },
-  inventoryItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: 10,
-  },
-  itemText: {
-    flex: 1.2,
-    textAlign: 'center',
-    color: "#000"
-  },
-  itemText1: {
-    flex: 2,
-    textAlign: 'center',
-    marginLeft: 10,
-    color: "#000"
-  },
-  itemText2: {
-    flex: 1,
-    textAlign: 'center',
-    color: "#000"
-  },
-  itemText3: {
-    flex: 1,
-    textAlign: 'center',
-    color: "#000"
-  },
-  itemText4: {
-    flex: 1,
-    textAlign: 'center',
-    color: "#000"
-  },
-  noCategoriesText: {
-    top: 40,
-    textAlign: "center",
-    color: '#000000',
-    fontSize: 20,
-    fontWeight: 'bold',
-    padding: 5,
-  },
-  dropdownButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 10,
-    backgroundColor: '#e6e6e6',
-    borderRadius: 15,
-  },
-  searchButton: {
-    backgroundColor:   colors.color2,
-    borderRadius: 25,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    elevation: 3,
-  },
-  image: {
-    height: 20,
-    width: 20,
-    marginLeft: 10,
-    marginRight: 10
-  },
-  dropdownContent1: {
-    elevation: 5,
-    // height: 220,
-    alignSelf: 'center',
-    width: '90%',
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    borderColor: 'lightgray', // Optional: Adds subtle border (for effect)
-    borderWidth: 1,
-    marginBottom:5
-  },
-  dropdownOption: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
-  },
-});
+const getStyles = colors =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: '#fff',
+    },
+    searchContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 10,
+      marginVertical: 10,
+    },
+    backIcon: {
+      height: 25,
+      width: 25,
+    },
+    searchInputContainer: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: 'lightgray',
+      borderRadius: 15,
+      marginHorizontal: 10,
+    },
+    searchInput: {
+      flex: 1,
+      height: 40,
+      paddingHorizontal: 10,
+      color: '#000',
+    },
+    searchIconContainer: {
+      padding: 10,
+    },
+    searchIcon: {
+      height: 20,
+      width: 20,
+    },
+    header: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingHorizontal: 10,
+      paddingVertical: 10,
+      backgroundColor: '#f0f0f0',
+    },
+    headerText: {
+      flex: 1.2,
+      textAlign: 'center',
+      color: '#000',
+    },
+    headerText1: {
+      flex: 2,
+      textAlign: 'center',
+      color: '#000',
+    },
+    headerText2: {
+      flex: 1,
+      textAlign: 'center',
+      color: '#000',
+    },
+    headerText3: {
+      flex: 1,
+      textAlign: 'center',
+      color: '#000',
+    },
+    noResultsText: {
+      top: 40,
+      textAlign: 'center',
+      color: '#000000',
+      fontSize: 20,
+      fontWeight: 'bold',
+      color: '#000',
+      padding: 5,
+    },
+    headerText4: {
+      flex: 1,
+      textAlign: 'center',
+      color: '#000',
+    },
+    listContainer: {
+      paddingHorizontal: 20,
+    },
+    inventoryItem: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingVertical: 10,
+    },
+    itemText: {
+      flex: 1.2,
+      textAlign: 'center',
+      color: '#000',
+    },
+    itemText1: {
+      flex: 2,
+      textAlign: 'center',
+      marginLeft: 10,
+      color: '#000',
+    },
+    itemText2: {
+      flex: 1,
+      textAlign: 'center',
+      color: '#000',
+    },
+    itemText3: {
+      flex: 1,
+      textAlign: 'center',
+      color: '#000',
+    },
+    itemText4: {
+      flex: 1,
+      textAlign: 'center',
+      color: '#000',
+    },
+    noCategoriesText: {
+      top: 40,
+      textAlign: 'center',
+      color: '#000000',
+      fontSize: 20,
+      fontWeight: 'bold',
+      padding: 5,
+    },
+    dropdownButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 10,
+      paddingHorizontal: 10,
+      backgroundColor: '#e6e6e6',
+      borderRadius: 15,
+    },
+    searchButton: {
+      backgroundColor: colors.color2,
+      borderRadius: 25,
+      paddingHorizontal: 20,
+      paddingVertical: 10,
+      elevation: 3,
+    },
+    image: {
+      height: 20,
+      width: 20,
+      marginLeft: 10,
+      marginRight: 10,
+    },
+    dropdownContent1: {
+      elevation: 5,
+      // height: 220,
+      alignSelf: 'center',
+      width: '90%',
+      backgroundColor: '#fff',
+      borderRadius: 10,
+      borderColor: 'lightgray', // Optional: Adds subtle border (for effect)
+      borderWidth: 1,
+      marginBottom: 5,
+    },
+    dropdownOption: {
+      paddingHorizontal: 10,
+      paddingVertical: 6,
+      borderBottomWidth: 1,
+      borderBottomColor: '#ccc',
+    },
+  });
 
 export default LocationInventory;

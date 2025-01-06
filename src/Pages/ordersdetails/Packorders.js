@@ -18,10 +18,10 @@ import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import {useSelector} from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {API} from '../../config/apiConfig';
-import { ColorContext } from '../../components/colortheme/colorTheme';
+import {ColorContext} from '../../components/colortheme/colorTheme';
 
 const Packorders = () => {
-  const { colors } = useContext(ColorContext);
+  const {colors} = useContext(ColorContext);
   const style = getStyles(colors);
   const [orders, setOrders] = useState([]);
   const [pageNo, setPageNo] = useState(1);
@@ -49,14 +49,12 @@ const Packorders = () => {
 
   const selectedCompany = useSelector(state => state.selectedCompany);
 
-  const [filterFlag, setFilterFlag]=useState(false);
-
+  const [filterFlag, setFilterFlag] = useState(false);
 
   const navigation = useNavigation();
   const handleGoBack = () => {
     navigation.goBack();
   };
-
 
   // useEffect(() => {
   //   const unsubscribe = navigation.addListener('focus', () => {
@@ -88,222 +86,229 @@ const Packorders = () => {
     ? selectedCompany.id
     : initialSelectedCompany?.id;
 
-    useEffect(() => {
-      const unsubscribe = navigation.addListener('focus', () => {
-        // Reset search query and visibility of search input
-        setSearchQuery('');
-        setShowSearchInput(false);
-        // Reset orders and fetch new data
-        setFrom(0); // Reset the starting index
-        setTo(20); // Reset the ending index
-        getAllOrders(true); // Fetch the first 20 orders
-        setFilterFlag(false);
-      });
-      return unsubscribe;
-    }, [navigation]);
-  
-
-    useEffect(() => {
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      // Reset search query and visibility of search input
+      setSearchQuery('');
+      setShowSearchInput(false);
+      // Reset orders and fetch new data
+      setFrom(0); // Reset the starting index
+      setTo(20); // Reset the ending index
       if (companyId) {
-        getAllOrders(true, 0, 20);
+        getAllOrders(true, 0, 10);
       }
-    }, [companyId]);
+      setFilterFlag(false);
+    });
+    return unsubscribe;
+  }, [navigation,companyId]);
 
-    const getAllOrders = async (reset = false, customFrom = from, customTo = to) => {
-      // console.log("getAllOrders b ", customFrom, customTo);
-  
-      if (loading || loadingMore) return;
-      setLoading(reset);
-  
+  useEffect(() => {
+    if (companyId) {
+      getAllOrders(true, 0, 20);
+    }
+  }, [companyId]);
+
+  const getAllOrders = async (
+    reset = false,
+    customFrom = from,
+    customTo = to,
+  ) => {
+    // console.log("getAllOrders b ", customFrom, customTo);
+
+    if (loading || loadingMore) return;
+    setLoading(reset);
+
+    if (reset) {
+      setFrom(0); // Reset pagination
+      setTo(20);
+      setHasMoreTasks(true); // Reset hasMoreTasks for new fetch
+    }
+
+    const apiUrl = `${global?.userData?.productURL}${
+      API.GET_ALL_ORDER_LAZY
+    }/${customFrom}/${customTo}/${companyId}/${2}`;
+
+    console.log('getAllOrders A ', customFrom, customTo);
+
+    try {
+      const response = await axios.get(apiUrl, {
+        headers: {
+          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+        },
+      });
+
+      const newTasks = response.data.response.ordersList;
       if (reset) {
-        setFrom(0); // Reset pagination
-        setTo(20);
-        setHasMoreTasks(true); // Reset hasMoreTasks for new fetch
+        setOrders(newTasks);
+      } else {
+        setOrders(prevTasks => [...(prevTasks || []), ...newTasks]);
       }
-  
-      const apiUrl = `${global?.userData?.productURL}${API.GET_ALL_ORDER_LAZY}/${customFrom}/${customTo}/${companyId}/${2}`;
-  
-      console.log("getAllOrders A ", customFrom, customTo);
-  
-  
+
+      if (newTasks.length < 20) {
+        setHasMoreTasks(false);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  };
+  const loadMoreTasks = async () => {
+    if (!hasMoreTasks || loadingMore) return;
+
+    setLoadingMore(true);
+    const newFrom = to + 1;
+    const newTo = to + 20;
+    setFrom(newFrom);
+    setTo(newTo);
+
+    if (filterFlag) {
       try {
-        const response = await axios.get(apiUrl, {
-          headers: {
-            Authorization: `Bearer ${global?.userData?.token?.access_token}`,
-          },
-        });
-  
-        const newTasks = response.data.response.ordersList;
-        if (reset) {
-          setOrders(newTasks); 
-        } else {
-          setOrders((prevTasks) => [...(prevTasks || []), ...newTasks]);
-        }
-  
-        if (newTasks.length < 20) {
-          setHasMoreTasks(false);
-        }
+        await gettasksearch(false, newFrom, newTo);
       } catch (error) {
-        console.error('Error:', error);
+        console.error('Error while loading more orders:', error);
       } finally {
-        setLoading(false);
+        setFrom(newFrom);
+        setTo(newTo);
         setLoadingMore(false);
       }
-    };
-    const loadMoreTasks = async () => {
-      if (!hasMoreTasks || loadingMore) return;
-  
-      setLoadingMore(true);
-      const newFrom = to + 1;
-      const newTo = to + 20;
-      setFrom(newFrom);
-      setTo(newTo);
-  
-      if (filterFlag) {
-        try {
-          await gettasksearch(false, newFrom, newTo);
-        } catch (error) {
-          console.error('Error while loading more orders:', error);
-        } finally {
-          setFrom(newFrom);
-          setTo(newTo);
-          setLoadingMore(false);
-        }
-      } else {
-        try {
-          await getAllOrders(false, newFrom, newTo);
-        } catch (error) {
-          console.error('Error while loading more orders:', error);
-        } finally {
-          setFrom(newFrom);
-          setTo(newTo);
-          setLoadingMore(false);
-        }
-      }
-      // getAllOrders(); // Call getAllOrders here to fetch new data
-    };
-  
-  
-    const onRefresh = async () => {
-      setRefreshing(true);
-      setFrom(0);
-      setTo(20);
-      setSearchKey(0);
-      setFilterFlag(false);
-  
-      setSearchQuery('');
-      // setShowSearchInput(false);
-      setSelectedSearchOption('');
-      setHasMoreTasks(true);
-      
-      await getAllOrders(true, 0, 20);
-      setRefreshing(false);
-    };
-
-    const gettasksearch = async (reset = false, customFrom = from, customTo = to) => {
-      const apiUrl = `${global?.userData?.productURL}${API.GET_ALL_ORDER_SEARCH}`;
-      const requestBody = {
-        dropdownId: searchKey,
-        fieldvalue: searchQuery,
-        from: customFrom,
-        to: customTo,
-        companyId: companyId,
-        pdfFlag: 0,
-      };
-  
-      console.log("gettasksearch==> ",customFrom,customTo);
-  
+    } else {
       try {
-        const response = await axios.post(apiUrl, requestBody, {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${global?.userData?.token?.access_token}`,
-          },
-        });
-  
-        if (response.data.response.ordersList) {
-          // setOrders(response.data.response.ordersList);
-  
-  
-          const newOrders = response.data.response.ordersList.filter(order => order !== null);
-  
-          setOrders((prevDetails) =>
-              reset ? newOrders : [...prevDetails, ...newOrders]
-            );
-            setHasMoreTasks(newOrders?.length >= 15)
-  
-  
-          // setHasMoreTasks(false);
-        } else {
-          setOrders([]);
-        }
+        await getAllOrders(false, newFrom, newTo);
       } catch (error) {
-        console.error('Error fetching tasks:', error);
+        console.error('Error while loading more orders:', error);
+      } finally {
+        setFrom(newFrom);
+        setTo(newTo);
+        setLoadingMore(false);
       }
+    }
+    // getAllOrders(); // Call getAllOrders here to fetch new data
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    setFrom(0);
+    setTo(20);
+    setSearchKey(0);
+    setFilterFlag(false);
+
+    setSearchQuery('');
+    // setShowSearchInput(false);
+    setSelectedSearchOption('');
+    setHasMoreTasks(true);
+
+    await getAllOrders(true, 0, 20);
+    setRefreshing(false);
+  };
+
+  const gettasksearch = async (
+    reset = false,
+    customFrom = from,
+    customTo = to,
+  ) => {
+    const apiUrl = `${global?.userData?.productURL}${API.GET_ALL_ORDER_SEARCH}`;
+    const requestBody = {
+      dropdownId: searchKey,
+      fieldvalue: searchQuery,
+      from: customFrom,
+      to: customTo,
+      companyId: companyId,
+      pdfFlag: 0,
     };
 
-    // const handleDropdownSelect = option => {
-    //   setSelectedSearchOption(option.label);
-    //   setSearchKey(option.value);
-    //   setDropdownVisible(false);
-    //   setSearchQuery(''); 
-    // };
-  
-    const handleDropdownSelect = option => {
-      onRefresh();
-      setTimeout(() => {
-        setSelectedSearchOption(option.label);
+    console.log('gettasksearch==> ', customFrom, customTo);
+
+    try {
+      const response = await axios.post(apiUrl, requestBody, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+        },
+      });
+
+      if (response.data.response.ordersList) {
+        // setOrders(response.data.response.ordersList);
+
+        const newOrders = response.data.response.ordersList.filter(
+          order => order !== null,
+        );
+
+        setOrders(prevDetails =>
+          reset ? newOrders : [...prevDetails, ...newOrders],
+        );
+        setHasMoreTasks(newOrders?.length >= 15);
+
+        // setHasMoreTasks(false);
+      } else {
+        setOrders([]);
+      }
+    } catch (error) {
+      console.error('Error fetching tasks:', error);
+    }
+  };
+
+  // const handleDropdownSelect = option => {
+  //   setSelectedSearchOption(option.label);
+  //   setSearchKey(option.value);
+  //   setDropdownVisible(false);
+  //   setSearchQuery('');
+  // };
+
+  const handleDropdownSelect = option => {
+    onRefresh();
+    setTimeout(() => {
+      setSelectedSearchOption(option.label);
       setSearchKey(option.value);
       setDropdownVisible(false);
-      setSearchQuery(''); 
-      }, 0);
-    };
-    
-    const toggleDropdown = () => {
-      setDropdownVisible(!dropdownVisible);
-    };
-  
-    const handleSearch = () => {
-      if (!searchKey) {
-        Alert.alert(
-          'Alert',
-          'Please select an option from the dropdown before searching',
-        );
-        return; // Exit the function if no search key is selected
-      }
-  
-      if (!searchQuery.trim()) {
-        Alert.alert(
-          'Alert',
-          'Please select an option from the dropdown before searching',
-        );
-        return; // Exit if the search query is empty
-      }
-  
-      setFilterFlag(true);
-      setFrom(0);
-      setTo(20);
-  
-      gettasksearch(true, 0, 20); 
-    };
-  
-    const handleSearchInputChange = query => {
-      setSearchQuery(query);
-      if (query.trim() === '') {
-        getAllOrders(true, 0, 20);
-      }
-    };
+      setSearchQuery('');
+    }, 0);
+  };
 
-    const searchOption = [
-      { label: 'Order No', value: 5 },
-      { label: 'Retailer', value: 2 },
-      { label: 'Distributor', value: 1 },
-      { label: 'Order Date', value: 6 },
-      { label: 'Order status', value: 7 },
-      { label: 'Packing status', value: 8 },
-    ];
-  
+  const toggleDropdown = () => {
+    setDropdownVisible(!dropdownVisible);
+  };
 
+  const handleSearch = () => {
+    if (!searchKey) {
+      Alert.alert(
+        'Alert',
+        'Please select an option from the dropdown before searching',
+      );
+      return; // Exit the function if no search key is selected
+    }
+
+    if (!searchQuery.trim()) {
+      Alert.alert(
+        'Alert',
+        'Please select an option from the dropdown before searching',
+      );
+      return; // Exit if the search query is empty
+    }
+
+    setFilterFlag(true);
+    setFrom(0);
+    setTo(20);
+
+    gettasksearch(true, 0, 20);
+  };
+
+  const handleSearchInputChange = query => {
+    setSearchQuery(query);
+    if (query.trim() === '') {
+      getAllOrders(true, 0, 20);
+    }
+  };
+
+  const searchOption = [
+    {label: 'Order No', value: 5},
+    {label: 'Retailer', value: 2},
+    {label: 'Distributor', value: 1},
+    {label: 'Order Date', value: 6},
+    {label: 'Order status', value: 7},
+    {label: 'Packing status', value: 8},
+  ];
 
   // useEffect(() => {
   //   if (firstLoad) {
@@ -319,7 +324,6 @@ const Packorders = () => {
   //     }
   //   }, [firstLoad, getAllOrders]),
   // );
-
 
   const handleOrderPress = item => {
     if (item.packedStts === 'YET TO PACK') {
@@ -440,9 +444,20 @@ const Packorders = () => {
 
   return (
     <View style={style.container}>
+      <View>
+        <Text
+          style={{
+            color: '#000',
+            fontSize: 20,
+            fontWeight: 'bold',
+            marginHorizontal: 10,
+          }}>
+          Packing orders
+        </Text>
+      </View>
       <View style={style.searchContainer}>
         <View style={style.searchInputContainer}>
-        <TextInput
+          <TextInput
             style={style.searchInput}
             placeholder="Search"
             placeholderTextColor="#000"
@@ -450,8 +465,10 @@ const Packorders = () => {
             onChangeText={handleSearchInputChange}
           />
 
-<TouchableOpacity style={style.dropdownButton} onPress={toggleDropdown}>
-            <Text style={{ color: '#000' }}>
+          <TouchableOpacity
+            style={style.dropdownButton}
+            onPress={toggleDropdown}>
+            <Text style={{color: '#000'}}>
               {selectedSearchOption || 'Select'}
             </Text>
             <Image
@@ -461,12 +478,8 @@ const Packorders = () => {
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity
-          style={style.searchButton}
-          onPress={handleSearch}>
-          <Text style={style.searchButtonText}>
-            Search
-          </Text>
+        <TouchableOpacity style={style.searchButton} onPress={handleSearch}>
+          <Text style={style.searchButtonText}>Search</Text>
         </TouchableOpacity>
       </View>
 
@@ -478,7 +491,7 @@ const Packorders = () => {
                 style={style.dropdownOption}
                 key={index}
                 onPress={() => handleDropdownSelect(option)}>
-                <Text style={{ color: '#000' }}>{option.label}</Text>
+                <Text style={{color: '#000'}}>{option.label}</Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
@@ -494,20 +507,20 @@ const Packorders = () => {
         <Text style={style.noCategoriesText}>Sorry, no results found!</Text>
       ) : (
         <FlatList
-        data={orders}
-        renderItem={renderItem}
-        keyExtractor={(item, index) => `${item?.orderId}-${index}`}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-        onEndReached={loadMoreTasks} // Load more when scrolled to the end
-        onEndReachedThreshold={0.2} // Adjust this value to control when to load more
-        ListFooterComponent={
-          loadingMore ? (
-            <ActivityIndicator size="small" color="#0000ff" />
-          ) : null
-        }
-      />
+          data={orders}
+          renderItem={renderItem}
+          keyExtractor={(item, index) => `${item?.orderId}-${index}`}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+          onEndReached={loadMoreTasks} // Load more when scrolled to the end
+          onEndReachedThreshold={0.2} // Adjust this value to control when to load more
+          ListFooterComponent={
+            loadingMore ? (
+              <ActivityIndicator size="small" color="#0000ff" />
+            ) : null
+          }
+        />
       )}
       {selectedOrder && (
         <Modal visible={true} transparent={true} animationType="fade">
@@ -558,7 +571,9 @@ const Packorders = () => {
               <TouchableOpacity
                 style={style.closeButton}
                 onPress={() => setSelectedOrder(null)}>
-                <Text style={{color: '#fff',paddingHorizontal:15}}>Close</Text>
+                <Text style={{color: '#fff', paddingHorizontal: 15}}>
+                  Close
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -568,154 +583,155 @@ const Packorders = () => {
   );
 };
 
-const getStyles = (colors) => StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#ffffff',
-    elevation: 5,
-  },
-  backButton: {
-    marginLeft: 10,
-  },
-  header: {
-    marginBottom: 10,
-    borderWidth: 1,
-    marginHorizontal: 10,
-    borderRadius: 10,
-  },
-  ordheader: {
-    marginVertical: 5,
-  },
-  orderidd: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginHorizontal: 10,
-  },
-  PackedStatus: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginHorizontal: 10,
-    marginVertical: 5,
-  },
-  ordshpheader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginHorizontal: 10,
-    marginVertical: 5,
-  },
-  modelordshpheader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginHorizontal: 10,
-    marginVertical: 5,
-  },
-  custtlheader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginHorizontal: 10,
-    marginVertical: 5,
-  },
-  modalContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
-  modalContent: {
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    elevation: 5,
-    width: '95%',
-    padding: 5,
-  },
-  closeButton: {
-    marginTop: 10,
-    alignSelf: 'center',
-    backgroundColor: '#F09120',
-    padding: 10,
-    borderRadius: 5,
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 10,
-    marginVertical: 10,
-  },
-  backIcon: {
-    height: 25,
-    width: 25,
-  },
-  searchInputContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'lightgray',
-    borderRadius: 15,
-    marginHorizontal: 10,
-  },
-  dropdownButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 7,
-    backgroundColor: '#e6e6e6',
-    borderRadius: 15,
-  },
-  searchButton: {
-    backgroundColor: colors.color2,
-    borderRadius: 25,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    elevation: 3,
-  },
-  searchButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-  },
-  searchInput: {
-    flex: 1,
-    height: 40,
-    borderColor: 'gray',
-    paddingHorizontal: 10,
-    borderRadius: 5,
-  },
-  searchInputActive: {
-    color: '#000',
-  },
-  image: {
-    height: 20,
-    width: 20,
-    marginLeft: 10,
-    marginRight: 5,
-  },
-  noCategoriesText: {
-    top: 40,
-    textAlign: 'center',
-    color: '#000000',
-    fontSize: 20,
-    fontWeight: 'bold',
-    padding: 5,
-  },
-  dropdownContent1: {
-    position: 'absolute',
-    top: 57,
-    width: '90%',
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    elevation: 5,
-    paddingVertical: 10,
-    paddingHorizontal: 5,
-    zIndex: 1,
-    alignSelf: 'center',
-    borderColor: 'lightgray', // Optional: Adds subtle border (for effect)
-    borderWidth: 1,
-  },
-  dropdownOption: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
-  },
-});
+const getStyles = colors =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: '#ffffff',
+      elevation: 5,
+    },
+    backButton: {
+      marginLeft: 10,
+    },
+    header: {
+      marginBottom: 10,
+      borderWidth: 1,
+      marginHorizontal: 10,
+      borderRadius: 10,
+    },
+    ordheader: {
+      marginVertical: 5,
+    },
+    orderidd: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginHorizontal: 10,
+    },
+    PackedStatus: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginHorizontal: 10,
+      marginVertical: 5,
+    },
+    ordshpheader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginHorizontal: 10,
+      marginVertical: 5,
+    },
+    modelordshpheader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginHorizontal: 10,
+      marginVertical: 5,
+    },
+    custtlheader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginHorizontal: 10,
+      marginVertical: 5,
+    },
+    modalContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    },
+    modalContent: {
+      backgroundColor: '#fff',
+      borderRadius: 10,
+      elevation: 5,
+      width: '95%',
+      padding: 5,
+    },
+    closeButton: {
+      marginTop: 10,
+      alignSelf: 'center',
+      backgroundColor: '#F09120',
+      padding: 10,
+      borderRadius: 5,
+    },
+    searchContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 10,
+      marginVertical: 10,
+    },
+    backIcon: {
+      height: 25,
+      width: 25,
+    },
+    searchInputContainer: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: 'lightgray',
+      borderRadius: 15,
+      marginHorizontal: 10,
+    },
+    dropdownButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 10,
+      paddingHorizontal: 7,
+      backgroundColor: '#e6e6e6',
+      borderRadius: 15,
+    },
+    searchButton: {
+      backgroundColor: colors.color2,
+      borderRadius: 25,
+      paddingHorizontal: 20,
+      paddingVertical: 10,
+      elevation: 3,
+    },
+    searchButtonText: {
+      color: '#fff',
+      fontWeight: 'bold',
+    },
+    searchInput: {
+      flex: 1,
+      height: 40,
+      borderColor: 'gray',
+      paddingHorizontal: 10,
+      borderRadius: 5,
+    },
+    searchInputActive: {
+      color: '#000',
+    },
+    image: {
+      height: 20,
+      width: 20,
+      marginLeft: 10,
+      marginRight: 5,
+    },
+    noCategoriesText: {
+      top: 40,
+      textAlign: 'center',
+      color: '#000000',
+      fontSize: 20,
+      fontWeight: 'bold',
+      padding: 5,
+    },
+    dropdownContent1: {
+      position: 'absolute',
+      top: 57,
+      width: '90%',
+      backgroundColor: '#fff',
+      borderRadius: 10,
+      elevation: 5,
+      paddingVertical: 10,
+      paddingHorizontal: 5,
+      zIndex: 1,
+      alignSelf: 'center',
+      borderColor: 'lightgray', // Optional: Adds subtle border (for effect)
+      borderWidth: 1,
+    },
+    dropdownOption: {
+      paddingHorizontal: 10,
+      paddingVertical: 6,
+      borderBottomWidth: 1,
+      borderBottomColor: '#ccc',
+    },
+  });
 
 export default Packorders;
