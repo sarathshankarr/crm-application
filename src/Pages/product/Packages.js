@@ -365,7 +365,7 @@ const Packages = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       <View>
-            <Text style={{color:"#000",fontSize:20,fontWeight:"bold",marginHorizontal:10}}>
+            <Text style={{color:"#000",fontSize:20,fontWeight:"bold",alignSelf:"center"}}>
               Packages
             </Text>
           </View>

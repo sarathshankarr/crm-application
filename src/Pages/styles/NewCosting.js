@@ -665,6 +665,8 @@ const NewCosting = ({navigation, route}) => {
       formData.append('companyId', companyId || '');
       formData.append('conversation', conversation || 0);
       formData.append('userId', userId);
+      formData.append('linkType',2);
+
       console.log('ksImageName:', ksImageName); // Debugging log
       if (ksImageName) {
         formData.append('ksImageName', ksImageName);

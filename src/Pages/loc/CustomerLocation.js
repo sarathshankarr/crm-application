@@ -1034,7 +1034,7 @@ const CustomerLocation = ({ navigation }) => {
         </TouchableOpacity> */}
         <Text
           style={{
-            marginLeft: 10,
+           
             fontSize: 19,
             fontWeight: 'bold',
             color: '#000',
@@ -1142,8 +1142,8 @@ const getStyles = (colors) => StyleSheet.create({
   },
   header: {
     flexDirection: 'row',
-    marginHorizontal: 10,
     marginVertical: 10,
+    alignSelf:'center'
   },
   txt: {
     color: '#000',

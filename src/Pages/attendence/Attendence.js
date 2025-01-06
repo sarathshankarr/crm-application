@@ -1147,7 +1147,7 @@ const Attendance = () => {
             color: '#000',
             fontSize: 20,
             fontWeight: 'bold',
-            marginHorizontal: 10,
+            alignSelf:"center"
           }}>
        Attendence
         </Text>

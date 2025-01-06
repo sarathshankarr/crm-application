@@ -320,7 +320,8 @@ const Cushion = ({navigation, route}) => {
       formData.append('sizeNumber', 0);
       formData.append('size', '');
       formData.append('userId', userId);
-
+      formData.append('linkType',2);
+      
       formData.append('conversation', '');
 
       formData.append('description', description || '');

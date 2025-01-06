@@ -295,9 +295,9 @@ const LocationInventory = () => {
             color: '#000',
             fontSize: 20,
             fontWeight: 'bold',
-            marginHorizontal: 10,
+            alignSelf: 'center',
           }}>
-        Location Inventory
+          Location Inventory
         </Text>
       </View>
       <View style={styles.searchContainer}>

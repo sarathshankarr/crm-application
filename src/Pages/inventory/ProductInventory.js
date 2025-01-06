@@ -285,7 +285,7 @@ const ProductInventory = () => {
   return (
     <View style={styles.container}>
        <View>
-            <Text style={{color:"#000",fontSize:20,fontWeight:"bold",marginHorizontal:10}}>
+            <Text style={{color:"#000",fontSize:20,fontWeight:"bold",alignSelf:"center"}}>
             Product Inventory
             </Text>
           </View>

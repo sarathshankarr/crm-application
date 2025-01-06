@@ -279,6 +279,7 @@ const DistributorInventory = () => {
             fontSize: 20,
             fontWeight: 'bold',
             marginHorizontal: 10,
+            alignSelf:'center'
           }}>
         Distributor Inventory
         </Text>
