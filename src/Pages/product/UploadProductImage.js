@@ -7,6 +7,7 @@ import {
   Image,
   ScrollView,
   SafeAreaView,
+  Modal,
 } from 'react-native';
 import React, {useContext, useEffect, useState} from 'react';
 import ImagePicker from 'react-native-image-crop-picker';
@@ -14,19 +15,20 @@ import axios from 'axios';
 import {useSelector} from 'react-redux';
 import {API} from '../../config/apiConfig';
 import {useNavigation} from '@react-navigation/native';
-import { ColorContext } from '../../components/colortheme/colorTheme';
+import {ColorContext} from '../../components/colortheme/colorTheme';
 
 const UploadProductImage = ({route}) => {
-  const { colors } = useContext(ColorContext);
+  const {colors} = useContext(ColorContext);
   const styles = getStyles(colors);
   const styleDetails = route?.params?.Style;
-  console.log("styleDetails12344",styleDetails)
+  // console.log('styleDetails12344', styleDetails);
   const [productStyle, setProductStyle] = useState({});
   const [allProductStyles, setAllProductStyles] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [saveBtn, setSaveBtn] = useState(false);
   const [selectedImages, setSelectedImages] = useState([]); // State to hold selected images
   const [styleId, setStyleId] = useState(0);
+  const [isModalVisible, setModalVisible] = useState(false);
 
   const [isSaving, setIsSaving] = useState(false);
 
@@ -107,7 +109,85 @@ const UploadProductImage = ({route}) => {
       });
   };
 
-  const selectImages = () => {
+  // const selectImages = () => {
+  //   if (selectedImages.length >= 10) {
+  //     Alert.alert(
+  //       'Image Limit Reached',
+  //       'You can only upload a maximum of 10 images.',
+  //     );
+  //     return;
+  //   }
+
+  //   ImagePicker.openPicker({
+  //     multiple: true,
+  //     maxFiles: 10 - selectedImages.length,
+  //     mediaType: 'photo',
+  //     cropping: true, // Enable cropping
+  //   })
+  //     .then(images => {
+  //       const imageArray = images.map(image => ({
+  //         uri: image.path,
+  //         width: image.width,
+  //         height: image.height,
+  //         mime: image.mime,
+  //       }));
+
+  //       if (selectedImages.length + imageArray.length > 10) {
+  //         Alert.alert(
+  //           'Image Limit Exceeded',
+  //           'You can only upload a maximum of 10 images.',
+  //         );
+  //       } else {
+  //         setSelectedImages([...selectedImages, ...imageArray]);
+  //       }
+  //     })
+  //     .catch(error => {
+  //       if (error.message.includes('User cancelled image selection')) {
+  //       } else {
+  //         console.error('Error selecting images: ', error);
+  //         Alert.alert(
+  //           'Error',
+  //           'An error occurred while selecting images. Please try again.',
+  //         );
+  //       }
+  //     });
+  // };
+
+  const openCamera = () => {
+    setModalVisible(false);
+    ImagePicker.openCamera({
+      cropping: true, // Enable cropping
+      mediaType: 'photo',
+    })
+      .then(image => {
+        const imageObj = {
+          uri: image.path,
+          width: image.width,
+          height: image.height,
+          mime: image.mime,
+        };
+        if (selectedImages.length >= 10) {
+          Alert.alert(
+            'Image Limit Reached',
+            'You can only upload a maximum of 10 images.',
+          );
+        } else {
+          setSelectedImages([...selectedImages, imageObj]);
+        }
+      })
+      .catch(error => {
+        if (!error.message.includes('User cancelled image selection')) {
+          console.error('Error taking photo: ', error);
+          Alert.alert(
+            'Error',
+            'An error occurred while taking a photo. Please try again.',
+          );
+        }
+      });
+  };
+
+  const openGallery = () => {
+    setModalVisible(false);
     if (selectedImages.length >= 10) {
       Alert.alert(
         'Image Limit Reached',
@@ -130,18 +210,10 @@ const UploadProductImage = ({route}) => {
           mime: image.mime,
         }));
 
-        if (selectedImages.length + imageArray.length > 10) {
-          Alert.alert(
-            'Image Limit Exceeded',
-            'You can only upload a maximum of 10 images.',
-          );
-        } else {
-          setSelectedImages([...selectedImages, ...imageArray]);
-        }
+        setSelectedImages([...selectedImages, ...imageArray]);
       })
       .catch(error => {
-        if (error.message.includes('User cancelled image selection')) {
-        } else {
+        if (!error.message.includes('User cancelled image selection')) {
           console.error('Error selecting images: ', error);
           Alert.alert(
             'Error',
@@ -204,9 +276,11 @@ const UploadProductImage = ({route}) => {
     formData.append('myItems', productStyle.myItemsStringify);
     formData.append('categoryId', productStyle.categoryId);
     formData.append('locationId', productStyle.locationId);
+    formData.append('linkType', 1);
     if (productStyle.fixDisc === null || productStyle.fixDisc === '') {
       productStyle.fixDisc = 0;
     }
+    formData.append('pub_to_jakya', 0,);
     formData.append('fixDisc', productStyle.fixDisc);
     formData.append('companyId', productStyle.companyId);
     formData.append('processId', productStyle.processId);
@@ -314,10 +388,7 @@ const UploadProductImage = ({route}) => {
       'cedgeScaleId',
       (productStyle.cedgeScaleId || 0).toString(),
     );
-    formData.append(
-      'pub_to_jakya',
-      (productStyle.pub_to_jakya || 0)?.toString(),
-    );
+    formData.append('pub_to_jakya', 0,);
     formData.append('closureId', productStyle?.closure?.toString());
     formData.append('peakId', productStyle?.peak?.toString());
     formData.append('logoId', productStyle?.logo?.toString());
@@ -328,26 +399,29 @@ const UploadProductImage = ({route}) => {
     // Debugging the image URLs
     console.log('Image URLs:', productStyle.imageUrls);
     formData.append('imgUrls', productStyle.imageUrls);
+    formData.append('linkType', 1);
 
     // Debugging the selected images
-    if (selectedImages?.length > 0) {
-      console.log('Selected Images:', selectedImages);
-      selectedImages.forEach((image, index) => {
-        if (image.uri && image.mime) {
-          formData.append('files', {
-            uri: image.uri,
-            type: image.mime,
-            name: `image_${index}.jpg`,
-          });
-        }
+    selectedImages.forEach((image, index) => {
+      formData.append('files', {
+        uri: image.uri,
+        type: image.mime,
+        name: `image_${index}.jpg`,
       });
-    }
+      console.log("check===>>>",image.uri)
+    });
 
     // Log the final FormData object
     console.log('FormData being sent:', formData);
 
+
+    // for (var pair of formData.entries()) {
+    //     console.log(pair[0] + ': ' + pair[1]);
+    // }
+
     // API call
-    const apiUrl = 'https://crm.codeverse.co/erpportal/api/style/editstyle';
+    const apiUrl = `${global?.userData?.productURL}${API.EDIT_NEW_STYLE}`;
+
     setIsLoading(true);
     axios
       .put(apiUrl, formData, {
@@ -405,7 +479,7 @@ const UploadProductImage = ({route}) => {
               fontSize: 18,
               fontWeight: 'bold',
               color: '#000',
-              marginRight:80
+              marginRight: 80,
             }}>
             {productStyle?.styleName ? productStyle?.styleName : 'New Style'}
           </Text>
@@ -421,22 +495,16 @@ const UploadProductImage = ({route}) => {
           <Text>Product Images</Text>
         </TouchableOpacity>
       </View>
-      <TouchableOpacity style={styles.uploadimg} onPress={selectImages}>
+      <TouchableOpacity
+        style={styles.uploadImg}
+        onPress={() => setModalVisible(true)}>
         <Image
           style={{height: 80, width: 80}}
           source={require('../../../assets/uploadsel.png')}
         />
-
-        <Text
-          style={{
-            textAlign: 'center',
-            marginVertical: 20,
-            fontWeight: 'bold',
-            color: '#000',
-          }}>
-          Upload Product Image
-        </Text>
+        <Text style={styles.uploadText}>Upload Product Image</Text>
       </TouchableOpacity>
+
       <View
         style={{
           marginVertical: 10,
@@ -476,7 +544,7 @@ const UploadProductImage = ({route}) => {
       </TouchableOpacity> */}
       <TouchableOpacity
         style={{
-          backgroundColor: saveBtn ? colors.color2: 'skyblue',
+          backgroundColor: saveBtn ? colors.color2 : 'skyblue',
           padding: 10,
           borderRadius: 5,
           marginTop: 20,
@@ -490,62 +558,155 @@ const UploadProductImage = ({route}) => {
           {isSaving ? 'Saving...' : styleId ? 'Update' : 'Save'}
         </Text>
       </TouchableOpacity>
+      <Modal
+        transparent={true}
+        visible={isModalVisible}
+        animationType="slide"
+        onRequestClose={() => setModalVisible(false)}>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <View
+              style={{
+                backgroundColor: colors.color2,
+                borderRadius: 10,
+                marginHorizontal: 10,
+                flexDirection: 'row',
+                alignItems: 'center',
+                marginTop: 10,
+                paddingVertical: 5,
+                width: '100%',
+                justifyContent: 'space-between',
+                marginBottom: 15,
+              }}>
+              <Text style={[styles.modalTitle, {flex: 1, textAlign: 'center'}]}>
+                Choose an Option
+              </Text>
+
+              <TouchableOpacity onPress={() => setModalVisible(false)}>
+                <Image
+                  style={{height: 30, width: 30, marginRight: 5}}
+                  source={require('../../../assets/close.png')}
+                />
+              </TouchableOpacity>
+            </View>
+            <TouchableOpacity style={styles.modalButton} onPress={openCamera}>
+              <Text style={styles.buttonText}>Open Camera</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.modalButton} onPress={openGallery}>
+              <Text style={styles.buttonText}>Open Gallery</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.modalButton, styles.cancelButton]}
+              onPress={() => setModalVisible(false)}>
+              <Text style={styles.buttonText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
 
 export default UploadProductImage;
 
-const getStyles = (colors) => StyleSheet.create({
-  menuimg: {
-    height: 30,
-    width: 30,
-    marginHorizontal: 5,
-  },
-  headbasicinfo: {
-    marginTop: 10,
-    paddingHorizontal: 50,
-    borderTopLeftRadius: 10,
-    borderBottomLeftRadius: 10,
-    borderColor: '#000',
-    borderWidth: 1,
-    paddingVertical: 10,
-  },
-  headprductimage: {
-    backgroundColor: '#ffffff',
-    marginTop: 10,
-    paddingHorizontal: 50,
-    borderTopRightRadius: 10,
-    borderBottomRightRadius: 10,
-    paddingVertical: 10,
-    borderColor: '#000',
-    borderWidth: 1,
-    backgroundColor: colors.color2,
-  },
-  saveButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  removeButton: {
-    position: 'absolute',
-    top: 0, // Position the button at the top edge of the image
-    right: 0, // Align the button to the right edge
-    backgroundColor: 'gray',
-    borderRadius: 15,
-    width: 25,
-    height: 25,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  removeButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 14,
-  },
-  uploadimg: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 20,
-  },
-});
+const getStyles = colors =>
+  StyleSheet.create({
+    menuimg: {
+      height: 30,
+      width: 30,
+      marginHorizontal: 5,
+    },
+    headbasicinfo: {
+      marginTop: 10,
+      paddingHorizontal: 50,
+      borderTopLeftRadius: 10,
+      borderBottomLeftRadius: 10,
+      borderColor: '#000',
+      borderWidth: 1,
+      paddingVertical: 10,
+    },
+    headprductimage: {
+      backgroundColor: '#ffffff',
+      marginTop: 10,
+      paddingHorizontal: 50,
+      borderTopRightRadius: 10,
+      borderBottomRightRadius: 10,
+      paddingVertical: 10,
+      borderColor: '#000',
+      borderWidth: 1,
+      backgroundColor: colors.color2,
+    },
+    saveButtonText: {
+      color: '#fff',
+      fontWeight: 'bold',
+      textAlign: 'center',
+    },
+    removeButton: {
+      position: 'absolute',
+      top: 0, // Position the button at the top edge of the image
+      right: 0, // Align the button to the right edge
+      backgroundColor: 'gray',
+      borderRadius: 15,
+      width: 25,
+      height: 25,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    removeButtonText: {
+      color: '#fff',
+      fontWeight: 'bold',
+      fontSize: 14,
+    },
+    uploadimg: {
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginTop: 20,
+    },
+    uploadImg: {
+      alignItems: 'center',
+      margin: 20,
+    },
+    uploadText: {
+      textAlign: 'center',
+      marginVertical: 20,
+      fontWeight: 'bold',
+      color: '#000',
+    },
+    modalContainer: {
+      flex: 1,
+      alignItems: 'center',
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      justifyContent: 'center',
+    },
+    modalContent: {
+      backgroundColor: '#fff',
+      padding: 20,
+      borderRadius: 10,
+      width: '80%',
+      alignItems: 'center',
+      elevation: 5, // Add elevation for shadow on Android
+      top: 10,
+    },
+    modalTitle: {
+      fontSize: 16,
+      fontWeight: 'bold',
+      // marginBottom: 20,
+      color: '#000',
+    },
+    modalButton: {
+      padding: 15,
+      backgroundColor: colors.color2,
+      borderRadius: 5,
+      marginBottom: 10,
+      width: '80%',
+      alignItems: 'center',
+    },
+    buttonText: {
+      color: '#fff',
+      fontWeight: 'bold',
+    },
+    cancelButton: {
+      backgroundColor: '#f44336',
+    },
+  });
+

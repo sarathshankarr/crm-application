@@ -1321,7 +1321,7 @@ const Cart = () => {
       orderLineItems: cartItems.map((item, index) => ({
         qty: item.quantity.toString(),
         styleId: item.styleId,
-        colorId: colorId,
+        colorId: item.colorId,
         gscodeMapId: 42,
         sizeDesc: item.sizeDesc,
         gsCode: '8907536002462',
