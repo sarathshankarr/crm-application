@@ -371,12 +371,23 @@ const Cushion = ({navigation, route}) => {
       console.log('API Response:', response.data);
 
       // Show success message and navigate
-      Alert.alert('Success', 'Costing data has been added successfully.', [
-        {
-          text: 'OK',
-          onPress: () => navigation.navigate('Costing'),
-        },
-      ]);
+      if (costId === '0') {
+        // First time adding the costing data
+        Alert.alert('Success', 'Costing data has been added successfully.', [
+          {
+            text: 'OK',
+            onPress: () => navigation.navigate('Costing'), // Navigate to Costing screen
+          },
+        ]);
+      } else {
+        // If costId exists, it's a save operation
+        Alert.alert('Success', 'Costing data has been saved successfully.', [
+          {
+            text: 'OK',
+            onPress: () => navigation.navigate('Costing'), // Navigate to Costing screen
+          },
+        ]);
+      }
     } catch (error) {
       console.error('Submission Error:', error);
       Alert.alert('Error', 'Failed to add costing data. Please try again.');

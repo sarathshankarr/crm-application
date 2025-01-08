@@ -40,7 +40,7 @@ export const API = {
   ALL_PRODUCTS_DATA_NEW: 'erpportal/api/style/getAll',
   GET_TASKS_ACC_USER:'erpportal/api/master/getTasksAccUser',
   GET_Fields_List:'erpportal/api/master/getField',
-  GET_CATEGORY_LIST:'erpportal/api/category/getcategoriesByCompanyId/',
+  GET_CATEGORY_LIST:'erpportal/api/category/getAllCategories/',
   GET_COLOR_LIST:'erpportal/api/color/getByCompanyId/',
   GET_CUSTOMERLEVEL_LIST:'erpportal/api/customerlevel/types',
   GET_TYPES_LIST:'erpportal/api/type/getByCompanyId/',

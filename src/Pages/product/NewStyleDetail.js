@@ -1115,6 +1115,8 @@ const NewStyleDetail = ({route}) => {
     formData.append('categoryDesc', mCategoryDesc);
     formData.append('companyId', companyId);
     formData.append('linkType', 2);
+    formData.append('userId', userId);
+
 
     const apiUrl0 = `${global?.userData?.productURL}${API.ADD_CATEGORY}`;
 
@@ -4199,7 +4201,7 @@ const NewStyleDetail = ({route}) => {
                       </View>
                       <View style={style.cell}>
                         <TextInput
-                          style={style.input}
+                            style={style.input}
                           keyboardType="numeric"
                           value={item?.dealerPrice.toString()}
                           onChangeText={text =>
@@ -4393,10 +4395,10 @@ const getStyles = (colors) => StyleSheet.create({
     borderWidth: 1,
     borderColor: 'gray',
     borderRadius: 5,
-    padding: 10,
     marginBottom: 5,
-    width: '100%',
+    width: '97%',
     color: 'black',
+    ...(Platform.OS === 'ios' && {paddingVertical: 7}),
   },
   inputContainer: {
     borderWidth: 1,
@@ -4415,7 +4417,6 @@ const getStyles = (colors) => StyleSheet.create({
 
   container: {
     flex: 1,
-    padding: 10,
   },
   header: {
     flexDirection: 'row',
@@ -4465,17 +4466,14 @@ const getStyles = (colors) => StyleSheet.create({
   cell: {
     flex: 1,
     justifyContent: 'center',
-    paddingHorizontal: 5,
   },
   cell1: {
     flex: 0.5,
     justifyContent: 'center',
-    paddingHorizontal: 5,
   },
   cell2: {
-    flex: 0.5,
+    flex: 0.8,
     justifyContent: 'center',
-    paddingHorizontal: 5,
   },
   cellText: {
     color: '#000',

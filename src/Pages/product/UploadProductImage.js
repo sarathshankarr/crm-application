@@ -32,6 +32,8 @@ const UploadProductImage = ({route}) => {
 
   const [isSaving, setIsSaving] = useState(false);
 
+  const [deletedImageNames, setDeletedImageNames] = useState([]);
+  
   const navigation = useNavigation();
 
   const selectedCompany = useSelector(state => state.selectedCompany);
@@ -282,6 +284,22 @@ const UploadProductImage = ({route}) => {
     setSelectedImages(updatedImages);
   };
 
+  // const removeImage = (index) => {
+  //   const deletedImage = selectedImages.filter((_, i) => i === index);
+  //   const updatedImages = selectedImages.filter((_, i) => i !== index);
+  //   setSelectedImages(updatedImages);
+  //   console.log('updatedImages===>', deletedImage);
+
+  //   if (deletedImage && deletedImage[0] && deletedImage[0].uri) {
+  //     console.log('inside');
+  //     if (deletedImage[0].uri.startsWith('https')) {
+  //       const fileName = deletedImage[0].uri.split('/').pop();
+  //       setDeletedImageNames((prevNames) => [...prevNames, fileName]);
+  //       console.log('deletedImageNames===>', deletedImageNames);
+  //     }
+  //   }
+  // };
+
   const handleSave = () => {
     if (ValidateStyle()) {
       handleSaveNewStyle();
@@ -455,7 +473,7 @@ const UploadProductImage = ({route}) => {
     formData.append('processId', (productStyle.processId || 0).toString());
 
     // Debugging the image URLs
-    console.log('Image URLs:', productStyle.imageUrls);
+    // console.log('Image URLs:', productStyle.imageUrls);
     formData.append('imgUrls', productStyle.imageUrls);
     formData.append('linkType', 1);
 
