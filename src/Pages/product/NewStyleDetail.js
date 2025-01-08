@@ -236,6 +236,26 @@ const NewStyleDetail = ({route}) => {
 
   const [processing, setProcessing] = useState(false);
 
+  const [selectedStatus, setSelectedStatus] = useState('Active'); // Default is 'Active'
+  const [showStatusDropdown, setShowStatusDropdown] = useState(false);
+  const [selectedStatusId, setSelectedStatusId] = useState(0);
+  
+  const statusOptions = [
+    { label: 'Active', value: 0 },
+    { label: 'Inactive', value: 1 },
+  ];
+
+  const toggleStatusDropdown = () => {
+    setShowStatusDropdown(!showStatusDropdown);
+  };
+
+  const handleSelectStatus = (status) => {
+    // Update selectedStatus with the label and selectedStatusId with the value
+    setSelectedStatus(status.label); 
+    setSelectedStatusId(status.value); 
+    setShowStatusDropdown(false);
+};
+
   useEffect(() => {
     getCategoriesList();
     getCustomerLevelList();
@@ -251,6 +271,8 @@ const NewStyleDetail = ({route}) => {
     getAllKapture(4);
     getAllKapture(5);
   }, [companyId]);
+
+  
 
   useEffect(() => {
     if (route.params && route?.params?.Style) {
@@ -359,6 +381,12 @@ const NewStyleDetail = ({route}) => {
       if (styleDetails?.decId) {
         setSelectedDecorationId(styleDetails?.decId);
       }
+      if (styleDetails?.statusId) {
+        setSelectedStatusId(styleDetails?.statusId);
+        console.log("check====>>>>>",styleDetails?.statusId ,statusOptions[styleDetails?.statusId],typeof styleDetails?.statusId)
+        setSelectedStatus(statusOptions[styleDetails?.statusId].label); 
+      }
+      
     }
   }, []);
 
@@ -1554,7 +1582,9 @@ const NewStyleDetail = ({route}) => {
       logo: selectedLogoId,
       decoration: selectedDecorationId,
       trims: selectedTrimsId,
+      statusId:selectedStatusId
     };
+    console.log("selectedStatus===>",selectedStatusId)
     navigation.navigate('UploadProductImage', {productStyle: styleDetails});
   };
 
@@ -3341,6 +3371,36 @@ const NewStyleDetail = ({route}) => {
                 )}
               </View>
             )}
+             <Text style={style.headerTxt}>{'Status *'}</Text>
+             <View style={style.container1}>
+      <View style={style.container2}>
+        <TouchableOpacity
+          style={style.container3}
+          onPress={toggleStatusDropdown}
+        >
+          <Text style={{ fontWeight: '600', color: '#000' }}>
+            {selectedStatus} 
+          </Text>
+          <Image
+            source={require('../../../assets/dropdown.png')}
+            style={{ width: 20, height: 20 }}
+          />
+        </TouchableOpacity>
+        {showStatusDropdown && (
+          <View style={style.dropdownContainersstatus}>
+            {statusOptions.map((status, index) => (
+              <TouchableOpacity
+                key={index}
+                style={style.dropdownItem}
+                onPress={() => handleSelectStatus(status)}
+              >
+                <Text style={style.dropdownText}>{status.label}</Text> 
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+      </View>
+    </View>
 
             {/* Models */}
 
@@ -4108,22 +4168,22 @@ const NewStyleDetail = ({route}) => {
             {showScaleTable && (
               <View style={style.container}>
                 <View style={style.header}>
-                  <View style={style.headerCell}>
+                  <View style={style.headerCell1}>
                     <Text style={style.headerText}>Id</Text>
                   </View>
-                  <View style={style.headerCell}>
+                  <View style={style.headerCell2}>
                     <Text style={style.headerText}>Size</Text>
                   </View>
-                  <View style={style.headerCell}>
+                  <View style={style.headerCell3}>
                     <Text style={style.headerText}>Dealer Price</Text>
                   </View>
-                  <View style={style.headerCell}>
+                  <View style={style.headerCell4}>
                     <Text style={style.headerText}>Retailer Price</Text>
                   </View>
-                  <View style={style.headerCell}>
+                  <View style={style.headerCell5}>
                     <Text style={style.headerText}>MRP</Text>
                   </View>
-                  <View style={style.headerCell}>
+                  <View style={style.headerCell6}>
                     <Text style={style.headerText}>Available Quantity</Text>
                   </View>
                 </View>
@@ -4131,10 +4191,10 @@ const NewStyleDetail = ({route}) => {
                 <ScrollView>
                   {selectedSizes.map((item, index) => (
                     <View key={index} style={style.row}>
-                      <View style={style.cell}>
+                      <View style={style.cell1}>
                         <Text style={style.cellText}>{item?.sizeId}</Text>
                       </View>
-                      <View style={style.cell}>
+                      <View style={style.cell2}>
                         <Text style={style.cellText}>{item?.sizeDesc}</Text>
                       </View>
                       <View style={style.cell}>
@@ -4368,6 +4428,30 @@ const getStyles = (colors) => StyleSheet.create({
     flex: 1,
     alignItems: 'center',
   },
+  headerCell1: {
+    flex: 0.5,
+    alignItems: 'center',
+  },
+  headerCell2: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  headerCell3: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  headerCell4: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  headerCell5: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  headerCell6: {
+    flex: 1.3,
+    alignItems: 'center',
+  },
   headerText: {
     fontWeight: 'bold',
     color: '#333',
@@ -4380,6 +4464,16 @@ const getStyles = (colors) => StyleSheet.create({
   },
   cell: {
     flex: 1,
+    justifyContent: 'center',
+    paddingHorizontal: 5,
+  },
+  cell1: {
+    flex: 0.5,
+    justifyContent: 'center',
+    paddingHorizontal: 5,
+  },
+  cell2: {
+    flex: 0.5,
     justifyContent: 'center',
     paddingHorizontal: 5,
   },
@@ -4428,6 +4522,23 @@ const getStyles = (colors) => StyleSheet.create({
     justifyContent: 'center',
     borderBottomWidth: 0.5,
     borderColor: '#8e8e8e',
+  },
+  
+  dropdownContainersstatus: {
+    elevation: 5,
+    height: 100,
+    alignSelf: 'center',
+    width: '90%',
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    borderColor: 'lightgray',
+    borderWidth: 1,
+    marginTop: 5,
+  },
+  dropdownText: {
+    fontWeight: '600',
+    marginHorizontal: 15,
+    color: '#000',
   },
   dropdownRow: {
     flexDirection: 'row',

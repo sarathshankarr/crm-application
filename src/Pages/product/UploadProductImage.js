@@ -153,38 +153,92 @@ const UploadProductImage = ({route}) => {
   //     });
   // };
 
-  const openCamera = () => {
+  // const openCamera = () => {
+  //   setModalVisible(false);
+  //   ImagePicker.openCamera({
+  //     cropping: true, // Enable cropping
+  //     mediaType: 'photo',
+  //   })
+  //     .then(image => {
+  //       const imageObj = {
+  //         uri: image.path,
+  //         width: image.width,
+  //         height: image.height,
+  //         mime: image.mime,
+  //       };
+  //       if (selectedImages.length >= 10) {
+  //         Alert.alert(
+  //           'Image Limit Reached',
+  //           'You can only upload a maximum of 10 images.',
+  //         );
+  //       } else {
+  //         setSelectedImages([...selectedImages, imageObj]);
+  //       }
+  //     })
+  //     .catch(error => {
+  //       if (!error.message.includes('User cancelled image selection')) {
+  //         console.error('Error taking photo: ', error);
+  //         Alert.alert(
+  //           'Error',
+  //           'An error occurred while taking a photo. Please try again.',
+  //         );
+  //       }
+  //     });
+  // };
+
+  const openCamera = async () => {
     setModalVisible(false);
-    ImagePicker.openCamera({
-      cropping: true, // Enable cropping
-      mediaType: 'photo',
-    })
-      .then(image => {
-        const imageObj = {
-          uri: image.path,
-          width: image.width,
-          height: image.height,
-          mime: image.mime,
-        };
-        if (selectedImages.length >= 10) {
-          Alert.alert(
-            'Image Limit Reached',
-            'You can only upload a maximum of 10 images.',
-          );
-        } else {
-          setSelectedImages([...selectedImages, imageObj]);
-        }
-      })
-      .catch(error => {
-        if (!error.message.includes('User cancelled image selection')) {
-          console.error('Error taking photo: ', error);
-          Alert.alert(
-            'Error',
-            'An error occurred while taking a photo. Please try again.',
-          );
-        }
+  
+    const MAX_IMAGES = 10;
+  
+    // Check if the selected images limit has been reached
+    if (selectedImages.length >= MAX_IMAGES) {
+      Alert.alert(
+        'Image Limit Reached',
+        `You can only upload a maximum of ${MAX_IMAGES} images.`,
+      );
+      return;
+    }
+  
+    try {
+      // Open the camera
+      const image = await ImagePicker.openCamera({
+        cropping: true, // Enable cropping
+        mediaType: 'photo',
+        compressImageQuality: 0.8, // Optional: Reduce image quality
       });
+  
+      const imageObj = {
+        uri: image.path,
+        width: image.width,
+        height: image.height,
+        mime: image.mime,
+      };
+  
+      // Check if adding the new image exceeds the limit
+      if (selectedImages.length + 1 > MAX_IMAGES) {
+        Alert.alert(
+          'Image Limit Exceeded',
+          `You can only upload up to ${MAX_IMAGES} images.`,
+        );
+        return;
+      }
+  
+      // Add the new image to the selected images state
+      setSelectedImages(prevImages => [...prevImages, imageObj]);
+  
+    } catch (error) {
+      // Handle errors, except when the user cancels image selection
+      if (error.code !== 'E_PICKER_CANCELLED') {
+        console.error('Error taking photo: ', error);
+        Alert.alert(
+          'Error',
+          'An error occurred while taking a photo. Please try again.',
+        );
+      }
+    }
   };
+  
 
   const openGallery = () => {
     setModalVisible(false);
@@ -295,6 +349,8 @@ const UploadProductImage = ({route}) => {
     formData.append('gsm', productStyle.gsm);
     formData.append('hsn', productStyle.hsn);
     formData.append('gst', productStyle.gst);
+    formData.append('uomId', 0); 
+    formData.append("statusId",productStyle.statusId)
     selectedImages.forEach((image, index) => {
       formData.append('files', {
         uri: image.uri,
@@ -371,6 +427,8 @@ const UploadProductImage = ({route}) => {
     formData.append('locationId', productStyle.locationId.toString());
     formData.append('fixDisc', (productStyle.fixDisc || 0).toString());
     formData.append('companyId', productStyle.companyId.toString());
+    formData.append("statusId",productStyle.statusId)
+    formData.append('uomId', 0); 
     formData.append(
       'cedgeStyleId',
       (productStyle.cedgeStyleId || 0).toString(),
@@ -403,14 +461,15 @@ const UploadProductImage = ({route}) => {
 
     // Debugging the selected images
     selectedImages.forEach((image, index) => {
+      const uniqueImageName = `image_${new Date().getTime()}.jpg`; // Generates a unique name based on timestamp
       formData.append('files', {
         uri: image.uri,
         type: image.mime,
-        name: `image_${index}.jpg`,
+        name: uniqueImageName,
       });
-      console.log("check===>>>",image.uri)
+      console.log("check===>>>", image.uri, "with name:", uniqueImageName);
     });
-
+    
     // Log the final FormData object
     console.log('FormData being sent:', formData);
 
@@ -420,7 +479,9 @@ const UploadProductImage = ({route}) => {
     // }
 
     // API call
+
     const apiUrl = `${global?.userData?.productURL}${API.EDIT_NEW_STYLE}`;
+
 
     setIsLoading(true);
     axios

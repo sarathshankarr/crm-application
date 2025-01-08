@@ -46,7 +46,7 @@ const Cart = () => {
   const selectedCompany = useSelector(state => state.selectedCompany);
   const comp_flag = selectedCompany?.comp_flag;
   const package_barcode_flag = selectedCompany?.package_barcode_flag;
-  console.log('package_barcode_flag', package_barcode_flag);
+  // console.log('package_barcode_flag', package_barcode_flag);
   const [isLoading, setIsLoading] = useState(false);
 
   const [inputValuess, setInputValuess] = useState({});
@@ -115,6 +115,25 @@ const Cart = () => {
 
   const StylePublish = ['Style', 'Package'];
 
+  const [selectedStatus, setSelectedStatus] = useState('Active'); // Default is 'Active'
+  const [showStatusDropdown, setShowStatusDropdown] = useState(false);
+  const [selectedStatusId, setSelectedStatusId] = useState(0);
+  
+  const statusOptions = [
+    { label: 'Active', value: 0 },
+    { label: 'Inactive', value: 1 },
+  ];
+
+  const toggleStatusDropdown = () => {
+    setShowStatusDropdown(!showStatusDropdown);
+  };
+
+  const handleSelectStatus = (status) => {
+    // Update selectedStatus with the label and selectedStatusId with the value
+    setSelectedStatus(status.label); 
+    setSelectedStatusId(status.value); 
+    setShowStatusDropdown(false);
+};
   const [modalData, setModalData] = useState(null);
 
   const toggleSearchVisibility = () => {
@@ -724,6 +743,7 @@ const Cart = () => {
   const toggleModal = () => {
     setIsSaving(false);
     setIsModalVisible(!isModalVisible);
+    setSelectedStatus('Active');
     // Reset error fields and input values when modal is closed
     if (isModalVisible) {
       setErrorFields([]);
@@ -797,9 +817,12 @@ const Cart = () => {
       locationCode: '',
       locationDescription: inputValues.locationDescription,
       linkType: 3,
+      statusId:selectedStatusId
+
       // userId:userId
     };
-
+console.log("requestData====>",requestData)
+    
     axios
       .post(
         global?.userData?.productURL + API.ADD_CUSTOMER_DETAILS,
@@ -896,7 +919,10 @@ const Cart = () => {
       locationDescription: inputValues.locationDescription,
       linkType: 3,
       userId: userId,
+      statusId:selectedStatusId
+
     };
+    console.log("requestDatafordis===>",requestData)
 
     axios
       .post(
@@ -3154,6 +3180,37 @@ const Cart = () => {
                       Please Enter Location Description
                     </Text>
                   )}
+
+<Text style={style.headerTxt}>{'Status *'}</Text>
+             <View style={style.container1}>
+      <View style={style.container2}>
+        <TouchableOpacity
+          style={style.container3}
+          onPress={toggleStatusDropdown}
+        >
+          <Text style={{ fontWeight: '600', color: '#000' }}>
+            {selectedStatus} 
+          </Text>
+          <Image
+            source={require('../../../assets/dropdown.png')}
+            style={{ width: 20, height: 20 }}
+          />
+        </TouchableOpacity>
+        {showStatusDropdown && (
+          <View style={style.dropdownContainersstatus}>
+            {statusOptions.map((status, index) => (
+              <TouchableOpacity
+                key={index}
+                style={style.dropdownItem}
+                onPress={() => handleSelectStatus(status)}
+              >
+                <Text style={style.dropdownText}>{status.label}</Text> 
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+      </View>
+    </View>
                   <TouchableOpacity
                     style={style.saveButton}
                     onPress={handleSaveButtonPress}
@@ -3758,6 +3815,61 @@ const getStyles = colors =>
       borderBottomColor: '#f1f1f1',
     },
     dropdownItemText: {
+      color: '#000',
+    },
+    headerTxt: {
+      marginVertical: 3,
+      color: '#000',
+    },
+    container1: {
+      flexDirection: 'row',
+      // marginTop: 20,
+      alignItems: 'center',
+      width: '100%',
+    },
+    container2: {
+      justifyContent: 'flex-start',
+      width: '100%',
+    },
+    container3: {
+      width: '100%',
+      height: 37,
+      borderRadius: 10,
+      borderWidth: 0.5,
+      alignSelf: 'center',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingLeft: 15,
+      paddingRight: 15,
+    },
+    container4: {
+      alignItems: 'center',
+      justifyContent: 'flex-end',
+      width: '10%',
+    },
+    dropdownItem: {
+      width: '100%',
+      height: 50,
+      justifyContent: 'center',
+      borderBottomWidth: 0.5,
+      borderColor: '#8e8e8e',
+    },
+    
+    dropdownContainersstatus: {
+      elevation: 5,
+      height: 100,
+      alignSelf: 'center',
+      width: '100%',
+      backgroundColor: '#fff',
+      borderRadius: 10,
+      borderColor: 'lightgray',
+      borderWidth: 1,
+      marginTop: 5,
+    },
+    dropdownText: {
+      fontWeight: '600',
+      marginHorizontal: 15,
       color: '#000',
     },
   });

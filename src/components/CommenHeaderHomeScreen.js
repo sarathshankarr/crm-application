@@ -382,9 +382,13 @@ const CommenHeaderHomeScreen = ({
           }
           style={{height: 35, width: 50}}
         />
-        <Text style={styles.text}>
-          {selectedCompany?.companyName} ({selectedCompany?.companyCode})
-        </Text>
+    <Text style={styles.text}>
+  {selectedCompany?.companyName.length > 10
+    ? `${selectedCompany?.companyName.slice(0, 10)}...`
+    : selectedCompany?.companyName} 
+  ({selectedCompany?.companyCode.slice(0, 5)}...)
+</Text>
+
         {loggedInUser?.compList?.length > 1 && (
           <Image
             source={require('../../assets/dropdown.png')}
@@ -574,20 +578,26 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
   },
   companyItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    padding: 10,
-    borderBottomWidth: 0.5,
-    borderColor: '#8e8e8e',
-  },
-  companyName: {
-    fontWeight: '600',
-    color: '#000',
-  },
-  companyCode: {
-    marginLeft: 10,
-    color: '#000',
-  },
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  padding: 10,
+  borderBottomWidth: 0.5,
+  borderColor: '#8e8e8e',
+  flexWrap: 'wrap', // Allow content to wrap
+},
+
+companyName: {
+  fontWeight: '600',
+  color: '#000',
+  flex: 1, // Allow the company name to take available space
+  flexWrap: 'wrap', // Ensure the text wraps within the available space
+  marginRight: 10, // Add some spacing between the name and the code
+},
+
+companyCode: {
+  marginLeft: 10,
+  color: '#000',
+},
 });
 
 export default CommenHeaderHomeScreen;

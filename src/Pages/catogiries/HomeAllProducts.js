@@ -226,7 +226,7 @@ const HomeAllProducts = ({navigation}) => {
     const apiUrl = `${global?.userData?.productURL}${API.SEARCH_ALL_PRODUCTS}`;
     let requestBody = {
       pageNo: reset ? 1 : String(page),
-      pageSize: '15',
+      pageSize: '10000',
       categoryId: '',
       companyId: companyId,
       searchKey: searchKey,

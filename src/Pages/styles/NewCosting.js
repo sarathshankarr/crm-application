@@ -1298,6 +1298,7 @@ const NewCosting = ({navigation, route}) => {
                   placeholderTextColor="#000"
                   value={fridge6}
                   onChangeText={setFridge6}
+                  keyboardType="numeric"
                 />
               </View>
               <View style={styles.lengthheadfridge}>

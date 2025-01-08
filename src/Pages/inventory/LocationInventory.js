@@ -454,9 +454,10 @@ const getStyles = colors =>
       padding: 5,
     },
     headerText4: {
-      flex: 1,
+      flex: 0.8,
       textAlign: 'center',
       color: '#000',
+      marginLeft:10
     },
     listContainer: {
       paddingHorizontal: 20,

@@ -581,7 +581,7 @@ const Cushion = ({navigation, route}) => {
               <View style={styles.lengthhead}>
                 <TextInput
                   style={styles.lengthtext}
-                  placeholder="Sizes Price"
+                  placeholder="Size Price"
                   placeholderTextColor="#000"
                   value={size}
                   onChangeText={setSize}
@@ -617,6 +617,7 @@ const Cushion = ({navigation, route}) => {
                   placeholderTextColor="#000"
                   value={frontBackNumber}
                   onChangeText={setFrontBackNumber}
+                   keyboardType="numeric"
                 />
               </View>
             </View>
@@ -640,6 +641,7 @@ const Cushion = ({navigation, route}) => {
                   placeholderTextColor="#000"
                   value={backNumber}
                   onChangeText={setBackNumber}
+                   keyboardType="numeric"
                 />
               </View>
             </View>
@@ -663,6 +665,7 @@ const Cushion = ({navigation, route}) => {
                   placeholderTextColor="#000"
                   value={liningNumber}
                   onChangeText={setLiningNumber}
+                   keyboardType="numeric"
                 />
               </View>
             </View>
@@ -686,6 +689,7 @@ const Cushion = ({navigation, route}) => {
                   placeholderTextColor="#000"
                   value={stitchingNumber}
                   onChangeText={setStitchingNumber}
+                   keyboardType="numeric"
                 />
               </View>
             </View>
@@ -709,6 +713,7 @@ const Cushion = ({navigation, route}) => {
                   placeholderTextColor="#000"
                   value={finishingNumber}
                   onChangeText={setFinishingNumber}
+                   keyboardType="numeric"
                 />
               </View>
             </View>
@@ -732,6 +737,7 @@ const Cushion = ({navigation, route}) => {
                   placeholderTextColor="#000"
                   value={zipNumber}
                   onChangeText={setZipNumber}
+                   keyboardType="numeric"
                 />
               </View>
             </View>
@@ -755,6 +761,7 @@ const Cushion = ({navigation, route}) => {
                   placeholderTextColor="#000"
                   value={printingNumber}
                   onChangeText={setPrintingNumber}
+                   keyboardType="numeric"
                 />
               </View>
             </View>
@@ -778,6 +785,7 @@ const Cushion = ({navigation, route}) => {
                   placeholderTextColor="#000"
                   value={embroiderChenilleNumber}
                   onChangeText={setEmbroiderChenilleNumber}
+                   keyboardType="numeric"
                 />
               </View>
             </View>
@@ -801,6 +809,7 @@ const Cushion = ({navigation, route}) => {
                   placeholderTextColor="#000"
                   value={handWorkNumber}
                   onChangeText={setHandWorkNumber}
+                   keyboardType="numeric"
                 />
               </View>
             </View>
@@ -824,6 +833,7 @@ const Cushion = ({navigation, route}) => {
                   placeholderTextColor="#000"
                   value={fringesNumber}
                   onChangeText={setFringesNumber}
+                   keyboardType="numeric"
                 />
               </View>
             </View>
@@ -847,6 +857,7 @@ const Cushion = ({navigation, route}) => {
                   placeholderTextColor="#000"
                   value={pomPomNumber}
                   onChangeText={setPomPomNumber}
+                   keyboardType="numeric"
                 />
               </View>
             </View>
@@ -870,6 +881,7 @@ const Cushion = ({navigation, route}) => {
                   placeholderTextColor="#000"
                   value={miscellaneousNumber}
                   onChangeText={setMiscellaneousNumber}
+                   keyboardType="numeric"
                 />
               </View>
             </View>
@@ -893,6 +905,7 @@ const Cushion = ({navigation, route}) => {
                   placeholderTextColor="#000"
                   value={extra1Number}
                   onChangeText={setExtra1Number}
+                   keyboardType="numeric"
                 />
               </View>
             </View>
@@ -916,6 +929,7 @@ const Cushion = ({navigation, route}) => {
                   placeholderTextColor="#000"
                   value={extra2Number}
                   onChangeText={setExtra2Number}
+                   keyboardType="numeric"
                 />
               </View>
             </View>
@@ -1009,6 +1023,7 @@ const Cushion = ({navigation, route}) => {
                   placeholderTextColor="#000"
                   value={packagingNumber}
                   onChangeText={setPackagingNumber}
+                   keyboardType="numeric"
                 />
               </View>
             </View>
@@ -1032,6 +1047,7 @@ const Cushion = ({navigation, route}) => {
                   placeholderTextColor="#000"
                   value={testingNumber}
                   onChangeText={setTestingNumber}
+                   keyboardType="numeric"
                 />
               </View>
             </View>
@@ -1055,6 +1071,7 @@ const Cushion = ({navigation, route}) => {
                   placeholderTextColor="#000"
                   value={fillingNumber}
                   onChangeText={setFillingNumber}
+                   keyboardType="numeric"
                 />
               </View>
             </View>
@@ -1078,6 +1095,7 @@ const Cushion = ({navigation, route}) => {
                   placeholderTextColor="#000"
                   value={transportationNumber}
                   onChangeText={setTransportationNumber}
+                   keyboardType="numeric"
                 />
               </View>
             </View>
@@ -1115,6 +1133,7 @@ const Cushion = ({navigation, route}) => {
                   placeholderTextColor="#000"
                   value={marginAmount}
                   onChangeText={setMarginAmount} // Allow user input
+                   keyboardType="numeric"
                 />
               </View>
               <View style={styles.lengthhead}>
@@ -1162,6 +1181,7 @@ const Cushion = ({navigation, route}) => {
                   placeholderTextColor="#000"
                   value={unitPrice}
                   onChangeText={setUnitPrice}
+                   keyboardType="numeric"
                 />
               </View>
               <View style={styles.lengthhead}>
