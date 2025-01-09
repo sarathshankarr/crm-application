@@ -119,7 +119,8 @@ export const API = {
   GET_ALL_THE_ROLE_MENU:'erpportal/api/rolemenu/rolewisemobilemenus',
   GET_ALL_THE_MENUS_FOR_MOBILE:'erpportal/api/menu/allmobilemenus',
   GET_ALL_ADDED_COSTING_DETAILSL:'erpportal/api/costing',
-  CHECKAVALABILITY:'erpportal/api/style/checkStyleAvailQty'
+  CHECKAVALABILITY:'erpportal/api/style/checkStyleAvailQty',
+  GET_STATE:'erpportal/api/master/getAllStates'
 };
 
 export const USER_ID = 'adminClientId';

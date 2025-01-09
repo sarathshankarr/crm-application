@@ -22,11 +22,11 @@ import {API} from '../../config/apiConfig';
 import CustomCheckBox from '../../components/CheckBox';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useSelector} from 'react-redux';
-import { ColorContext } from '../../components/colortheme/colorTheme';
+import {ColorContext} from '../../components/colortheme/colorTheme';
 
 const ProductPackagePublish = () => {
   const navigation = useNavigation();
-  const { colors } = useContext(ColorContext);
+  const {colors} = useContext(ColorContext);
   const styles = getStyles(colors);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchQueryStylesData, setSearchQueryStylesData] = useState('');
@@ -75,27 +75,69 @@ const ProductPackagePublish = () => {
   const [selectedStatus, setSelectedStatus] = useState('Active'); // Default is 'Active'
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
   const [selectedStatusId, setSelectedStatusId] = useState(0);
-  
+
+  const [selectedStateId, setSelectedStateId] = useState(null); // Track only the stateId
+  const [selectedState, setSelectedState] = useState(null); // Track the full state object
+  const [states, setStates] = useState([]);
+  const [showStateDropdown, setShowStateDropdown] = useState(false);
+
+  const getState = () => {
+    const apiUrl = `${global?.userData?.productURL}${API.GET_STATE}`;
+    axios
+      .get(apiUrl, {
+        headers: {
+          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+        },
+      })
+      .then(response => {
+        console.log('response.data.state===>', response.data);
+        setStates(response.data); // Assuming the response contains the states
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
+  };
+
+  const toggleStateDropdown = () => {
+    setShowStateDropdown(prev => !prev);
+  };
+
+  // Handle state selection
+  const handleSelectState = state => {
+    setSelectedStateId(state.stateId); // Set the selected stateId
+    setSelectedState(state); // Set the full state object
+    setShowStateDropdown(false); // Hide the dropdown after selection
+  };
+
+  // Fetch states when the component mounts
+  useEffect(() => {
+    getState();
+  }, []);
+
   const statusOptions = [
-    { label: 'Active', value: 0 },
-    { label: 'Inactive', value: 1 },
+    {label: 'Active', value: 0},
+    {label: 'Inactive', value: 1},
   ];
 
   const toggleStatusDropdown = () => {
     setShowStatusDropdown(!showStatusDropdown);
   };
 
-  const handleSelectStatus = (status) => {
+  const handleSelectStatus = status => {
     // Update selectedStatus with the label and selectedStatusId with the value
-    setSelectedStatus(status.label); 
-    setSelectedStatusId(status.value); 
+    setSelectedStatus(status.label);
+    setSelectedStatusId(status.value);
     setShowStatusDropdown(false);
-};
+  };
 
   const toggleModal = () => {
     setIsSaving(false);
     setIsModalVisible(!isModalVisible);
     setSelectedStatus('Active');
+    if (!isModalVisible) {
+      setSelectedState(null); // Reset selected state
+      setSelectedStateId(null); // Reset selected stateId
+    }
     // Reset error fields and input values when modal is closed
     if (isModalVisible) {
       setErrorFields([]);
@@ -127,20 +169,70 @@ const ProductPackagePublish = () => {
 
   const [errorFields, setErrorFields] = useState([]);
 
+  // const handleSaveButtonPress = () => {
+  //   const mandatoryFields = [
+  //     'firstName',
+  //     'phoneNumber',
+  //     'whatsappId',
+  //     'cityOrTown',
+  //     'country',
+  //     'pincode',
+  //     'locationName',
+  //     'locationDescription',
+  //   ];
+  //   setErrorFields([]);
+  //   const missingFields = mandatoryFields.filter(field => !inputValues[field]);
+
+  //   if (missingFields.length > 0) {
+  //     setErrorFields(missingFields);
+  //     Alert.alert('Alert', 'Please fill in all mandatory fields');
+  //     return;
+  //   }
+
+  //   const hasExactlyTenDigits = /^\d{10,12}$/;
+  //   if (!hasExactlyTenDigits.test(Number(inputValues?.phoneNumber))) {
+  //     Alert.alert('Alert', 'Please Provide a valid Phone Number');
+  //     return;
+  //   }
+
+  //   if (inputValues?.whatsappId?.length > 0) {
+  //     if (!hasExactlyTenDigits.test(inputValues?.whatsappId)) {
+  //       Alert.alert('Alert', 'Please Provide a valid Whatsapp Number');
+  //       return;
+  //     }
+  //   }
+  //   setIsSaving(true);
+  //   selectedId === '1' ? getisValidDistributors() : getisValidCustomer();
+  // };
+
   const handleSaveButtonPress = () => {
     const mandatoryFields = [
       'firstName',
       'phoneNumber',
       'whatsappId',
       'cityOrTown',
-      'state',
       'country',
       'pincode',
       'locationName',
       'locationDescription',
     ];
+
+    // Add state to mandatory fields only if selectedId is '2'
+    if (selectedId === '2') {
+      mandatoryFields.push('state');
+    }
+
     setErrorFields([]);
-    const missingFields = mandatoryFields.filter(field => !inputValues[field]);
+
+    // Check if any mandatory fields are missing, including state
+    const missingFields = mandatoryFields.filter(field => {
+      // Check for mandatory fields that are not filled
+      if (field === 'state') {
+        // If selectedId is '2' and state is not selected, it's a missing field
+        return !selectedState; // Check if selectedState is null or undefined
+      }
+      return !inputValues[field];
+    });
 
     if (missingFields.length > 0) {
       setErrorFields(missingFields);
@@ -149,20 +241,28 @@ const ProductPackagePublish = () => {
     }
 
     const hasExactlyTenDigits = /^\d{10,12}$/;
+
+    // Validate phone number format
     if (!hasExactlyTenDigits.test(Number(inputValues?.phoneNumber))) {
       Alert.alert('Alert', 'Please Provide a valid Phone Number');
       return;
     }
 
+    // Validate whatsappId if provided
     if (inputValues?.whatsappId?.length > 0) {
       if (!hasExactlyTenDigits.test(inputValues?.whatsappId)) {
         Alert.alert('Alert', 'Please Provide a valid Whatsapp Number');
         return;
       }
     }
+
+    // Set saving state to true to disable the button
     setIsSaving(true);
-    selectedId === '1' ? getisValidDistributors() : getisValidCustomer();
+
+    // Call appropriate function based on selectedId
+    selectedId === '2' ? getisValidCustomer() : getisValidDistributors();
   };
+
   const getisValidCustomer = async () => {
     const apiUrl = `${global?.userData?.productURL}${API.VALIDATIONCUSTOMER}/${inputValues.firstName}/${companyId}`;
     try {
@@ -180,7 +280,7 @@ const ProductPackagePublish = () => {
         Alert.alert(
           'crm.codeverse.co says',
           'A Customer/Distributor already exist with this name.',
-          [{ text: 'OK', onPress: () => setIsSaving(false) }]
+          [{text: 'OK', onPress: () => setIsSaving(false)}],
         );
       }
     } catch (error) {
@@ -192,7 +292,7 @@ const ProductPackagePublish = () => {
     }
   };
   const addCustomerDetails = () => {
-    setIsSaving(true); 
+    setIsSaving(true);
     const requestData = {
       firstName: inputValues.firstName,
       lastName: '',
@@ -208,7 +308,8 @@ const ProductPackagePublish = () => {
       street: '',
       locality: '',
       cityOrTown: inputValues.cityOrTown,
-      state: inputValues.state,
+      state: selectedState?.stateName || '',
+      stateId: selectedStateId,
       country: inputValues.country,
       pincode: '',
       pan: '',
@@ -221,9 +322,9 @@ const ProductPackagePublish = () => {
       locationDescription: inputValues.locationDescription,
       userId: userId,
       linkType: 3,
-      statusId:selectedStatusId
+      statusId: selectedStatusId,
     };
-    console.log("requestData====>",requestData)
+    console.log('requestData====>', requestData);
     axios
       .post(
         global?.userData?.productURL + API.ADD_CUSTOMER_DETAILS,
@@ -243,12 +344,12 @@ const ProductPackagePublish = () => {
         setSelectedCustomerId(newCustomer.customerId);
 
         // Close the modal
-        setIsSaving(false); 
+        setIsSaving(false);
         toggleModal();
       })
       .catch(error => {
         console.error('Error adding customer:', error);
-        setIsSaving(false); 
+        setIsSaving(false);
       });
   };
   const getisValidDistributors = async () => {
@@ -268,7 +369,7 @@ const ProductPackagePublish = () => {
         Alert.alert(
           'crm.codeverse.co says',
           'A Customer/Distributor already exist with this name.',
-          [{ text: 'OK', onPress: () => setIsSaving(false) }]
+          [{text: 'OK', onPress: () => setIsSaving(false)}],
         );
       }
     } catch (error) {
@@ -281,7 +382,7 @@ const ProductPackagePublish = () => {
   };
 
   const addDistributorDetails = () => {
-    setIsSaving(true); 
+    setIsSaving(true);
     const requestData = {
       id: null,
       distributorName: inputValues.firstName,
@@ -294,8 +395,8 @@ const ProductPackagePublish = () => {
       street: '',
       locality: '',
       cityOrTown: inputValues.cityOrTown,
-      state: inputValues.state,
-      stateId: 0,
+      state: selectedState?.stateName || '',
+      stateId: selectedStateId,
       currencyId: 9,
       country: inputValues.country,
       pincode: inputValues.pincode,
@@ -318,8 +419,9 @@ const ProductPackagePublish = () => {
       locationDescription: inputValues.locationDescription,
       userId: userId,
       linkType: 3,
-      statusId:selectedStatusId
+      statusId: selectedStatusId,
     };
+    console.log('requestDatafordis===>', requestData);
 
     axios
       .post(
@@ -339,12 +441,12 @@ const ProductPackagePublish = () => {
         setSelectedDistributorDetails([newDistributor]);
         setSelectedDistributorId(newDistributor.id);
         // Close the modal
-        setIsSaving(false); 
+        setIsSaving(false);
         toggleModal();
       })
       .catch(error => {
         console.error('Error adding Distributor:', error);
-        setIsSaving(false); 
+        setIsSaving(false);
       });
   };
 
@@ -393,7 +495,7 @@ const ProductPackagePublish = () => {
       label: 'Retailer',
       value: 'retailer',
       labelStyle: {color: '#000'},
-      color:colors.color2,
+      color: colors.color2,
     },
   ];
 
@@ -880,7 +982,9 @@ const ProductPackagePublish = () => {
           style={[
             styles.head2,
             {
-              backgroundColor: isAnyCheckboxSelected() ? colors.color2 : '#f0f0f0', // Example colors
+              backgroundColor: isAnyCheckboxSelected()
+                ? colors.color2
+                : '#f0f0f0', // Example colors
               opacity: isAnyCheckboxSelected() ? 1 : 1,
             },
           ]}
@@ -1008,7 +1112,7 @@ const ProductPackagePublish = () => {
           <View style={styles.modalContent1}>
             <View
               style={{
-                backgroundColor:colors.color2,
+                backgroundColor: colors.color2,
                 borderRadius: 10,
                 marginHorizontal: 10,
                 flexDirection: 'row',
@@ -1045,8 +1149,10 @@ const ProductPackagePublish = () => {
               <TextInput
                 style={[
                   styles.searchInput1,
-                  {color: colorScheme === 'dark' ? '#000' : '#000' ,// Adjust text color based on theme
-                  paddingVertical: Platform.OS === 'ios' ? 15 : 0},
+                  {
+                    color: colorScheme === 'dark' ? '#000' : '#000', // Adjust text color based on theme
+                    paddingVertical: Platform.OS === 'ios' ? 15 : 0,
+                  },
                 ]}
                 onChangeText={text => setSearchQuery(text)}
                 placeholder="Search"
@@ -1237,7 +1343,7 @@ const ProductPackagePublish = () => {
               {errorFields.includes('cityOrTown') && (
                 <Text style={styles.errorText}>Please Enter City Or Town</Text>
               )}
-              <TextInput
+              {/* <TextInput
                 style={[
                   styles.input,
                   {color: '#000'},
@@ -1251,7 +1357,51 @@ const ProductPackagePublish = () => {
               />
               {errorFields.includes('state') && (
                 <Text style={styles.errorText}>Please Enter State</Text>
-              )}
+              )} */}
+
+              <Text style={styles.headerTxt}>
+                {selectedId === '2' ? 'State*' : 'State'}{' '}
+                {/* Conditionally render 'State*' based on selectedId */}
+              </Text>
+
+              <View style={styles.container1}>
+                <View style={styles.container2}>
+                  <TouchableOpacity
+                    style={styles.container3}
+                    onPress={toggleStateDropdown}>
+                    <Text style={{fontWeight: '600', color: '#000'}}>
+                      {selectedState?.stateName || 'Select'}{' '}
+                      {/* Display the stateName if selected, otherwise 'Select' */}
+                    </Text>
+                    <Image
+                      source={require('../../../assets/dropdown.png')}
+                      style={{width: 20, height: 20}}
+                    />
+                  </TouchableOpacity>
+
+                  {/* Dropdown list */}
+                  {showStateDropdown && (
+                    <View style={styles.dropdownContentstate}>
+                      <ScrollView
+                        style={styles.scrollView}
+                        nestedScrollEnabled={true}>
+                        {states.map(state => (
+                          <TouchableOpacity
+                            key={state.stateId}
+                            style={styles.dropdownItem}
+                            onPress={() => handleSelectState(state)} // Pass the full state object
+                          >
+                            <Text style={styles.dropdownText}>
+                              {state.stateName}
+                            </Text>
+                          </TouchableOpacity>
+                        ))}
+                      </ScrollView>
+                    </View>
+                  )}
+                </View>
+              </View>
+
               <TextInput
                 style={[
                   styles.input,
@@ -1319,36 +1469,36 @@ const ProductPackagePublish = () => {
                 </Text>
               )}
 
-<Text style={styles.headerTxt}>{'Status *'}</Text>
-             <View style={styles.container1}>
-      <View style={styles.container2}>
-        <TouchableOpacity
-          style={styles.container3}
-          onPress={toggleStatusDropdown}
-        >
-          <Text style={{ fontWeight: '600', color: '#000' }}>
-            {selectedStatus} 
-          </Text>
-          <Image
-            source={require('../../../assets/dropdown.png')}
-            style={{ width: 20, height: 20 }}
-          />
-        </TouchableOpacity>
-        {showStatusDropdown && (
-          <View style={styles.dropdownContainersstatus}>
-            {statusOptions.map((status, index) => (
-              <TouchableOpacity
-                key={index}
-                style={styles.dropdownItem}
-                onPress={() => handleSelectStatus(status)}
-              >
-                <Text style={styles.dropdownText}>{status.label}</Text> 
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
-      </View>
-    </View>
+              <Text style={styles.headerTxt}>{'Status *'}</Text>
+              <View style={styles.container1}>
+                <View style={styles.container2}>
+                  <TouchableOpacity
+                    style={styles.container3}
+                    onPress={toggleStatusDropdown}>
+                    <Text style={{fontWeight: '600', color: '#000'}}>
+                      {selectedStatus}
+                    </Text>
+                    <Image
+                      source={require('../../../assets/dropdown.png')}
+                      style={{width: 20, height: 20}}
+                    />
+                  </TouchableOpacity>
+                  {showStatusDropdown && (
+                    <View style={styles.dropdownContainersstatus}>
+                      {statusOptions.map((status, index) => (
+                        <TouchableOpacity
+                          key={index}
+                          style={styles.dropdownItem}
+                          onPress={() => handleSelectStatus(status)}>
+                          <Text style={styles.dropdownText}>
+                            {status.label}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  )}
+                </View>
+              </View>
               {/* <TouchableOpacity
               style={styles.saveButton}
               onPress={handleSaveButtonPress}>
@@ -1371,347 +1521,363 @@ const ProductPackagePublish = () => {
   );
 };
 
-const getStyles = (colors) => StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  txt1: {
-    color: '#000',
-    fontSize: 20,
-    fontWeight: '500',
-    marginHorizontal: 10,
-  },
-  head1: {
-    marginVertical: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  flexSpacer: {
-    flex: 1,
-  },
-  head2: {
-    alignItems: 'center',
-    borderWidth: 1,
-    padding: 6,
-    borderRadius: 10,
-    marginHorizontal: 5,
-  },
-  head3: {
-    alignItems: 'center',
-    borderWidth: 1,
-    padding: 6,
-    borderRadius: 10,
-    marginLeft: 5,
-    backgroundColor: colors.color2,
-  },
-  txt2: {
-    color: '#000',
-    fontWeight: '500',
-  },
-  txt3: {
-    color: '#000',
-    fontWeight: '500',
-    alignSelf: 'center',
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 25,
-    paddingLeft: 10,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 4,
-    flex: 1,
-    marginRight: 10,
-  },
-  searchInput: {
-    flex: 1,
-    height: 40,
-    borderRadius: 25,
-    paddingHorizontal: 15,
-    color: '#000',
-    // backgroundColor: '#f1f1f1',
-    marginRight: 10,
-  },
-  dropdownButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 10,
-    backgroundColor: '#e6e6e6',
-    borderRadius: 15,
-  },
-  searchButton: {
-    marginLeft: 'auto',
-    flexDirection: 'row',
-  },
-  searchButton: {
-    backgroundColor:colors.color2,
-    borderRadius: 25,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    elevation: 3,
-  },
-  searchButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-  },
-  image: {
-    height: 20,
-    width: 20,
-    marginLeft: 2,
-    marginRight: 2,
-  },
-  searchIcon: {
-    width: 25,
-    height: 25,
-    marginLeft: 2,
-  },
-  dropdownContent1: {
-    elevation: 5,
-    // height: 220,
-    alignSelf: 'center',
-    width: '90%',
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    alignSelf: 'center',
-    borderColor: 'lightgray', // Optional: Adds subtle border (for effect)
-    borderWidth: 1,
-  },
-  dropdownOption: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
-  },
-  radioGroup: {
-    marginHorizontal: 10,
-    flexDirection: 'row',
-    marginBottom: 10,
-  },
-  topheader: {
-    flexDirection: 'row',
-    backgroundColor: '#f0f0f0',
-    paddingVertical: 10,
-    borderRadius: 10,
-    marginTop: 5,
-  },
-  txt4: {
-    fontWeight: 'bold',
-    color: '#000',
-    flex: 1,
-    marginLeft: 30,
-  },
-  txt5: {
-    fontWeight: 'bold',
-    color: '#000',
-    flex: 0.8,
-  },
-  txt6: {
-    fontWeight: 'bold',
-    color: '#000',
-    flex: 0.4,
-  },
-  row: {
-    flexDirection: 'row',
-    paddingVertical: 10,
-    paddingHorizontal: 10,
-    borderBottomWidth: 1,
-    borderColor: '#ccc',
-  },
-  cell1: {
-    flex: 1,
-    color: '#000',
-    marginLeft: 10,
-  },
-  cell2: {
-    flex: 0.8,
-    color: '#000',
-  },
-  cell3: {
-    flex: 0.4,
-    color: '#000',
-  },
-  modalContainer1: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.5)',
-  },
-  modalContent1: {
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    width: '90%',
-    maxHeight: '80%',
-  },
-  modalItem: {
-    paddingVertical: 10,
-    flexDirection: 'row',
-  },
-  closeButton: {
-    alignItems: 'center',
-    backgroundColor:colors.color2,
-    borderRadius: 5,
-    marginHorizontal: 10,
-    marginVertical: 10,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-  },
-  closeButtonText: {
-    color: '#000',
-    fontWeight: '500',
-  },
-  searchContainerone: {
-    borderWidth: 1,
-    borderRadius: 10,
-    marginVertical: 8,
-    marginHorizontal: 10,
-  },
-  searchInput1:{
-marginHorizontal:10
-  },
-  noDataText: {
-    textAlign: 'center',
-    marginTop: 20,
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#000000',
-  },
-  modalContainerr: {
-    flex: 1,
-    alignItems: 'center',
-    marginTop: 50,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
-  modalContentt: {
-    backgroundColor: '#fff',
-    padding: 20,
-    borderRadius: 10,
-    width: '80%',
-    alignItems: 'center',
-    elevation: 5, // Add elevation for shadow on Android
-    top: 10,
-    maxHeight: '70%',
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    color: '#000',
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: 'gray',
-    borderRadius: 5,
-    padding: 10,
-    marginBottom: 5,
-    width: '100%',
-  },
-  errorBorder: {
-    borderColor: 'red',
-  },
-  errorText: {
-    color: 'red',
-  },
-  saveButton: {
-    backgroundColor: colors.color2,
-    padding: 10,
-    borderRadius: 5,
-    marginTop: 20,
-    width: '100%',
-  },
-  saveButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  plusButton: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    textAlign: 'center',
-  },
-  noCategoriesText: {
-    textAlign: 'center',
-    marginTop: 20,
-    fontSize: 16,
-    color: '#000',
-    fontWeight: '600',
-  },
-  modalContainer: {
-    flexGrow: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'flex-end',
-  },
-  modalContent: {
-    backgroundColor: '#fff',
-    maxHeight: '70%', // Adjust as needed
-  },
-  modalText: {
-    fontSize: 16,
-    marginBottom: 10,
-    marginLeft: 10,
-  },
-  headerTxt: {
-    marginVertical: 3,
-    color: '#000',
-  },
-  container1: {
-    flexDirection: 'row',
-    // marginTop: 20,
-    alignItems: 'center',
-    width: '100%',
-  },
-  container2: {
-    justifyContent: 'flex-start',
-    width: '100%',
-  },
-  container3: {
-    width: '100%',
-    height: 37,
-    borderRadius: 10,
-    borderWidth: 0.5,
-    alignSelf: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingLeft: 15,
-    paddingRight: 15,
-  },
-  container4: {
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    width: '10%',
-  },
-  dropdownItem: {
-    width: '100%',
-    height: 50,
-    justifyContent: 'center',
-    borderBottomWidth: 0.5,
-    borderColor: '#8e8e8e',
-  },
-  
-  dropdownContainersstatus: {
-    elevation: 5,
-    height: 100,
-    alignSelf: 'center',
-    width: '100%',
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    borderColor: 'lightgray',
-    borderWidth: 1,
-    marginTop: 5,
-  },
-  dropdownText: {
-    fontWeight: '600',
-    marginHorizontal: 15,
-    color: '#000',
-  },
+const getStyles = colors =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: '#fff',
+    },
+    txt1: {
+      color: '#000',
+      fontSize: 20,
+      fontWeight: '500',
+      marginHorizontal: 10,
+    },
+    head1: {
+      marginVertical: 10,
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    flexSpacer: {
+      flex: 1,
+    },
+    head2: {
+      alignItems: 'center',
+      borderWidth: 1,
+      padding: 6,
+      borderRadius: 10,
+      marginHorizontal: 5,
+    },
+    head3: {
+      alignItems: 'center',
+      borderWidth: 1,
+      padding: 6,
+      borderRadius: 10,
+      marginLeft: 5,
+      backgroundColor: colors.color2,
+    },
+    txt2: {
+      color: '#000',
+      fontWeight: '500',
+    },
+    txt3: {
+      color: '#000',
+      fontWeight: '500',
+      alignSelf: 'center',
+    },
+    searchContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: '#fff',
+      borderRadius: 25,
+      paddingLeft: 10,
+      shadowColor: '#000',
+      shadowOffset: {width: 0, height: 2},
+      shadowOpacity: 0.1,
+      shadowRadius: 5,
+      elevation: 4,
+      flex: 1,
+      marginRight: 10,
+    },
+    searchInput: {
+      flex: 1,
+      height: 40,
+      borderRadius: 25,
+      paddingHorizontal: 15,
+      color: '#000',
+      // backgroundColor: '#f1f1f1',
+      marginRight: 10,
+    },
+    dropdownButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 10,
+      paddingHorizontal: 10,
+      backgroundColor: '#e6e6e6',
+      borderRadius: 15,
+    },
+    searchButton: {
+      marginLeft: 'auto',
+      flexDirection: 'row',
+    },
+    searchButton: {
+      backgroundColor: colors.color2,
+      borderRadius: 25,
+      paddingHorizontal: 20,
+      paddingVertical: 10,
+      elevation: 3,
+    },
+    searchButtonText: {
+      color: '#fff',
+      fontWeight: 'bold',
+    },
+    image: {
+      height: 20,
+      width: 20,
+      marginLeft: 2,
+      marginRight: 2,
+    },
+    searchIcon: {
+      width: 25,
+      height: 25,
+      marginLeft: 2,
+    },
+    dropdownContent1: {
+      elevation: 5,
+      // height: 220,
+      alignSelf: 'center',
+      width: '90%',
+      backgroundColor: '#fff',
+      borderRadius: 10,
+      alignSelf: 'center',
+      borderColor: 'lightgray', // Optional: Adds subtle border (for effect)
+      borderWidth: 1,
+    },
+    dropdownOption: {
+      paddingHorizontal: 10,
+      paddingVertical: 6,
+      borderBottomWidth: 1,
+      borderBottomColor: '#ccc',
+    },
+    radioGroup: {
+      marginHorizontal: 10,
+      flexDirection: 'row',
+      marginBottom: 10,
+    },
+    topheader: {
+      flexDirection: 'row',
+      backgroundColor: '#f0f0f0',
+      paddingVertical: 10,
+      borderRadius: 10,
+      marginTop: 5,
+    },
+    txt4: {
+      fontWeight: 'bold',
+      color: '#000',
+      flex: 1,
+      marginLeft: 30,
+    },
+    txt5: {
+      fontWeight: 'bold',
+      color: '#000',
+      flex: 0.8,
+    },
+    txt6: {
+      fontWeight: 'bold',
+      color: '#000',
+      flex: 0.4,
+    },
+    row: {
+      flexDirection: 'row',
+      paddingVertical: 10,
+      paddingHorizontal: 10,
+      borderBottomWidth: 1,
+      borderColor: '#ccc',
+    },
+    cell1: {
+      flex: 1,
+      color: '#000',
+      marginLeft: 10,
+    },
+    cell2: {
+      flex: 0.8,
+      color: '#000',
+    },
+    cell3: {
+      flex: 0.4,
+      color: '#000',
+    },
+    modalContainer1: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: 'rgba(0,0,0,0.5)',
+    },
+    modalContent1: {
+      backgroundColor: '#fff',
+      borderRadius: 10,
+      width: '90%',
+      maxHeight: '80%',
+    },
+    modalItem: {
+      paddingVertical: 10,
+      flexDirection: 'row',
+    },
+    closeButton: {
+      alignItems: 'center',
+      backgroundColor: colors.color2,
+      borderRadius: 5,
+      marginHorizontal: 10,
+      marginVertical: 10,
+      paddingHorizontal: 20,
+      paddingVertical: 10,
+    },
+    closeButtonText: {
+      color: '#000',
+      fontWeight: '500',
+    },
+    searchContainerone: {
+      borderWidth: 1,
+      borderRadius: 10,
+      marginVertical: 8,
+      marginHorizontal: 10,
+    },
+    searchInput1: {
+      marginHorizontal: 10,
+    },
+    noDataText: {
+      textAlign: 'center',
+      marginTop: 20,
+      fontSize: 16,
+      fontWeight: '600',
+      color: '#000000',
+    },
+    modalContainerr: {
+      flex: 1,
+      alignItems: 'center',
+      marginTop: 50,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    },
+    modalContentt: {
+      backgroundColor: '#fff',
+      padding: 20,
+      borderRadius: 10,
+      width: '80%',
+      alignItems: 'center',
+      elevation: 5, // Add elevation for shadow on Android
+      top: 10,
+      maxHeight: '70%',
+    },
+    modalTitle: {
+      fontSize: 20,
+      fontWeight: 'bold',
+      marginBottom: 20,
+      color: '#000',
+    },
+    input: {
+      borderWidth: 1,
+      borderColor: 'gray',
+      borderRadius: 5,
+      padding: 10,
+      marginBottom: 5,
+      width: '100%',
+    },
+    errorBorder: {
+      borderColor: 'red',
+    },
+    errorText: {
+      color: 'red',
+    },
+    saveButton: {
+      backgroundColor: colors.color2,
+      padding: 10,
+      borderRadius: 5,
+      marginTop: 20,
+      width: '100%',
+    },
+    saveButtonText: {
+      color: '#fff',
+      fontWeight: 'bold',
+      textAlign: 'center',
+    },
+    plusButton: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      textAlign: 'center',
+    },
+    noCategoriesText: {
+      textAlign: 'center',
+      marginTop: 20,
+      fontSize: 16,
+      color: '#000',
+      fontWeight: '600',
+    },
+    modalContainer: {
+      flexGrow: 1,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      justifyContent: 'flex-end',
+    },
+    modalContent: {
+      backgroundColor: '#fff',
+      maxHeight: '70%', // Adjust as needed
+    },
+    modalText: {
+      fontSize: 16,
+      marginBottom: 10,
+      marginLeft: 10,
+    },
+    headerTxt: {
+      marginVertical: 3,
+      color: '#000',
+    },
+    container1: {
+      marginBottom: 5,
+      flexDirection: 'row',
+      // marginTop: 20,
+      alignItems: 'center',
+      width: '100%',
+    },
+    container2: {
+      justifyContent: 'flex-start',
+      width: '100%',
+    },
+    container3: {
+      width: '100%',
+      height: 37,
+      borderRadius: 10,
+      borderWidth: 0.5,
+      alignSelf: 'center',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingLeft: 15,
+      paddingRight: 15,
+    },
+    container4: {
+      alignItems: 'center',
+      justifyContent: 'flex-end',
+      width: '10%',
+    },
+    dropdownItem: {
+      width: '100%',
+      height: 50,
+      justifyContent: 'center',
+      borderBottomWidth: 0.5,
+      borderColor: '#8e8e8e',
+    },
 
-});
+    dropdownContainersstatus: {
+      elevation: 5,
+      height: 100,
+      alignSelf: 'center',
+      width: '100%',
+      backgroundColor: '#fff',
+      borderRadius: 10,
+      borderColor: 'lightgray',
+      borderWidth: 1,
+      marginTop: 5,
+    },
+    dropdownText: {
+      fontWeight: '600',
+      marginHorizontal: 15,
+      color: '#000',
+    },
+    dropdownContentstate: {
+      elevation: 5,
+      // height: 220,
+      alignSelf: 'center',
+      width: '100%',
+      backgroundColor: '#fff',
+      borderRadius: 10,
+      borderColor: 'lightgray', // Optional: Adds subtle border (for effect)
+      borderWidth: 1,
+      marginHorizontal: 10,
+      marginVertical: 3,
+    },
+    scrollView: {
+      minHeight: 70,
+      maxHeight: 150,
+    },
+  });
 
 export default ProductPackagePublish;
-

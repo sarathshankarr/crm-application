@@ -120,6 +120,45 @@ const Cart = () => {
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
   const [selectedStatusId, setSelectedStatusId] = useState(0);
   
+
+  const [selectedStateId, setSelectedStateId] = useState(null); // Track only the stateId
+  const [selectedState, setSelectedState] = useState(null); // Track the full state object
+  const [states, setStates] = useState([]);
+  const [showStateDropdown, setShowStateDropdown] = useState(false);
+
+ const getState = () => {
+    const apiUrl = `${global?.userData?.productURL}${API.GET_STATE}`;
+    axios
+      .get(apiUrl, {
+        headers: {
+          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+        },
+      })
+      .then(response => {
+        console.log('response.data.state===>',response.data)
+        setStates(response.data); // Assuming the response contains the states
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
+  };
+
+  const toggleStateDropdown = () => {
+    setShowStateDropdown(prev => !prev);
+  };
+
+
+  // Handle state selection
+  const handleSelectState = (state) => {
+    setSelectedStateId(state.stateId); // Set the selected stateId
+    setSelectedState(state); // Set the full state object
+    setShowStateDropdown(false); // Hide the dropdown after selection
+  };
+
+  // Fetch states when the component mounts
+  useEffect(() => {
+    getState();
+  }, []);
   const statusOptions = [
     { label: 'Active', value: 0 },
     { label: 'Inactive', value: 1 },
@@ -635,7 +674,6 @@ const Cart = () => {
     phoneNumber: '',
     whatsappId: '',
     cityOrTown: '',
-    state: '',
     country: '',
     pincode: '',
     locationName: '',
@@ -687,41 +725,58 @@ const Cart = () => {
       'phoneNumber',
       'whatsappId',
       'cityOrTown',
-      'state',
       'country',
       'pincode',
       'locationName',
       'locationDescription',
     ];
-
+  
+    // Add state to mandatory fields if isEnabled (i.e., adding customer location details)
+    if (isEnabled) {
+      mandatoryFields.push('state');
+    }
+  
     setErrorFields([]);
-    const missingFields = mandatoryFields.filter(field => !inputValues[field]);
-
+  
+    // Check if any mandatory fields are missing, including state
+    const missingFields = mandatoryFields.filter(field => {
+      // Check for mandatory fields that are not filled
+      if (field === 'state') {
+        // If isEnabled and state is not selected, it's a missing field
+        return !selectedState; // Check if selectedState is null or undefined
+      }
+      return !inputValues[field];
+    });
+  
     if (missingFields.length > 0) {
       setErrorFields(missingFields);
       Alert.alert('Alert', 'Please fill in all mandatory fields');
       return;
     }
-
+  
     const hasExactlyTenDigits = /^\d{10,12}$/;
+  
+    // Validate phone number format
     if (!hasExactlyTenDigits.test(Number(inputValues?.phoneNumber))) {
       Alert.alert('Alert', 'Please Provide a valid Phone Number');
       return;
     }
-
+  
+    // Validate whatsappId if provided
     if (inputValues?.whatsappId?.length > 0) {
       if (!hasExactlyTenDigits.test(inputValues?.whatsappId)) {
         Alert.alert('Alert', 'Please Provide a valid Whatsapp Number');
         return;
       }
     }
-
+  
     // Set saving state to true to disable the button
     setIsSaving(true);
-
+  
     // Call appropriate function based on isEnabled
     isEnabled ? getisValidCustomer() : getisValidDistributors();
   };
+  
 
   useEffect(() => {
     // Fetch user data from AsyncStorage
@@ -745,6 +800,10 @@ const Cart = () => {
     setIsSaving(false);
     setIsModalVisible(!isModalVisible);
     setSelectedStatus('Active');
+    if (!isModalVisible) {
+      setSelectedState(null); // Reset selected state
+      setSelectedStateId(null); // Reset selected stateId
+    }
     // Reset error fields and input values when modal is closed
     if (isModalVisible) {
       setErrorFields([]);
@@ -806,7 +865,9 @@ const Cart = () => {
       street: '',
       locality: '',
       cityOrTown: inputValues.cityOrTown,
-      state: inputValues.state,
+      // state: inputValues.state,
+      state: selectedState?.stateName || '',
+      stateId: selectedStateId,
       country: inputValues.country,
       pincode: inputValues.pincode,
       pan: '',
@@ -896,8 +957,8 @@ console.log("requestData====>",requestData)
       street: '',
       locality: '',
       cityOrTown: inputValues.cityOrTown,
-      state: inputValues.state,
-      stateId: 0,
+      state: selectedState?.stateName || '',
+      stateId: selectedStateId,
       currencyId: 1,
       country: inputValues.country,
       pincode: inputValues.pincode,
@@ -3149,7 +3210,7 @@ console.log("requestData====>",requestData)
                       Please Enter City Or Town
                     </Text>
                   )}
-                  <TextInput
+                  {/* <TextInput
                     style={[
                       style.input,
                       {color: '#000'},
@@ -3163,7 +3224,47 @@ console.log("requestData====>",requestData)
                   />
                   {errorFields.includes('state') && (
                     <Text style={style.errorText}>Please Enter State</Text>
-                  )}
+                  )} */}
+
+<Text style={style.headerTxt}>
+  {isEnabled ? 'State *' : 'State'}  {/* Append '*' when isEnabled is true */}
+</Text>
+
+
+<View style={style.container1}>
+        <View style={style.container2}>
+          <TouchableOpacity
+            style={style.container3}
+            onPress={toggleStateDropdown}
+          >
+            <Text style={{ fontWeight: '600', color: '#000' }}>
+              {selectedState?.stateName || 'Select'}  {/* Display the stateName if selected, otherwise 'Select' */}
+            </Text>
+            <Image
+              source={require('../../../assets/dropdown.png')}
+              style={{ width: 20, height: 20 }}
+            />
+          </TouchableOpacity>
+
+          {/* Dropdown list */}
+          {showStateDropdown && (
+            <View style={style.dropdownContentstate}>
+              <ScrollView style={style.scrollView} nestedScrollEnabled={true}>
+                {states.map((state) => (
+                  <TouchableOpacity
+                    key={state.stateId}
+                    style={style.dropdownItem}
+                    onPress={() => handleSelectState(state)} // Pass the full state object
+                  >
+                    <Text style={style.dropdownText}>{state.stateName}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+          )}
+        </View>
+      </View>
+
                   <TextInput
                     style={[
                       style.input,
@@ -3805,6 +3906,7 @@ const getStyles = colors =>
       alignItems: 'center',
     },
     scrollView: {
+      minHeight: 70,
       maxHeight: 150,
     },
     searchContainer: {
@@ -3881,6 +3983,7 @@ const getStyles = colors =>
       color: '#000',
     },
     container1: {
+      marginBottom:5,
       flexDirection: 'row',
       // marginTop: 20,
       alignItems: 'center',
@@ -3930,6 +4033,18 @@ const getStyles = colors =>
       fontWeight: '600',
       marginHorizontal: 15,
       color: '#000',
+    },
+    dropdownContentstate: {
+      elevation: 5,
+      // height: 220,
+      alignSelf: 'center',
+      width: '100%',
+      backgroundColor: '#fff',
+      borderRadius: 10,
+      borderColor: 'lightgray', // Optional: Adds subtle border (for effect)
+      borderWidth: 1,
+      marginHorizontal:10,
+      marginVertical:3,
     },
   });
 export default Cart;
