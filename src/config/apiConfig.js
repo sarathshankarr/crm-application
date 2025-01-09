@@ -118,7 +118,8 @@ export const API = {
   ADD_COSTING:'erpportal/api/costing/addCosting',
   GET_ALL_THE_ROLE_MENU:'erpportal/api/rolemenu/rolewisemobilemenus',
   GET_ALL_THE_MENUS_FOR_MOBILE:'erpportal/api/menu/allmobilemenus',
-  GET_ALL_ADDED_COSTING_DETAILSL:'erpportal/api/costing'
+  GET_ALL_ADDED_COSTING_DETAILSL:'erpportal/api/costing',
+  CHECKAVALABILITY:'erpportal/api/style/checkStyleAvailQty'
 };
 
 export const USER_ID = 'adminClientId';

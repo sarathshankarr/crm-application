@@ -143,7 +143,7 @@ const ModalComponent = ({
   
         if (parseInt(inputValue, 10) > 0) {
           const itemBaseDetails = {
-            availQty: style.availableQty, // Assuming it's availableQty
+            availQty: size.availQty, // Assuming it's availableQty
             color: style.color,
             colorId: style.colorId,
             styleId: style.styleId,

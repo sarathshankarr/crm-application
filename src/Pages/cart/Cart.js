@@ -46,6 +46,7 @@ const Cart = () => {
   const selectedCompany = useSelector(state => state.selectedCompany);
   const comp_flag = selectedCompany?.comp_flag;
   const package_barcode_flag = selectedCompany?.package_barcode_flag;
+  const hold_qty_flag=selectedCompany?.hold_qty_flag;
   // console.log('package_barcode_flag', package_barcode_flag);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -964,6 +965,7 @@ console.log("requestData====>",requestData)
       setIsLoading(true);
       const requestData = {
         styleName: '',
+        companyId:companyId
       };
       axios
         .post(apiUrl0, requestData, {
@@ -1163,7 +1165,50 @@ console.log("requestData====>",requestData)
     setShipFromToClicked(false);
   };
 
-  const PlaceAddOrder = () => {
+
+  const checkStyleAvailability = async (cartItems) => {
+    const apiUrl = `${global?.userData?.productURL}${API.CHECKAVALABILITY}`;
+  
+    try {
+      // Prepare the payload for the API request
+      const payload = cartItems.map((item) => ({
+        style: item.styleName,
+        colorName: item.colorName,
+        sizeDesc: item.sizeDesc,
+        styleId: item.styleId,
+        sizeId: item.sizeId,
+        locationId: selectedCompanyLocationId,
+        qty: item.quantity,
+      }));
+  
+      console.log("API URL:", apiUrl);
+      console.log("Payload:", JSON.stringify(payload, null, 2));
+  
+      const headers = {
+        Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+      };
+  
+      const response = await axios.post(apiUrl, payload, { headers });
+  
+      if (response.status === 200) {
+        const data = response.data;
+        if (data.message === "true") {
+          return { success: true, message: "All items are available." };
+        } else {
+          return { success: false, message: data.message };
+        }
+      } else {
+        return { success: false, message: "Failed to check availability." };
+      }
+    } catch (error) {
+      console.error("Error checking availability:", error.response?.data || error.message);
+      return { success: false, message: "An error occurred while checking availability." };
+    }
+  };
+  
+  
+
+  const PlaceAddOrder = async () => {
     let customerType;
 
     const switchStatus = isEnabled; // Assuming isEnabled controls the switch
@@ -1224,7 +1269,20 @@ console.log("requestData====>",requestData)
       return;
     }
 
+    if (!selectedCompanyLocationId && hold_qty_flag === 1) {
+      Alert.alert('Alert', 'please select Company Location.');
+      return;
+    }
     // return;
+
+    setIsSubmitting(true);
+    const availabilityCheck = await checkStyleAvailability(cartItems);
+  
+    if (!availabilityCheck.success) {
+      Alert.alert("Alert", availabilityCheck.message);
+      setIsSubmitting(false);
+      return;
+    }
 
     setIsSubmitting(true);
 
@@ -1341,7 +1399,7 @@ console.log("requestData====>",requestData)
       shippingAddressId: selectedShipLocationId,
       shipDate: '',
       orderDate: currentDate,
-      companyLocId: '0',
+      companyLocId: selectedCompanyLocationId,
       agentId: '0',
       subAgentId: '0',
       orderLineItems: cartItems.map((item, index) => ({
@@ -2502,11 +2560,11 @@ console.log("requestData====>",requestData)
             </TouchableOpacity>
           </View>
         </View>
-
-        {/* <View style={{ flexDirection: 'row', marginTop: 10 }}>
+        {hold_qty_flag === 1 && (
+        <View style={{ flexDirection: 'row', marginTop: 10 }}>
             <TouchableOpacity
               style={{
-                width: '82%',
+                width: '81%',
                 height: 50,
                 borderRadius: 10,
                 borderWidth: 0.5,
@@ -2529,8 +2587,9 @@ console.log("requestData====>",requestData)
                 style={{ width: 20, height: 20 }}
               />
             </TouchableOpacity>
-          </View> */}
-        {/* {showCompanyLocationList && editCompanyLocation && (
+          </View>
+        )}
+        {showCompanyLocationList && editCompanyLocation && (
             <View
               style={{
                 elevation: 5,
@@ -2588,7 +2647,7 @@ console.log("requestData====>",requestData)
                 </ScrollView>
               )}
             </View>
-          )} */}
+          )}
         <View style={{marginBottom: 10}} />
 
         <ScrollView style={style.container}>

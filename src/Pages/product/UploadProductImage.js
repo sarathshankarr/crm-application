@@ -8,6 +8,8 @@ import {
   ScrollView,
   SafeAreaView,
   Modal,
+  Platform,
+  PermissionsAndroid,
 } from 'react-native';
 import React, {useContext, useEffect, useState} from 'react';
 import ImagePicker from 'react-native-image-crop-picker';
@@ -188,62 +190,87 @@ const UploadProductImage = ({route}) => {
   //     });
   // };
 
-  const openCamera = async () => {
-    setModalVisible(false);
-  
-    const MAX_IMAGES = 10;
-  
-    // Check if the selected images limit has been reached
-    if (selectedImages.length >= MAX_IMAGES) {
-      Alert.alert(
-        'Image Limit Reached',
-        `You can only upload a maximum of ${MAX_IMAGES} images.`,
-      );
-      return;
-    }
-  
+  const requestCameraPermission = async () => {
     try {
-      // Open the camera
-      const image = await ImagePicker.openCamera({
-        cropping: true, // Enable cropping
-        mediaType: 'photo',
-        compressImageQuality: 0.8, // Optional: Reduce image quality
-      });
+      if (Platform.OS === 'android' && Platform.Version < 30) {
+        const granted = await PermissionsAndroid.requestMultiple([
+          PermissionsAndroid.PERMISSIONS.CAMERA,
+          PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+          PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+        ]);
   
+        if (
+          granted['android.permission.CAMERA'] === PermissionsAndroid.RESULTS.GRANTED &&
+          granted['android.permission.WRITE_EXTERNAL_STORAGE'] === PermissionsAndroid.RESULTS.GRANTED &&
+          granted['android.permission.READ_EXTERNAL_STORAGE'] === PermissionsAndroid.RESULTS.GRANTED
+        ) {
+          return true;
+        } else {
+          Alert.alert(
+            'Permission Denied',
+            'Camera and storage permissions are required to upload images.',
+          );
+          return false;
+        }
+      }
+      return true; // Permissions automatically granted for Android 11+
+    } catch (err) {
+      console.warn('Permission request error:', err);
+      return false;
+    }
+  };
+
+const openCamera = async () => {
+  setModalVisible(false);
+
+  // Check and request camera permissions
+  const hasPermission = await requestCameraPermission();
+  if (!hasPermission) {
+    return;
+  }
+
+  // Open the camera
+  ImagePicker.openCamera({
+    cropping: true, // Enable cropping
+    mediaType: 'photo', // Capture photos only
+    compressImageQuality: 0.8, // Optional: Adjust image quality
+  })
+    .then(image => {
       const imageObj = {
         uri: image.path,
         width: image.width,
         height: image.height,
         mime: image.mime,
       };
-  
-      // Check if adding the new image exceeds the limit
-      if (selectedImages.length + 1 > MAX_IMAGES) {
+
+      // Check if the maximum image limit is reached
+      if (selectedImages.length >= 10) {
         Alert.alert(
-          'Image Limit Exceeded',
-          `You can only upload up to ${MAX_IMAGES} images.`,
+          'Image Limit Reached',
+          'You can only upload a maximum of 10 images.',
         );
-        return;
+      } else {
+        // Add the new image to the selected images list
+        setSelectedImages([...selectedImages, imageObj]);
       }
-  
-      // Add the new image to the selected images state
-      setSelectedImages(prevImages => [...prevImages, imageObj]);
-  
-    } catch (error) {
-      // Handle errors, except when the user cancels image selection
-      if (error.code !== 'E_PICKER_CANCELLED') {
+    })
+    .catch(error => {
+      // Handle errors (excluding user cancellation)
+      if (!error.message.includes('User cancelled image selection')) {
         console.error('Error taking photo: ', error);
         Alert.alert(
           'Error',
           'An error occurred while taking a photo. Please try again.',
         );
       }
-    }
-  };
+    });
+};
+
   
 
   const openGallery = () => {
     setModalVisible(false);
+  
     if (selectedImages.length >= 10) {
       Alert.alert(
         'Image Limit Reached',
@@ -251,22 +278,28 @@ const UploadProductImage = ({route}) => {
       );
       return;
     }
-
+  
     ImagePicker.openPicker({
       multiple: true,
       maxFiles: 10 - selectedImages.length,
       mediaType: 'photo',
-      cropping: true, // Enable cropping
+      cropping: true,
     })
       .then(images => {
-        const imageArray = images.map(image => ({
+        const newImages = images.map(image => ({
           uri: image.path,
           width: image.width,
           height: image.height,
           mime: image.mime,
         }));
-
-        setSelectedImages([...selectedImages, ...imageArray]);
+  
+        // Filter out duplicates
+        const uniqueImages = newImages.filter(
+          newImage =>
+            !selectedImages.some(selected => selected.uri === newImage.uri)
+        );
+  
+        setSelectedImages([...selectedImages, ...uniqueImages]);
       })
       .catch(error => {
         if (!error.message.includes('User cancelled image selection')) {
@@ -278,27 +311,34 @@ const UploadProductImage = ({route}) => {
         }
       });
   };
+  
 
-  const removeImage = index => {
-    const updatedImages = selectedImages.filter((_, i) => i !== index);
-    setSelectedImages(updatedImages);
-  };
-
-  // const removeImage = (index) => {
-  //   const deletedImage = selectedImages.filter((_, i) => i === index);
+  // const removeImage = index => {
   //   const updatedImages = selectedImages.filter((_, i) => i !== index);
   //   setSelectedImages(updatedImages);
-  //   console.log('updatedImages===>', deletedImage);
-
-  //   if (deletedImage && deletedImage[0] && deletedImage[0].uri) {
-  //     console.log('inside');
-  //     if (deletedImage[0].uri.startsWith('https')) {
-  //       const fileName = deletedImage[0].uri.split('/').pop();
-  //       setDeletedImageNames((prevNames) => [...prevNames, fileName]);
-  //       console.log('deletedImageNames===>', deletedImageNames);
-  //     }
-  //   }
   // };
+
+  const removeImage = (index) => {
+    const deletedImage = selectedImages.filter((_, i) => i === index);
+    const updatedImages = selectedImages.filter((_, i) => i !== index);
+    setSelectedImages(updatedImages);
+  
+    if (deletedImage && deletedImage[0] && deletedImage[0].uri) {
+      if (deletedImage[0].uri.startsWith('https')) {
+        const fileName = deletedImage[0].uri.split('/').pop();
+  
+        setDeletedImageNames((prevNames) => {
+          if (!prevNames.includes(fileName)) {
+            const updatedNames = [...prevNames, fileName];
+            console.log('Updated deletedImageNames:', updatedNames);
+            return updatedNames;
+          }
+          return prevNames;
+        });
+      }
+    }
+  };
+  
 
   const handleSave = () => {
     if (ValidateStyle()) {
@@ -473,20 +513,31 @@ const UploadProductImage = ({route}) => {
     formData.append('processId', (productStyle.processId || 0).toString());
 
     // Debugging the image URLs
-    // console.log('Image URLs:', productStyle.imageUrls);
-    formData.append('imgUrls', productStyle.imageUrls);
+    console.log('Image URLs:',deletedImageNames);
+    formData.append('imgUrls', [...new Set(deletedImageNames)]);
     formData.append('linkType', 1);
 
     // Debugging the selected images
     selectedImages.forEach((image, index) => {
-      const uniqueImageName = `image_${new Date().getTime()}.jpg`; // Generates a unique name based on timestamp
+      // Check if the image URI starts with "https", indicating it's already uploaded
+      if (image.uri.startsWith("https")) {
+        console.log("Skipping already uploaded image:", image.uri);
+        return; // Skip this image
+      }
+    
+      // Generate a unique name for new images
+      const uniqueImageName = `image_${new Date().getTime()}_${index}.jpg`;
+    
+      // Append new images to FormData
       formData.append('files', {
         uri: image.uri,
         type: image.mime,
         name: uniqueImageName,
       });
-      console.log("check===>>>", image.uri, "with name:", uniqueImageName);
+    
+      console.log("Uploading new image:", image.uri, "with name:", uniqueImageName);
     });
+    
     
     // Log the final FormData object
     console.log('FormData being sent:', formData);
