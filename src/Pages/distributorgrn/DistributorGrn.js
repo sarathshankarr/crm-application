@@ -144,12 +144,12 @@ const DistributorGrn = () => {
     setRefreshing(true);
     setFrom(0);
     setTo(20);
-    setSearchKey(0);
+    // setSearchKey(0);
     setFilterFlag(false);
 
     setSearchQuery('');
     // setShowSearchInput(false);
-    setSelectedSearchOption('');
+    // setSelectedSearchOption('');
     setHasMoreTasks(true);
 
     await getAllOrders(true, 0, 20);
@@ -259,6 +259,12 @@ const DistributorGrn = () => {
       setSearchQuery(''); 
     }, 0);
   };
+  useEffect(() => {
+    if (searchOption.length > 0) {
+      setSelectedSearchOption(searchOption[0].label);
+      setSearchKey(searchOption[0].value);
+    }
+  }, [searchOption]); // This will run whenever searchOption changes
 
   const toggleDropdown = () => {
     setDropdownVisible(!dropdownVisible);

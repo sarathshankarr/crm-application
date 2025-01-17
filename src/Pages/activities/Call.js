@@ -134,6 +134,12 @@ const Call = () => {
       setSearchQuery(''); 
     }, 0);
   };
+  useEffect(() => {
+    if (searchOptions.length > 0) {
+      setSelectedSearchOption(searchOptions[0].label);
+      setSearchKey(searchOptions[0].value);
+    }
+  }, [searchOptions]); // This will run whenever searchOption changes
 
 
   const toggleDropdown = () => {
@@ -266,12 +272,12 @@ const Call = () => {
     setRefreshing(true);
     setFrom(0);
     setTo(20);
-    setSearchKey(0);
+    // setSearchKey(0);
     setFilterFlag(false);
 
     setSearchQuery('');
     // setShowSearchInput(false);
-    setSelectedSearchOption('');
+    // setSelectedSearchOption('');
     setHasMoreTasks(true);
 
     await getAllOrders(true, 0, 20);
@@ -301,9 +307,13 @@ const Call = () => {
       // setShowSearchInput(false);
       console.log("navigation in tas")
       onRefresh();
+      if (searchOptions.length > 0) {
+        setSelectedSearchOption(searchOptions[0].label);
+        setSearchKey(searchOptions[0].value);
+      }
     });
     return unsubscribe;
-  }, [navigation]);
+  }, [navigation,searchOptions]);
 
 
   const fetchCallById = callId => {

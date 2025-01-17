@@ -608,6 +608,13 @@ const ProductPackagePublish = () => {
     setSearchKey(option.value);
     setDropdownVisible(false);
   };
+    useEffect(() => {
+    if (searchOption.length > 0) {
+      setSelectedSearchOption(searchOption[0].label);
+      setSearchKey(searchOption[0].value);
+    }
+  }, [searchOption]); // This will run whenever searchOption changes
+
 
   const toggleDropdown = () => {
     setDropdownVisible(!dropdownVisible);

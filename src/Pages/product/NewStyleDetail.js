@@ -404,6 +404,7 @@ const NewStyleDetail = ({route}) => {
       dealerPrice,
       selectedColorIds?.length,
       selectedTypeId,
+      selectedColorId,
       selectedSeasonGroupId,
       selectedProcessWorkflowId,
       selectedLocationId,
@@ -508,16 +509,36 @@ const NewStyleDetail = ({route}) => {
     }
   }, [selectedCustomerLevelId, customerLevelList]);
 
-  useEffect(() => {
-    if (selectedColorIds && selectedColorIds.length > 0) {
-      const l = selectedColorIds?.length;
-      const selectedColorId = selectedColorIds[l - 1];
-      const found = colorList?.filter(item => item.colorId === selectedColorId);
-      if (found) {
-        setColorCode(found[0]?.colorCode);
-      }
-    }
-  }, [selectedColorIds, colorList]);
+ 
+// useEffect(() => {
+//   // Update color code when new color is added to selectedColorIds
+//   if (selectedColorIds && selectedColorIds.length > 0) {
+//     const lastSelectedColorId = selectedColorIds[selectedColorIds.length - 1];
+//     const found = colorList.find(item => item.colorId === lastSelectedColorId);
+
+//     if (found) {
+//       setColorCode(found.colorCode); // Update color code based on last selected color
+//     }
+//   } else {
+//     setColorCode(''); // Reset when no color is selected
+//   }
+// }, [selectedColorIds, colorList]); // Dependencies: selectedColorIds and colorList
+  
+useEffect(() => {
+  // Update color codes when selectedColorIds changes
+  if (selectedColorIds && selectedColorIds.length > 0) {
+    const selectedCodes = selectedColorIds
+      .map(id => {
+        const found = colorList.find(item => item.colorId === id);
+        return found ? found.colorCode : null; // Return color code if found
+      })
+      .filter(Boolean); // Remove null values
+
+    setColorCode(selectedCodes.join(', ')); // Join all selected color codes
+  } else {
+    setColorCode(''); // Reset when no color is selected
+  }
+}, [selectedColorIds, colorList]);
 
   // useEffect(() => {
   //   if (selectedColorId && colorList.length > 0) {
@@ -549,6 +570,8 @@ const NewStyleDetail = ({route}) => {
       }
     }
   }, [selectedTypeId, typesList]);
+
+ 
 
   useEffect(() => {
     if (selectedScaleId && scalesList.length > 0) {
@@ -894,19 +917,39 @@ const NewStyleDetail = ({route}) => {
   //   setShowColorList(false);
   // }
 
+  useEffect(() => {
+    if (selectedColorId && colorList.length > 0) {
+      const found = colorList?.find(item => item.colorId === selectedColorId);
+  
+      if (found) {
+        setSelectedColor(found?.colorName); // Update selected color name
+        setColorCode(found?.colorCode);    // Update color code
+  
+        // Add selectedColorId only if it's not already unselected
+        setSelectedColorIds(prevSelectedColorIds => {
+          return prevSelectedColorIds.includes(selectedColorId)
+            ? prevSelectedColorIds // Keep as is if already in the list
+            : [...prevSelectedColorIds, selectedColorId]; // Add if not present
+        });
+      }
+    }
+  }, [selectedColorId, colorList]); // Track selectedColorId and colorList
+  
   const handleSelectColor = item => {
-    if (!selectedColorIds.includes(item.colorId)) {
-      setSelectedColorIds([...selectedColorIds, item.colorId]);
-    } else {
-      setSelectedColorIds(selectedColorIds.filter(id => id !== item.colorId));
-    }
-
-    if (selectedColorIds.length === filteredColorList.length - 1) {
-      setIsSelectAll(true);
-    } else {
-      setIsSelectAll(false);
-    }
+    setSelectedColorIds(prevSelectedColorIds => {
+      if (!prevSelectedColorIds.includes(item.colorId)) {
+        // Add the color if not already selected
+        return [...prevSelectedColorIds, item.colorId];
+      } else {
+        // Remove the color if already selected
+        return prevSelectedColorIds.filter(id => id !== item.colorId);
+      }
+    });
   };
+  
+  
+
+  
   const handleSelectAll = () => {
     if (isSelectAll) {
       setSelectedColorIds([]);
@@ -2337,16 +2380,18 @@ const NewStyleDetail = ({route}) => {
                     {backgroundColor: editColor ? '#fff' : '#f1e8e6'},
                   ]}
                   onPress={handleColorDropDown}>
-                  <Text style={{fontWeight: '600', color: '#000'}}>
-                    {selectedColorIds.length > 0
-                      ? filteredColorList
-                          .filter(color =>
-                            selectedColorIds.includes(color.colorId),
-                          )
-                          .map(color => color.colorName)
-                          .join(', ')
-                      : 'Select'}
-                  </Text>
+             <Text style={{fontWeight: '600', color: '#000'}}>
+  {selectedColorIds.length > 0
+    ? filteredColorList
+        .filter(color => selectedColorIds.includes(color.colorId))
+        .map(color => color.colorName)
+        .join(', ')
+    : 'Select'}
+</Text>
+
+                    {/* <Text style={{fontWeight: '600', color: '#000'}}>
+                    {selectedColor ? selectedColor : 'Select'}
+                  </Text> */}
                   <Image
                     source={require('../../../assets/dropdown.png')}
                     style={{width: 20, height: 20}}
@@ -2425,38 +2470,39 @@ const NewStyleDetail = ({route}) => {
                   </Text>
                 ) : (
                   <ScrollView nestedScrollEnabled={true}>
-                    {filteredColorList?.map((item, index) => (
-                      <TouchableOpacity
-                        key={index}
-                        style={{
-                          width: '100%',
-                          height: 50,
-                          justifyContent: 'center',
-                          borderBottomWidth: 0.5,
-                          borderColor: '#8e8e8e',
-                        }}
-                        onPress={() => handleSelectColor(item)}>
-                        <View
-                          style={{
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            marginHorizontal: 10,
-                          }}>
-                          <CustomCheckBox
-                            isChecked={selectedColorIds.includes(item.colorId)}
-                            onToggle={() => handleSelectColor(item)}
-                          />
-                          <Text
-                            style={{
-                              fontWeight: '600',
-                              color: '#000',
-                              marginLeft: 10,
-                            }}>
-                            {item.colorName}
-                          </Text>
-                        </View>
-                      </TouchableOpacity>
-                    ))}
+                  {filteredColorList?.map((item, index) => (
+  <TouchableOpacity
+    key={index}
+    style={{
+      width: '100%',
+      height: 50,
+      justifyContent: 'center',
+      borderBottomWidth: 0.5,
+      borderColor: '#8e8e8e',
+    }}
+    onPress={() => handleSelectColor(item)}>
+    <View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginHorizontal: 10,
+      }}>
+      <CustomCheckBox
+        isChecked={selectedColorIds.includes(item.colorId)}  // Automatically check/uncheck based on selection
+        onToggle={() => handleSelectColor(item)}
+      />
+      <Text
+        style={{
+          fontWeight: '600',
+          color: '#000',
+          marginLeft: 10,
+        }}>
+        {item.colorName}
+      </Text>
+    </View>
+  </TouchableOpacity>
+))}
+
                   </ScrollView>
                 )}
               </View>

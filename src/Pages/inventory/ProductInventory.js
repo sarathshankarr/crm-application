@@ -157,8 +157,8 @@ const ProductInventory = () => {
     setHasMoreData(false);
     setSearchQuery('');
     setFrom(0);
-    setSearchKey(0);
-    setSelectedSearchOption('');
+    // setSearchKey(0);
+    // setSelectedSearchOption('');
     setTo(20);
     await getProductInventory(true, 0, 20);
     setRefreshing(false);
@@ -180,6 +180,13 @@ const ProductInventory = () => {
       setSearchQuery(''); 
     }, 0);
   };
+
+    useEffect(() => {
+    if (searchOption.length > 0) {
+      setSelectedSearchOption(searchOption[0].label);
+      setSearchKey(searchOption[0].value);
+    }
+  }, [searchOption]); // This will run whenever searchOption changes
 
   const toggleDropdown = () => {
     setDropdownVisible(!dropdownVisible);
@@ -214,8 +221,8 @@ const ProductInventory = () => {
       getProductInventory(true, 0, 20);
       setFrom(0);
       setTo(20);
-      setSearchKey(0);
-      setSelectedSearchOption('');
+      // setSearchKey(0);
+      // setSelectedSearchOption('');
       setsearchFilterFlag(true);
 
     }

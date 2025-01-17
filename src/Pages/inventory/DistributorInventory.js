@@ -144,8 +144,8 @@ const DistributorInventory = () => {
     setRefreshing(true);
     setSearchQuery('');
     setFrom(0);
-    setSearchKey(0);
-    setSelectedSearchOption('');
+    // setSearchKey(0);
+    // setSelectedSearchOption('');
     setTo(20);
     setsearchFilterFlag(false);
     await getDistributorInventory(true, 0, 20);
@@ -210,6 +210,13 @@ const DistributorInventory = () => {
     setSearchQuery(''); 
     }, 0);
   };
+
+  useEffect(() => {
+    if (searchOption.length > 0) {
+      setSelectedSearchOption(searchOption[0].label);
+      setSearchKey(searchOption[0].value);
+    }
+  }, [searchOption]); // This will run whenever searchOption changes
 
 
   const toggleDropdown = () => {

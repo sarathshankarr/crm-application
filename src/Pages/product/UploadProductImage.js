@@ -31,8 +31,11 @@ const UploadProductImage = ({route}) => {
   const [selectedImages, setSelectedImages] = useState([]); // State to hold selected images
   const [styleId, setStyleId] = useState(0);
   const [isModalVisible, setModalVisible] = useState(false);
-
+  const [isModalVisibleImages, setIsModalVisibleImages] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  
   const [isSaving, setIsSaving] = useState(false);
+
 
   const [deletedImageNames, setDeletedImageNames] = useState([]);
   
@@ -40,6 +43,16 @@ const UploadProductImage = ({route}) => {
 
   const selectedCompany = useSelector(state => state.selectedCompany);
   const companyId = selectedCompany?.id;
+
+  const openModal = (image) => {
+    setSelectedImage(image);
+    setIsModalVisibleImages(true);
+  };
+
+  const closeModal = () => {
+    setIsModalVisibleImages(false);
+    setSelectedImage(null);
+  };
 
   // useEffect(() => {
   //   if (route.params && route?.params?.productStyle) {
@@ -642,7 +655,7 @@ const openCamera = async () => {
           flexDirection: 'row',
           justifyContent: 'space-evenly',
         }}>
-        {selectedImages.map((image, index) => (
+        {/* {selectedImages.map((image, index) => (
           <View key={index} style={{position: 'relative', paddingVertical: 10}}>
             <Image
               source={{uri: image.uri}}
@@ -655,8 +668,48 @@ const openCamera = async () => {
               <Text style={styles.removeButtonText}>X</Text>
             </TouchableOpacity>
           </View>
+        ))} */}
+          {selectedImages.map((image, index) => (
+          <View key={index} style={{position: 'relative', paddingVertical: 10}}>
+            <TouchableOpacity onPress={() => openModal(image)}>
+              <Image
+                source={{uri: image.uri}}
+                style={{width: 65, height: 65, marginHorizontal: 5}}
+                resizeMode="cover"
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.removeButton}
+              onPress={() => removeImage(index)}>
+              <Text style={styles.removeButtonText}>X</Text>
+            </TouchableOpacity>
+          </View>
         ))}
       </View>
+      {isModalVisibleImages && (
+       <Modal
+       transparent={true}
+       visible={isModalVisibleImages}
+       animationType="fade"
+       onRequestClose={closeModal}>
+       <View style={styles.modalContainerimages}>
+         <TouchableOpacity style={styles.closeButtonimages} onPress={closeModal}>
+           <Image
+             style={{height: 30, width: 30,tintColor: '#000',}}
+             source={require('../../../assets/close.png')}
+           />
+         </TouchableOpacity>
+         {selectedImage && (
+           <Image
+             source={{uri: selectedImage.uri}}
+             style={styles.fullSizeImage}
+             resizeMode="contain"
+           />
+         )}
+       </View>
+     </Modal>
+     
+      )}
       {/* 
       <TouchableOpacity
         style={{
@@ -786,6 +839,39 @@ const getStyles = colors =>
       color: '#fff',
       fontWeight: 'bold',
       fontSize: 14,
+    },
+    modalContainerimages: {
+      flex: 1,
+      backgroundColor: 'rgba(0, 0, 0, 0.8)', // Slightly transparent background
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    closeButtonimages: {
+      position: 'absolute', // Position it relative to the modal
+      top: 130, // Adjust for desired distance from the top
+      right: 10, // Adjust for desired distance from the right
+      zIndex: 10, // Ensure it stays on top of the image
+      backgroundColor:"#fff"
+    },
+    fullSizeImage: {
+      width: '90%', // Adjust based on desired size
+      height: '80%', // Adjust based on desired size
+      borderRadius: 10,
+    },
+    closeButton: {
+      position: 'absolute',
+      top: 50,
+      right: 20,
+      backgroundColor: 'white',
+      borderRadius: 5,
+    },
+    closeButtonText: {
+      color: 'black',
+      fontSize: 16,
+    },
+    fullSizeImage: {
+      width: '90%',
+      height: '80%',
     },
     uploadimg: {
       justifyContent: 'center',

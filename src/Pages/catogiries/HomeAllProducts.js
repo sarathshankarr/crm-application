@@ -174,11 +174,11 @@ const HomeAllProducts = ({navigation}) => {
     console.log('Refreshing in prod ..........');
     setRefreshing(true);
     setPageNo(1);
-    setSearchKey(0);
+    // setSearchKey(0);
     setSearchQuery('');
     setMinPrice(''); // Reset min price
     setMaxPrice(''); // Reset max price
-    setSelectedSearchOption('');
+    // setSelectedSearchOption('');
     setSearchFilterFlag(false);
     if (companyId) {
       await getAllProducts(companyId, true);
@@ -218,9 +218,14 @@ const HomeAllProducts = ({navigation}) => {
       if (flatListRef.current) {
         flatListRef.current.scrollToOffset({offset: 0, animated: false});
       }
+      if (searchOption.length > 0) {
+        setSelectedSearchOption(searchOption[0].label);
+        setSearchKey(searchOption[0].value);
+      }
+
     });
     return unsubscribe;
-  }, [navigation, companyId]);
+  }, [navigation, companyId,searchOption]);
 
   const searchAPI = async (reset = false, page = 1, searchQuery = '') => {
     const apiUrl = `${global?.userData?.productURL}${API.SEARCH_ALL_PRODUCTS}`;
@@ -422,6 +427,14 @@ const HomeAllProducts = ({navigation}) => {
     }, 0); // Ensure it runs immediately after the refresh is triggered
   };
 
+  useEffect(() => {
+    if (searchOption.length > 0) {
+      setSelectedSearchOption(searchOption[0].label);
+      setSearchKey(searchOption[0].value);
+    }
+  }, []); // This will run whenever searchOption changes
+
+  
   const toggleDropdown = () => {
     setDropdownVisible(!dropdownVisible);
   };

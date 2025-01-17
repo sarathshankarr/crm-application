@@ -572,10 +572,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderRadius: 10,
     elevation: 5,
-    marginTop: Platform.OS === 'ios' ? 105 : 40,
+    marginTop: Platform.OS === 'ios' ? 105 : 50,
     position: 'absolute',
     maxHeight: 130,
-    marginHorizontal: 10,
+    marginHorizontal: 20,
   },
   companyItem: {
   flexDirection: 'row',

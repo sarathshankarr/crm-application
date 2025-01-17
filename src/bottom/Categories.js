@@ -322,6 +322,13 @@ const Categories = ({navigation}) => {
     }, 0);
   };
 
+  useEffect(() => {
+    if (searchOption.length > 0) {
+      setSelectedSearchOption(searchOption[0].label);
+      setSearchKey(searchOption[0].value);
+    }
+  }, [searchOption]); // This will run whenever searchOption changes
+
   const toggleDropdown = () => {
     setDropdownVisible(!dropdownVisible);
   };
@@ -384,10 +391,14 @@ const Categories = ({navigation}) => {
       if (companyId) {
         fetchCategories(true, 0, 20);
       }
+      if (searchOption.length > 0) {
+        setSelectedSearchOption(searchOption[0].label);
+        setSearchKey(searchOption[0].value);
+      }
       setFilterFlag(false);
     });
     return unsubscribe;
-  }, [navigation,companyId]);
+  }, [navigation,companyId,searchOption]);
 
   useEffect(() => {
     if (companyId) {
@@ -478,12 +489,12 @@ const Categories = ({navigation}) => {
     setRefreshing(true);
     setFrom(0);
     setTo(15);
-    setSearchKey(0);
+    // setSearchKey(0);
     setFilterFlag(false);
 
     setSearchQuery('');
     // setShowSearchInput(false);
-    setSelectedSearchOption('');
+    // setSelectedSearchOption('');
     setHasMoreTasks(true);
 
     await fetchCategories(true, 0, 15);

@@ -46,7 +46,7 @@ const Cart = () => {
   const selectedCompany = useSelector(state => state.selectedCompany);
   const comp_flag = selectedCompany?.comp_flag;
   const package_barcode_flag = selectedCompany?.package_barcode_flag;
-  const hold_qty_flag=selectedCompany?.hold_qty_flag;
+  const hold_qty_flag = selectedCompany?.hold_qty_flag;
   // console.log('package_barcode_flag', package_barcode_flag);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -119,14 +119,13 @@ const Cart = () => {
   const [selectedStatus, setSelectedStatus] = useState('Active'); // Default is 'Active'
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
   const [selectedStatusId, setSelectedStatusId] = useState(0);
-  
 
   const [selectedStateId, setSelectedStateId] = useState(null); // Track only the stateId
   const [selectedState, setSelectedState] = useState(null); // Track the full state object
   const [states, setStates] = useState([]);
   const [showStateDropdown, setShowStateDropdown] = useState(false);
 
- const getState = () => {
+  const getState = () => {
     const apiUrl = `${global?.userData?.productURL}${API.GET_STATE}`;
     axios
       .get(apiUrl, {
@@ -135,7 +134,7 @@ const Cart = () => {
         },
       })
       .then(response => {
-        console.log('response.data.state===>',response.data)
+        console.log('response.data.state===>', response.data);
         setStates(response.data); // Assuming the response contains the states
       })
       .catch(error => {
@@ -147,9 +146,8 @@ const Cart = () => {
     setShowStateDropdown(prev => !prev);
   };
 
-
   // Handle state selection
-  const handleSelectState = (state) => {
+  const handleSelectState = state => {
     setSelectedStateId(state.stateId); // Set the selected stateId
     setSelectedState(state); // Set the full state object
     setShowStateDropdown(false); // Hide the dropdown after selection
@@ -160,20 +158,20 @@ const Cart = () => {
     getState();
   }, []);
   const statusOptions = [
-    { label: 'Active', value: 0 },
-    { label: 'Inactive', value: 1 },
+    {label: 'Active', value: 0},
+    {label: 'Inactive', value: 1},
   ];
 
   const toggleStatusDropdown = () => {
     setShowStatusDropdown(!showStatusDropdown);
   };
 
-  const handleSelectStatus = (status) => {
+  const handleSelectStatus = status => {
     // Update selectedStatus with the label and selectedStatusId with the value
-    setSelectedStatus(status.label); 
-    setSelectedStatusId(status.value); 
+    setSelectedStatus(status.label);
+    setSelectedStatusId(status.value);
     setShowStatusDropdown(false);
-};
+  };
   const [modalData, setModalData] = useState(null);
 
   const toggleSearchVisibility = () => {
@@ -506,22 +504,21 @@ const Cart = () => {
     }
   };
 
-  const grossPrices = cartItems.map((item, index) => {
-    // Ensure item is defined and has necessary properties
+  const grossPrices = cartItems.map(item => {
     if (!item || !item.quantity) return 0; // Fallback if item or quantity is missing
 
-    const grossPrice = (
-      Number(
-        isEnabled
-          ? item?.retailerPrice?.toString()
-          : item?.dealerPrice?.toString() || item?.price?.toString() || '0',
-      ) * (Number(item?.quantity) || 0)
-    ).toFixed(2); // Calculate the gross price for each item
+    // Determine the appropriate price based on isEnabled
+    const price = isEnabled
+      ? item?.retailerPrice || 0
+      : item?.dealerPrice || item?.price || 0;
 
-    return parseFloat(grossPrice); // Return as a number after converting it to float
+    // Calculate gross price for this item
+    const grossPrice = (Number(price) * Number(item?.quantity || 0)).toFixed(2);
+
+    return parseFloat(grossPrice); // Convert to a float for accurate display
   });
 
-  // Now you have an array of grossPrices, you can sum them up or use them
+  // Calculate the total gross price
   const totalGrossPrice = grossPrices
     .reduce((acc, grossPrice) => acc + grossPrice, 0)
     .toFixed(2);
@@ -730,14 +727,14 @@ const Cart = () => {
       'locationName',
       'locationDescription',
     ];
-  
+
     // Add state to mandatory fields if isEnabled (i.e., adding customer location details)
     if (isEnabled) {
       mandatoryFields.push('state');
     }
-  
+
     setErrorFields([]);
-  
+
     // Check if any mandatory fields are missing, including state
     const missingFields = mandatoryFields.filter(field => {
       // Check for mandatory fields that are not filled
@@ -747,21 +744,21 @@ const Cart = () => {
       }
       return !inputValues[field];
     });
-  
+
     if (missingFields.length > 0) {
       setErrorFields(missingFields);
       Alert.alert('Alert', 'Please fill in all mandatory fields');
       return;
     }
-  
+
     const hasExactlyTenDigits = /^\d{10,12}$/;
-  
+
     // Validate phone number format
     if (!hasExactlyTenDigits.test(Number(inputValues?.phoneNumber))) {
       Alert.alert('Alert', 'Please Provide a valid Phone Number');
       return;
     }
-  
+
     // Validate whatsappId if provided
     if (inputValues?.whatsappId?.length > 0) {
       if (!hasExactlyTenDigits.test(inputValues?.whatsappId)) {
@@ -769,14 +766,13 @@ const Cart = () => {
         return;
       }
     }
-  
+
     // Set saving state to true to disable the button
     setIsSaving(true);
-  
+
     // Call appropriate function based on isEnabled
     isEnabled ? getisValidCustomer() : getisValidDistributors();
   };
-  
 
   useEffect(() => {
     // Fetch user data from AsyncStorage
@@ -879,12 +875,12 @@ const Cart = () => {
       locationCode: '',
       locationDescription: inputValues.locationDescription,
       linkType: 3,
-      statusId:selectedStatusId
+      statusId: selectedStatusId,
 
       // userId:userId
     };
-console.log("requestData====>",requestData)
-    
+    console.log('requestData====>', requestData);
+
     axios
       .post(
         global?.userData?.productURL + API.ADD_CUSTOMER_DETAILS,
@@ -981,10 +977,9 @@ console.log("requestData====>",requestData)
       locationDescription: inputValues.locationDescription,
       linkType: 3,
       userId: userId,
-      statusId:selectedStatusId
-
+      statusId: selectedStatusId,
     };
-    console.log("requestDatafordis===>",requestData)
+    console.log('requestDatafordis===>', requestData);
 
     axios
       .post(
@@ -1026,7 +1021,7 @@ console.log("requestData====>",requestData)
       setIsLoading(true);
       const requestData = {
         styleName: '',
-        companyId:companyId
+        companyId: companyId,
       };
       axios
         .post(apiUrl0, requestData, {
@@ -1226,13 +1221,12 @@ console.log("requestData====>",requestData)
     setShipFromToClicked(false);
   };
 
-
-  const checkStyleAvailability = async (cartItems) => {
+  const checkStyleAvailability = async cartItems => {
     const apiUrl = `${global?.userData?.productURL}${API.CHECKAVALABILITY}`;
-  
+
     try {
       // Prepare the payload for the API request
-      const payload = cartItems.map((item) => ({
+      const payload = cartItems.map(item => ({
         style: item.styleName,
         colorName: item.colorName,
         sizeDesc: item.sizeDesc,
@@ -1241,33 +1235,37 @@ console.log("requestData====>",requestData)
         locationId: selectedCompanyLocationId,
         qty: item.quantity,
       }));
-  
-      console.log("API URL:", apiUrl);
-      console.log("Payload:", JSON.stringify(payload, null, 2));
-  
+
+      console.log('API URL:', apiUrl);
+      console.log('Payload:', JSON.stringify(payload, null, 2));
+
       const headers = {
         Authorization: `Bearer ${global?.userData?.token?.access_token}`,
       };
-  
-      const response = await axios.post(apiUrl, payload, { headers });
-  
+
+      const response = await axios.post(apiUrl, payload, {headers});
+
       if (response.status === 200) {
         const data = response.data;
-        if (data.message === "true") {
-          return { success: true, message: "All items are available." };
+        if (data.message === 'true') {
+          return {success: true, message: 'All items are available.'};
         } else {
-          return { success: false, message: data.message };
+          return {success: false, message: data.message};
         }
       } else {
-        return { success: false, message: "Failed to check availability." };
+        return {success: false, message: 'Failed to check availability.'};
       }
     } catch (error) {
-      console.error("Error checking availability:", error.response?.data || error.message);
-      return { success: false, message: "An error occurred while checking availability." };
+      console.error(
+        'Error checking availability:',
+        error.response?.data || error.message,
+      );
+      return {
+        success: false,
+        message: 'An error occurred while checking availability.',
+      };
     }
   };
-  
-  
 
   const PlaceAddOrder = async () => {
     let customerType;
@@ -1338,9 +1336,9 @@ console.log("requestData====>",requestData)
 
     setIsSubmitting(true);
     const availabilityCheck = await checkStyleAvailability(cartItems);
-  
+
     if (!availabilityCheck.success) {
-      Alert.alert("Alert", availabilityCheck.message);
+      Alert.alert('Alert', availabilityCheck.message);
       setIsSubmitting(false);
       return;
     }
@@ -2095,11 +2093,11 @@ console.log("requestData====>",requestData)
 
   const handleCloseModalLocation = () => {
     setIsLocationModalVisible(false);
-    setLocationInputValues([]); // Assuming inputValues should be an array too
+    setLocationInputValues([]);
     setLocationErrorFields([]);
   };
 
-  useEffect(() => {}, []); // Run only once when component mounts
+  useEffect(() => {}, []);
 
   const handleSelectLocation = item => {
     setSelectedCompanyLocation(item.locationName);
@@ -2113,6 +2111,14 @@ console.log("requestData====>",requestData)
     );
     setFilteredCompanyLocationList(filtered);
   };
+
+  useEffect(() => {
+    if (locationCompanyList && locationCompanyList.length > 0) {
+      const defaultLocation = locationCompanyList[0];
+      setSelectedCompanyLocation(defaultLocation.locationName);
+      setSelectedCompanyLocationId(defaultLocation.locationId);
+    }
+  }, [locationCompanyList]);
 
   const toggleSwitch = () => setIsEnabled(previousState => !previousState);
 
@@ -2622,7 +2628,7 @@ console.log("requestData====>",requestData)
           </View>
         </View>
         {hold_qty_flag === 1 && (
-        <View style={{ flexDirection: 'row', marginTop: 10 }}>
+          <View style={{flexDirection: 'row', marginTop: 10}}>
             <TouchableOpacity
               style={{
                 width: '81%',
@@ -2638,77 +2644,80 @@ console.log("requestData====>",requestData)
                 marginHorizontal: 20,
                 backgroundColor: editCompanyLocation ? '#fff' : '#f1e8e6',
               }}
-              onPress={()=>setShowCompanyLocationList(!showCompanyLocationList)}>
-              <Text style={{ fontWeight: '600', color: "#000" }}>
-                {selectedCompanyLocationId ? selectedCompanyLocation : "Company Location*"}
+              onPress={() =>
+                setShowCompanyLocationList(!showCompanyLocationList)
+              }>
+              <Text style={{fontWeight: '600', color: '#000'}}>
+                {selectedCompanyLocationId
+                  ? selectedCompanyLocation
+                  : 'Company Location*'}
               </Text>
 
               <Image
                 source={require('../../../assets/dropdown.png')}
-                style={{ width: 20, height: 20 }}
+                style={{width: 20, height: 20}}
               />
             </TouchableOpacity>
           </View>
         )}
         {showCompanyLocationList && editCompanyLocation && (
-            <View
+          <View
+            style={{
+              elevation: 5,
+              height: 300,
+              alignSelf: 'center',
+              width: '90%',
+              backgroundColor: '#fff',
+              borderRadius: 10,
+            }}>
+            <TextInput
               style={{
-                elevation: 5,
-                height: 300,
-                alignSelf: 'center',
-                width: '90%',
-                backgroundColor: '#fff',
+                marginTop: 10,
                 borderRadius: 10,
-              }}>
-              <TextInput
-                style={{
-                  marginTop: 10,
-                  borderRadius: 10,
-                  height: 40,
-                  borderColor: 'gray',
-                  borderWidth: 1,
-                  marginHorizontal: 10,
-                  paddingLeft: 10,
-                  marginBottom: 10,
-                  color: '#000000',
-                }}
-                placeholderTextColor="#000"
-                placeholder="Search"
-                onChangeText={filterLocation}
-              />
+                height: 40,
+                borderColor: 'gray',
+                borderWidth: 1,
+                marginHorizontal: 10,
+                paddingLeft: 10,
+                marginBottom: 10,
+                color: '#000000',
+              }}
+              placeholderTextColor="#000"
+              placeholder="Search"
+              onChangeText={filterLocation}
+            />
 
-              {filteredCompanyLocationList.length === 0 && !isLoading ? (
-                <Text style={style.noCategoriesText}>
-                  Sorry, no results found!
-                </Text>
-              ) : (
-                <ScrollView nestedScrollEnabled={true}>
-                  {filteredCompanyLocationList?.map((item, index) => (
-                    <TouchableOpacity
-                      key={index}
+            {filteredCompanyLocationList.length === 0 && !isLoading ? (
+              <Text style={style.noCategoriesText}>
+                Sorry, no results found!
+              </Text>
+            ) : (
+              <ScrollView nestedScrollEnabled={true}>
+                {filteredCompanyLocationList?.map((item, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={{
+                      width: '100%',
+                      height: 50,
+                      justifyContent: 'center',
+                      borderBottomWidth: 0.5,
+                      borderColor: '#8e8e8e',
+                    }}
+                    onPress={() => handleSelectLocation(item)}>
+                    <Text
                       style={{
-                        width: '100%',
-                        height: 50,
-                        justifyContent: 'center',
-                        borderBottomWidth: 0.5,
-                        borderColor: '#8e8e8e',
-                      }}
-                      onPress={() => handleSelectLocation(item)
-                      }>
-                      <Text
-                        style={{
-                          fontWeight: '600',
-                          marginHorizontal: 15,
-                          color: '#000',
-                        }}>
-                        {item?.locationName}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              )}
-            </View>
-          )}
+                        fontWeight: '600',
+                        marginHorizontal: 15,
+                        color: '#000',
+                      }}>
+                      {item?.locationName}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            )}
+          </View>
+        )}
         <View style={{marginBottom: 10}} />
 
         <ScrollView style={style.container}>
@@ -2928,8 +2937,7 @@ console.log("requestData====>",requestData)
                           ).toString()}
                         </Text> */}
                         <Text style={{color: '#000'}}>
-                          {totalGrossPrice}{' '}
-                          {/* Gross price for the current item */}
+                          {grossPrices[index]} {/* Individual gross price */}
                         </Text>
                       </View>
                       <TouchableOpacity onPress={() => handleRemoveItem(index)}>
@@ -3226,44 +3234,48 @@ console.log("requestData====>",requestData)
                     <Text style={style.errorText}>Please Enter State</Text>
                   )} */}
 
-<Text style={style.headerTxt}>
-  {isEnabled ? 'State *' : 'State'}  {/* Append '*' when isEnabled is true */}
-</Text>
+                  <Text style={style.headerTxt}>
+                    {isEnabled ? 'State *' : 'State'}{' '}
+                    {/* Append '*' when isEnabled is true */}
+                  </Text>
 
+                  <View style={style.container1}>
+                    <View style={style.container2}>
+                      <TouchableOpacity
+                        style={style.container3}
+                        onPress={toggleStateDropdown}>
+                        <Text style={{fontWeight: '600', color: '#000'}}>
+                          {selectedState?.stateName || 'Select'}{' '}
+                          {/* Display the stateName if selected, otherwise 'Select' */}
+                        </Text>
+                        <Image
+                          source={require('../../../assets/dropdown.png')}
+                          style={{width: 20, height: 20}}
+                        />
+                      </TouchableOpacity>
 
-<View style={style.container1}>
-        <View style={style.container2}>
-          <TouchableOpacity
-            style={style.container3}
-            onPress={toggleStateDropdown}
-          >
-            <Text style={{ fontWeight: '600', color: '#000' }}>
-              {selectedState?.stateName || 'Select'}  {/* Display the stateName if selected, otherwise 'Select' */}
-            </Text>
-            <Image
-              source={require('../../../assets/dropdown.png')}
-              style={{ width: 20, height: 20 }}
-            />
-          </TouchableOpacity>
-
-          {/* Dropdown list */}
-          {showStateDropdown && (
-            <View style={style.dropdownContentstate}>
-              <ScrollView style={style.scrollView} nestedScrollEnabled={true}>
-                {states.map((state) => (
-                  <TouchableOpacity
-                    key={state.stateId}
-                    style={style.dropdownItem}
-                    onPress={() => handleSelectState(state)} // Pass the full state object
-                  >
-                    <Text style={style.dropdownText}>{state.stateName}</Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </View>
-          )}
-        </View>
-      </View>
+                      {/* Dropdown list */}
+                      {showStateDropdown && (
+                        <View style={style.dropdownContentstate}>
+                          <ScrollView
+                            style={style.scrollView}
+                            nestedScrollEnabled={true}>
+                            {states.map(state => (
+                              <TouchableOpacity
+                                key={state.stateId}
+                                style={style.dropdownItem}
+                                onPress={() => handleSelectState(state)} // Pass the full state object
+                              >
+                                <Text style={style.dropdownText}>
+                                  {state.stateName}
+                                </Text>
+                              </TouchableOpacity>
+                            ))}
+                          </ScrollView>
+                        </View>
+                      )}
+                    </View>
+                  </View>
 
                   <TextInput
                     style={[
@@ -3341,36 +3353,36 @@ console.log("requestData====>",requestData)
                     </Text>
                   )}
 
-<Text style={style.headerTxt}>{'Status *'}</Text>
-             <View style={style.container1}>
-      <View style={style.container2}>
-        <TouchableOpacity
-          style={style.container3}
-          onPress={toggleStatusDropdown}
-        >
-          <Text style={{ fontWeight: '600', color: '#000' }}>
-            {selectedStatus} 
-          </Text>
-          <Image
-            source={require('../../../assets/dropdown.png')}
-            style={{ width: 20, height: 20 }}
-          />
-        </TouchableOpacity>
-        {showStatusDropdown && (
-          <View style={style.dropdownContainersstatus}>
-            {statusOptions.map((status, index) => (
-              <TouchableOpacity
-                key={index}
-                style={style.dropdownItem}
-                onPress={() => handleSelectStatus(status)}
-              >
-                <Text style={style.dropdownText}>{status.label}</Text> 
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
-      </View>
-    </View>
+                  <Text style={style.headerTxt}>{'Status *'}</Text>
+                  <View style={style.container1}>
+                    <View style={style.container2}>
+                      <TouchableOpacity
+                        style={style.container3}
+                        onPress={toggleStatusDropdown}>
+                        <Text style={{fontWeight: '600', color: '#000'}}>
+                          {selectedStatus}
+                        </Text>
+                        <Image
+                          source={require('../../../assets/dropdown.png')}
+                          style={{width: 20, height: 20}}
+                        />
+                      </TouchableOpacity>
+                      {showStatusDropdown && (
+                        <View style={style.dropdownContainersstatus}>
+                          {statusOptions.map((status, index) => (
+                            <TouchableOpacity
+                              key={index}
+                              style={style.dropdownItem}
+                              onPress={() => handleSelectStatus(status)}>
+                              <Text style={style.dropdownText}>
+                                {status.label}
+                              </Text>
+                            </TouchableOpacity>
+                          ))}
+                        </View>
+                      )}
+                    </View>
+                  </View>
                   <TouchableOpacity
                     style={style.saveButton}
                     onPress={handleSaveButtonPress}
@@ -3983,7 +3995,7 @@ const getStyles = colors =>
       color: '#000',
     },
     container1: {
-      marginBottom:5,
+      marginBottom: 5,
       flexDirection: 'row',
       // marginTop: 20,
       alignItems: 'center',
@@ -4017,7 +4029,7 @@ const getStyles = colors =>
       borderBottomWidth: 0.5,
       borderColor: '#8e8e8e',
     },
-    
+
     dropdownContainersstatus: {
       elevation: 5,
       height: 100,
@@ -4043,8 +4055,8 @@ const getStyles = colors =>
       borderRadius: 10,
       borderColor: 'lightgray', // Optional: Adds subtle border (for effect)
       borderWidth: 1,
-      marginHorizontal:10,
-      marginVertical:3,
+      marginHorizontal: 10,
+      marginVertical: 3,
     },
   });
 export default Cart;

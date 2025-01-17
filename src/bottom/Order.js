@@ -701,10 +701,14 @@ const Order = () => {
       if (companyId) {
         getAllOrders(true, 0, 10);
       }
+      if (searchOption.length > 0) {
+        setSelectedSearchOption(searchOption[0].label);
+        setSearchKey(searchOption[0].value);
+      }
       setFilterFlag(false);
     });
     return unsubscribe;
-  }, [navigation,companyId]);
+  }, [navigation,companyId,searchOption]);
 
 
   useEffect(() => {
@@ -809,12 +813,12 @@ const Order = () => {
     setRefreshing(true);
     setFrom(0);
     setTo(10);
-    setSearchKey(0);
+    // setSearchKey(0);
     setFilterFlag(false);
 
     setSearchQuery('');
     // setShowSearchInput(false);
-    setSelectedSearchOption('');
+    // setSelectedSearchOption('');
     setHasMoreTasks(true);
     
     await getAllOrders(true, 0, 10);
@@ -827,7 +831,7 @@ const Order = () => {
       dropdownId: searchKey,
       fieldvalue: searchQuery,
       from: customFrom,
-      to: customTo,
+      to: 1000,
       companyId: companyId,
       pdfFlag: 0,
     };
@@ -880,7 +884,13 @@ const Order = () => {
       setSearchQuery(''); 
     }, 0);
   };
-  
+  useEffect(() => {
+    if (searchOption.length > 0) {
+      setSelectedSearchOption(searchOption[0].label);
+      setSearchKey(searchOption[0].value);
+    }
+  }, [searchOption]); // This will run whenever searchOption changes
+
   const toggleDropdown = () => {
     setDropdownVisible(!dropdownVisible);
   };

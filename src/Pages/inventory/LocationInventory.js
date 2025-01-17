@@ -184,6 +184,13 @@ const LocationInventory = () => {
       setSearchQuery('');
     }, 0);
   };
+  useEffect(() => {
+    if (searchOption.length > 0) {
+      setSelectedSearchOption(searchOption[0].label);
+      setSearchKey(searchOption[0].value);
+    }
+  }, [searchOption]); // This will run whenever searchOption changes
+
 
   const toggleDropdown = () => {
     setDropdownVisible(!dropdownVisible);
@@ -234,8 +241,8 @@ const LocationInventory = () => {
     setHasMoreData(true);
     setSearchQuery('');
     setFrom(0);
-    setSearchKey(0);
-    setSelectedSearchOption('');
+    // setSearchKey(0);
+    // setSelectedSearchOption('');
     setTo(20);
     await getLocationInventory(true, 0, 20);
     setRefreshing(false);
