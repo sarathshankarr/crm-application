@@ -88,7 +88,7 @@ android {
     applicationId "com.CodevCRM"
     minSdkVersion 24  // Keep this line only
     targetSdkVersion rootProject.ext.targetSdkVersion
-    versionCode 7
+    versionCode 8
     versionName "1.0"
     
 }

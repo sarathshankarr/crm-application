@@ -1837,6 +1837,8 @@ const Cart = () => {
       return total; // Ignore invalid quantities
     }
   }, 0);
+  const formattedTotalQty = totalQty !== 0 ? parseFloat(totalQty.toFixed(5)) : '0';
+
 
   const calculateTotalQty = (styleId, colorId) => {
     let totalQty = 0;
@@ -2965,13 +2967,22 @@ const Cart = () => {
                         <View style={{flex: 1.5, marginLeft: 18}}>
                           <Text style={{color: '#000'}}>Total</Text>
                         </View>
-                        <View
+                        {/* <View
                           style={{flex: 2.1, marginLeft: 10, marginRight: 20}}>
                           <Text style={{color: '#000'}}>
                             {' '}
                             {calculateTotalQty(item.styleId, item.colorId)}
                           </Text>
-                        </View>
+                        </View> */}
+                        <View
+  style={{flex: 2.1, marginLeft: 10, marginRight: 20}}>
+  <Text style={{color: '#000'}}>
+    {calculateTotalQty(item.styleId, item.colorId) !== undefined
+      ? Number(calculateTotalQty(item.styleId, item.colorId)).toFixed(5)
+      : '0'}
+  </Text>
+</View>
+
                         {/* <View style={{ flex: 1 }}>
                           <Text style={{color:"#000"}}>Total Set: {calculateTotalItems(item.styleId, item.colorId)}</Text>
                         </View> */}
@@ -3071,7 +3082,7 @@ const Cart = () => {
               marginBottom: 15,
               marginVertical: 25,
             }}>
-            <OrderDetailRow label="Total Qty" value={totalQty} />
+            <OrderDetailRow label="Total Qty" value={formattedTotalQty} />
             <OrderDetailRow label="Total Items" value={totalItems} />
             <OrderDetailRow label="Total Gst" value={totalGst} />
             <OrderDetailRow label="Total Amt" value={totalAmount} />
