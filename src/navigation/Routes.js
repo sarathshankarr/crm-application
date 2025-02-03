@@ -53,6 +53,7 @@ import Cushion from '../Pages/styles/Cushion';
 import {Settings} from 'react-native';
 import SettingsScreen from '../settings/SettingsScreen';
 import CompanyDropdown from '../components/CompanyDropdown';
+import CopyProduct from '../Pages/product/CopyProduct';
 
 const Stack = createNativeStackNavigator();
 
@@ -402,6 +403,11 @@ const Routes = () => {
       <Stack.Screen
         name="SettingsScreen"
         component={SettingsScreen}
+        options={{headerShown: false}}
+      />
+        <Stack.Screen
+        name="CopyProduct"
+        component={CopyProduct}
         options={{headerShown: false}}
       />
     </Stack.Navigator>

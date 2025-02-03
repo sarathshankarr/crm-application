@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useState} from 'react';
+import React, {useContext, useEffect, useRef, useState} from 'react';
 import {
   Alert,
   FlatList,
@@ -1013,8 +1013,10 @@ const Cart = () => {
   };
 
   const handleCommentsChange = text => {
+    console.log('Comments changed:', text);
     setComments(text);
   };
+  
   const getLocations = () => {
     if (comp_flag === 0) {
       const apiUrl0 = `${global?.userData?.productURL}${API.GET_LOCATION_C0_LIST}`;
@@ -1180,46 +1182,160 @@ const Cart = () => {
     }
   };
 
-  const handleCustomerSelection = (firstName, lastName, customerId) => {
-    setSelectedCustomer(`${firstName} ${lastName}`);
-    setClicked(false);
-    setSelectedCustomerId(customerId);
-    setSelectedLocation('');
-    setSelectedShipLocation('');
-    setSelectedLocationId('');
-    setSelectedShipLocationId('');
-    getCustomerLocations(customerId);
-    const selectedCustomer = customers.find(
-      customer => customer.customerId === customerId,
-    );
-    setSelectedCustomerDetails([selectedCustomer]);
-  };
+  // const handleCustomerSelection = (firstName, lastName, customerId) => {
+  //   setSelectedCustomer(`${firstName} ${lastName}`);
+  //   setClicked(false);
+  //   setSelectedCustomerId(customerId);
+  //   setSelectedLocation('');
+  //   setSelectedShipLocation('');
+  //   setSelectedLocationId('');
+  //   setSelectedShipLocationId('');
+  //   getCustomerLocations(customerId);
+  //   const selectedCustomer = customers.find(
+  //     customer => customer.customerId === customerId,
+  //   );
+  //   setSelectedCustomerDetails([selectedCustomer]);
+  // };
 
-  const handleDistributorSelection = (firstName, lastName, customerId) => {
-    setSelectedDistributor(`${lastName}`);
-    setClicked(false);
-    setSelectedDistributorId(customerId);
-    setSelectedLocation('');
-    setSelectedShipLocation('');
-    setSelectedShipLocationId('');
-    setSelectedLocationId('');
-    getCustomerLocations(customerId);
-    const selectedDistributor = distributors.find(
-      distributor => distributor.id === customerId,
-    );
-    setSelectedDistributorDetails([selectedDistributor]);
-  };
+  // const handleDistributorSelection = (firstName, lastName, customerId) => {
+  //   setSelectedDistributor(`${lastName}`);
+  //   setClicked(false);
+  //   setSelectedDistributorId(customerId);
+  //   setSelectedLocation('');
+  //   setSelectedShipLocation('');
+  //   setSelectedShipLocationId('');
+  //   setSelectedLocationId('');
+  //   getCustomerLocations(customerId);
+  //   const selectedDistributor = distributors.find(
+  //     distributor => distributor.id === customerId,
+  //   );
+  //   setSelectedDistributorDetails([selectedDistributor]);
+  // };
+
+  const [hasUserSelectedLocation, setHasUserSelectedLocation] = useState(false); // Flag to track manual selection
+
+  const [hasUserSelectedLocationDistributor, setHasUserSelectedLocationDistributor] = useState(false); // Flag to track manual selection
 
   const handleLocationSelection = location => {
     setSelectedLocation(location.locationName);
     setSelectedLocationId(location.locationId);
+    setHasUserSelectedLocation(true); // Set the flag to true when the user selects a location
+    setHasUserSelectedLocationDistributor(true)
     setFromToClicked(false);
+    console.log('Selected Location:', location.locationName);
   };
+  
   const handleShipLocation = location => {
     setSelectedShipLocation(location.locationName);
     setSelectedShipLocationId(location.locationId);
     setShipFromToClicked(false);
   };
+  
+  useEffect(() => {
+    // Watch for changes in customerLocations
+    console.log('Updated customerLocations:', customerLocations);
+  
+    // Automatically select the first location if available and the user hasn't selected one
+    if (customerLocations.length > 0 && !hasUserSelectedLocation) {
+      console.log('First Location:', customerLocations[0]);
+      setSelectedLocation(customerLocations[0].locationName);
+      setSelectedLocationId(customerLocations[0].locationId);
+    }
+  }, [customerLocations]);
+
+
+  
+  useEffect(() => {
+    // Watch for changes in customerLocations for shipping location
+    console.log('Updated dis:', customerLocations);
+  
+    // Automatically select the first location for shipping if available and the user hasn't selected one
+    if (customerLocations.length > 0 && !hasUserSelectedLocationDistributor) {
+      console.log('First Location:', customerLocations[0]);
+      setSelectedShipLocation(customerLocations[0].locationName);
+      setSelectedShipLocationId(customerLocations[0].locationId);
+    }
+  }, [customerLocations]);
+
+  useEffect(() => {
+    // Watch for changes in customerLocations for shipping location
+    console.log('Updated dis:', distributorLocations);
+  
+    // Automatically select the first location for shipping if available and the user hasn't selected one
+    if (distributorLocations.length > 0 && !hasUserSelectedLocation) {
+      console.log('First Location:', distributorLocations[0]);
+      setSelectedShipLocation(distributorLocations[0].locationName);
+      setSelectedShipLocationId(distributorLocations[0].locationId);
+    }
+  }, [distributorLocations]);
+  
+  const handleCustomerSelection = (firstName, lastName, customerId) => {
+    setSelectedCustomer(`${firstName} ${lastName}`);
+    setClicked(false);
+    setSelectedCustomerId(customerId);
+    setSelectedLocation(''); // Clear the location
+    setSelectedShipLocation('');
+    setSelectedLocationId('');
+    setSelectedShipLocationId('');
+    setHasUserSelectedLocation(false); // Reset the manual selection flag
+    
+    // Fetch locations for the customer
+    console.log('Fetching customer locations for customerId:', customerId);
+    getCustomerLocations(customerId);
+  
+    const selectedCustomer = customers.find(
+      customer => customer.customerId === customerId,
+    );
+    setSelectedCustomerDetails([selectedCustomer]);
+  };
+  
+  const handleDistributorSelection = (firstName, lastName, customerId) => {
+    setSelectedDistributor(`${firstName} ${lastName}`);
+    setClicked(false);
+    setSelectedDistributorId(customerId);
+    setSelectedLocation(''); // Clear the location
+    setSelectedShipLocation('');
+    setSelectedLocationId('');
+    setSelectedShipLocationId('');
+    setHasUserSelectedLocationDistributor(false); // Reset the manual selection flag
+  
+    // Fetch locations for the distributor
+    console.log('Fetching distributor locations for customerId:', customerId);
+    getCustomerLocations(customerId);
+  
+    const selectedDistributor = distributors.find(
+      distributor => distributor.id === customerId,
+    );
+    setSelectedDistributorDetails([selectedDistributor]);
+  };
+  
+
+  
+
+  useEffect(() => {
+    if (clicked) {
+      isEnabled ? getCustomersDetails() : getDistributorsDetails();
+    }
+    setSelectedLocation('Billing to *');
+    setSelectedShipLocation('Shipping to *');
+    setSelectedLocationId('');
+    setSelectedShipLocationId('');
+    setCustomerLocations([]);
+  }, [clicked, isEnabled]);
+  
+
+  // const handleLocationSelection = location => {
+  //   setSelectedLocation(location.locationName);
+  //   setSelectedLocationId(location.locationId);
+  //   setFromToClicked(false);
+  //   console.log(' Locations:', setSelectedLocation);
+
+  // };
+  // const handleShipLocation = location => {
+  //   setSelectedShipLocation(location.locationName);
+  //   setSelectedShipLocationId(location.locationId);
+  //   setShipFromToClicked(false);
+  // };
 
   const checkStyleAvailability = async cartItems => {
     const apiUrl = `${global?.userData?.productURL}${API.CHECKAVALABILITY}`;
@@ -1335,13 +1451,24 @@ const Cart = () => {
     // return;
 
     setIsSubmitting(true);
-    const availabilityCheck = await checkStyleAvailability(cartItems);
 
-    if (!availabilityCheck.success) {
-      Alert.alert('Alert', availabilityCheck.message);
-      setIsSubmitting(false);
-      return;
+
+    if (hold_qty_flag === 1) {
+      const availabilityCheck = await checkStyleAvailability(cartItems);
+  
+      if (!availabilityCheck.success) {
+        Alert.alert('Alert', availabilityCheck.message);
+        setIsSubmitting(false);
+        return;
+      }
     }
+  //   if (hold_qty_flag === 1) {
+  //   if (!availabilityCheck.success) {
+  //     Alert.alert('Alert', availabilityCheck.message);
+  //     setIsSubmitting(false);
+  //     return;
+  //   }
+  // }
 
     setIsSubmitting(true);
 
@@ -2122,7 +2249,14 @@ const Cart = () => {
     }
   }, [locationCompanyList]);
 
-  const toggleSwitch = () => setIsEnabled(previousState => !previousState);
+  const toggleSwitch = () => {
+    setIsEnabled(previousState => !previousState);
+    // Reset selected customer or distributor to fallback text when toggled
+    if (!isEnabled) {
+      setSelectedCustomerDetails([]); // Reset customer details
+      setSelectedDistributorDetails([]); // Reset distributor details
+    }
+  };
 
   const OrderDetailRow = ({label, value}) => (
     <View style={{flexDirection: 'row'}}>
@@ -2148,11 +2282,19 @@ const Cart = () => {
     </View>
   );
 
+  const inputRef = useRef(null);
+
+useEffect(() => {
+  inputRef.current?.focus();
+}, []);
+
   return (
-    <KeyboardAvoidingView
-      style={{flex: 1, backgroundColor: '#fff'}}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : -500}>
+<KeyboardAvoidingView
+  style={{ flex: 1, backgroundColor: '#fff' }}
+  behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+  keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+>
+<ScrollView>
       <SafeAreaView style={{flex: 1, backgroundColor: '#fff'}}>
         <View
           style={{
@@ -2348,7 +2490,7 @@ const Cart = () => {
               {clicked && (
                 <View
                   style={{
-                    height: 300,
+                    height: 230,
                     alignSelf: 'center',
                     width: '90%',
                     borderRadius: 10,
@@ -2380,7 +2522,7 @@ const Cart = () => {
                         Sorry, no results found!
                       </Text>
                     ) : (
-                      <ScrollView>
+                      <ScrollView style={style.scrollView} nestedScrollEnabled={true}>
                         {filteredDistributors.map((item, index) => (
                           <TouchableOpacity
                             key={index}
@@ -2563,6 +2705,12 @@ const Cart = () => {
                 marginLeft: 5,
               }}>
               {/* <Text>{selectedShipLocation.locationName || 'Shiping to *'}</Text> */}
+              {/* <Text style={{fontWeight: '600', color: '#000'}}>
+                {selectedShipLocation.length > 0
+                  ? `${selectedShipLocation}`
+                  : 'Shipping to *'}
+              </Text> */}
+
               <Text style={{fontWeight: '600', color: '#000'}}>
                 {selectedShipLocation.length > 0
                   ? `${selectedShipLocation}`
@@ -2722,7 +2870,6 @@ const Cart = () => {
         )}
         <View style={{marginBottom: 10}} />
 
-        <ScrollView style={style.container}>
           {/* <View style={style.header}>
             <Text style={style.txt}>Total Items: {cartItems.length}</Text>
           </View> */}
@@ -3001,7 +3148,45 @@ const Cart = () => {
               ))}
             </View>
           )}
-          <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+             <View>
+  
+{/* <TextInput
+  ref={inputRef}
+  style={{
+    marginLeft: 10,
+    marginTop: Platform.OS === 'ios' ? 10 : 0,
+    color: isDarkTheme ? '#fff' : 'black', // Change text color based on theme
+  }}
+  placeholder="Enter comments"
+  value={comments}
+  onChangeText={handleCommentsChange}
+  placeholderTextColor={isDarkTheme ? '#fff' : '#000'}
+/> */}
+
+<TextInput
+  style={{
+    marginLeft: 10,
+    marginTop: Platform.OS === 'ios' ? 10 : 0,
+    color: isDarkTheme ? '#fff' : 'black',
+  }}
+  placeholder="Enter comments"
+  value={comments}
+  onFocus={() => console.log('TextInput focused')}
+  onBlur={() => console.log('TextInput blurred')}
+  onChangeText={handleCommentsChange}
+  placeholderTextColor={isDarkTheme ? '#fff' : '#000'}
+/>
+
+          </View>
+         
+
+          <View
+            style={{
+              borderBottomWidth: 1,
+              borderBottomColor: 'gray',
+              marginTop: 10,
+            }}></View>
+        <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
             <TouchableOpacity
               onPress={showDatePicker}
               style={{flexDirection: 'row', alignItems: 'center'}}>
@@ -3024,34 +3209,13 @@ const Cart = () => {
               />
             </TouchableOpacity>
           </View>
-
-          <View
-            style={{
-              borderBottomWidth: 1,
-              borderBottomColor: 'gray',
-              marginTop: 10,
-            }}></View>
-          <View>
-            <TextInput
-              style={{
-                marginLeft: 10,
-                marginTop: Platform.OS === 'ios' ? 10 : 0,
-                color: isDarkTheme ? '#fff' : 'black', // Change text color based on theme
-              }}
-              placeholder="Enter comments"
-              value={comments}
-              onChangeText={handleCommentsChange}
-              placeholderTextColor={isDarkTheme ? '#fff' : '#000'} // Placeholder color
-            />
-          </View>
           <View
             style={{
               borderBottomWidth: 1,
               borderBottomColor: 'gray',
               paddingVertical: 7,
             }}></View>
-        </ScrollView>
-
+      
         <View style={{backgroundColor: '#faf7f6', borderTopWidth: 1}}>
           {/* <View style={style.bottomContainer}>
             <View style={style.row}>
@@ -3615,6 +3779,7 @@ const Cart = () => {
           </View>
         </View>
       </SafeAreaView>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 };
@@ -3929,7 +4094,7 @@ const getStyles = colors =>
       alignItems: 'center',
     },
     scrollView: {
-      minHeight: 70,
+      minHeight: 100,
       maxHeight: 150,
     },
     searchContainer: {

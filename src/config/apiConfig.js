@@ -63,12 +63,12 @@ export const API = {
   GET_STYLE_BY_ID:'erpportal/api/style/',
   GET_STYLE_LIST:'erpportal/api/style/getAll/',
   ADD_NEW_SCALE:'erpportal/api/scale/addScale',
-
   ADD_NEW_STYLE:'erpportal/api/style/addstyle',
   EDIT_NEW_STYLE:'erpportal/api/style/editstyle',
   LOGINAUDIT:'erpportal/api/master/addLoginoutAudit',
   GET_ALL_STATUS:'erpportal/api/ordermgmt/getAllStatus',
   UPDATE_DIS_ORDERl:'erpportal/api/ordermgmt/updateDisOrder',
+  UPDATE_DIS_ORDER:'erpportal/api/ordermgmt/updateDistributorOrder',
   ADD_LOCATION_IMAGES:'erpportal/api/master/addLocation',
   GET_Location:'erpportal/api/master/getLocation',
   GET_NOTIFICATION_LIST:'erpportal/api/master/getMessages',
@@ -120,7 +120,17 @@ export const API = {
   GET_ALL_THE_MENUS_FOR_MOBILE:'erpportal/api/menu/allmobilemenus',
   GET_ALL_ADDED_COSTING_DETAILSL:'erpportal/api/costing',
   CHECKAVALABILITY:'erpportal/api/style/checkStyleAvailQty',
-  GET_STATE:'erpportal/api/master/getAllStates'
+  GET_STATE:'erpportal/api/master/getAllStates',
+  GET_SELECT_STYLE:'erpportal/api/style/getStyles',
+  GET_STYLE_COLOR:'erpportal/api/style/getAllStylesAccComp',
+  GET_SKU:'erpportal/api/style/getAllSkusAccComp',
+  GET_ALL_SKU_SEARCH:'erpportal/api/style/getStyleFilterData',
+  GET_SIZES_BY_SCALE_ID:'erpportal/api/scale',
+  VALIDATE_NAME_COLOR:'erpportal/api/style/isValidStyle',
+  ADD_COPY_STYLE:'erpportal/api/style/addCopyStyle',
+  GET_UOM:'erpportal/api/uom/getByCompanyId',
+  ADD_UOM:'erpportal/api/uom/addUOM',
+  VALIDATE_UOM:'erpportal/api/uom/isValidUOM/',
 };
 
 export const USER_ID = 'adminClientId';

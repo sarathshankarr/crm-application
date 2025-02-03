@@ -1655,8 +1655,8 @@ const ProductsStyles = ({ route }) => {
 
   useEffect(() => {
     if (searchOption.length > 0) {
-      setSelectedSearchOption(searchOption[0].label);
-      setSearchKey(searchOption[0].value);
+      setSelectedSearchOption(searchOption[1].label);
+      setSearchKey(searchOption[1].value);
     }
   }, [searchOption]); // This will run whenever searchOption changes
 

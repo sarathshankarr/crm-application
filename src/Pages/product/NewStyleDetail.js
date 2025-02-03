@@ -40,6 +40,11 @@ const NewStyleDetail = ({route}) => {
     selectedCompany?.kapture_task_flag,
   );
 
+  const [prod_additional_field_flag, set_prod_additional_field_flag] = useState(
+    selectedCompany?.prod_additional_field_flag,
+  );
+  
+
   // const companyId = selectedCompany?.id;
   // const cedge_flag = selectedCompany?.cedge_flag;
   // const comp_flag = selectedCompany?.comp_flag;
@@ -151,6 +156,12 @@ const NewStyleDetail = ({route}) => {
   const [selectedLocation, setSelectedLocation] = useState('');
   const [selectedLocationId, setSelectedLocationId] = useState(0);
 
+  const [showUomList, setShowUomList] = useState(false);
+  const [UomList, setUomList] = useState([]);
+  const [filteredUomList, setFilteredUomList] = useState([]);
+  const [selectedUom, setSelectedUom] = useState('');
+  const [selectedUomId, setSelectedUomId] = useState(0);
+
   const [showScalesList, setShowScalesList] = useState(false);
   const [scalesList, setScalesList] = useState([]);
   const [filteredScalesList, setFilteredScalesList] = useState([]);
@@ -161,6 +172,7 @@ const NewStyleDetail = ({route}) => {
   const [colorModal, setColorModal] = useState(false);
   const [typesModal, setTypesModal] = useState(false);
   const [seasonGroupsModal, setSeasonGroupsModal] = useState(false);
+  const [UomModal, setUomModal] = useState(false);
   const [scalesModal, setScalesModal] = useState(false);
 
   const [isLoading, setIsLoading] = useState(false);
@@ -221,6 +233,9 @@ const NewStyleDetail = ({route}) => {
   const [mSeasonGroupName, setmSeasonGroupName] = useState('');
   const [mSeasonGroupDesc, setmSeasonGroupDesc] = useState('');
 
+  const [mUomName, setmUomName] = useState('');
+  const [mUomDesc, setUomDesc] = useState('');
+
   const [mSize, setmSize] = useState('');
   const [mSizeDesc, setmSizeDesc] = useState('');
   // const [colorsArray, setColorsArray] = useState([]);
@@ -228,6 +243,7 @@ const NewStyleDetail = ({route}) => {
   const [editColor, setEditColor] = useState(true);
   const [editSeasonGroup, setEditSeasonGroup] = useState(true);
   const [editLocation, setEditLocation] = useState(true);
+  const [editUom, setEditUom] = useState(true);
   const [editScale, setEditScale] = useState(true);
   const [editStyleName, seteditStyleName] = useState(true);
   const [editAvailQty, seteditAvailQty] = useState(true);
@@ -264,6 +280,7 @@ const NewStyleDetail = ({route}) => {
     getSeasonalGroups();
     getProcessWorkFlow();
     getLocations();
+    getUom();
     getAllSizesInScale();
     getAllKapture(1);
     getAllKapture(2);
@@ -272,8 +289,72 @@ const NewStyleDetail = ({route}) => {
     getAllKapture(5);
   }, [companyId]);
 
+  const handleCopy = () => {
+    const selectedColorNames = colorList
+      .filter(color => selectedColorIds.includes(color.colorId))
+      .map(item => item.colorName);  // Extracting the color names
   
+    const copiedDetails = {
+      selectedCategory,
+      selectedCustomerLevel,
+      styleName,
+      styleDesc,
+      retailerPrice,
+      mrp,
+      gsm,
+      hsn,
+      gst,
+      dealerPrice,
+      fixedDiscount,
+      customerLevelPrice,
+      selectedCategoryId,
+      selectedCustomerLevelId,
+      colorCode,
+      selectedColor,
+      selectedColorId,
+      selectedColorIds,
+      selectedTypeId,
+      selectedType,
+      selectedProcessWorkflowId,
+      selectedProcessWorkflow,
+      selectedLocationId,
+      selectedLocation,
+      selectedUomId,
+      selectedUom,
 
+      selectedScaleId,
+      showScaleTable,
+      selectedScale,
+      selectedSizes,
+      imageUrls,
+      styleId,
+      styleNum,
+      selectedClosureId,
+      selectedClosure,
+      selectedPeakId,
+      selectedPeak,
+      selectedLogoId,
+      selectedLogo,
+      selectedTrimsId,
+      selectedTrims,
+      selectedDecorationId,
+      selectedDecoration,
+      selectedStatusId,
+      selectedStatus,
+      selectedColorNames: selectedColorNames,  // Passing color names here
+      selectedSeasonGroup,
+      selectedSeasonGroupId,
+      
+    };
+  
+    console.log('Copied Details newdetail screen:', copiedDetails);
+  
+    // Navigate to CopyProduct screen with the copied details
+    navigation.navigate('CopyProduct', { copiedDetails });
+  };
+  
+  
+  
   useEffect(() => {
     if (route.params && route?.params?.Style) {
       const styleDetails = route?.params?.Style;
@@ -346,6 +427,9 @@ const NewStyleDetail = ({route}) => {
         setSelectedLocationId(styleDetails?.locationId);
         setEditLocation(false);
       }
+      if (styleDetails?.uomId) {
+        setSelectedUomId(styleDetails?.uomId);
+      }
       if (styleDetails?.scaleId) {
         setSelectedScaleId(styleDetails?.scaleId);
         setEditScale(false);
@@ -406,6 +490,7 @@ const NewStyleDetail = ({route}) => {
       selectedTypeId,
       selectedColorId,
       selectedSeasonGroupId,
+      selectedSeasonGroup,
       selectedProcessWorkflowId,
       selectedLocationId,
       selectedScaleId,
@@ -576,7 +661,7 @@ useEffect(() => {
   useEffect(() => {
     if (selectedScaleId && scalesList.length > 0) {
       const found = scalesList?.filter(
-        item => item.scaleId === selectedScaleId,
+        item => item?.scaleId === selectedScaleId,
       );
       if (found) {
         setSelectedScale(found[0]?.scaleRange);
@@ -594,6 +679,18 @@ useEffect(() => {
       }
     }
   }, [selectedLocationId, locationList]);
+
+
+  useEffect(() => {
+    if (selectedUomId && UomList.length > 0) {
+      const found = UomList?.filter(
+        item => item.uomId === selectedUomId,
+      );
+      if (found) {
+        setSelectedUom(found[0]?.uomName);
+      }
+    }
+  }, [selectedUomId, UomList]);
 
   useEffect(() => {
     if (selectedProcessWorkflowId && processWorkflowList.length > 0) {
@@ -801,6 +898,27 @@ useEffect(() => {
         });
     }
   };
+
+
+  const getUom = () => {
+    const apiUrl = `${global?.userData?.productURL}${API.GET_UOM}/${companyId}`;
+    axios
+      .get(apiUrl, {
+        headers: {
+          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+        },
+      })
+      .then(response => {
+        setUomList(response?.data?.response.uomtypeList || []);
+        setFilteredUomList(response?.data?.response.uomtypeList || []);
+        setIsLoading(false);
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        setIsLoading(false);
+      });
+  };
+  
   const getScales = () => {
     const text = '/scalesBysizegroupId';
     const apiUrl = `${global?.userData?.productURL}${API.GET_SCALES}${selectedSeasonGroupId}${text}`;
@@ -1006,11 +1124,16 @@ useEffect(() => {
     setShowSeasonGroupsList(!showSeasonGroupsList);
   };
 
-  const handleSelectSeasonGroup = item => {
-    setSelectedSeasonGroup(item.sizeGroup);
-    setSelectedSeasonGroupId(item.sizeGroupId);
-    setShowSeasonGroupsList(false);
-  };
+ const handleSelectSeasonGroup = item => {
+  setSelectedSeasonGroup(item.sizeGroup);
+  setSelectedSeasonGroupId(item.sizeGroupId);
+  setShowSeasonGroupsList(false);
+  setSelectedScale(null);
+  setSelectedScaleId(null);
+  setSelectedSizes([]);
+  setShowScaleTable(false);
+};
+
 
   const filterSeasonGroups = text => {
     const filtered = seasonGroupsList.filter(item =>
@@ -1040,7 +1163,7 @@ useEffect(() => {
   };
 
   const handleSelectProcessWorkflow = item => {
-    setSelectedProcessWorkflow(item.id);
+    setSelectedProcessWorkflow(item.configName);
     setSelectedProcessWorkflowId(item.id);
     setShowProcessWorkflowList(false);
   };
@@ -1069,21 +1192,41 @@ useEffect(() => {
     setFilteredLocationList(filtered);
   };
 
+
+  const handUomDropDown = () => {
+    setShowUomList(!showUomList);
+  };
+
+  const handleSelectUom = item => {
+    setSelectedUom(item.uomName);
+    setSelectedUomId(item.uomId);
+    setShowUomList(false);
+  };
+
+  const filterUom = text => {
+    const filtered = UomList.filter(item =>
+      item?.uomName?.toUpperCase().includes(text?.toUpperCase()),
+    );
+    setFilteredUomList(filtered);
+  };
+
   const handleScalesDropDown = () => {
     setShowScalesList(!showScalesList);
   };
 
-  const handleSelectScale = item => {
-    setSelectedScale(item.scaleRange);
-    setSelectedScaleId(item.scaleId);
-    setSelectedSizes([]);
+//   const handleSelectScale = async (item) => {
+//     setSelectedScale(item?.scaleRange);
+//     setSelectedScaleId(item?.scaleId);
+//     setSelectedSizes([]);
+//     console.log('SelectedScaleId=====>',item?.scaleId)
+//     console.log('handleChangeScale=====>',item)
+//     await handleChangeScale(item);
+//  console.log('handleChangeScale=====>',item)
 
-    handleChangeScale(item);
+//     setShowScaleTable(true);
 
-    setShowScaleTable(true);
-
-    setShowScalesList(false);
-  };
+//     setShowScalesList(false);
+//   };
 
   const filterScales = text => {
     const filtered = scalesList.filter(item =>
@@ -1092,32 +1235,144 @@ useEffect(() => {
     setFilteredScalesList(filtered);
   };
 
-  const handleChangeScale = item => {
-    const sizes = item.scaleRange.split(',').map(size => size.trim());
 
-    const newSizes = sizes.map((size, index) => ({
-      sizeId: index + 1,
-      sizeDesc: size,
-      dealerPrice: 0,
-      retailerPrice: 0,
-      mrp: 0,
-      availQty: 0,
-      gsCode: null,
-      gscodeMapId: null,
-      j_item_id: null,
-      article_no: null,
-    }));
+  const handleSelectScale = async (item) => {
+    // If the selected scale is the same, do nothing
+    if (item?.scaleId === selectedScaleId) {
+        console.log('Same scale selected, keeping table open');
+        return;
+    }
 
-    // Update selectedSizes and then update all items
-    setSelectedSizes(newSizes);
+    setSelectedScale(item?.scaleRange);
+    setSelectedScaleId(item?.scaleId); // Asynchronous update
+    setSelectedSizes([]);
+
+    console.log('Selected Scale ID:', item?.scaleId);
+
+    // Directly pass item.scaleId instead of selectedScaleId
+    await handleChangeScale(item?.scaleId, item?.scaleRange);
+
+    setShowScaleTable(true);
     setShowScalesList(false);
+};
 
-    // Use a callback to ensure the state update is applied before updating all items
-    setSelectedSizes(prevSelectedSizes => {
-      intialupdateAllItems(dealerPrice, retailerPrice, mrp, prevSelectedSizes);
-      return [...prevSelectedSizes, ...newSizes];
-    });
-  };
+const getScalesBySizeId = async (scaleId) => {
+    const apiUrl = `${global?.userData?.productURL}${API.GET_SIZES_BY_SCALE_ID}/${selectedSeasonGroupId}/${scaleId}/getSizesByScaleId`;
+    console.log("API URL:", apiUrl);
+
+    try {
+        const response = await axios.get(apiUrl, {
+            headers: {
+                Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+            },
+        });
+
+        console.log("API Response:", response.data);
+
+        if (response?.data?.response?.sizesList && Array.isArray(response.data.response.sizesList)) {
+            return response.data.response.sizesList;
+        } else {
+            console.error('No valid sizes list found in the response');
+            return [];
+        }
+    } catch (error) {
+        console.error('Error in API call:', error);
+        return [];
+    }
+};
+
+const handleChangeScale = async (scaleId, scaleRange) => {
+  console.log("Before fetching sizes...");
+
+  // Fetch sizes from API
+  const fetchedSizes = await getScalesBySizeId(scaleId);
+  console.log("Fetched sizes:", fetchedSizes);
+
+  console.log("After fetching sizes...");
+
+  if (fetchedSizes && fetchedSizes.length > 0) {
+      // Convert API response to desired format
+      const newSizes = fetchedSizes.map(sizeFromApi => ({
+          sizeId: sizeFromApi?.sizeId,
+          sizeDesc: sizeFromApi?.sizeDesc,
+          dealerPrice: 0,
+          retailerPrice: 0,
+          mrp: 0,
+          availQty: 0,
+          gsCode: null,
+          gscodeMapId: null,
+          j_item_id: null,
+          article_no: null,
+      }));
+
+      // First, update selected sizes
+      setSelectedSizes(newSizes);
+
+      // Ensure `intialupdateAllItems` is called after state updates
+      setTimeout(() => {
+          intialupdateAllItems(dealerPrice, retailerPrice, mrp, newSizes);
+      }, 50);
+
+      setShowScalesList(false);
+  } else {
+      console.log("No sizes found for scaleId:", scaleId);
+  }
+};
+
+
+
+  
+  
+  
+  //  const getScalesBySizeId = async () => {
+  //   try {
+  //     const apiUrl = `${global?.userData?.productURL}${API.GET_SIZES_BY_SCALE_ID}/${selectedSeasonGroupId}/${selectedScaleId}/getSizesByScaleId`;
+  
+  //     const response = await axios.get(apiUrl, {
+  //       headers: {
+  //         Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+  //       },
+  //     });
+  
+  //     if (response?.data?.status?.success) {
+  //       return response?.data?.response?.sizesList || [];
+  //     } else {
+  //       console.error('Failed to fetch sizes');
+  //       return [];
+  //     }
+  //   } catch (error) {
+  //     console.error('Error fetching sizes:', error);
+  //     return [];
+  //   }
+  // };
+  
+
+  // const handleChangeScale = item => {
+  //   const sizes = item?.scaleRange.split(',').map(size => size.trim());
+
+  //   const newSizes = sizes.map((size, index) => ({
+  //     sizeId: index + 1,
+  //     sizeDesc: size,
+  //     dealerPrice: 0,
+  //     retailerPrice: 0,
+  //     mrp: 0,
+  //     availQty: 0,
+  //     gsCode: null,
+  //     gscodeMapId: null,
+  //     j_item_id: null,
+  //     article_no: null,
+  //   }));
+
+  //   // Update selectedSizes and then update all items
+  //   setSelectedSizes(newSizes);
+  //   setShowScalesList(false);
+
+  //   // Use a callback to ensure the state update is applied before updating all items
+  //   setSelectedSizes(prevSelectedSizes => {
+  //     intialupdateAllItems(dealerPrice, retailerPrice, mrp, prevSelectedSizes);
+  //     return [...prevSelectedSizes, ...newSizes];
+  //   });
+  // };
 
   const updateAllItems = (field, value) => {
     const updatedSizes = selectedSizes.map(item => ({
@@ -1302,6 +1557,62 @@ useEffect(() => {
     setTypesModal(false);
   };
 
+  const toggleSeasonUomModal = () => {
+    setUomModal(!UomModal);
+    setmUomName('');
+    setUomDesc('');
+  };
+
+  const handleSaveUomModal = () => {
+    setIsLoading(true);
+    const apiUrl0 = `${global?.userData?.productURL}${API.ADD_UOM}`;
+    const requestData = {
+      uomId: null,
+      uomName: mUomName,
+      uomDescription: mUomDesc,
+      companyId: companyId,
+      linkType: 2,
+      userId: userId,
+    };
+
+    axios
+      .post(apiUrl0, requestData, {
+        headers: {
+          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+        },
+      })
+      .then(response => {
+        // Alert.alert(`Type Created Successfully : ${response?.data?.response?.sizeGroupList[0]?.sizeGroup}`);
+        setSelectedUom(
+          response?.data?.response?.uomtypeList[0]?.uomName,
+        );
+        setSelectedUomId(
+          response?.data?.response?.uomtypeList[0]?.uomId,
+        );
+        getUom();
+        setIsLoading(false);
+      })
+      .catch(error => {
+        console.error(
+          'Error:',
+          error.response ? error.response.data : error.message,
+        );
+        Alert.alert(
+          'Error',
+          error.response
+            ? error.response.data.message
+            : 'An unknown error occurred',
+        );
+        setIsLoading(false);
+      });
+
+    setUomModal(false);
+  };
+
+
+  const handleCloseUomModal = () => {
+    setUomModal(false);
+  };
   const toggleSeasonGroupsModal = () => {
     setSeasonGroupsModal(!seasonGroupsModal);
     setmSeasonGroupName('');
@@ -1549,6 +1860,39 @@ useEffect(() => {
     }
   };
 
+  const ValidateUom = async () => {
+    if (processing) return;
+    setProcessing(true);
+
+    if (mUomName.length === 0 || mUomDesc.length === 0) {
+      Alert.alert(' Please fill all mandatory fields');
+      setProcessing(false);
+      return;
+    }
+    const slash = '/';
+    const apiUrl = `${global?.userData?.productURL}${API.VALIDATE_UOM}${mUomName}${slash}${companyId}`;
+    try {
+      const response = await axios.get(apiUrl, {
+        headers: {
+          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+        },
+      });
+      if (response.data === true) {
+        handleSaveUomModal();
+      } else {
+        Alert.alert(' This name has been used. Please enter a new name');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      Alert.alert(
+        'Error',
+        'There was a problem checking the Category validity. Please try again.',
+      );
+    } finally {
+      setProcessing(false);
+    }
+  };
+
   const ValidateNewScale = async () => {
     if (processing) return;
     setProcessing(true);
@@ -1581,6 +1925,77 @@ useEffect(() => {
       setProcessing(false);
     }
   };
+  const ValidateStyleName = async () => {
+    if (processing) return;
+    setProcessing(true);
+  
+    if (styleId) {
+      console.log('Skipping validation because styleId is already provided.');
+      handleNextPage(); // Proceed with the next steps if styleId exists
+      setProcessing(false);
+      return;
+    }
+  
+    const colorsArray = colorList
+      .filter(color => selectedColorIds.includes(color.colorId))
+      .map(item => ({
+        colorId: item.colorId,
+        colorName: item.colorName,
+      }));
+  
+    // Create a new FormData instance
+    const formData = new FormData();
+    formData.append('styleName', styleName);
+    formData.append('companyId', companyId); // Ensure this is the correct type (string or number)
+    formData.append('myItems', JSON.stringify(colorsArray)); // Append the colors array as a JSON string
+  
+    console.log('Request Body:', formData); // FormData cannot be stringified directly
+    console.log('Request Headers:', {
+      Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+      // No need to set Content-Type; Axios will set it automatically for FormData
+    });
+  
+    const apiUrl = `${global?.userData?.productURL}${API.VALIDATE_NAME_COLOR}`;
+  
+    try {
+      const response = await axios.post(apiUrl, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+        },
+      });
+  
+      console.log('Response Data:', response?.data);
+  
+      if (response?.data === true) {
+        handleNextPage();
+      } else {
+        Alert.alert(
+          'crm.codeverse.co.says',
+          'A style with this style name and color name combination already exists. Please check.'
+        );
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      console.error('Full Error Object:', error);
+  
+      if (error.response) {
+        console.error('Response Error:', error.response.data);
+        Alert.alert('Error', `Validation failed: ${JSON.stringify(error.response.data)}`);
+      } else {
+        console.error('Error:', error);
+        Alert.alert('Error', 'There was a problem validating the style. Please try again.');
+      }
+    } finally {
+      setProcessing(false);
+    }
+  };
+  
+  
+  
+  
+  
+  
 
   const handleNextPage = () => {
     const colorsArray = colorList
@@ -1610,6 +2025,7 @@ useEffect(() => {
       discount: 0,
       categoryId: selectedCategoryId,
       locationId: selectedLocationId,
+      uomId:selectedUomId,
       fixDisc: fixedDiscount,
       companyId: companyId,
       processId: selectedProcessWorkflowId,
@@ -1962,17 +2378,42 @@ useEffect(() => {
               <TouchableOpacity style={style.headbasicinfo}>
                 <Text>Basic Info</Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                onPress={handleNextPage}
-                disabled={!nextButton}
-                style={[
-                  style.headprductimage,
-                  {backgroundColor: nextButton ? '#' : 'lightgray'}, // Correct way to set dynamic background color
-                ]}>
-                <Text>Product Images</Text>
-              </TouchableOpacity>
+            <TouchableOpacity
+  onPress={ValidateStyleName} // Call ValidateStyleName instead of handleNextPage directly
+  disabled={!nextButton}
+  style={[
+    style.headprductimage,
+    { backgroundColor: nextButton ? '#' : 'lightgray' }, // Correct way to set dynamic background color
+  ]}>
+  <Text>Product Images</Text>
+</TouchableOpacity>
+
             </View>
-            <View style={{marginTop: 15}} />
+            <View>
+            {styleId !== 0 && (
+              <TouchableOpacity   onPress={handleCopy} style={{flexDirection:"row",alignItems:"center",alignItems:"flex-end",alignSelf:"flex-end"}}>
+<Text style={{color:'#000',fontWeight:"bold"}}>
+  Copy
+</Text>
+  <TouchableOpacity
+    style={{
+      justifyContent: "flex-end",
+      alignSelf: 'flex-end',
+      marginHorizontal: 10,
+      marginTop:10
+    }}
+  
+  >
+    <Image
+      style={{ height: 30, width: 30, marginRight: 8 }}
+      source={require('../../../assets/copy.png')}
+    />
+  </TouchableOpacity>
+  </TouchableOpacity>
+)}
+
+            </View>
+            <View style={{}} />
             <Text style={style.headerTxt}>{'Category *'}</Text>
             <View style={style.container1}>
               <View style={style.container2}>
@@ -2768,7 +3209,7 @@ useEffect(() => {
             </View>
 
             {/* Closure Dropdown */}
-            {kapture_task_flag === 1 && (
+            {prod_additional_field_flag === 1 && (
               <View style={style.dropdownContainer}>
                 <Text style={style.headerTxt}>{'Closure'}</Text>
                 <View style={style.container1}>
@@ -2842,7 +3283,7 @@ useEffect(() => {
             )}
 
             {/* Peak Dropdown */}
-            {kapture_task_flag === 1 && (
+            {prod_additional_field_flag === 1 && (
               <View style={style.dropdownContainer}>
                 <Text style={style.headerTxt}>{'Peak'}</Text>
                 <View style={style.container1}>
@@ -2914,7 +3355,7 @@ useEffect(() => {
             )}
 
             {/* Logo Dropdown */}
-            {kapture_task_flag === 1 && (
+            {prod_additional_field_flag === 1 && (
               <View style={style.dropdownContainer}>
                 <Text style={style.headerTxt}>{'Logo'}</Text>
                 <View style={style.container1}>
@@ -2985,7 +3426,7 @@ useEffect(() => {
               </View>
             )}
             {/* Decoration Dropdown */}
-            {kapture_task_flag === 1 && (
+            {prod_additional_field_flag === 1 && (
               <View style={style.dropdownContainer}>
                 <Text style={style.headerTxt}>{'Decoration'}</Text>
                 <View style={style.container1}>
@@ -3057,7 +3498,7 @@ useEffect(() => {
               </View>
             )}
             {/* Trims Dropdown */}
-            {kapture_task_flag === 1 && (
+            {prod_additional_field_flag === 1 && (
               <View style={style.dropdownContainer}>
                 <Text style={style.headerTxt}>{'Trims'}</Text>
                 <View style={style.container1}>
@@ -3233,6 +3674,103 @@ useEffect(() => {
               </View>
             )}
 
+
+<Text style={style.headerTxt}>{'UOM (Unit of Measure) '}</Text>
+
+<View style={style.container1}>
+              <View style={style.container2}>
+                <TouchableOpacity
+                  style={[
+                    style.container3,
+                    {backgroundColor:  '#fff'},
+                  ]}
+                  onPress={handUomDropDown}>
+                  <Text style={{fontWeight: '600', color: '#000'}}>
+                    {selectedUom ? selectedUom : 'Select'}
+                  </Text>
+                  <Image
+                    source={require('../../../assets/dropdown.png')}
+                    style={{width: 20, height: 20}}
+                  />
+                </TouchableOpacity>
+              </View>
+              <View style={style.container4}>
+                <TouchableOpacity
+                  onPress={toggleSeasonUomModal}
+                  style={style.plusButton}>
+                  <Image
+                    style={{
+                      height: 30,
+                      width: 30,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}
+                    source={require('../../../assets/plus.png')}
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
+{showUomList  && (
+  <View
+    style={{
+      elevation: 5,
+      height: 300,
+      alignSelf: 'center',
+      width: '90%',
+      backgroundColor: '#fff',
+      borderRadius: 10,
+      borderColor: 'lightgray', // Optional: Adds subtle border (for effect)
+      borderWidth: 1,
+      marginTop: 5,
+    }}>
+    <TextInput
+      style={{
+        marginTop: 10,
+        borderRadius: 10,
+        height: 40,
+        borderColor: 'gray',
+        borderWidth: 1,
+        marginHorizontal: 10,
+        paddingLeft: 10,
+        marginBottom: 10,
+        color: '#000000',
+      }}
+      placeholderTextColor="#000"
+      placeholder="Search"
+      onChangeText={filterUom}
+    />
+
+    {filteredUomList.length === 0 && !isLoading ? (
+      <Text style={style.noCategoriesText}>
+        Sorry, no results found!
+      </Text>
+    ) : (
+      <ScrollView nestedScrollEnabled={true}>
+        {filteredUomList?.map((item, index) => (
+          <TouchableOpacity
+            key={index}
+            style={{
+              width: '100%',
+              height: 50,
+              justifyContent: 'center',
+              borderBottomWidth: 0.5,
+              borderColor: '#8e8e8e',
+            }}
+            onPress={() => handleSelectUom(item)}>
+            <Text
+              style={{
+                fontWeight: '600',
+                marginHorizontal: 15,
+                color: '#000',
+              }}>
+              {item?.uomName}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+    )}
+  </View>
+)}
             <Text style={style.headerTxt}>{'Location *'}</Text>
 
             <View style={{flexDirection: 'row', marginTop: 10}}>
@@ -3607,7 +4145,7 @@ useEffect(() => {
             <Modal
               animationType="fade"
               transparent={true}
-              visible={typesModal && editShortcutKey}
+              visible={typesModal }
               onRequestClose={() => {
                 toggleTypesModal();
               }}>
@@ -3739,6 +4277,78 @@ useEffect(() => {
                     // style={style.saveButton}
                     style={[style.saveButton, processing && {opacity: 0.5}]}
                     onPress={ValidateSeasonGroup}
+                    disabled={processing}>
+                    <Text style={style.saveButtonText}>
+                      {processing ? 'Processing' : 'Save'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </Modal>
+
+            <Modal
+              animationType="fade"
+              transparent={true}
+              visible={UomModal && editShortcutKey}
+              onRequestClose={() => {
+                toggleSeasonUomModal();
+              }}>
+              <View style={style.modalContainerr}>
+                <View style={style.modalContentt}>
+                  <View
+                    style={{
+                      backgroundColor:   colors.color2,
+                      borderRadius: 10,
+                      marginHorizontal: 10,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      marginTop: 10,
+                      paddingVertical: 5,
+                      width: '100%',
+                      justifyContent: 'space-between',
+                      marginBottom: 15,
+                    }}>
+                    <Text
+                      style={[
+                        style.modalTitle,
+                        {textAlign: 'center', flex: 1},
+                      ]}>
+                      {'Add New UOM'}
+                    </Text>
+                    <TouchableOpacity
+                      onPress={handleCloseUomModal}
+                      style={{alignSelf: 'flex-end'}}>
+                      <Image
+                        style={{height: 30, width: 30, marginRight: 5}}
+                        source={require('../../../assets/close.png')}
+                      />
+                    </TouchableOpacity>
+                  </View>
+
+                  <Text style={{fontWeight: 'bold', color: '#000'}}>
+                    {'UOM Name * '}
+                  </Text>
+                  <TextInput
+                    style={[style.input, {color: '#000'}]}
+                    placeholder=""
+                    placeholderTextColor="#000"
+                    onChangeText={text => setmUomName(text)}
+                  />
+
+                  <Text style={{fontWeight: 'bold', color: '#000'}}>
+                    {'UOM Description * '}
+                  </Text>
+                  <TextInput
+                    style={[style.input, {color: '#000'}]}
+                    placeholder=""
+                    placeholderTextColor="#000"
+                    onChangeText={text => setUomDesc(text)}
+                  />
+
+                  <TouchableOpacity
+                    // style={style.saveButton}
+                    style={[style.saveButton, processing && {opacity: 0.5}]}
+                    onPress={ValidateUom}
                     disabled={processing}>
                     <Text style={style.saveButtonText}>
                       {processing ? 'Processing' : 'Save'}
@@ -4240,8 +4850,8 @@ useEffect(() => {
                   {selectedSizes.map((item, index) => (
                     <View key={index} style={style.row}>
                       <View style={style.cell1}>
-                        <Text style={style.cellText}>{item?.sizeId}</Text>
-                      </View>
+                      <Text style={style.cellText}>{index + 1}</Text>                     
+                        </View>
                       <View style={style.cell2}>
                         <Text style={style.cellText}>{item?.sizeDesc}</Text>
                       </View>
@@ -4304,7 +4914,7 @@ useEffect(() => {
                 width: '90%',
                 marginHorizontal: 20,
               }}
-              onPress={handleNextPage}
+              onPress={ValidateStyleName}
               disabled={!nextButton}>
               <Text style={style.saveButtonText}>Next</Text>
             </TouchableOpacity>

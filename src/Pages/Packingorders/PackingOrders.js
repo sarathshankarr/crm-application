@@ -237,11 +237,21 @@ const PackingOrders = () => {
       );
       const pdfBase64 = response.data.body;
   
-      pdfPath = `${ReactNativeBlobUtil.fs.dirs.DocumentDir}/Pakinglist_${orderId}_${pId}.pdf`;
+    //   pdfPath = `${ReactNativeBlobUtil.fs.dirs.DocumentDir}/Pakinglist_${orderId}_${pId}.pdf`;
   
-      await ReactNativeBlobUtil.fs.writeFile(pdfPath, pdfBase64, 'base64');
-      Alert.alert('PDF Downloaded', `PDF saved successfully at ${pdfPath}`);
-    } catch (error) {
+    //   await ReactNativeBlobUtil.fs.writeFile(pdfPath, pdfBase64, 'base64');
+    //   Alert.alert('PDF Downloaded', `PDF saved successfully at ${pdfPath}`);
+    // } 
+    const pdfPath =
+    Platform.OS === 'android'
+      ? `${ReactNativeBlobUtil.fs.dirs.DownloadDir}/Pakinglist_${orderId}_${pId}.pdf`
+      : `${ReactNativeBlobUtil.fs.dirs.DocumentDir}/Pakinglist_${orderId}_${pId}.pdf`;
+
+  await ReactNativeBlobUtil.fs.writeFile(pdfPath, pdfBase64, 'base64');
+  Alert.alert('PDF Downloaded', `PDF saved successfully at ${pdfPath}`);
+} 
+    
+    catch (error) {
       console.error('Error generating or saving PDF:', error);
       Alert.alert('Error', `Failed to generate or save PDF: ${error.message}`);
     }

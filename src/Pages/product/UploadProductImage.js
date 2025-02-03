@@ -420,7 +420,7 @@ const openCamera = async () => {
     formData.append('gsm', productStyle.gsm);
     formData.append('hsn', productStyle.hsn);
     formData.append('gst', productStyle.gst);
-    formData.append('uomId', 0); 
+    formData.append('uomId', productStyle.uomId); 
     formData.append("statusId",productStyle.statusId)
     selectedImages.forEach((image, index) => {
       formData.append('files', {
@@ -431,6 +431,8 @@ const openCamera = async () => {
     });
 
     console.log('data before submit ==> ', formData);
+    console.log('sizesListReq', productStyle.sizesListReq);
+
     // return;
 
     const apiUrl0 = `${global?.userData?.productURL}${API.ADD_NEW_STYLE}`;
@@ -499,7 +501,7 @@ const openCamera = async () => {
     formData.append('fixDisc', (productStyle.fixDisc || 0).toString());
     formData.append('companyId', productStyle.companyId.toString());
     formData.append("statusId",productStyle.statusId)
-    formData.append('uomId', 0); 
+    formData.append('uomId', productStyle.uomId); 
     formData.append(
       'cedgeStyleId',
       (productStyle.cedgeStyleId || 0).toString(),
