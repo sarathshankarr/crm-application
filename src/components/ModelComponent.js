@@ -143,7 +143,7 @@ const ModalComponent = ({
   
         if (parseInt(inputValue, 10) > 0) {
           const itemBaseDetails = {
-            availQty: size.availQty, // Assuming it's availableQty
+            availQty: style.availableQty, // Assuming it's availableQty
             color: style.color,
             colorId: style.colorId,
             styleId: style.styleId,
@@ -174,13 +174,14 @@ const ModalComponent = ({
           );
   
           if (existingItemIndex !== -1) {
-            const updatedQuantity = parseInt(inputValue, 10);
+            const updatedQuantity = parseFloat(inputValue); // Use parseFloat to preserve decimals
             const updatedItem = {
               ...cartItems[existingItemIndex],
-              quantity: updatedQuantity.toString(),
+              quantity: updatedQuantity.toString(), // Store as a string to ensure consistency
             };
             dispatch(updateCartItem(existingItemIndex, updatedItem));
-          } else {
+          }
+           else {
             itemsToUpdate.push(itemBaseDetails);
           }
         }
@@ -289,13 +290,19 @@ const ModalComponent = ({
   const handleQuantityChange = (text, styleIndex, sizeIndex) => {
     const sizeList = stylesData[styleIndex]?.sizeList || [];
     const sizeDesc = sizeList[sizeIndex]?.sizeDesc;
+  
     if (sizeDesc) {
-      const updatedItem = {...selectedItemState, [sizeDesc]: text};
+      const updatedItem = { ...selectedItemState, [sizeDesc]: text };
       setSelectedItem(updatedItem);
-      const updatedInputValues = {...inputValues, [sizeDesc]: text};
+  
+      const updatedInputValues = { ...inputValues, [sizeDesc]: text };
       setInputValues(updatedInputValues);
+  
+      console.log('Updated quantity:', text);
+      console.log('Updated selected item state:', updatedItem);
     }
   };
+  
 
   const getQuantityStyles = () => {
     setLoading(true);
@@ -475,32 +482,23 @@ const ModalComponent = ({
                                 source={require('../../assets/sub1.png')}
                               />
                             </TouchableOpacity>
-
                             <TextInput
-                              placeholderTextColor="#000"
-                              style={textInputStyle}
-                              keyboardType="numeric"
-                              value={
-                                inputValues[size.sizeDesc] !== undefined &&
-                                inputValues[size.sizeDesc].trim() !== ''
-                                  ? inputValues[size.sizeDesc].toString()
-                                  : ''
-                              }
-                              onChangeText={text => {
-                                const filteredText = text.replace(
-                                  /[^0-9]/g,
-                                  '',
-                                );
-                                const updatedInputValues = {...inputValues};
-                                updatedInputValues[size.sizeDesc] = text;
-                                setInputValues(updatedInputValues);
-                                handleQuantityChange(
-                                  filteredText,
-                                  index,
-                                  sizeIndex,
-                                ); // Pass index and sizeIndex
-                              }}
-                            />
+  placeholderTextColor="#000"
+  style={textInputStyle}
+  keyboardType="numeric"
+  value={inputValues[size.sizeDesc] || ''}
+  onChangeText={text => {
+    const filteredText = text.replace(/[^0-9.]/g, '');
+    const validatedText = filteredText.split('.').length > 2
+      ? filteredText.substring(0, filteredText.lastIndexOf('.'))
+      : filteredText;
+
+    handleQuantityChange(validatedText, index, sizeIndex);
+  }}
+/>
+
+
+
 
                             <TouchableOpacity
                               onPress={() =>
@@ -765,3 +763,5 @@ const styles = StyleSheet.create({
 });
 
 export default ModalComponent;
+
+

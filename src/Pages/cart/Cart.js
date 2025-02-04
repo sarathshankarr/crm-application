@@ -484,25 +484,32 @@ const Cart = () => {
   //   }));
   // };
 
-  const handleGstChange = (index, text) => {
-    // Validate the input to allow only numbers and a single decimal point
-    const isValidInput = /^\d*\.?\d*$/.test(text);
 
-    if (isValidInput) {
-      // Parse integer part only if no decimal point
-      const validGst =
-        text.trim() === ''
-          ? '0' // If the input is empty, default to '0'
-          : text.includes('.')
-          ? text // Preserve the decimal value
-          : parseInt(text, 10).toString(); // Convert to integer for whole numbers
+const handleGstChange = (index, text) => {
+  // Allow only whole numbers (no decimals)
+  const isValidInput = /^\d*$/.test(text);
 
-      setGstValues(prevValues => ({
-        ...prevValues,
-        [index]: validGst, // Update GST value for the specific index/item
-      }));
+  if (isValidInput) {
+    // Convert to integer, default to '0' if empty
+    let validGst = text.trim() === '' ? '0' : parseInt(text, 10).toString();
+
+    // Check if GST is more than 100
+    if (parseInt(validGst, 10) > 100) {
+      Alert.alert(
+        'crm.codeverse.co says', // Title of the alert
+        'GST % cannot be more than 100', // Message
+      );
+      return; // Prevent updating the state
     }
-  };
+
+    setGstValues(prevValues => ({
+      ...prevValues,
+      [index]: validGst, // Update GST value for the specific index/item
+    }));
+  }
+};
+
+  
 
   const grossPrices = cartItems.map(item => {
     if (!item || !item.quantity) return 0; // Fallback if item or quantity is missing
