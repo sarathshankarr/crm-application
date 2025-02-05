@@ -35,6 +35,9 @@ const ModalComponent = ({
   const [loading, setLoading] = useState(false);
   const [isSaveDisabled, setIsSaveDisabled] = useState(true);
   const currentScreen = useSelector(state => state.cartItems.currentSourceScreen);
+  const selectedCompany = useSelector(state => state.selectedCompany);
+
+  const pdf_flag = useSelector(state => state.selectedCompany.pdf_flag);
 
   useEffect(() => {
     dispatch(setSourceScreen('ModalComponent')); // Track current screen
@@ -149,6 +152,7 @@ const ModalComponent = ({
             styleId: style.styleId,
             styleDesc: style.styleDesc,
             price: style.price,
+            mrp:style.mrp,
             discount: style.styleDiscountRequest
               ? style.styleDiscountRequest.discountName
               : '',
@@ -511,7 +515,9 @@ const ModalComponent = ({
                             </TouchableOpacity>
 
                             <View style={{flex: 0.4, marginLeft: 40}}>
-                              <Text style={{color: '#000'}}>{style.price}</Text>
+                            <Text style={{ color: '#000' }}>
+  {pdf_flag ? style.mrp : style.price} {/* Show mrp if pdf_flag is enabled, else show price */}
+</Text>
                             </View>
                           </View>
                         </View>

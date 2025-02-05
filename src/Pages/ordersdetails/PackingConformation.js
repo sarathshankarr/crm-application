@@ -1614,7 +1614,7 @@ const handleClearSelection = () => {
     const decimal = parseFloat(
       (totalAmount - Math.floor(totalAmount)).toFixed(2),
     );
-
+  
     if (decimal >= 0.5) {
       const roundedTotal = Math.ceil(totalAmount);
       return {
@@ -1623,13 +1623,13 @@ const handleClearSelection = () => {
       };
     } else {
       const roundedTotal = Math.floor(totalAmount);
-      return {
+    return {
         roundedTotal,
         roundOff: `-${(totalAmount - Math.floor(totalAmount)).toFixed(2)}`, // Negative values remain as '-'
-      };
+    };
     }
   };
-
+  
   const renderOrderLineItem = ({item}) => {
     console.log('Rendering Item:', item);
 
@@ -2616,7 +2616,9 @@ const handleClearSelection = () => {
                 <Text style={styles.itemTextname}>Name</Text>
                 <Text style={styles.itemTextcolor}>Color</Text>
                 <Text style={styles.itemTextsize}>Size</Text>
-                <Text style={styles.itemTextprice}>Price</Text>
+                <Text style={{ color: '#000' }}>
+    {pdf_flag ? 'MRP' : 'PRICE'}
+  </Text>
                 <Text style={styles.itemTextavl}>Avl Qty</Text>
                 <Text style={styles.itemTextqty}>Qty</Text>
               </View>

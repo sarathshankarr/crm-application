@@ -1002,16 +1002,18 @@ useEffect(() => {
     setShowCustomerLevelList(!showCustomerLevelList);
   };
 
-  const handleSelectCustomerLevel = item => {
+  const handleSelectCustomerLevel = (item) => {
     setSelectedCustomerLevel(item.customerLevelType);
     setSelectedCustomerLevelId(item.id);
-    if (item.id === 0) {
-      setShowCustomerLevelPrice(false);
-    } else {
-      setShowCustomerLevelPrice(true);
-    }
     setShowCustomerLevelList(false);
   };
+  
+  // useEffect to update showCustomerLevelPrice based on selectedCustomerLevelId
+  useEffect(() => {
+    if (selectedCustomerLevelId !== null) {
+      setShowCustomerLevelPrice(selectedCustomerLevelId !== 0);
+    }
+  }, [selectedCustomerLevelId]);
 
   const filterCustomerLevels = text => {
     const filtered = customerLevelList.filter(item =>
@@ -2395,7 +2397,7 @@ const handleChangeScale = async (scaleId, scaleRange) => {
 <Text style={{color:'#000',fontWeight:"bold"}}>
   Copy
 </Text>
-  <TouchableOpacity
+  < View
     style={{
       justifyContent: "flex-end",
       alignSelf: 'flex-end',
@@ -2408,7 +2410,7 @@ const handleChangeScale = async (scaleId, scaleRange) => {
       style={{ height: 30, width: 30, marginRight: 8 }}
       source={require('../../../assets/copy.png')}
     />
-  </TouchableOpacity>
+  </View>
   </TouchableOpacity>
 )}
 

@@ -47,6 +47,7 @@ const Cart = () => {
   const comp_flag = selectedCompany?.comp_flag;
   const package_barcode_flag = selectedCompany?.package_barcode_flag;
   const hold_qty_flag = selectedCompany?.hold_qty_flag;
+  const pdf_flag = useSelector(state => state.selectedCompany.pdf_flag);
   // console.log('package_barcode_flag', package_barcode_flag);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -257,6 +258,7 @@ const Cart = () => {
         quantity: item.qty || 1, // Default to 1 if quantity is not available
         dealerPrice: item.dealerPrice,
         retailerPrice: item.retailerPrice,
+        mrp:item.mrp,
         price: item.unitPrice,
         gst: item.gst,
         imageUrls: item.imageUrls, // Add imageUrls to the cart item details
@@ -460,6 +462,7 @@ const Cart = () => {
             quantity: inputValue,
             dealerPrice: modalData?.price || 0,
             retailerPrice: modalData?.retailerPrice || 0,
+            mrp:modalData.mrp || 0,
             price: modalData?.price || 0,
             gst: item.gst || 0,
             sourceScreen: 'PackageDetail',
@@ -511,19 +514,22 @@ const handleGstChange = (index, text) => {
 
   
 
-  const grossPrices = cartItems.map(item => {
-    if (!item || !item.quantity) return 0; // Fallback if item or quantity is missing
+const grossPrices = cartItems.map(item => {
+  if (!item || !item.quantity) return 0; // Fallback if item or quantity is missing
 
-    // Determine the appropriate price based on isEnabled
-    const price = isEnabled
-      ? item?.retailerPrice || 0
-      : item?.dealerPrice || item?.price || 0;
+  // Determine the appropriate price based on pdf_flag and isEnabled
+  const price = pdf_flag
+    ? item?.mrp || 0 // If pdf_flag is enabled, show mrp
+    : isEnabled
+    ? item?.retailerPrice || 0 // If isEnabled is true, show retailerPrice
+    : item?.dealerPrice || item?.price || 0; // Otherwise, show dealerPrice or price
 
-    // Calculate gross price for this item
-    const grossPrice = (Number(price) * Number(item?.quantity || 0)).toFixed(2);
+  // Calculate gross price for this item
+  const grossPrice = (Number(price) * Number(item?.quantity || 0)).toFixed(2);
 
-    return parseFloat(grossPrice); // Convert to a float for accurate display
-  });
+  return parseFloat(grossPrice); // Convert to a float for accurate display
+});
+
 
   // Calculate the total gross price
   const totalGrossPrice = grossPrices
@@ -1558,25 +1564,30 @@ const handleGstChange = (index, text) => {
     //   .toFixed(2);
 
     const totalGst = cartItems
-      .reduce((acc, item, index) => {
-        const gstPercentage = parseFloat(
-          gstValues[index] !== undefined && !isNaN(gstValues[index])
-            ? gstValues[index]
-            : item.gst,
-        ); // Use gstValues if available and valid, otherwise fallback to item.gst
-        const itemTotalPrice =
-          parseFloat(isEnabled ? item?.retailerPrice : item?.dealerPrice) *
-          parseInt(item.quantity, 10);
-        const itemGst = (itemTotalPrice * gstPercentage) / 100;
-        return acc + itemGst; // Sum GST
-      }, 0)
-      .toFixed(2);
+    .reduce((acc, item, index) => {
+      const gstPercentage = parseFloat(
+        gstValues[index] !== undefined && !isNaN(gstValues[index])
+          ? gstValues[index]
+          : item.gst,
+      ); // Use gstValues if available and valid, otherwise fallback to item.gst
+      
+      // Use mrp if pdf_flag is enabled, otherwise use retailerPrice or dealerPrice
+      const itemTotalPrice =
+        pdf_flag
+          ? parseFloat(item?.mrp || 0) // If pdf_flag is true, use mrp
+          : parseFloat(isEnabled ? item?.retailerPrice : item?.dealerPrice); // Otherwise, use retailerPrice or dealerPrice
+      
+      const itemGst = (itemTotalPrice * gstPercentage) / 100;
+      return acc + itemGst; // Sum GST
+    }, 0)
+    .toFixed(2);
+  
 
     // Calculate total amount
-    const totalAmount = (
-      (parseFloat(totalGst) || 0) + (parseFloat(totalGrossPrice) || 0)
-    ) // Add gross price to the total amount
-      .toFixed(2); // Format the total amount to 2 decimal places
+    // const totalAmount = (
+    //   (parseFloat(totalGst) || 0) + (parseFloat(totalGrossPrice) || 0)
+    // ) // Add gross price to the total amount
+    //   .toFixed(2); // Format the total amount to 2 decimal places
 
     const requestData = {
       totalAmount: totalAmount,
@@ -1604,12 +1615,18 @@ const handleGstChange = (index, text) => {
         gsCode: '8907536002462',
         availQty: item.quantity.toString(),
         // price: item.price.toString(),
-        price: isEnabled
-          ? item?.retailerPrice?.toString()
-          : item?.dealerPrice?.toString() || item?.price?.toString(),
-        gross: (
+        price : pdf_flag
+        ? item?.mrp?.toString() // If pdf_flag is enabled, use mrp
+        : isEnabled
+        ? item?.retailerPrice?.toString() // Otherwise, use retailerPrice if isEnabled
+        : item?.dealerPrice?.toString() || item?.price?.toString(),
+        gross : (
           parseFloat(
-            isEnabled ? item?.retailerPrice || 0 : item?.dealerPrice || 0,
+            pdf_flag
+              ? item?.mrp || 0 // Use mrp if pdf_flag is enabled
+              : isEnabled
+              ? item?.retailerPrice || 0 // Use retailerPrice if isEnabled
+              : item?.dealerPrice || 0 // Otherwise, use dealerPrice
           ) *
           (1 + (parseFloat(gstValues) || 0) / 100) *
           (parseInt(item?.quantity) || 1)
@@ -1623,11 +1640,13 @@ const handleGstChange = (index, text) => {
         gst: gstValues[index] !== undefined ? gstValues[index] : item.gst,
         total: (
           parseFloat(
-            isEnabled
-              ? item?.retailerPrice?.toString()
-              : item?.dealerPrice?.toString(),
-          ) || item?.price?.toString() * parseInt(item.quantity)
-        )?.toString(),
+            pdf_flag
+              ? item?.mrp?.toString() // If pdf_flag is enabled, use mrp
+              : isEnabled
+              ? item?.retailerPrice?.toString() // If isEnabled is true, use retailerPrice
+              : item?.dealerPrice?.toString() // Otherwise, use dealerPrice
+          ) || parseFloat(item?.price?.toString()) * parseInt(item?.quantity, 10) // Fallback to price if other values are not available
+        )?.toString(),        
         itemStatus: 'OPEN',
         pcqty: '0',
         pack_qty: 0,
@@ -1645,9 +1664,11 @@ const handleGstChange = (index, text) => {
         closeFlag: 0,
         statusFlag: 0,
         poId: 0,
-        orgPrice: isEnabled
-          ? item?.retailerPrice?.toString()
-          : item?.dealerPrice?.toString() || item?.price?.toString(),
+        orgPrice: pdf_flag
+        ? item?.mrp?.toString() // If pdf_flag is enabled, use mrp
+        : isEnabled
+        ? item?.retailerPrice?.toString() // If isEnabled is true, use retailerPrice
+        : item?.dealerPrice?.toString() || item?.price?.toString(), // Otherwise, use dealerPrice or fallback to price      
       })),
       comments: comments,
       customerType: customerType,
@@ -1677,7 +1698,7 @@ const handleGstChange = (index, text) => {
       linkType: 3,
       currentCreditLimit: 0.0,
       orderType: 0,
-      roundOff: 0,
+      roundOff: roundOff,
       advancePayment: 0,
       paidAmount: 0,
       billNo: '',
@@ -1875,31 +1896,31 @@ const handleGstChange = (index, text) => {
   //   }
   // };
 
-  const handlePriceChange = (index, text) => {
-    const updatedItems = [...cartItems];
+  // const handlePriceChange = (index, text) => {
+  //   const updatedItems = [...cartItems];
 
-    // Validate the input to allow only numbers and a single decimal point
-    const isValidInput = /^\d*\.?\d*$/.test(text); // Matches numbers with optional decimal point
+  //   // Validate the input to allow only numbers and a single decimal point
+  //   const isValidInput = /^\d*\.?\d*$/.test(text); // Matches numbers with optional decimal point
 
-    if (isValidInput) {
-      // Parse integer part only if no decimal point
-      const parsedPrice = text.includes('.')
-        ? text
-        : parseInt(text, 10).toString(); // Parse integer only for whole numbers
+  //   if (isValidInput) {
+  //     // Parse integer part only if no decimal point
+  //     const parsedPrice = text.includes('.')
+  //       ? text
+  //       : parseInt(text, 10).toString(); // Parse integer only for whole numbers
 
-      // Ensure empty input defaults to '0'
-      const formattedPrice = text === '' ? '0' : parsedPrice;
+  //     // Ensure empty input defaults to '0'
+  //     const formattedPrice = text === '' ? '0' : parsedPrice;
 
-      // Update the respective price based on isEnabled
-      if (isEnabled) {
-        updatedItems[index].retailerPrice = formattedPrice; // Update retailerPrice
-      } else {
-        updatedItems[index].dealerPrice = formattedPrice; // Update dealerPrice
-      }
+  //     // Update the respective price based on isEnabled
+  //     if (isEnabled) {
+  //       updatedItems[index].retailerPrice = formattedPrice; // Update retailerPrice
+  //     } else {
+  //       updatedItems[index].dealerPrice = formattedPrice; // Update dealerPrice
+  //     }
 
-      dispatch(updateCartItem(index, updatedItems[index]));
-    }
-  };
+  //     dispatch(updateCartItem(index, updatedItems[index]));
+  //   }
+  // };
 
   const handleIncrementQuantityCart = index => {
     const updatedItems = [...cartItems];
@@ -2010,17 +2031,22 @@ const handleGstChange = (index, text) => {
 
   const calculateTotalPrice = (styleId, colorId) => {
     let totalPrice = 0;
+    
     for (let item of cartItems) {
       if (item.styleId === styleId && item.colorId === colorId) {
-        totalPrice +=
-          (isEnabled
-            ? item?.retailerPrice?.toString()
-            : item?.dealerPrice?.toString() || item?.price?.toString()) *
-          item.quantity;
+        const price = pdf_flag
+          ? parseFloat(item?.mrp?.toString() || 0) // If pdf_flag is true, use mrp
+          : isEnabled
+          ? parseFloat(item?.retailerPrice?.toString() || 0) // If isEnabled is true, use retailerPrice
+          : parseFloat(item?.dealerPrice?.toString() || item?.price?.toString() || 0); // Otherwise, use dealerPrice or price
+  
+        totalPrice += price * item.quantity; // Multiply price by quantity and accumulate total price
       }
     }
+  
     return totalPrice.toFixed(2); // Ensure the result is formatted to 2 decimal places
   };
+  
 
   const uniqueSets = new Set(
     cartItems.map(item => `${item.styleId}-${item.colorId}-${item.sizeId}`),
@@ -2031,10 +2057,12 @@ const handleGstChange = (index, text) => {
     .reduce((total, item) => {
       // Parse price and quantity to floats and integers respectively
       const parsedPrice = parseFloat(
-        isEnabled
-          ? item?.retailerPrice?.toString()
-          : item?.dealerPrice?.toString() || item?.price?.toString(),
-      );
+        pdf_flag
+          ? item?.mrp?.toString() // If pdf_flag is enabled, use mrp
+          : isEnabled
+          ? item?.retailerPrice?.toString() // If isEnabled is true, use retailerPrice
+          : item?.dealerPrice?.toString() || item?.price?.toString() // Otherwise, use dealerPrice or price
+      );      
       const parsedQuantity = parseInt(item.quantity, 10);
 
       // Check if parsedPrice and parsedQuantity are valid numbers
@@ -2068,8 +2096,14 @@ const handleGstChange = (index, text) => {
 
       // Parse price and quantity as floats for accurate calculations
       const itemTotalPrice =
-        parseFloat(isEnabled ? item?.retailerPrice : item?.dealerPrice) *
-        parseFloat(item.quantity);
+      parseFloat(
+        pdf_flag
+          ? item?.mrp?.toString() // Use mrp if pdf_flag is true
+          : isEnabled
+          ? item?.retailerPrice?.toString() // Use retailerPrice if isEnabled is true
+          : item?.dealerPrice?.toString() || item?.price?.toString() // Otherwise, use dealerPrice or price
+      ) * parseFloat(item.quantity);
+    
 
       // Calculate GST for the item
       const itemGst = (itemTotalPrice * gstPercentage) / 100;
@@ -2088,11 +2122,81 @@ const handleGstChange = (index, text) => {
   //   (parseFloat(totalPrice) || 0) + (parseFloat(totalGst) || 0)
   // ).toFixed(2); // Total amount formatted to 2 decimal places
 
-  const totalAmount = (
-    (parseFloat(totalGst) || 0) + (parseFloat(totalGrossPrice) || 0)
-  ) // Add gross price to the total amount
-    .toFixed(2); // Format the total amount to 2 decimal places
+  const [totalAmount, setTotalAmount] = useState(0);  // Updated to hold a number value
+const [roundOff, setRoundOff] = useState('');
 
+// Function to calculate round-off value
+const calculateRoundOff = (amount) => {
+  const decimal = parseFloat((amount - Math.floor(amount)).toFixed(2));
+  
+  let roundOff = '';
+
+  if (decimal >= 0.5) {
+    // Round up
+    roundOff = `+${(Math.ceil(amount) - amount).toFixed(2)}`; // Positive round-off
+  } else {
+    // Round down
+    roundOff = `-${(amount - Math.floor(amount)).toFixed(2)}`; // Negative round-off
+  }
+
+  return roundOff;
+};
+
+useEffect(() => {
+  const totalAmount = (parseFloat(totalGst) || 0) + (parseFloat(totalGrossPrice) || 0);
+  const roundOff = calculateRoundOff(totalAmount);
+
+  // Round the total amount to the nearest integer (so it reflects rounded value)
+  const roundedTotal = Math.round(totalAmount);
+
+  // Update state variables for totalAmount and roundOff
+  setTotalAmount(roundedTotal);
+  setRoundOff(roundOff);
+
+}, [totalGst, totalGrossPrice]); // Recalculate whenever totalGst or totalGrossPrice change
+
+// Handle price change function (for updating price input):
+const handlePriceChange = (index, text) => {
+  const updatedItems = [...cartItems];
+
+  const isValidInput = /^\d*\.?\d*$/.test(text); // Validate input
+
+  if (isValidInput) {
+    const parsedPrice = text.includes('.')
+      ? text
+      : parseInt(text, 10).toString(); // Parse integer if no decimal
+    const formattedPrice = text === '' ? '0' : parsedPrice;
+
+    // Update price based on pdf_flag and isEnabled
+    if (pdf_flag) {
+      // If pdf_flag is enabled, update mrp
+      updatedItems[index].mrp = formattedPrice;
+    } else if (isEnabled) {
+      // If isEnabled is true, update retailerPrice
+      updatedItems[index].retailerPrice = formattedPrice;
+    } else {
+      // Otherwise, update dealerPrice
+      updatedItems[index].dealerPrice = formattedPrice;
+    }
+
+    // After updating price, recalculate totalAmount and roundOff
+    const totalAmount = (parseFloat(totalGst) || 0) + (parseFloat(totalGrossPrice) || 0);
+    const roundOff = calculateRoundOff(totalAmount);
+
+    // Round the total amount to the nearest integer
+    const roundedTotal = Math.round(totalAmount);
+
+    // Update the state again
+    setTotalAmount(roundedTotal);
+    setRoundOff(roundOff);
+
+    // Dispatch updated cart item
+    dispatch(updateCartItem(index, updatedItems[index]));
+  }
+};
+
+
+  
   const [locationInputValues, setLocationInputValues] = useState({
     locationName: '',
     phoneNumber: '',
@@ -2972,9 +3076,12 @@ useEffect(() => {
                           <View style={{flex: 0.8, marginLeft: 29}}>
                             <Text style={{color: '#000'}}>QUANTITY</Text>
                           </View>
-                          <View style={{flex: 0.5, marginLeft: 30}}>
-                            <Text style={{color: '#000'}}>PRICE</Text>
-                          </View>
+                          <View style={{ flex: 0.5, marginLeft: 30 }}>
+  <Text style={{ color: '#000' }}>
+    {pdf_flag ? 'MRP' : 'PRICE'}
+  </Text>
+</View>
+
                           <View style={{flex: 0.4, marginLeft: 20}}>
                             <Text style={{color: '#000'}}>GST</Text>
                           </View>
@@ -3051,16 +3158,20 @@ useEffect(() => {
                           borderBottomWidth: 1,
                           borderColor: '#000',
                         }}>
-                        <TextInput
-                          style={{color: '#000', alignSelf: 'center'}}
-                          value={
-                            isEnabled
-                              ? item?.retailerPrice?.toString() || '' // If retailerPrice is available, show it, else show empty string
-                              : item?.dealerPrice?.toString() || ''
-                          } // Show dealerPrice if isEnabled is false, fallback to price
-                          onChangeText={text => handlePriceChange(index, text)} // Call handlePriceChange on text change
-                          keyboardType="numeric"
-                        />
+                <TextInput
+  style={{ color: '#000', alignSelf: 'center' }}
+  value={
+    pdf_flag
+      ? item?.mrp?.toString() || '' // Allow editing of mrp if pdf_flag is true
+      : isEnabled
+      ? item?.retailerPrice?.toString() || '' // Show retailerPrice if isEnabled is true
+      : item?.dealerPrice?.toString() || '' // Show dealerPrice otherwise
+  }
+  onChangeText={text => handlePriceChange(index, text)} // Handle price change for all cases
+  keyboardType="numeric"
+/>
+
+
                       </View>
                       <View
                         style={{
@@ -3256,7 +3367,9 @@ useEffect(() => {
             <OrderDetailRow label="Total Qty" value={formattedTotalQty} />
             <OrderDetailRow label="Total Items" value={totalItems} />
             <OrderDetailRow label="Total Gst" value={totalGst} />
+            <OrderDetailRow label="Round Off" value={roundOff} />
             <OrderDetailRow label="Total Amt" value={totalAmount} />
+            
           </View>
           <TouchableOpacity
             onPress={PlaceAddOrder}

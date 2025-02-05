@@ -453,16 +453,18 @@ const handleCustomerLevelDropDown = () => {
   setShowCustomerLevelList(!showCustomerLevelList);
 };
 
-const handleSelectCustomerLevel = item => {
+const handleSelectCustomerLevel = (item) => {
   setSelectedCustomerLevel(item.customerLevelType);
   setSelectedCustomerLevelId(item.id);
-  if (item.id === 0) {
-    setShowCustomerLevelPrice(false);
-  } else {
-    setShowCustomerLevelPrice(true);
-  }
   setShowCustomerLevelList(false);
 };
+
+// useEffect to update showCustomerLevelPrice based on selectedCustomerLevelId
+useEffect(() => {
+  if (selectedCustomerLevelId !== null) {
+    setShowCustomerLevelPrice(selectedCustomerLevelId !== 0);
+  }
+}, [selectedCustomerLevelId]);
 
 const filterCustomerLevels = text => {
   const filtered = customerLevelList.filter(item =>
@@ -2368,6 +2370,8 @@ const ValidateStyleNameSave = async () => {
   if (processing) return;
   setProcessing(true);
 
+  const selectedColor = colorList.find(color => color.colorId === selectedColorIds);
+
 
   // Create a new FormData instance
   const formData = new FormData();
@@ -2590,6 +2594,7 @@ const handleSave = async () => {
     sizeGroupId: selectedSeasonGroupId,
     locationId: selectedLocationId,
     colorId: selectedColorIds,
+    selectedColor,
     colorCode,
     typeId: selectedTypeId,
     processId: selectedProcessWorkflowId,
@@ -5362,7 +5367,7 @@ useEffect(() => {
             <View style={styles.row}>
               <Text style={styles.label}>Colors:</Text>
               <Text style={styles.colon}>:</Text>
-              <Text style={styles.value}>{item.selectedColorNames}</Text>
+              <Text style={styles.value}>{item.selectedColor}</Text>
             </View>
             <View style={styles.row}>
               <Text style={styles.label}>Color Codes:</Text>
@@ -5420,7 +5425,7 @@ const getStyles = colors =>
  headerback: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'lightgray',
+    backgroundColor: '#fff',
     justifyContent:"space-between"
   },
   buttonContainer: {
