@@ -321,7 +321,6 @@ const NewStyleDetail = ({route}) => {
       selectedLocation,
       selectedUomId,
       selectedUom,
-
       selectedScaleId,
       showScaleTable,
       selectedScale,
@@ -1001,19 +1000,18 @@ useEffect(() => {
   const handleCustomerLevelDropDown = () => {
     setShowCustomerLevelList(!showCustomerLevelList);
   };
-
-  const handleSelectCustomerLevel = (item) => {
+  const handleSelectCustomerLevel = item => {
     setSelectedCustomerLevel(item.customerLevelType);
     setSelectedCustomerLevelId(item.id);
+    if (item.id === 0) {
+      setShowCustomerLevelPrice(false);
+    } else {
+      setShowCustomerLevelPrice(true);
+    }
     setShowCustomerLevelList(false);
   };
-  
-  // useEffect to update showCustomerLevelPrice based on selectedCustomerLevelId
-  useEffect(() => {
-    if (selectedCustomerLevelId !== null) {
-      setShowCustomerLevelPrice(selectedCustomerLevelId !== 0);
-    }
-  }, [selectedCustomerLevelId]);
+
+
 
   const filterCustomerLevels = text => {
     const filtered = customerLevelList.filter(item =>

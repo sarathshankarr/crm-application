@@ -209,6 +209,8 @@ const CopyProduct = ({route, navigation}) => {
       setSelectedUomId(copiedDetails.selectedUomId || 0);
  
       setSelectedCustomerLevel(copiedDetails.selectedCustomerLevel || '');
+      setShowCustomerLevelPrice(copiedDetails.showCustomerLevelPrice || '');
+
       // setSelectedColorIds(copiedDetails.selectedColorIds || []);
       setColorCode(copiedDetails.colorCode || []);
       setSelectedTypeId(copiedDetails.selectedTypeId || 0);
@@ -219,7 +221,7 @@ const CopyProduct = ({route, navigation}) => {
       setSelectedProcessWorkflow(
         copiedDetails.selectedProcessWorkflow || 0,
       );
-
+    
       setSelectedLocationId(copiedDetails.selectedLocationId || 0);
       setSelectedScaleId(copiedDetails.selectedScaleId || 0);
       setSelectedScale(copiedDetails.selectedScale || 0);
@@ -453,18 +455,35 @@ const handleCustomerLevelDropDown = () => {
   setShowCustomerLevelList(!showCustomerLevelList);
 };
 
-const handleSelectCustomerLevel = (item) => {
+const handleSelectCustomerLevel = item => {
   setSelectedCustomerLevel(item.customerLevelType);
   setSelectedCustomerLevelId(item.id);
+  if (item.id === 0) {
+    setShowCustomerLevelPrice(false);
+  } else {
+    setShowCustomerLevelPrice(true);
+  }
   setShowCustomerLevelList(false);
 };
 
-// useEffect to update showCustomerLevelPrice based on selectedCustomerLevelId
 useEffect(() => {
-  if (selectedCustomerLevelId !== null) {
-    setShowCustomerLevelPrice(selectedCustomerLevelId !== 0);
+  if (customerLevelList?.length > 0 && selectedCustomerLevelId !== null) {
+    const customerLevelType = customerLevelList.find(
+      item => item.id === selectedCustomerLevelId
+    );
+
+    if (customerLevelType) {
+      setSelectedCustomerLevel(customerLevelType.customerLevelType);
+      setShowCustomerLevelPrice(customerLevelType.id !== 0);
+    } else {
+      setSelectedCustomerLevel('');
+      setShowCustomerLevelPrice(false);
+    }
   }
-}, [selectedCustomerLevelId]);
+}, [selectedCustomerLevelId, customerLevelList]);
+
+
+
 
 const filterCustomerLevels = text => {
   const filtered = customerLevelList.filter(item =>
@@ -2380,8 +2399,8 @@ const ValidateStyleNameSave = async () => {
   
   // Append the selected color as an object (or a JSON string if required by the backend)
   formData.append('myItems', JSON.stringify([{
-    colorId: selectedColor.colorId,
-    colorName: selectedColor.colorName,
+    colorId: selectedColor?.colorId,
+    colorName: selectedColor?.colorName,
   }])); // Wrap the color in an array, assuming the backend expects an array
 
   console.log('Request Body:', formData); // FormData cannot be stringified directly
@@ -2485,6 +2504,7 @@ const handleAddProduct = () => {
     selectedUom,
     imageUrls,
     statusId: selectedStatusId,
+    customerLevel:selectedCustomerLevelId,
     selectedCustomerLevel,
     selectedLocation,
     selectedSeasonGroup,
@@ -2618,6 +2638,7 @@ const handleSave = async () => {
     selectedUom,
     imageUrls,
     statusId: selectedStatusId,
+    customerLevel:selectedCustomerLevelId,
     selectedCustomerLevel,
     selectedLocation,
     selectedSeasonGroup,

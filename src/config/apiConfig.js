@@ -131,6 +131,7 @@ export const API = {
   GET_UOM:'erpportal/api/uom/getByCompanyId',
   ADD_UOM:'erpportal/api/uom/addUOM',
   VALIDATE_UOM:'erpportal/api/uom/isValidUOM/',
+  STYLE_BASED_ON_SEARCH:'erpportal/api/style/getStyleBasedOnSearchType',
 };
 
 export const USER_ID = 'adminClientId';

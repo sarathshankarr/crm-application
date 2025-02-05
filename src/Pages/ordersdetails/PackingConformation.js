@@ -53,6 +53,12 @@ const PackingConformation = ({route}) => {
   const [hasMoreTasks, setHasMoreTasks] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
 
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const [selectedSearchOption, setSelectedSearchOption] = useState(null);
+  const [searchKey, setSearchKey] = useState(null);
+  const [filterFlag, setFilterFlag] = useState(false);
+
   const [isLoading, setIsLoading] = useState(false); // Renamed from 'loading'
   const [loadingMore, setLoadingMore] = useState(false); // Keeping this for loading more tasks
   const [refreshing, setRefreshing] = useState(false); // To track refresh state
@@ -63,93 +69,25 @@ const PackingConformation = ({route}) => {
   const [selectedSku, setSelectedSku] = useState('Select'); // State for the selected SKU
   const [searchFilterFlag, setsearchFilterFlag] = useState(false);
 
-  useEffect(() => {
-    if (modalVisible) {
-      setSelectedSku(null); // Reset selectedSku when the modal is opened
-      setSelectedStyle(null)
-      setSelectedColor(null)
-    }
-  }, [modalVisible]);
 
-  
-  const toggleSkuDropdown = () => {
-    if (!showSkuDropdown) {
-      // Fetch data only when opening the dropdown
-      fetchSkuData();
-    }
-    setShowSkuDropdown(prev => !prev);
-  };
 
-  const fetchSkuData = () => {
-    setLoadingSku(true); // Set loadingSku to true
-    const apiUrl = `${global?.userData?.productURL}${API.GET_SKU}/${companyId}`;
-  
-    console.log('Fetching SKU Data from:', apiUrl);
-  
-    axios
-      .get(apiUrl, {
-        headers: {
-          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
-        },
-      })
-      .then(response => {
-        console.log('Raw SKU Response:', response?.data);
-        const filteredData = response?.data?.map(item => ({
-          label: item.gsCode,
-          value: item.gscodeMapId,
-        }));
-        setSkuData(filteredData);
-      })
-      .catch(error => {
-        console.error('Error fetching SKU Data:', error);
-      })
-      .finally(() => {
-        setLoadingSku(false);
-      });
-  };
-  
-
-  const handleSelectSku = sku => {
-    setSelectedSku(sku); // Now setting the whole object
-    setShowSkuDropdown(false); // Close the dropdown
-  };
-  
-
-  const handleSearch = () => {
-    // if (!selectedSku || selectedSku === 'Select' || !selectedStyle || selectedStyle === 'Select') {
-    //   Alert.alert(
-    //     'Alert',
-    //     'Please select an option from the dropdown before searching',
-    //   );
-    //   return; // Exit the function if no SKU is selected
-    // }
-
-    // Trigger the search
-    setsearchFilterFlag(true);
-    setFrom(0);
-    setTo(20);
-
-    gettasksearch(true, 0, 20);
-  };
 
   const gettasksearch = async (
     reset = false,
     customFrom = from,
     customTo = to,
   ) => {
-    const apiUrl = `${global?.userData?.productURL}${API.GET_ALL_SKU_SEARCH}`;    
+    const apiUrl = `${global?.userData?.productURL}${API.STYLE_BASED_ON_SEARCH}`;
     const requestBody = {
-      style: selectedStyle?.label,
-      color: selectedColor?.label,
-      size: '',
-      compLoc: order.customerLocation, // Ensure this value is valid
-      companyId: companyId, // Ensure companyId is set
-      gsId: selectedSku?.value || '', // Send the gscodeMapId value
+      dropdownId: searchKey,
+      fieldvalue: searchQuery,
+      companyId: companyId,
+      from: customFrom,
+      to: customTo,
     };
-  
-    console.log('Searching tasks with URL:', apiUrl);
-    console.log('Request Body:', JSON.stringify(requestBody, null, 2));
-  
+
+    console.log('gettasksearch==> ', customFrom, customTo);
+
     try {
       const response = await axios.post(apiUrl, requestBody, {
         headers: {
@@ -157,15 +95,20 @@ const PackingConformation = ({route}) => {
           Authorization: `Bearer ${global?.userData?.token?.access_token}`,
         },
       });
-  
-      console.log('Search Response:', response?.data);
-  
+
       if (response?.data) {
-        const newOrders = response.data;
+        // setOrders(response.data.response.ordersList);
+
+        const newOrders = response?.data.filter(
+          order => order !== null,
+        );
+
         setStylesData(prevDetails =>
           reset ? newOrders : [...prevDetails, ...newOrders],
         );
-        setHasMoreTasks(newOrders?.length >= 20);
+        setHasMoreTasks(newOrders?.length >= 15);
+
+        // setHasMoreTasks(false);
       } else {
         setStylesData([]);
       }
@@ -173,180 +116,86 @@ const PackingConformation = ({route}) => {
       console.error('Error fetching tasks:', error);
     }
   };
-  
-  
+
   
 
+  const onRefresh = async () => {
+    setRefreshing(true);
+    setFrom(0);
+    setTo(20);
+    // setSearchKey(0);
+    setFilterFlag(false);
 
+    setSearchQuery('');
+    // setShowSearchInput(false);
+    // setSelectedSearchOption('');
+    setHasMoreTasks(true);
 
-  const [stylesColorData, setStylesColorData] = useState({
-    styles: [],
-    colors: [],
-  });
-  const [styleData, setStyleData] = useState([]); // Store styles data
-  const [searchStyle, setSearchStyle] = useState('');
-  const [searchColor, setSearchColor] = useState('');
-  const [colorData, setColorData] = useState([]); // Store colors data
-  const [loadingStyle, setLoadingStyle] = useState(false);
-  const [loadingColor, setLoadingColor] = useState(false);
-  const [showStyleDropdown, setShowStyleDropdown] = useState(false);
-  const [showColorDropdown, setShowColorDropdown] = useState(false);
-  const [selectedStyle, setSelectedStyle] = useState('Select Style');
-  const [selectedColor, setSelectedColor] = useState('Select Color');
-
-  // const toggleStyleDropdown = () => {
-  //   if (!showStyleDropdown) {
-  //     fetchStyleData();
-  //   }
-  //   setShowStyleDropdown(prev => !prev);
-  // };
-  
-  // const toggleColorDropdown = () => {
-  //   if (!showColorDropdown) {
-  //     fetchColorData();
-  //   }
-  //   setShowColorDropdown(prev => !prev);
-  // };
+    await getAllProducts(true, 0, 20);
+    setRefreshing(false);
+  };
 
   useEffect(() => {
-    // Fetch color data when a style is selected
-    if (selectedStyle) {
-      fetchColorData(selectedStyle.value); // Fetch based on selected style
+    if (searchOption.length > 0) {
+      setSelectedSearchOption(searchOption[0].label);
+      setSearchKey(searchOption[0].value);
     }
-  }, [selectedStyle]);
+  }, [searchOption]); // This will run whenever searchOption changes
+
+
+  const toggleDropdown = () => {
+    setDropdownVisible(!dropdownVisible);
+  };
+
+
+  const handleSearchInputChange = query => {
+    setSearchQuery(query);
+    if (query.trim() === '') {
+      getAllProducts(true, 0, 20);
+    }
+  };
+
+  const searchOption = [
+    { label: 'style', value: 3 },
+    { label: 'color', value: 5 },
+    { label: 'sku', value: 8 },
+  ];
   
-  useEffect(() => {
-    // Fetch color data when a style is selected, or fetch all colors if no style is selected
-    if (selectedStyle?.value) {
-      fetchColorData(selectedStyle.value); // Fetch based on selected style
-    } else {
-      fetchColorData(); // Fetch all colors when no style is selected
-    }
-  }, [selectedStyle]); // Trigger whenever selectedStyle changes
+  const handleDropdownSelect = option => {
+    onRefresh();
+    setTimeout(() => {
+      setSelectedSearchOption(option.label);
+      setSearchKey(option.value);
+      setDropdownVisible(false);
+      setSearchQuery(''); 
+    }, 0);
+  };
 
-const fetchStyleData = () => {
-  if (styleData.length > 0) return; // Prevent API call if data is already fetched
 
-  setLoadingStyle(true);
-  const apiUrl = `${global?.userData?.productURL}${API.GET_STYLE_COLOR}/${companyId}`;
-  axios
-    .get(apiUrl, {
-      headers: {
-        Authorization: `Bearer ${global?.userData?.token?.access_token}`,
-      },
-    })
-    .then(response => {
-      console.log('Raw Style Response:', response?.data);
-
-      const uniqueStyles = response.data.filter(
-        (item, index, self) =>
-          index === self.findIndex(t => t.styleId === item.styleId)
+  const handleSearch = () => {
+    if (!searchKey) {
+      Alert.alert(
+        'Alert',
+        'Please select an option from the dropdown before searching',
       );
-
-      const styles = uniqueStyles.map(item => ({
-        label: item.style,
-        value: item.styleId,
-      }));
-
-      setStyleData(styles);
-      setLoadingStyle(false);
-    })
-    .catch(error => {
-      console.error('Error fetching styles:', error);
-      setLoadingStyle(false);
-    });
-};
-
-const fetchColorData = (styleId = null) => {
-  setLoadingColor(true);
-  const apiUrl = `${global?.userData?.productURL}${API.GET_STYLE_COLOR}/${companyId}`;
-  axios
-    .get(apiUrl, {
-      headers: {
-        Authorization: `Bearer ${global?.userData?.token?.access_token}`,
-      },
-    })
-    .then(response => {
-      console.log('Raw Color Response:', response?.data);
-
-      // Filter colors based on styleId if it's provided
-      const filteredColors = styleId
-        ? response.data.filter(item => item.styleId === styleId)
-        : response.data; // Fetch all colors if no styleId is passed
-
-      // Filter out duplicate colors
-      const uniqueColors = filteredColors.filter(
-        (item, index, self) =>
-          index === self.findIndex(t => t.color === item.color)
-      );
-
-      const colors = uniqueColors.map(item => ({
-        label: item.color,
-        value: item.colorId,
-      }));
-
-      setColorData(colors);
-      setLoadingColor(false);
-    })
-    .catch(error => {
-      console.error('Error fetching colors:', error);
-      setLoadingColor(false);
-    });
-};
-
-
-const toggleStyleDropdown = () => {
-  if (!showStyleDropdown && styleData.length === 0) { // Fetch data only if not fetched yet
-    fetchStyleData();
-  }
-  setSearchStyle('');
-  setShowStyleDropdown(prev => !prev);
-};
-
-const toggleColorDropdown = () => {
-  if (!showColorDropdown) {
-    // When opening the color dropdown, fetch all colors if no style is selected
-    if (selectedStyle?.value) {
-      fetchColorData(selectedStyle.value); // Fetch based on selected style
-    } else {
-      fetchColorData(); // Fetch all colors if no style is selected
+      return; // Exit the function if no search key is selected
     }
-  }
-  setSearchColor('');
-  setShowColorDropdown(prev => !prev); // Toggle color dropdown visibility
-};
 
+    if (!searchQuery.trim()) {
+      Alert.alert(
+        'Alert',
+        'Please select an option from the dropdown before searching',
+      );
+      return; // Exit if the search query is empty
+    }
 
+    setFilterFlag(true);
+    setFrom(0);
+    setTo(20);
 
-const handleSelectStyle = (style) => {
-  setSelectedStyle(style); // Save the entire style object
-  setShowStyleDropdown(false);
+    gettasksearch(true, 0, 20);
+  };
 
-  // Fetch colors related to the selected style
-  fetchColorData(style.value); // Pass the styleId
-};
-
-const filteredStyleData = styleData.filter((item) =>
-  item.label.toLowerCase().includes(searchStyle.toLowerCase())
-);
-const filteredColorData = colorData.filter((item) =>
-  item.label.toLowerCase().includes(searchColor.toLowerCase())
-);
-
-const handleSelectColor = (color) => {
-  setSelectedColor(color);
-  setShowColorDropdown(false);
-};
-
-
-const handleClearSelection = () => {
-  setSelectedStyle(null); // Clear the selected style
-  setSelectedColor(null); // Clear the selected color
-  setShowStyleDropdown(false); // Close style dropdown
-  setShowColorDropdown(false); // Close color dropdown
-  onRefresh()
-
-};
   const getAllProducts = async (reset = false) => {
     if (isLoading || loadingMore) return; // Use 'isLoading' instead of 'loading'
     setIsLoading(reset); // Use the renamed 'setIsLoading'
@@ -381,25 +230,37 @@ const handleClearSelection = () => {
     }
   };
 
-  const loadMoreTasks = () => {
+  const loadMoreTasks = async () => {
     if (!hasMoreTasks || loadingMore) return;
 
     setLoadingMore(true);
-    const newFrom = from + 15;
-    const newTo = to + 15;
+    const newFrom = to + 1;
+    const newTo = to + 20;
     setFrom(newFrom);
     setTo(newTo);
 
-    getAllProducts(false);
-  };
-
-  const onRefresh = async () => {
-    setRefreshing(true);
-    setFrom(0);
-    setTo(15);
-    setHasMoreTasks(true);
-    await getAllProducts(true);
-    setRefreshing(false);
+    if (filterFlag) {
+      try {
+        await gettasksearch(false, newFrom, newTo);
+      } catch (error) {
+        console.error('Error while loading more orders:', error);
+      } finally {
+        setFrom(newFrom);
+        setTo(newTo);
+        setLoadingMore(false);
+      }
+    } else {
+      try {
+        await getAllProducts(false, newFrom, newTo);
+      } catch (error) {
+        console.error('Error while loading more orders:', error);
+      } finally {
+        setFrom(newFrom);
+        setTo(newTo);
+        setLoadingMore(false);
+      }
+    }
+    // getAllOrders(); // Call getAllOrders here to fetch new data
   };
 
   useEffect(() => {
@@ -2462,156 +2323,44 @@ const handleClearSelection = () => {
                   />
                 </TouchableOpacity>
               </View>
-              <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',marginVertical:5}}>
-  {/* Style Dropdown */}
-  <TouchableOpacity onPress={handleClearSelection}>
-  <Image
-    style={styles.buttonIcondel}
-    source={require('../../../assets/del.png')}
-  />
-</TouchableOpacity>
-  <View style={[styles.container1, {width: '35%'}]}>
-    <TouchableOpacity style={styles.container3} onPress={toggleStyleDropdown}>
-    <Text style={[styles.selstyle, {flexShrink: 1}]} numberOfLines={1}>
-  {selectedStyle?.label || 'Select Style'}
-</Text>
-      <Image source={require('../../../assets/dropdown.png')} style={{width: 20, height: 20}} />
-    </TouchableOpacity>
-    {showStyleDropdown && (
-      <View style={[styles.dropdownContainersku, {position: 'absolute', top: 40, zIndex: 10}]}>
-         <TextInput
-              style={styles.searchInput}
-              placeholder="Search Style"
-                placeholderTextColor='#000'
-              value={searchStyle}
-              onChangeText={setSearchStyle}
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 10, marginVertical: 10 }}>
+        <View style={styles.searchContainer}>
+          <TextInput
+            style={styles.searchInput}
+            value={searchQuery}
+            onChangeText={handleSearchInputChange}
+            placeholder="Search"
+            placeholderTextColor="#888"
+          />
+          <TouchableOpacity style={styles.dropdownButton} onPress={toggleDropdown}>
+            <Text style={{ color: "#000", marginRight: 5 }}>
+              {selectedSearchOption ? selectedSearchOption : 'Select'}
+            </Text>
+            <Image
+              style={styles.dropdownIcon}
+              source={require('../../../assets/dropdown.png')}
             />
-        <View>
-        {loadingSku ? (
-  <Text style={{ color: '#000' }}>Loading...</Text>
-) : filteredStyleData?.length > 0 ? (
-  <FlatList
-    data={filteredStyleData}
-    keyExtractor={(item, index) => `${item.styleId}-${index}`} // Ensure a unique key for each item
-    renderItem={({ item }) => (
-      <TouchableOpacity style={styles.dropdownItem} onPress={() => handleSelectStyle(item)}>
-        <Text style={styles.dropdownText}>{item.label}</Text>
-      </TouchableOpacity>
-    )}
-  />
-) : (
-  <Text style={{ color: '#000' }}>No style data available</Text>
-)}
+          </TouchableOpacity>
         </View>
+        <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
+          <Text style={styles.searchButtonText}>Search</Text>
+        </TouchableOpacity>
       </View>
-    )}
-  </View>
+      {dropdownVisible && (
+        <View style={styles.dropdownContent1}>
+          <ScrollView>
+            {searchOption.map((option, index) => (
+              <TouchableOpacity
+                style={styles.dropdownOption}
+                key={index}
+                onPress={() => handleDropdownSelect(option)}>
+                <Text style={{ color: '#000' }}>{option.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      )}
 
-  {/* Color Dropdown */}
-  <View style={[styles.container1, {width: '35%'}]}>
-  <TouchableOpacity style={styles.container3} onPress={toggleColorDropdown}>
-    <Text style={[styles.selstyle, {flexShrink: 1}]} numberOfLines={1}>
-      {selectedColor?.label || 'Select Color'}
-    </Text>
-    <Image source={require('../../../assets/dropdown.png')} style={{width: 20, height: 20}} />
-  </TouchableOpacity>
-  {showColorDropdown && (
-    <View style={[styles.dropdownContainersku, {position: 'absolute', top: 40, zIndex: 10}]}>
-       <TextInput
-              style={styles.searchInput}
-              placeholder="Search Color"
-              placeholderTextColor='#000'
-              value={searchColor}
-              onChangeText={setSearchColor}
-            />
-      <View >
-      {loadingColor ? (
-  <Text style={{ color: '#000' }}>Loading...</Text>
- 
-) : filteredColorData?.length > 0 ? (
-  <FlatList
-    data={filteredColorData}
-    keyExtractor={(item, index) => `${item.colorId}-${index}`} // Ensure a unique key for each item
-    renderItem={({ item }) => (
-      <TouchableOpacity style={styles.dropdownItem} onPress={() => handleSelectColor(item)}>
-        <Text style={styles.dropdownText}>{item.label}</Text>
-      </TouchableOpacity>
-    )}
-  />
-) : (
-  <Text style={{ color: '#000' }}>No color data available</Text>
-)}
-
-      </View>
-    </View>
-  )}
-</View>
-
-  {/* Search Button */}
-  <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
-    <Text style={{color: '#fff'}}>Search</Text>
-  </TouchableOpacity>
-</View>
-
-
-
-
-
-
-              {/* <View style={styles.container1}>
-                <View style={styles.container2}>
-                  <View style={{flexDirection: 'row'}}>
-                    <TouchableOpacity
-                      style={styles.container3}
-                      onPress={toggleSkuDropdown}>
-                     <Text style={{fontWeight: '600', color: '#000'}}>
-  {selectedSku?.label || 'Select'}
-</Text>
-
-                      <Image
-                        source={require('../../../assets/dropdown.png')}
-                        style={{width: 20, height: 20}}
-                      />
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={styles.searchButton}
-                      onPress={handleSearch}>
-                      <Text
-                        style={{
-                          color: '#fff',
-                        }}>
-                        Search
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                  {showSkuDropdown && (
-                    <View style={styles.dropdownContainersku}>
-                      <ScrollView
-                        style={styles.scrollView}
-                        nestedScrollEnabled={true}>
-                        {loadingStyle ? (
-                          <Text>Loading...</Text> 
-                        ) : skuData?.length > 0 ? (
-                          skuData.map((sku, index) => (
-                            <TouchableOpacity
-                              key={index}
-                              style={styles.dropdownItem}
-                              onPress={() => handleSelectSku(sku)}>
-                              <Text style={styles.dropdownText}>
-                                {sku.label}
-                              </Text>
-                            </TouchableOpacity>
-                          ))
-                        ) : (
-                          <Text>No SKU data available</Text>
-                        )}
-                      </ScrollView>
-                    </View>
-                  )}
-                </View>
-                
-              </View>
-               */}
               <View style={styles.hesderselect}>
                 <Text style={styles.itemTextname}>Name</Text>
                 <Text style={styles.itemTextcolor}>Color</Text>
@@ -2622,25 +2371,26 @@ const handleClearSelection = () => {
                 <Text style={styles.itemTextavl}>Avl Qty</Text>
                 <Text style={styles.itemTextqty}>Qty</Text>
               </View>
-
-              <ScrollView
-  refreshControl={
-    <RefreshControl
-      refreshing={refreshing}
-      onRefresh={onRefresh}
-    />
-  }
-  onScrollEndDrag={loadMoreTasks}
->
-  {stylesData.map((item, index) => (
-    <View key={`${item.styleId}-${index}`}>
-      {renderItem({ item, index, updateQty })}
-    </View>
-  ))}
-  {loadingMore && (
-    <ActivityIndicator size="small" color="#0000ff" />
-  )}
-</ScrollView>
+              {stylesData?.length === 0 ? (
+  <Text style={styles.noCategoriesText}>Sorry, no results found!</Text>
+) : (
+  <ScrollView
+    refreshControl={
+      <RefreshControl
+        refreshing={refreshing}
+        onRefresh={onRefresh}
+      />
+    }
+    onScrollEndDrag={loadMoreTasks}
+  >
+    {stylesData.map((item, index) => (
+      <View key={`${item.styleId}-${index}`}>
+        {renderItem({ item, index, updateQty })}
+      </View>
+    ))}
+    {loadingMore && <ActivityIndicator size="small" color="#0000ff" />}
+  </ScrollView>
+)}
 
               <TouchableOpacity
                 style={styles.addButton}
@@ -2855,6 +2605,13 @@ const getStyles = colors =>
       color: '#fff',
       fontWeight: 'bold',
     },
+    noCategoriesText: {
+      textAlign: 'center',
+      marginTop: 20,
+      fontSize: 16,
+      color: '#000',
+      fontWeight: '600',
+    },
     addButton: {
       backgroundColor: colors.color2,
       padding: 10,
@@ -2976,6 +2733,66 @@ const getStyles = colors =>
       width: 25,
       height: 25,
       marginRight:5
+    },
+    searchContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: '#fff',
+      borderRadius: 25,
+      paddingLeft: 10,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 5,
+      elevation: 4,
+      flex: 1,
+      marginRight: 10,
+      
+    },
+    searchInput: {
+      flex: 1,
+      height: 40,
+      borderRadius: 25,
+      paddingHorizontal: 15,
+      color: '#000',
+      // backgroundColor: '#f1f1f1',
+      marginRight: 10,
+    },
+    dropdownButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 10,
+      paddingHorizontal: 10,
+      backgroundColor: '#e6e6e6',
+      borderRadius: 15,
+    },
+    dropdownIcon: {
+      width: 15,
+      height: 15,
+      tintColor: '#000',
+    },
+    searchButton: {
+      backgroundColor:  colors.color2,
+      borderRadius: 25,
+      paddingHorizontal: 20,
+      paddingVertical: 10,
+      elevation: 3,
+      
+    },
+    searchButtonText: {
+      color: '#fff',
+      fontWeight: 'bold',
+    },
+    dropdownContent1: {
+      elevation: 5,
+      // height: 220,
+      alignSelf: 'center',
+      width: '90%',
+      backgroundColor: '#fff',
+      borderRadius: 10,
+      borderColor: 'lightgray', // Optional: Adds subtle border (for effect)
+      borderWidth: 1,
+      marginBottom:5
     },
   });
 
