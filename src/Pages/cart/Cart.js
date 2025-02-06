@@ -56,6 +56,7 @@ const Cart = () => {
 
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [selatedDate, setSelectedDate] = useState('Expected delivery date');
+  
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
@@ -1807,30 +1808,29 @@ const grossPrices = cartItems.map(item => {
   const handleDateConfirm = date => {
     const today = new Date();
     today.setHours(0, 0, 0, 0); // Set time to midnight for comparison
-
+  
     if (date < today) {
-      // If the selected date is in the past, show an error or ignore
       Alert.alert(
         'Invalid Date',
-        "Please select today's date or a future date.",
+        "Please select today's date or a future date."
       );
       hideDatePicker();
       return;
     }
-
+  
     console.warn('A date has been picked: ', date);
-
+  
     // Extract day, month, and year
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0'); // getMonth() returns month from 0-11
     const year = date.getFullYear();
-
+  
     // Format date as DD-MM-YYYY
     const formattedDate = `${day}-${month}-${year}`;
-
+  
     setSelectedDate('Expected Delivery Date: ' + formattedDate);
+    setShipDate(date); // Store selected date
     hideDatePicker();
-    setShipDate(date.toISOString().split('T')[0]);
   };
 
   // const handleQuantityChange = (index, text) => {
@@ -2128,19 +2128,22 @@ const [roundOff, setRoundOff] = useState('');
 // Function to calculate round-off value
 const calculateRoundOff = (amount) => {
   const decimal = parseFloat((amount - Math.floor(amount)).toFixed(2));
-  
-  let roundOff = '';
+
+  let roundOff = 0; // Default to 0 if there's no rounding required
 
   if (decimal >= 0.5) {
-    // Round up
-    roundOff = `+${(Math.ceil(amount) - amount).toFixed(2)}`; // Positive round-off
-  } else {
-    // Round down
-    roundOff = `-${(amount - Math.floor(amount)).toFixed(2)}`; // Negative round-off
+    roundOff = (Math.ceil(amount) - amount).toFixed(2); // Positive round-off
+    roundOff = `+${roundOff}`; // Add "+" sign for positive values
+  } else if (decimal > 0) {
+    roundOff = (amount - Math.floor(amount)).toFixed(2); // Negative round-off
+    roundOff = `-${roundOff}`;
   }
 
-  return roundOff;
+  // Ensure "-0.00" or "+0.00" is returned as "0.00"
+  return parseFloat(roundOff) === 0 ? "0.00" : roundOff;
 };
+
+
 
 useEffect(() => {
   const totalAmount = (parseFloat(totalGst) || 0) + (parseFloat(totalGrossPrice) || 0);
@@ -3243,7 +3246,7 @@ useEffect(() => {
   style={{flex: 2.1, marginLeft: 10, marginRight: 20}}>
   <Text style={{color: '#000'}}>
     {calculateTotalQty(item.styleId, item.colorId) !== undefined
-      ? Number(calculateTotalQty(item.styleId, item.colorId)).toFixed(5)
+      ? Number(calculateTotalQty(item.styleId, item.colorId)).toFixed(2)
       : '0'}
   </Text>
 </View>
@@ -3698,14 +3701,14 @@ useEffect(() => {
             onConfirm={handleDateConfirm}
             onCancel={hideDatePicker}
           /> */}
-          <DateTimePickerModal
-            isVisible={isDatePickerVisible}
-            mode="date"
-            onConfirm={handleDateConfirm}
-            onCancel={hideDatePicker}
-            date={new Date()} // Default parameter for `date`
-            onHide={() => {}}
-          />
+         <DateTimePickerModal
+  isVisible={isDatePickerVisible}
+  mode="date"
+  onConfirm={handleDateConfirm}
+  onCancel={hideDatePicker}
+  date={shipDate ? new Date(shipDate) : new Date()} // Use the previously selected date
+  onHide={() => {}}
+/>
           <View>
             <Modal
               animationType="fade"

@@ -494,16 +494,17 @@ const PackingConformation = ({route}) => {
   };
 
   const handleQuantityChange = (newQuantity, itemId) => {
-    const formattedQuantity = newQuantity.replace(/^0+/, '').trim();
-    const isValidQuantity = /^(\d+(\.\d{0,2})?)$/.test(formattedQuantity);
-
+    // Ensure newQuantity is treated as a float and handle invalid inputs
+    const formattedQuantity = (newQuantity);
+    const isValidQuantity = !isNaN(formattedQuantity) && formattedQuantity >= 0; // Validate quantity
+  
     console.log('Formatted Quantity:', formattedQuantity);
     console.log('Is Valid Quantity:', isValidQuantity);
-
+  
     order?.orderLineItems.forEach(item => {
       const d_pkg_flag = order.d_pkg_flag;
       console.log('d_pkg_flag:', d_pkg_flag); // Log d_pkg_flag value
-
+  
       if (item.statusFlag === 2) {
         console.log(
           `Skipping item with statusFlag 2: ${item.styleId}-${item.size}`,
@@ -512,7 +513,8 @@ const PackingConformation = ({route}) => {
       }
       if (item.statusFlag === 0) {
         let availQty = item?.availQty ?? 0;
-        const formattedQuantityNum = Number(formattedQuantity);
+        const formattedQuantityNum = formattedQuantity;
+        
         if (
           this.existingStyleMap &&
           this.existingStyleMap.has(item.styleId + '-' + item.size)
@@ -550,27 +552,27 @@ const PackingConformation = ({route}) => {
         );
       }
     });
-
+  
     setOrder(prevOrder => {
       const updatedOrderLineItems = prevOrder.orderLineItems.map(item => {
         console.log('Checking Item for Quantity Change:', item);
         if (item.orderLineitemId === itemId) {
           if (isValidQuantity) {
             console.log('Updating Item with New Quantity:', item);
-            return {...item, qty: parseFloat(formattedQuantity)};
+            return {...item, qty: formattedQuantity}; // Directly use formattedQuantity
           }
-          if (formattedQuantity === '') {
+          if (newQuantity === '') {
             console.log('Clearing Quantity for Item:', item);
             return {...item, qty: 0};
           }
         }
         return item;
       });
-
+  
       const totalQty = updatedOrderLineItems.reduce((sum, item) => {
         return item.statusFlag !== 2 ? sum + parseFloat(item.qty || 0) : sum;
       }, 0);
-
+  
       const totalAmount = updatedOrderLineItems.reduce((sum, item) => {
         if (item.statusFlag !== 2) {
           const basePrice =
@@ -580,7 +582,7 @@ const PackingConformation = ({route}) => {
         }
         return sum;
       }, 0);
-
+  
       const totalGst = updatedOrderLineItems.reduce((sum, item) => {
         if (item.statusFlag !== 2) {
           const basePrice =
@@ -589,9 +591,9 @@ const PackingConformation = ({route}) => {
         }
         return sum;
       }, 0);
-
+  
       const {roundedTotal, roundOff} = calculateRoundOff(totalAmount);
-
+  
       console.log(
         'Updated Order Line Items after Quantity Change:',
         updatedOrderLineItems,
@@ -600,7 +602,7 @@ const PackingConformation = ({route}) => {
       console.log('Total Amount:', totalAmount);
       console.log('Total GST:', totalGst);
       console.log('Round Off:', roundOff);
-
+  
       return {
         ...prevOrder,
         orderLineItems: updatedOrderLineItems,
@@ -611,6 +613,7 @@ const PackingConformation = ({route}) => {
       };
     });
   };
+  
 
   const renderItem = ({item, index, updateQty}) => {
     // Determine the price based on the conditions
@@ -1116,6 +1119,9 @@ const PackingConformation = ({route}) => {
         {},
       ),
       orderLineItems: order?.orderLineItems.map(item => {
+        const total = calculateTotal(item);
+        const totalFormatted = total.toFixed(2).padStart(5, '0');
+
         const isManuallyCanceled = item.statusFlag === 2;
         return {
           orderLineitemId: parseInt(item.orderLineitemId, 10),
@@ -1125,7 +1131,7 @@ const PackingConformation = ({route}) => {
           colorId:item?.colorId || 0,
           colorName:item?.colorName || 0,
           price: item.unitPrice,
-          gross: item.total,
+          gross:totalFormatted,
           discountPercentage: item.discountPercentage,
           gst: item.gst,
           discountPercentageSec: item.discountPercentageSec,
@@ -1153,7 +1159,6 @@ const PackingConformation = ({route}) => {
     };
 
     console.log('requestData====>', requestData); // Log the request data for debugging
-
     // Show success alert before making the API call (for UI purposes)
     // Alert.alert(
     //   "Success",
@@ -1471,25 +1476,46 @@ const PackingConformation = ({route}) => {
     });
   };
 
+  // const calculateRoundOff = totalAmount => {
+  //   const decimal = parseFloat(
+  //     (totalAmount - Math.floor(totalAmount)).toFixed(2),
+  //   );
+  
+  //   if (decimal >= 0.5) {
+  //     const roundedTotal = Math.ceil(totalAmount);
+  //     return {
+  //       roundedTotal,
+  //       roundOff: `+${(Math.ceil(totalAmount) - totalAmount).toFixed(2)}`, // Always show '+' for positive values
+  //     };
+  //   } else {
+  //     const roundedTotal = Math.floor(totalAmount);
+  //   return {
+  //       roundedTotal,
+  //       roundOff: `-${(totalAmount - Math.floor(totalAmount)).toFixed(2)}`, // Negative values remain as '-'
+  //   };
+  //   }
+  // };
+
   const calculateRoundOff = totalAmount => {
-    const decimal = parseFloat(
-      (totalAmount - Math.floor(totalAmount)).toFixed(2),
-    );
+    const decimal = parseFloat((totalAmount - Math.floor(totalAmount)).toFixed(2));
   
     if (decimal >= 0.5) {
       const roundedTotal = Math.ceil(totalAmount);
+      const roundOff = (Math.ceil(totalAmount) - totalAmount).toFixed(2);
       return {
         roundedTotal,
-        roundOff: `+${(Math.ceil(totalAmount) - totalAmount).toFixed(2)}`, // Always show '+' for positive values
+        roundOff: roundOff === '0.00' ? '0.00' : `+${roundOff}`, // Avoid showing `+0.00`
       };
     } else {
       const roundedTotal = Math.floor(totalAmount);
-    return {
+      const roundOff = (totalAmount - Math.floor(totalAmount)).toFixed(2);
+      return {
         roundedTotal,
-        roundOff: `-${(totalAmount - Math.floor(totalAmount)).toFixed(2)}`, // Negative values remain as '-'
-    };
+        roundOff: roundOff === '0.00' ? '0.00' : `-${roundOff}`, // Avoid showing `-0.00`
+      };
     }
   };
+  
   
   const renderOrderLineItem = ({item}) => {
     console.log('Rendering Item:', item);
