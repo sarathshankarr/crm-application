@@ -634,10 +634,10 @@ const openCamera = async () => {
         <TouchableOpacity
           onPress={handlebasicinfo}
           style={styles.headbasicinfo}>
-          <Text>Basic Info</Text>
+          <Text style={{color:'#000',fontWeight:"bold"}}>Basic Info</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.headprductimage}>
-          <Text>Product Images</Text>
+          <Text style={{color:'#000',fontWeight:"bold"}}>Product Images</Text>
         </TouchableOpacity>
       </View>
       <TouchableOpacity

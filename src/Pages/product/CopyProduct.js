@@ -2446,9 +2446,10 @@ const ValidateStyleNameSave = async () => {
 
 const handleAddProduct = () => {
   const isDuplicate = copiedProductsList?.some(product => 
-    product.styleName === styleName &&
-    product.selectedColorIds === selectedColorIds
+    product.styleName.toLowerCase() === styleName.toLowerCase() && 
+    product.colorId === selectedColorIds
   );
+  
 
   if (isDuplicate) {
     Alert.alert(

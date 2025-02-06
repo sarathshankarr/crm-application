@@ -2376,7 +2376,7 @@ const handleChangeScale = async (scaleId, scaleRange) => {
             </View>
             <View style={{flexDirection: 'row', alignSelf: 'center'}}>
               <TouchableOpacity style={style.headbasicinfo}>
-                <Text>Basic Info</Text>
+                <Text style={{color:'#000',fontWeight:"bold"}}>Basic Info</Text>
               </TouchableOpacity>
             <TouchableOpacity
   onPress={ValidateStyleName} // Call ValidateStyleName instead of handleNextPage directly
@@ -2385,7 +2385,7 @@ const handleChangeScale = async (scaleId, scaleRange) => {
     style.headprductimage,
     { backgroundColor: nextButton ? '#' : 'lightgray' }, // Correct way to set dynamic background color
   ]}>
-  <Text>Product Images</Text>
+  <Text style={{color:'#000',fontWeight:"bold"}}>Product Images</Text>
 </TouchableOpacity>
 
             </View>
