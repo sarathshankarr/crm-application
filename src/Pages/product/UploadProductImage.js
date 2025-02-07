@@ -234,7 +234,7 @@ const UploadProductImage = ({route}) => {
   };
 
 const openCamera = async () => {
-  setModalVisible(false);
+  // setModalVisible(false);
 
   // Check and request camera permissions
   const hasPermission = await requestCameraPermission();
@@ -279,10 +279,16 @@ const openCamera = async () => {
     });
 };
 
+
+useEffect(() => {
+  if (selectedImages.length > 0) {
+    setModalVisible(false);
+  }
+}, [selectedImages]);
   
 
   const openGallery = () => {
-    setModalVisible(false);
+    // setModalVisible(false);
   
     if (selectedImages.length >= 10) {
       Alert.alert(

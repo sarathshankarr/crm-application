@@ -1966,6 +1966,7 @@ const PackingConformation = ({route}) => {
                   marginRight: 10,
                   marginVertical: 5,
                   borderBottomWidth: 1,
+                  marginLeft:4
                 }}
                 value={item?.gst !== undefined ? String(item.gst) : ''} // Ensure the value is a string for display
                 keyboardType="decimal-pad" // Allows decimal input
@@ -2696,6 +2697,7 @@ const getStyles = colors =>
       paddingLeft: 5,
       textAlign: 'center', // Align the input text in the center
       marginVertical: 5,
+      ...(Platform.OS === 'ios' && {paddingVertical: 7}),
     },
     container1: {
       marginBottom: 5,

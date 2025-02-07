@@ -2152,8 +2152,15 @@ const requestCameraPermission = async () => {
 const [previouslySelectedImages, setPreviouslySelectedImages] = useState([]);
 
 const openCamera = async () => {
-  setModalVisible(false);
+  // setModalVisible(false);
 
+  if (selectedImages.length >= 10) {
+    Alert.alert(
+      'Image Limit Reached',
+      'You can only upload a maximum of 10 images.',
+    );
+    return;
+  }
   const hasPermission = await requestCameraPermission();
   if (!hasPermission) return;
 
@@ -2185,7 +2192,15 @@ const openCamera = async () => {
 
 
 const openGallery = () => {
-  setModalVisible(false);
+  // setModalVisible(false);
+
+  if (selectedImages.length >= 10) {
+    Alert.alert(
+      'Image Limit Reached',
+      'You can only upload a maximum of 10 images.',
+    );
+    return;
+  }
 
   ImagePicker.openPicker({
     multiple: true,
@@ -2221,6 +2236,11 @@ const openGallery = () => {
     });
 };
 
+useEffect(() => {
+  if (selectedImages.length > 0) {
+    setModalVisible(false);
+  }
+}, [selectedImages]);
 
 const removeImage = (index) => {
   const deletedImage = selectedImages[index]; // Directly access the image at the specified index
@@ -5627,7 +5647,7 @@ const getStyles = colors =>
     fontSize: 16,
     paddingHorizontal: 10,
     color: '#000000',
-    ...(Platform.OS === 'ios' && {marginVertical: 7}),
+    ...(Platform.OS === 'ios' && {marginVertical: 7,paddingVertical: 7}),
   },
   dropdownContent: {
     elevation: 5,

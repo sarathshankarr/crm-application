@@ -64,7 +64,7 @@ const ImageSlider = ({ fullImageUrls }) => {
           >
             <FastImage
               source={require('../../assets/NewNoImage.jpg')}
-              style={{ width: '80%', height: '80%' }}
+              style={{ width: '100%', height: '100%' }}
               resizeMode={FastImage.resizeMode.contain}
             />
           </View>
