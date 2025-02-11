@@ -1433,6 +1433,7 @@ const handleChangeScale = async (scaleId, scaleRange) => {
         setSelectedCategoryId(response?.data?.categoryId);
         getCategoriesList();
         setIsLoading(false);
+        setshowCategoryList(false);
       })
       .catch(error => {
         console.error(
@@ -1540,6 +1541,7 @@ const handleChangeScale = async (scaleId, scaleRange) => {
         setSelectedType(response?.data?.response?.typeList[0]?.typeName);
         getTypesList();
         setIsLoading(false);
+        setShowTypesList(false);
       })
       .catch(error => {
         console.error(
@@ -1591,6 +1593,7 @@ const handleChangeScale = async (scaleId, scaleRange) => {
         );
         getUom();
         setIsLoading(false);
+        setShowUomList(false);
       })
       .catch(error => {
         console.error(
@@ -1651,6 +1654,7 @@ const handleChangeScale = async (scaleId, scaleRange) => {
         );
         getSeasonalGroups();
         setIsLoading(false);
+        setShowSeasonGroupsList(false);
       })
       .catch(error => {
         console.error(
@@ -5009,7 +5013,7 @@ const getStyles = (colors) => StyleSheet.create({
   modalContainerr: {
     flex: 1,
     alignItems: 'center',
-    marginTop: '45%',
+    marginTop: '30%',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContainerr1: {
