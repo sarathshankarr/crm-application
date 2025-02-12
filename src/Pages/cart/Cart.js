@@ -52,8 +52,9 @@ const Cart = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const [inputValuess, setInputValuess] = useState({});
-  const cartItems = useSelector(state => state.cartItems);
 
+  const cartItems = useSelector(state => state.cartItems);
+console.log("cartItems======>",cartItems)
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [selatedDate, setSelectedDate] = useState('Expected delivery date');
   
@@ -1419,6 +1420,7 @@ const grossPrices = cartItems.map(item => {
     //   // No alert for Distributor or Retailer
     // }
 
+   
     if (switchStatus) {
       if (!selectedCustomer) {
         Alert.alert('Alert', 'Please select a customer.');
@@ -1463,6 +1465,20 @@ const grossPrices = cartItems.map(item => {
       return;
     }
     // return;
+
+    for (let i = 0; i < cartItems.length; i++) {
+      const itemPrice = pdf_flag
+        ? parseFloat(cartItems[i].mrp) || 0
+        : isEnabled
+        ? parseFloat(cartItems[i].retailerPrice) || 0
+        : parseFloat(cartItems[i].dealerPrice) || 0;
+    
+      if (itemPrice === 0) {
+        Alert.alert('crm.codeverse.co says', 'Style price is mandatory for creating an order.');
+        return;
+      }
+    }
+    
 
     setIsSubmitting(true);
 
@@ -2159,43 +2175,142 @@ useEffect(() => {
 }, [totalGst, totalGrossPrice]); // Recalculate whenever totalGst or totalGrossPrice change
 
 // Handle price change function (for updating price input):
+// const handlePriceChange = (index, text) => {
+//   const updatedItems = [...cartItems];
+
+//   const isValidInput = /^\d*\.?\d*$/.test(text); // Validate input
+
+//   if (isValidInput) {
+//     const parsedPrice = text.includes('.')
+//       ? text
+//       : parseInt(text, 10).toString(); // Parse integer if no decimal
+//     const formattedPrice = text === '' ? '0' : parsedPrice;
+
+//     // Update price based on pdf_flag and isEnabled
+//     if (pdf_flag) {
+//       // If pdf_flag is enabled, update mrp
+//       updatedItems[index].mrp = formattedPrice;
+//     } else if (isEnabled) {
+//       // If isEnabled is true, update retailerPrice
+//       updatedItems[index].retailerPrice = formattedPrice;
+//     } else {
+//       // Otherwise, update dealerPrice
+//       updatedItems[index].dealerPrice = formattedPrice;
+//     }
+
+//     // After updating price, recalculate totalAmount and roundOff
+//     const totalAmount = (parseFloat(totalGst) || 0) + (parseFloat(totalGrossPrice) || 0);
+//     const roundOff = calculateRoundOff(totalAmount);
+
+//     // Round the total amount to the nearest integer
+//     const roundedTotal = Math.round(totalAmount);
+
+//     // Update the state again
+//     setTotalAmount(roundedTotal);
+//     setRoundOff(roundOff);
+
+//     // Dispatch updated cart item
+//     dispatch(updateCartItem(index, updatedItems[index]));
+//   }
+// };
+
+const [gstSlotData, setGstSlotData] = useState([]); // Store GST slot data
+
+
+useEffect(() => {
+  getGstSlot();
+}, []); // Fetch GST data on mount
+
+
+const getGstSlot = () => {
+  const apiUrl = `${global?.userData?.productURL}${API.GET_GST_SLOT}/${companyId}`;
+  console.log("API URL:", apiUrl);
+  
+  axios
+    .get(apiUrl, {
+      headers: {
+        Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+      },
+    })
+    .then(response => {
+      const gstList = response?.data?.response?.gstList || [];
+      setGstSlotData(gstList);
+    })
+    .catch(error => {
+      console.error('Error fetching GST slot data:', error);
+    });
+};
+
 const handlePriceChange = (index, text) => {
-  const updatedItems = [...cartItems];
-
-  const isValidInput = /^\d*\.?\d*$/.test(text); // Validate input
-
-  if (isValidInput) {
-    const parsedPrice = text.includes('.')
-      ? text
-      : parseInt(text, 10).toString(); // Parse integer if no decimal
+  if (/^\d*\.?\d*$/.test(text)) {
+    const parsedPrice = text.includes('.') ? text : parseInt(text, 10).toString();
     const formattedPrice = text === '' ? '0' : parsedPrice;
 
-    // Update price based on pdf_flag and isEnabled
+    const updatedItem = { ...cartItems[index], price: parseFloat(formattedPrice) || 0 };
+
     if (pdf_flag) {
-      // If pdf_flag is enabled, update mrp
-      updatedItems[index].mrp = formattedPrice;
+      updatedItem.mrp = formattedPrice;
     } else if (isEnabled) {
-      // If isEnabled is true, update retailerPrice
-      updatedItems[index].retailerPrice = formattedPrice;
+      updatedItem.retailerPrice = formattedPrice;
     } else {
-      // Otherwise, update dealerPrice
-      updatedItems[index].dealerPrice = formattedPrice;
+      updatedItem.dealerPrice = formattedPrice;
     }
 
-    // After updating price, recalculate totalAmount and roundOff
-    const totalAmount = (parseFloat(totalGst) || 0) + (parseFloat(totalGrossPrice) || 0);
-    const roundOff = calculateRoundOff(totalAmount);
+    // Recalculate GST dynamically
+    const gstSlot = gstSlotData.find(c => c.id === Number(updatedItem.gstSlotId));
+    if (gstSlot) {
+      const { greterAmount, smalestAmount, greterPercent, smalestPercent } = gstSlot;
+      updatedItem.gst = updatedItem.price >= greterAmount ? greterPercent : 
+                        updatedItem.price <= smalestAmount ? smalestPercent : 0;
+    } else {
+      updatedItem.gst = 0;
+    }
 
-    // Round the total amount to the nearest integer
-    const roundedTotal = Math.round(totalAmount);
-
-    // Update the state again
-    setTotalAmount(roundedTotal);
-    setRoundOff(roundOff);
-
-    // Dispatch updated cart item
-    dispatch(updateCartItem(index, updatedItems[index]));
+    // Update Redux store
+    dispatch(updateCartItem(index, updatedItem));
   }
+};
+
+useEffect(() => {
+  getGstSlot();
+}, []);
+
+useEffect(() => {
+  if (gstSlotData.length > 0) {
+    // Update each cart item with the correct GST
+    const updatedCartItems = cartItems.map(item => {
+      const gstSlot = gstSlotData.find(c => c.id === Number(item.gstSlotId));
+      if (gstSlot) {
+        const { greterAmount, smalestAmount, greterPercent, smalestPercent } = gstSlot;
+        item.gst = item.price >= greterAmount ? greterPercent : 
+                   item.price <= smalestAmount ? smalestPercent : 0;
+      } else {
+        item.gst = 0;
+      }
+      return item;
+    });
+
+    // Update Redux store or state
+    dispatch(updateCartItem(updatedCartItems)); 
+  }
+}, [gstSlotData]); // Re-run when gstSlotData is updated
+
+// ✅ Calculate GST Based on Price
+const calculateGST = () => {
+  const updatedCart = cartItems.map((item, index) => {
+    const gstSlot = gstSlotData.find(c => c.id === Number(item.gstSlotId)); // Find matching GST slot
+
+    let gstPercent = 0;
+    if (gstSlot) {
+      const { greterAmount, smalestAmount, greterPercent, smalestPercent } = gstSlot;
+      gstPercent = item.price >= greterAmount ? greterPercent : 
+                   item.price <= smalestAmount ? smalestPercent : 0;
+    }
+
+    return { ...item, gst: gstValues[index] ?? gstPercent }; // Use manual GST if available
+  });
+
+  dispatch(updateCartItems(updatedCart)); // Update Redux state
 };
 
 

@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   Modal,
   StyleSheet,
@@ -55,6 +55,12 @@ const ModalScreen = ({modalVisible, closeModal, selectedItem, modalItems}) => {
     });
     closeModal();
   };
+
+
+useEffect(() => {
+  console.log('Updated Modal Items:', modalItems);
+}, [modalItems]); // Logs whenever modalItems updates
+
   
 
   return (

@@ -428,6 +428,8 @@ useEffect(() => {
     formData.append('gst', productStyle.gst);
     formData.append('uomId', productStyle.uomId); 
     formData.append("statusId",productStyle.statusId)
+    formData.append("gstSlotId",productStyle.gstSlotId)
+ 
     selectedImages.forEach((image, index) => {
       formData.append('files', {
         uri: image.uri,
@@ -508,6 +510,8 @@ useEffect(() => {
     formData.append('companyId', productStyle.companyId.toString());
     formData.append("statusId",productStyle.statusId)
     formData.append('uomId', productStyle.uomId); 
+    formData.append("gstSlotId",productStyle.gstSlotId)
+
     formData.append(
       'cedgeStyleId',
       (productStyle.cedgeStyleId || 0).toString(),

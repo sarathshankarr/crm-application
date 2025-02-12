@@ -151,6 +151,7 @@ const ModalComponent = ({
             colorId: style.colorId,
             styleId: style.styleId,
             styleDesc: style.styleDesc,
+            gstSlotId:style.gstSlotId,
             price: style.price,
             mrp:style.mrp,
             discount: style.styleDiscountRequest

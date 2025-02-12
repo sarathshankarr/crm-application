@@ -63,6 +63,8 @@ const CopyProduct = ({route, navigation}) => {
   
   const [selectedUomId, setSelectedUomId] = useState(0);
   const [selectedUom, setSelectedUom] = useState(''); // Initialize as an empty string
+  const [selectedSlot, setSelectedSlot] = useState('');
+  const [selectedSlotId, setSelectedSlotId] = useState(0);
   const [selectedScaleId, setSelectedScaleId] = useState(0);
   const [selectedScale, setSelectedScale] = useState(0);
   const [selectedSizes, setSelectedSizes] = useState([]);
@@ -78,6 +80,9 @@ const CopyProduct = ({route, navigation}) => {
   const [selectedColorNames, setSelectedColorNames] = useState([]);
   const [showScaleTable, setShowScaleTable] = useState(false);
   const [productStyle, setProductStyle] = useState({});
+
+
+
 
   useEffect(() => {
     if (categoryList?.length > 0 && selectedCategoryId) {
@@ -207,7 +212,10 @@ const CopyProduct = ({route, navigation}) => {
       setSelectedLocation(copiedDetails.selectedLocation || 0);
       setSelectedUom(copiedDetails.selectedUom || 0);
       setSelectedUomId(copiedDetails.selectedUomId || 0);
- 
+      setSelectedSlot(copiedDetails.selectedSlot || 0);
+      setSelectedSlotId(copiedDetails.selectedSlotId || 0);
+
+    
       setSelectedCustomerLevel(copiedDetails.selectedCustomerLevel || '');
       setShowCustomerLevelPrice(copiedDetails.showCustomerLevelPrice || '');
 
@@ -429,6 +437,7 @@ useEffect(() => {
   getSeasonalGroups();
   getProcessWorkFlow();
   getUom();
+  getGstSlot();
   getLocations();
   getAllSizesInScale();
   getAllKapture(1);
@@ -1585,6 +1594,17 @@ useEffect(() => {
   }
 }, [UomList, selectedUomId]);
 
+useEffect(() => {
+  if (SlotList.length > 0 && selectedSlotId) {
+    const slot = SlotList.find(item => item.uomId === selectedSlotId);
+    if (slot) {
+      setSelectedSlot(slot.slotName);
+    } 
+  }
+}, [SlotList, selectedSlotId]);
+
+
+
 
 const [showUomList, setShowUomList] = useState(false);
 const [UomList, setUomList] = useState([]);
@@ -1618,6 +1638,177 @@ const filterUom = text => {
 const handleCloseUomModal = () => {
   setUomModal(false);
 };
+
+const [showSlotList, setShowSlotList] = useState(false);
+const [SlotList, setSlotList] = useState([]);
+const [filteredSlotList, setFilteredSlotList] = useState([]);
+const [SlotModal, setSlotModal] = useState(false);
+const [mSlotName, setmSlotName] = useState('');
+const [mSlotAmoutLess, setSlotAmoutLess] = useState('');
+const [mSlotAmoutGrater, setSlotAmoutGrater] = useState('');
+const [mSlotPercentageLess, setSlotPercentageLess] = useState('');
+const [mSlotPercentageGrater, setSlotPercentageGrater] = useState('');
+
+const handSlotDropDown = () => {
+  setShowSlotList(!showSlotList);
+};
+
+const handleSelectSlot = (item) => {
+  console.log("Before Update:", selectedSlot); 
+  setSelectedSlot((prevSlot) => {
+    console.log("Updating to:", item.slotName);
+    return item.slotName;
+  });
+  setSelectedSlotId(item.id);
+  setShowSlotList(false);
+};
+
+useEffect(() => {
+  console.log("Updated Selected Slot:", selectedSlot);
+}, [selectedSlot]);
+
+
+const filterSlot = text => {
+  console.log("Search Text:", text);
+  const filtered = SlotList.filter(item =>
+    item?.slotName?.toUpperCase().includes(text?.toUpperCase()),
+  );
+  console.log("Filtered Slots:", filtered);
+  setFilteredSlotList(filtered);
+};
+
+
+
+
+const toggleSeasonSlotModal = () => {
+  setSlotModal(!SlotModal);
+  setmSlotName('');
+  setSlotAmoutLess('');
+  setSlotAmoutGrater('');
+  setSlotPercentageLess('');
+  setSlotPercentageGrater('')
+  setIsDefault(false);
+};
+
+ 
+const getGstSlot = () => {
+  const apiUrl = `${global?.userData?.productURL}${API.GET_GST_SLOT}/${companyId}`;
+  console.log("API URL:", apiUrl);
+  axios
+    .get(apiUrl, {
+      headers: {
+        Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+      },
+    })
+    .then(response => {
+      setSlotList(response?.data?.response.gstList || []);
+      setFilteredSlotList(response?.data?.response.gstList || []);
+      setIsLoading(false);
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      setIsLoading(false);
+    });
+};
+
+const [isDefault, setIsDefault] = useState(false);
+
+const handleSaveSlotModal = () => {
+  setIsLoading(true);
+  const apiUrl0 = `${global?.userData?.productURL}${API.ADD_SLOT}`;
+  const requestData = {
+    id: null,
+    slotName: mSlotName,
+    // greterAmount: mSlotAmoutGrater,
+    // greterPercent:mSlotPercentageGrater,
+    // smalestAmount: mSlotAmoutLess,
+    // smalestPercent:mSlotPercentageLess,
+
+    greterAmount: mSlotAmoutLess,
+    greterPercent:mSlotPercentageLess,
+    smalestAmount: mSlotAmoutGrater,
+    smalestPercent:mSlotPercentageGrater,
+    
+    companyId: companyId,
+    setDefault: isDefault ? 1 : 0,
+    isDeleted:0,
+    userId: userId,
+  };
+
+  console.log('requestData========>',requestData)
+  axios
+    .post(apiUrl0, requestData, {
+      headers: {
+        Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+      },
+    })
+    .then(response => {
+      // Alert.alert(`Type Created Successfully : ${response?.data?.response?.sizeGroupList[0]?.sizeGroup}`);
+      setSelectedSlot(
+        response?.data?.response?.gstList[0]?.slotName,
+      );
+      setSelectedSlotId(
+        response?.data?.response?.gstList[0]?.id,
+      );
+      getGstSlot();
+      setIsLoading(false);
+      setShowSlotList(false);
+    })
+    .catch(error => {
+      console.error(
+        'Error:',
+        error.response ? error.response.data : error.message,
+      );
+      Alert.alert(
+        'Error',
+        error.response
+          ? error.response.data.message
+          : 'An unknown error occurred',
+      );
+      setIsLoading(false);
+    });
+
+  setSlotModal(false);
+};
+
+const handleCloseSlotModal = () => {
+  setSlotModal(false);
+};
+
+const ValidateSlot = async () => {
+  if (processing) return;
+  setProcessing(true);
+
+  if (mSlotName.length === 0 || mSlotAmoutGrater.length === 0 || mSlotAmoutLess.length === 0 || mSlotPercentageGrater.length === 0 || mSlotPercentageLess.length === 0) {
+    Alert.alert(' Please fill all mandatory fields');
+    setProcessing(false);
+    return;
+  }
+  const slash = '/';
+  const apiUrl = `${global?.userData?.productURL}${API.VALIDATE_SLOT}${mSlotName}${slash}${companyId}`;
+  try {
+    const response = await axios.get(apiUrl, {
+      headers: {
+        Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+      },
+    });
+    if (response.data === true) {
+      handleSaveSlotModal();
+    } else {
+      Alert.alert(' This name has been used. Please enter a new name');
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    Alert.alert(
+      'Error',
+      'There was a problem checking the Category validity. Please try again.',
+    );
+  } finally {
+    setProcessing(false);
+  }
+};
+
+
 const toggleSeasonUomModal = () => {
   setUomModal(!UomModal);
   setmUomName('');
@@ -2527,6 +2718,8 @@ const handleAddProduct = () => {
     decId: selectedDecorationId,
     uomId: selectedUomId,
     selectedUom,
+    gstSlotId:selectedSlotId,
+    selectedSlot,
     imageUrls,
     statusId: selectedStatusId,
     customerLevel:selectedCustomerLevelId,
@@ -2661,6 +2854,8 @@ const handleSave = async () => {
     decId: selectedDecorationId,
     uomId: selectedUomId,
     selectedUom,
+    gstSlotId:selectedSlotId,
+    selectedSlot,
     imageUrls,
     statusId: selectedStatusId,
     customerLevel:selectedCustomerLevelId,
@@ -2754,7 +2949,7 @@ useEffect(() => {
             source={require('../../../assets/back_arrow.png')}
           />
         </TouchableOpacity>
-    <Text style={{color:"#000",fontWeight:"bold",fontSize:20}}>Create New Style</Text>
+    <Text style={{color:"#000",fontWeight:"bold",fontSize:20}}>Copy Style</Text>
     <TouchableOpacity
           style={{
             backgroundColor: nextButtonSave ?  colors.color2 : 'skyblue',
@@ -4005,6 +4200,102 @@ useEffect(() => {
   </View>
 )}
 
+<Text style={styles.headerTxt}>{'Gst Slot'}</Text>
+<View style={styles.container1}>
+              <View style={styles.container2}>
+                <TouchableOpacity
+                  style={[
+                    styles.container3,
+                    {backgroundColor:  '#fff'},
+                  ]}
+                  onPress={handSlotDropDown}>
+                  <Text style={{fontWeight: '600', color: '#000'}}>
+                    {selectedSlot ? selectedSlot : 'Select'}
+                  </Text>
+                  <Image
+                    source={require('../../../assets/dropdown.png')}
+                    style={{width: 20, height: 20}}
+                  />
+                </TouchableOpacity>
+              </View>
+              <View style={styles.container4}>
+                <TouchableOpacity
+                  onPress={toggleSeasonSlotModal}
+                  style={styles.plusButton}>
+                  <Image
+                    style={{
+                      height: 30,
+                      width: 30,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}
+                    source={require('../../../assets/plus.png')}
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
+{showSlotList  && (
+  <View
+    style={{
+      elevation: 5,
+      height: 300,
+      alignSelf: 'center',
+      width: '90%',
+      backgroundColor: '#fff',
+      borderRadius: 10,
+      borderColor: 'lightgray', // Optional: Adds subtle border (for effect)
+      borderWidth: 1,
+      marginTop: 5,
+    }}>
+    <TextInput
+      style={{
+        marginTop: 10,
+        borderRadius: 10,
+        height: 40,
+        borderColor: 'gray',
+        borderWidth: 1,
+        marginHorizontal: 10,
+        paddingLeft: 10,
+        marginBottom: 10,
+        color: '#000000',
+      }}
+      placeholderTextColor="#000"
+      placeholder="Search"
+      onChangeText={filterSlot}
+    />
+
+    {filteredSlotList.length === 0 && !isLoading ? (
+      <Text style={styles.noCategoriesText}>
+        Sorry, no results found!
+      </Text>
+    ) : (
+      <ScrollView nestedScrollEnabled={true}>
+        {filteredSlotList?.map((item, index) => (
+          <TouchableOpacity
+            key={index}
+            style={{
+              width: '100%',
+              height: 50,
+              justifyContent: 'center',
+              borderBottomWidth: 0.5,
+              borderColor: '#8e8e8e',
+            }}
+            onPress={() => handleSelectSlot(item)}>
+            <Text
+              style={{
+                fontWeight: '600',
+                marginHorizontal: 15,
+                color: '#000',
+              }}>
+              {item?.slotName}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+    )}
+  </View>
+)}
+
 <Text style={styles.headerTxt}>{'Location *'}</Text>
 
 <View style={{flexDirection: 'row', marginTop: 10}}>
@@ -5198,6 +5489,134 @@ useEffect(() => {
      
       )}
 
+
+<Modal
+              animationType="fade"
+              transparent={true}
+              visible={SlotModal && editShortcutKey}
+              onRequestClose={() => {
+                toggleSeasonSlotModal();
+              }}>
+              <View style={styles.modalContainerr}>
+                <View style={styles.modalContentt}>
+                  <View
+                    style={{
+                      backgroundColor:   colors.color2,
+                      borderRadius: 10,
+                      marginHorizontal: 10,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      marginTop: 10,
+                      paddingVertical: 5,
+                      width: '100%',
+                      justifyContent: 'space-between',
+                      marginBottom: 15,
+                    }}>
+                    <Text
+                      style={[
+                        styles.modalTitle,
+                        {textAlign: 'center', flex: 1},
+                      ]}>
+                      {'Add New Gst Slot'}
+                    </Text>
+                    <TouchableOpacity
+                      onPress={handleCloseSlotModal}
+                      style={{alignSelf: 'flex-end'}}>
+                      <Image
+                        style={{height: 30, width: 30, marginRight: 5}}
+                        source={require('../../../assets/close.png')}
+                      />
+                    </TouchableOpacity>
+                  </View>
+
+                  <Text style={{fontWeight: 'bold', color: '#000'}}>
+                    {'Slot Name * '}
+                  </Text>
+                  <TextInput
+                    style={[styles.input, {color: '#000'}]}
+                    placeholder=""
+                    placeholderTextColor="#000"
+                    onChangeText={text => setmSlotName(text)}
+                  />
+                 <TouchableOpacity
+    style={{ flexDirection: 'row', alignItems: 'center', margin: 10 }}
+    onPress={() => setIsDefault(!isDefault)} // Handles both text & checkbox clicks
+    activeOpacity={0.7}
+  >
+    <CustomCheckBox 
+      isChecked={isDefault} 
+      onToggle={() => setIsDefault(!isDefault)} // Ensure checkbox press toggles state
+    />
+    <Text style={{ color: '#000', marginLeft: 10 }}>Make it Default</Text>
+  </TouchableOpacity>
+
+                <View style={{marginBottom: 10}}>
+  {/* Less than Section */}
+  <View style={{flexDirection: 'row', alignItems: 'center', marginBottom: 5}}>
+    <Text style={{color: '#000', fontSize: 25, fontWeight: 'bold'}}>{'<'}</Text>
+    <Text style={{fontWeight: 'bold', color: '#000', marginLeft: 5}}>
+      {'Amount * '}
+    </Text>
+    <Text style={{fontWeight: 'bold', color: '#000', marginLeft: 10}}>
+      {'Percentage * '}
+    </Text>
+  </View>
+  
+  <View style={{flexDirection: 'row', alignItems: 'center', marginBottom: 10}}>
+    <TextInput
+      style={[styles.input, {color: '#000', flex: 1, marginRight: 10}]}
+      placeholder=""
+      placeholderTextColor="#000"
+      onChangeText={text => setSlotAmoutLess(text)}
+    />
+    <TextInput
+      style={[styles.input, {color: '#000', flex: 1}]}
+      placeholder=""
+      placeholderTextColor="#000"
+      onChangeText={text => setSlotPercentageLess(text)}
+    />
+  </View>
+
+  {/* Greater than Section */}
+  <View style={{flexDirection: 'row', alignItems: 'center', marginBottom: 5}}>
+    <Text style={{color: '#000', fontSize: 25, fontWeight: 'bold'}}>{'>'}</Text>
+    <Text style={{fontWeight: 'bold', color: '#000', marginLeft: 5}}>
+      {'Amount * '}
+    </Text>
+    <Text style={{fontWeight: 'bold', color: '#000', marginLeft: 10}}>
+      {'Percentage * '}
+    </Text>
+  </View>
+
+  <View style={{flexDirection: 'row', alignItems: 'center', marginBottom: 10}}>
+    <TextInput
+      style={[styles.input, {color: '#000', flex: 1, marginRight: 10}]}
+      placeholder=""
+      placeholderTextColor="#000"
+      onChangeText={text => setSlotAmoutGrater(text)}
+    />
+    <TextInput
+      style={[styles.input, {color: '#000', flex: 1}]}
+      placeholder=""
+      placeholderTextColor="#000"
+      onChangeText={text => setSlotPercentageGrater(text)}
+    />
+  </View>
+</View>
+
+
+                  <TouchableOpacity
+                    // style={style.saveButton}
+                    style={[styles.saveButton, processing && {opacity: 0.5}]}
+                    onPress={ValidateSlot}
+                    disabled={processing}>
+                    <Text style={styles.saveButtonText}>
+                      {processing ? 'Processing' : 'Save'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </Modal>
 <Modal
         transparent={true}
         visible={isModalVisible}
@@ -5338,6 +5757,11 @@ useEffect(() => {
               <Text style={styles.label}>GST:</Text>
               <Text style={styles.colon}>:</Text>
               <Text style={styles.value}>{item.gst}</Text>
+            </View>
+            <View style={styles.row}>
+              <Text style={styles.label}>Gst Slot:</Text>
+              <Text style={styles.colon}>:</Text>
+              <Text style={styles.value}>{item.selectedSlot}</Text>
             </View>
             <View style={styles.row}>
               <Text style={styles.label}>UOM (Unit of Measure)</Text>
