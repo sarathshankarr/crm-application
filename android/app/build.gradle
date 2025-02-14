@@ -85,10 +85,10 @@ android {
 
     namespace "com.crmapp"
     defaultConfig {
-    applicationId "com.CodevCRM"
+    applicationId "com.CodvCRM"
     minSdkVersion 24  // Keep this line only
     targetSdkVersion rootProject.ext.targetSdkVersion
-    versionCode 8
+    versionCode 1
     versionName "1.0"
     
 }
