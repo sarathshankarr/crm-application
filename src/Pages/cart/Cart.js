@@ -2279,7 +2279,7 @@ useEffect(() => {
   if (gstSlotData.length > 0) {
     // Update each cart item with the correct GST
     const updatedCartItems = cartItems.map(item => {
-      const gstSlot = gstSlotData.find(c => c.id === Number(item.gstSlotId));
+      const gstSlot = gstSlotData.find(c => c?.id === Number(item.gstSlotId));
       if (gstSlot) {
         const { greterAmount, smalestAmount, greterPercent, smalestPercent } = gstSlot;
         item.gst = item.price >= greterAmount ? greterPercent : 
@@ -3489,27 +3489,7 @@ useEffect(() => {
             <OrderDetailRow label="Total Amt" value={totalAmount} />
             
           </View>
-          <TouchableOpacity
-            onPress={PlaceAddOrder}
-            disabled={isSubmitting} // Disable button when submitting
-            style={{
-              borderWidth: 1,
-              // backgroundColor: '#f55951',
-              backgroundColor: '#F09120',
-              paddingVertical: 15,
-              paddingHorizontal: 20,
-              opacity: isSubmitting ? 0.5 : 1, // Dim button when submitting
-            }}>
-            <Text
-              style={{
-                textAlign: 'center',
-                color: '#fff',
-                fontWeight: 'bold',
-                fontSize: 20,
-              }}>
-              {isSubmitting ? 'Placing Order...' : 'PLACE ORDER'}
-            </Text>
-          </TouchableOpacity>
+         
           <ModalComponent
             modalVisible={modalVisible}
             closeModal={closeModal}
@@ -4018,6 +3998,27 @@ useEffect(() => {
         </View>
       </SafeAreaView>
       </ScrollView>
+      <TouchableOpacity
+            onPress={PlaceAddOrder}
+            disabled={isSubmitting} // Disable button when submitting
+            style={{
+              borderWidth: 1,
+              // backgroundColor: '#f55951',
+              backgroundColor: '#F09120',
+              paddingVertical: 15,
+              paddingHorizontal: 20,
+              opacity: isSubmitting ? 0.5 : 1, // Dim button when submitting
+            }}>
+            <Text
+              style={{
+                textAlign: 'center',
+                color: '#fff',
+                fontWeight: 'bold',
+                fontSize: 20,
+              }}>
+              {isSubmitting ? 'Placing Order...' : 'PLACE ORDER'}
+            </Text>
+          </TouchableOpacity>
     </KeyboardAvoidingView>
   );
 };

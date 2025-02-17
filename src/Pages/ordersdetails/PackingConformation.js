@@ -263,9 +263,21 @@ const PackingConformation = ({route}) => {
     // getAllOrders(); // Call getAllOrders here to fetch new data
   };
 
+  // useEffect(() => {
+  //   if (companyId && modalVisible) {
+  //     getAllProducts(true); // Trigger the function with reset flag
+  //   }
+  // }, [companyId, modalVisible]);
+
   useEffect(() => {
     if (companyId && modalVisible) {
-      getAllProducts(true); // Trigger the function with reset flag
+      getAllProducts(true); // Fetch fresh data
+      setStylesData(prevStylesData =>
+        prevStylesData.map(item => ({
+          ...item,
+          qty: 0, // Reset quantity to 0
+        }))
+      );
     }
   }, [companyId, modalVisible]);
 
@@ -422,6 +434,7 @@ const PackingConformation = ({route}) => {
               newItem.sizeDesc
             }-${new Date().getTime()}`, // Unique id using timestamp
             styleId: newItem.styleId,
+            style:newItem.style,
             size: newItem.sizeDesc, // sizeDesc is used here
             qty: newItem.qty,
             unitPrice: newItem.dealerPrice ?? 0,
@@ -958,54 +971,102 @@ const PackingConformation = ({route}) => {
     }
   }, [triggerUpdate]);
 
-  const calculateTotal = item => {
+  // const calculateTotal = item => {
+  //   let total = 0;
+  //   let fixedPrice = 0;
+
+  //   if (pdf_flag === 1) {
+  //     if (item.discountPercentageThird) {
+  //       fixedPrice = item.unitPrice
+  //         ? item.unitPrice - item.discountPercentageThird
+  //         : 0;
+  //     } else {
+  //       fixedPrice = item.unitPrice;
+  //     }
+
+  //     discountAmount =
+  //       item.unitPrice - (item.unitPrice * item.discountPercentage) / 100;
+
+  //     if (gst_price_cal_flag === 1 && gst && item.orgPrice) {
+  //       item.orgPrice = item.unitPrice / (1.0 + gst / 100);
+  //       item.discAmnt =
+  //         item.orgPrice - (item.orgPrice * item.discountPercentage) / 100;
+  //     }
+
+  //     discountAmountSec =
+  //       (item.qty * discountAmount * item.discountPercentageSec) / 100;
+  //     gstAmnt =
+  //       ((item.qty * discountAmount - item.discAmntSec) * item.gst) / 100;
+  //     total =
+  //       item.qty * discountAmount -
+  //       (item.qty * discountAmount * item.discountPercentageSec) / 100 +
+  //       gstAmnt;
+  //   } else {
+  //     fixedPrice = item.unitPrice;
+  //     discountAmount = (item.qty * fixedPrice * item.discountPercentage) / 100;
+  //     discountAmountSec =
+  //       ((item.qty * fixedPrice - discountAmount) *
+  //         item.discountPercentageSec) /
+  //       100;
+  //     gstAmnt =
+  //       ((item.qty * fixedPrice - item.discAmnt - item.discAmntSec) *
+  //         item.gst) /
+  //       100;
+  //     total =
+  //       item.qty * fixedPrice - discountAmount - item.discAmntSec + gstAmnt;
+  //   }
+
+  //   return total;
+  // };
+
+  
+  const calculateTotal = (item) => {
     let total = 0;
     let fixedPrice = 0;
-
+    let discountAmount = 0;
+    let discountAmountSec = 0;
+    let gstAmnt = 0;
+    let orgPrice = 0;
+  
+    const gstValue = item.gst ?? 0; // Ensure gst is not undefined/null
+    const qty = item.qty ?? 0;
+    const unitPrice = item.unitPrice ?? 0;
+    const discountPercentage = item.discountPercentage ?? 0;
+    const discountPercentageSec = item.discountPercentageSec ?? 0;
+  
     if (pdf_flag === 1) {
-      if (item.discountPercentageThird) {
-        fixedPrice = item.unitPrice
-          ? item.unitPrice - item.discountPercentageThird
-          : 0;
-      } else {
-        fixedPrice = item.unitPrice;
+      // Handle fixed price calculation
+      fixedPrice = item.discountPercentageThird
+        ? unitPrice - item.discountPercentageThird
+        : unitPrice;
+  
+      // First discount application
+      discountAmount = unitPrice - (unitPrice * discountPercentage) / 100;
+  
+      // Handle GST price recalculation
+      if (gst_price_cal_flag === 1 && gstValue > 0 && item.orgPrice) {
+        orgPrice = unitPrice / (1.0 + gstValue / 100);
+        discountAmount = orgPrice - (orgPrice * discountPercentage) / 100;
       }
-
-      discountAmount =
-        item.unitPrice - (item.unitPrice * item.discountPercentage) / 100;
-
-      if (gst_price_cal_flag === 1 && gst && item.orgPrice) {
-        item.orgPrice = item.unitPrice / (1.0 + gst / 100);
-        item.discAmnt =
-          item.orgPrice - (item.orgPrice * item.discountPercentage) / 100;
-      }
-
-      discountAmountSec =
-        (item.qty * discountAmount * item.discountPercentageSec) / 100;
-      gstAmnt =
-        ((item.qty * discountAmount - item.discAmntSec) * item.gst) / 100;
-      total =
-        item.qty * discountAmount -
-        (item.qty * discountAmount * item.discountPercentageSec) / 100 +
-        gstAmnt;
+  
+      // Secondary discount and GST calculations
+      discountAmountSec = (qty * discountAmount * discountPercentageSec) / 100;
+      gstAmnt = ((qty * discountAmount - discountAmountSec) * gstValue) / 100;
+      
+      total = qty * discountAmount - discountAmountSec + gstAmnt;
     } else {
-      fixedPrice = item.unitPrice;
-      discountAmount = (item.qty * fixedPrice * item.discountPercentage) / 100;
-      discountAmountSec =
-        ((item.qty * fixedPrice - discountAmount) *
-          item.discountPercentageSec) /
-        100;
-      gstAmnt =
-        ((item.qty * fixedPrice - item.discAmnt - item.discAmntSec) *
-          item.gst) /
-        100;
-      total =
-        item.qty * fixedPrice - discountAmount - item.discAmntSec + gstAmnt;
+      // Default pricing logic
+      fixedPrice = unitPrice;
+      discountAmount = (qty * fixedPrice * discountPercentage) / 100;
+      discountAmountSec = ((qty * fixedPrice - discountAmount) * discountPercentageSec) / 100;
+      
+      gstAmnt = ((qty * fixedPrice - discountAmount - discountAmountSec) * gstValue) / 100;
+      total = qty * fixedPrice - discountAmount - discountAmountSec + gstAmnt;
     }
-
+  
     return total;
   };
-
+  
   const updateDisOrder = () => {
     console.log(
       'selectedStatus at the start of updateDisOrder:',
@@ -1025,7 +1086,7 @@ const PackingConformation = ({route}) => {
         console.log('item.sttsFlag', item.sttsFlag);
 
         const total = calculateTotal(item);
-        const totalFormatted = total.toFixed(2).padStart(5, '0');
+        const totalFormatted = isNaN(total) ? "0.00" : total.toFixed(2);
 
         if (selectedStatuss === 'Cancelled' && item.sttsFlag === true) {
           console.log(' order.totalAmount ', order.totalAmount);
@@ -1671,7 +1732,7 @@ const PackingConformation = ({route}) => {
             borderColor={checkboxColor}
           />
 
-          <Text style={styles.orderstylenametxt}>{item?.styleName}</Text>
+          <Text style={styles.orderstylenametxt}>{item?.styleName || item.style}</Text>
           {item.statusFlag !== 1 && item.statusFlag !== 2 && (
             <TouchableOpacity
               onPress={() => handleDelete(item.styleId, item.size, item.qty)}>
@@ -2265,7 +2326,7 @@ const PackingConformation = ({route}) => {
                     <View
                       style={{
                         alignItems: 'center',
-                        marginLeft: 20,
+                        marginLeft: 40,
                       }}>
                       <TouchableOpacity
                         style={styles.dropdownButton}

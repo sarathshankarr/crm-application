@@ -33,23 +33,22 @@
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
-	<key>NSDocumentsFolderUsageDescription</key>
-	<string>This app needs access to download and store files.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>We need your location to provide location-based services.</string>
-	<key>NSCameraUsageDescription</key>
-	<string>We need access to your camera to take photos.</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>We need access to your photo library to upload photos.</string>
-	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>We need access to save photos to your library.</string>
+	<string>We need your location to help you create and complete location-based tasks, track visits, and find nearby customers or distributors.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
-	<string>We need access to your location to provide location-based services in the app.</string>
+	<string>We need continuous location access to allow tracking of field visits, improve sales route efficiency, and verify task completions.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>We require location access to provide real-time tracking, ensure location-based task completion, and improve field sales operations.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>We need access to your camera so you can take and upload product images, invoices, and other documents required for sales and inventory management.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We need access to your photo library so you can upload previously saved product images, invoices, or customer documents.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>We need permission to save images of invoices, products, and reports that you capture using the app.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>We need access to your microphone for video recording.</string>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>We need access to your location to provide location-based services in the app.</string>
-<key>UIStatusBarStyle</key>
+	<string>We need microphone access to allow you to record voice notes for customer interactions, meetings, and sales reports.</string>
+	<key>NSDocumentsFolderUsageDescription</key>
+	<string>We need access to your documents folder to store and retrieve invoices, product catalogs, and customer reports.</string><key>UIStatusBarStyle</key>
 <string>UIStatusBarStyleLightContent</string>
 <key>UIViewControllerBasedStatusBarAppearance</key>
 <false/>
