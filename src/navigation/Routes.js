@@ -54,6 +54,7 @@ import {Settings} from 'react-native';
 import SettingsScreen from '../settings/SettingsScreen';
 import CompanyDropdown from '../components/CompanyDropdown';
 import CopyProduct from '../Pages/product/CopyProduct';
+import DistributorPayments from '../Pages/payments/ DistributorPayments';
 
 const Stack = createNativeStackNavigator();
 
@@ -408,6 +409,11 @@ const Routes = () => {
         <Stack.Screen
         name="CopyProduct"
         component={CopyProduct}
+        options={{headerShown: false}}
+      />
+          <Stack.Screen
+        name="DistributorPayments"
+        component={DistributorPayments}
         options={{headerShown: false}}
       />
     </Stack.Navigator>
