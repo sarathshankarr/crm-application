@@ -28,14 +28,7 @@ const Sidebar = ({navigation, route}) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [image, setImage] = useState(require('../assets/profile.png'));
   const [userData, setUserData] = useState(null);
-  const [dropdownVisible, setDropdownVisible] = useState(false);
-  const [dropdownVisiblee, setDropdownVisiblee] = useState(false); // Add state for second dropdown if needed
-  const [dropdownVisiblePublish, setDropdownVisiblePublish] = useState(false); // Add state for second dropdown if needed
-  const [dropdownVisibleProduct, setDropdownVisibleProduct] = useState(false);
-  const [dropdownVisibleOrder, setdropdownVisibleOrder] = useState(false);
-  const [dropdownVisibleStyle, setDropdownVisibleeStyel] = useState(false); // Add state for second dropdown if needed
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
-  const [roleMenu, setRoleMenu] = useState([]);
   const [allMenus, setAllMenus] = useState([]);
   const [filteredMenus, setFilteredMenus] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -198,61 +191,11 @@ const Sidebar = ({navigation, route}) => {
       });
   };
 
-  // const toggleDropdown = () => {
-  //   setDropdownVisible(!dropdownVisible);
-  //   setDropdownVisiblee(false);
-  //   setDropdownVisiblePublish(false);
-  //   setDropdownVisibleProduct(false);
-  //   setdropdownVisibleOrder(false);
-  //   setDropdownVisibleeStyel(false);
-  // };
+
   const toggleDropdown = key => {
     setOpenDropdown(prev => (prev === key ? null : key));
   };
 
-  const toggleDropdownSecond = () => {
-    setDropdownVisiblee(!dropdownVisiblee);
-    setDropdownVisible(false);
-    setDropdownVisiblePublish(false);
-    setDropdownVisibleProduct(false);
-    setdropdownVisibleOrder(false);
-    setDropdownVisibleeStyel(false);
-  };
-
-  const toggleDropdownStyle = () => {
-    setDropdownVisibleeStyel(!dropdownVisibleStyle);
-    setDropdownVisible(false);
-    setDropdownVisiblePublish(false);
-    setDropdownVisibleProduct(false);
-    setdropdownVisibleOrder(false);
-  };
-
-  const toggleDropdownthird = () => {
-    setDropdownVisiblePublish(!dropdownVisiblePublish);
-    setDropdownVisible(false);
-    setDropdownVisiblee(false);
-    setDropdownVisibleProduct(false);
-    setdropdownVisibleOrder(false);
-    setDropdownVisibleeStyel(false);
-  };
-
-  const toggleDropdownfourth = () => {
-    setDropdownVisibleProduct(!dropdownVisibleProduct);
-    setDropdownVisible(false);
-    setDropdownVisiblee(false);
-    setDropdownVisiblePublish(false);
-    setdropdownVisibleOrder(false);
-    setDropdownVisibleeStyel(false);
-  };
-
-  const toggleDropdownOrder = () => {
-    setdropdownVisibleOrder(!dropdownVisibleOrder);
-    setDropdownVisible(false);
-    setDropdownVisiblee(false);
-    setDropdownVisiblePublish(false);
-    setDropdownVisibleProduct(false);
-    setDropdownVisibleeStyel(false);
-  };
 
   const goToHome = () => {
     navigation.navigate('Home');
@@ -262,46 +205,11 @@ const Sidebar = ({navigation, route}) => {
     navigation.navigate('Categories');
   };
 
-  const goToOrder = () => {
-    navigation.navigate('Order');
-  };
 
-  const goToPackOrder = () => {
-    navigation.navigate('Packing orders');
-  };
-  const goToProductInventory = () => {
-    navigation.navigate('ProductInventory');
-  };
-
-  const goToLocationInventory = () => {
-    navigation.navigate('LocationInventory');
-  };
-  const goToDistributorInventory = () => {
-    navigation.navigate('DistributorInventory');
-  };
   const goToDistributorGrn = () => {
     navigation.navigate('Distributor GRN');
   };
 
-  const goToEditProfile = () => {
-    navigation.navigate('Profile');
-  };
-
-  const goToActivities = () => {
-    navigation.navigate('Activities');
-  };
-  const goToCosting = () => {
-    navigation.navigate('Costing');
-  };
-  const goToPublish = () => {
-    navigation.navigate('ProductPackagePublish');
-  };
-  const goToProduct = () => {
-    navigation.navigate('ProductsStyles');
-  };
-  const goToPackages = () => {
-    navigation.navigate('Packages');
-  };
   const goToCustomerLocation = () => {
     navigation.navigate('CustomerLocation');
   };
@@ -472,25 +380,10 @@ const Sidebar = ({navigation, route}) => {
 
   const hasDropdownhome = home;
   const hasDropdowncategories = Categories;
-  const hasDropdownProductstyle = Productstyle;
-  const hasDropdownPackages = Packages;
-  const hasDropdownproductpublish = productpublish;
-  const hasDropdownorders = orders;
-  const hasDropdownpackingorders = packingorders;
-  const hasDropdownProductInventory = ProductInventory;
-  const hasDropdownlocationwiseinventory = locationwiseinventory;
-  const hasDropdowndistributorwiseinventory = distributorwiseinventory;
+
   const hasDropdowndistributorgrn = distributorgrn;
-  const hasDropdownActivities = Activities;
   const hasDropdownLocationTask = LocationTask;
   const hasDropdownattendance = attendance;
-
-  const hasDropdownItemsprodust = Productstyle || Packages || productpublish;
-  const hasDropdownItemsOrders = orders || packingorders;
-  const hasDropdownItemsInvetory =
-    ProductInventory || locationwiseinventory || distributorwiseinventory;
-  const hasDropdowncompaign = Activities;
-
   const dropdownMenus = useMemo(() => {
     const hasProductStyle = Productstyle?.menuName;
     const hasPackages = Packages?.menuName;
@@ -737,22 +630,6 @@ const Sidebar = ({navigation, route}) => {
   );
   return (
     <SafeAreaView style={styles.container}>
-        {/* <View style={{backgroundColor: colors.color2,}}>
-          <View style={styles.header}>
-            <TouchableOpacity onPress={() => setModalVisible(true)}>
-              <Image style={[styles.img, {borderRadius: 30}]} source={image} />
-            </TouchableOpacity>
-            <Text style={{color: '#fff', fontSize: 20}}>Profile</Text>
-          </View>
-          <View>
-            {userData && (
-              <Text style={styles.usertxt}>
-                Name : {userData.token.firstName} {userData.token.lastName}
-              </Text>
-            )}
-          </View>
-        </View> */}
-
         <View style={styles.headerContainer}>
           <View style={styles.header}>
             <TouchableOpacity onPress={() => setModalVisible(true)}>
@@ -780,18 +657,7 @@ const Sidebar = ({navigation, route}) => {
             <Text style={styles.headerSubtitle}>{companyName} ({companyCode})</Text>
           </View>
         </View>
-        {/* {hasDropdownhome && (
-          <TouchableOpacity onPress={goToHome} style={styles.homeheader}>
-            <Image
-              style={styles.homeimg}
-              source={require('../assets/store.png')}
-            />
-
-            <Text style={styles.hometxt}>{home?.menuName}</Text>
-          </TouchableOpacity>
-        )} */}
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-
         {hasDropdownhome && (
           <View style={styles.navContainer}>
             <NavItem
@@ -801,7 +667,6 @@ const Sidebar = ({navigation, route}) => {
             />
           </View>
         )}
-
         {hasDropdowncategories && (
           <View style={styles.navContainer}>
             <NavItem
@@ -822,36 +687,7 @@ const Sidebar = ({navigation, route}) => {
               onPress={goToDistributorGrn}
             />
           </View>
-        )}
-
-        {/* <TouchableOpacity
-          style={styles.inventoryhead}
-          onPress={toggleDropdownStyle}>
-          <Image
-            style={styles.orderimg}
-            source={require('../assets/style.png')}
-          />
-          <Text style={styles.ordertxt}>Styles</Text>
-          <View style={{marginLeft: 'auto'}}>
-            <Image
-              source={require('../assets/dropdown.png')}
-              style={{width: 20, height: 20}}
-            />
-          </View>
-        </TouchableOpacity> */}
-        {/* {dropdownVisibleStyle && (
-          <View style={styles.dropdown}>
-            <TouchableOpacity
-              style={styles.inventoryhead}
-              onPress={goToCosting}>
-              <Image
-                style={styles.prodimg}
-                source={require('../assets/dollar.png')}
-              />
-              <Text style={styles.dropdownItem}>Costing</Text>
-            </TouchableOpacity>
-          </View>
-        )} */}
+        )}   
         {hasDropdownLocationTask && (
           <View style={styles.navContainer}>
             <NavItem
@@ -870,252 +706,7 @@ const Sidebar = ({navigation, route}) => {
             />
           </View>
         )}
-
-        {/* {hasDropdowncategories && (
-          <TouchableOpacity
-            onPress={goToCategories}
-            style={styles.categorieshead}>
-            <Image
-              style={styles.categoriesimg}
-              source={require('../assets/menu-1.png')}
-            />
-            <Text style={styles.categoriestxt}>{Categories?.menuName}</Text>
-          </TouchableOpacity>
-        )} */}
-
-        {/* {hasDropdownItemsprodust && (
-          <TouchableOpacity
-            style={styles.inventoryhead}
-            onPress={toggleDropdownfourth}>
-            <Image
-              style={styles.orderimg}
-              source={require('../assets/box.png')}
-            />
-            <Text style={styles.ordertxt}>Products</Text>
-            <View style={{marginLeft: 'auto'}}>
-              <Image
-                source={require('../assets/dropdown.png')}
-                style={{width: 20, height: 20}}
-              />
-            </View>
-          </TouchableOpacity>
-        )}
-        {dropdownVisibleProduct && (
-          <View style={styles.dropdown}>
-            {hasDropdownProductstyle && (
-              <TouchableOpacity
-                style={styles.inventoryhead}
-                onPress={goToProduct}>
-                <Image
-                  style={styles.prodimg}
-                  source={require('../assets/package.png')}
-                />
-                <Text style={styles.dropdownItem}>
-                  {Productstyle?.menuName}
-                </Text>
-              </TouchableOpacity>
-            )}
-            {hasDropdownPackages && (
-              <TouchableOpacity
-                style={styles.inventoryhead}
-                onPress={goToPackages}>
-                <Image
-                  style={styles.prodimg}
-                  source={require('../assets/package.png')}
-                />
-                <Text style={styles.dropdownItem}>{Packages?.menuName}</Text>
-              </TouchableOpacity>
-            )}
-            {hasDropdownproductpublish && (
-              <TouchableOpacity
-                style={styles.inventoryhead}
-                onPress={goToPublish}>
-                <Image
-                  style={styles.prodimg}
-                  source={require('../assets/package.png')}
-                />
-                <Text style={styles.dropdownItem}>
-                  {productpublish?.menuName}
-                </Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        )} */}
-        {/* {hasDropdownItemsOrders && (
-          <TouchableOpacity
-            style={styles.inventoryhead}
-            onPress={toggleDropdownOrder}>
-            <Image
-              style={styles.orderimg}
-              source={require('../assets/orderr.png')}
-            />
-            <Text style={styles.ordertxt}>Orders and Returns</Text>
-            <View style={{marginLeft: 'auto'}}>
-              <Image
-                source={require('../assets/dropdown.png')}
-                style={{width: 20, height: 20}}
-              />
-            </View>
-          </TouchableOpacity>
-        )}
-        {dropdownVisibleOrder && (
-          <View style={styles.dropdown}>
-            {hasDropdownorders && (
-              <TouchableOpacity onPress={goToOrder} style={styles.orderhead}>
-                <Image
-                  style={styles.prodimg}
-                  source={require('../assets/packing.png')}
-                />
-                <Text style={styles.dropdownItem}>{orders?.menuName}</Text>
-              </TouchableOpacity>
-            )}
-            {hasDropdownpackingorders && (
-              <TouchableOpacity
-                style={styles.inventoryhead}
-                onPress={goToPackOrder}>
-                <Image
-                  style={styles.prodimg}
-                  source={require('../assets/packing.png')}
-                />
-                <Text style={styles.dropdownItem}>
-                  {packingorders?.menuName}
-                </Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        )} */}
-        {/* {hasDropdownItemsInvetory && (
-          <TouchableOpacity
-            style={styles.inventoryhead}
-            onPress={toggleDropdown}>
-            <Image
-              style={styles.orderimg}
-              source={require('../assets/inventory.png')}
-            />
-            <Text style={styles.ordertxt}>Inventory</Text>
-            <View style={{marginLeft: 'auto'}}>
-              <Image
-                source={require('../assets/dropdown.png')}
-                style={{width: 20, height: 20}}
-              />
-            </View>
-          </TouchableOpacity>
-        )}
-        {dropdownVisible && (
-          <View style={styles.dropdown}>
-            {hasDropdownProductInventory && (
-              <TouchableOpacity
-                style={styles.inventoryhead}
-                onPress={() => goToProductInventory('Product Inventory')}>
-                <Image
-                  style={styles.prodimg}
-                  source={require('../assets/product-management.png')}
-                />
-                <Text style={styles.dropdownItem}>
-                  {ProductInventory?.menuName}
-                </Text>
-              </TouchableOpacity>
-            )}
-            {hasDropdownlocationwiseinventory && (
-              <TouchableOpacity
-                style={styles.inventoryhead}
-                onPress={() =>
-                  goToLocationInventory('Location Wise Inventory')
-                }>
-                <Image
-                  style={styles.prodimg}
-                  source={require('../assets/locationinv.png')}
-                />
-                <Text style={styles.dropdownItemm}>
-                  {locationwiseinventory?.menuName}
-                </Text>
-              </TouchableOpacity>
-            )}
-            {hasDropdowndistributorwiseinventory && (
-              <TouchableOpacity
-                style={styles.inventoryhead}
-                onPress={() =>
-                  goToDistributorInventory('Distributor Inventory')
-                }>
-                <Image
-                  style={styles.prodimg}
-                  source={require('../assets/disinventory.png')}
-                />
-                <Text style={styles.dropdownItemm}>
-                  {distributorwiseinventory?.menuName}
-                </Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        )} */}
-        {/* {hasDropdowndistributorgrn && (
-          <TouchableOpacity
-            onPress={goToDistributorGrn}
-            style={styles.distributorhead}>
-            <Image
-              style={styles.distributorimg}
-              source={require('../assets/distributor.png')}
-            />
-            <Text style={styles.ordertxt}>{distributorgrn?.menuName}</Text>
-          </TouchableOpacity>
-        )} */}
-        {/* {hasDropdowncompaign && (
-          <TouchableOpacity
-            style={styles.inventoryhead}
-            onPress={toggleDropdownSecond}>
-            <Image
-              style={styles.orderimg}
-              source={require('../assets/activity.png')}
-            />
-            <Text style={styles.ordertxt}>Campaign Management</Text>
-            <View style={{marginLeft: 'auto'}}>
-              <Image
-                source={require('../assets/dropdown.png')}
-                style={{width: 20, height: 20}}
-              />
-            </View>
-          </TouchableOpacity>
-        )}
-        {dropdownVisiblee && (
-          <View style={styles.dropdown}>
-            {hasDropdownActivities && (
-              <TouchableOpacity
-                style={styles.inventoryhead}
-                onPress={goToActivities}>
-                <Image
-                  style={styles.prodimg}
-                  source={require('../assets/acticityone.png')}
-                />
-                <Text style={styles.dropdownItem}>{Activities?.menuName}</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        )} */}
-
-        {/* {hasDropdownLocationTask && (
-          <TouchableOpacity
-            onPress={goToCustomerLocation}
-            style={styles.inventoryhead}>
-            <Image
-              style={styles.locimg}
-              source={require('../assets/location-pin.png')}
-            />
-            <Text style={styles.ordertxt}>{LocationTask?.menuName}</Text>
-          </TouchableOpacity>
-        )} */}
-        {/* {hasDropdownattendance && (
-          <TouchableOpacity
-            onPress={goToAttendence}
-            style={styles.inventoryhead}>
-            <Image
-              style={styles.locimg}
-              source={require('../assets/attendence.png')}
-            />
-            <Text style={styles.ordertxt}>{attendance?.menuName}</Text>
-          </TouchableOpacity>
-        )} */}
       </ScrollView>
-
       <TouchableOpacity onPress={goToSettingsScreen} style={styles.logoutbox}>
         <Image
           resizeMode="contain"
@@ -1124,36 +715,6 @@ const Sidebar = ({navigation, route}) => {
         />
         <Text style={styles.logouttxt}>Settings</Text>
       </TouchableOpacity>
-      {/* <View style={styles.logoutContainer}>
-        <TouchableOpacity onPress={handleLogout} style={styles.logoutbox}>
-          <Image
-            resizeMode="contain"
-            style={[
-              styles.logoutimg,
-              {tintColor: '#fff', height: 20, width: 20},
-            ]}
-            source={require('../assets/logout.png')}
-          />
-          <Text style={styles.logouttxt}>Logout</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.orderhead1}
-          onPress={() => setDeleteModalVisible(true)}>
-          <Image
-            style={{height: 25, width: 25, tintColor: 'red'}}
-            source={require('../assets/delete.png')}
-          />
-          <Text
-            style={{
-              fontSize: 16,
-              fontWeight: '800',
-              marginLeft: 8,
-              color: 'red',
-            }}>
-            Delete Account
-          </Text>
-        </TouchableOpacity>
-      </View> */}
       <Modal
         animationType="slide"
         transparent={true}
