@@ -244,7 +244,7 @@ const Tasks = () => {
       });
 
       const newTasks = response.data;
-      // console.log("response.data====>",response.data)
+      console.log("response.data====>",response.data)
       if (reset) {
         setTasks(newTasks);
       } else {
@@ -261,6 +261,9 @@ const Tasks = () => {
       setLoadingMore(false);
     }
   };
+
+  
+ 
 
   const loadMoreTasks = async () => {
     if (!hasMoreTasks || loadingMore) return;
@@ -408,11 +411,32 @@ const Tasks = () => {
     return unsubscribe;
   }, [navigation,searchOption]);
 
-  const fetchTaskById = taskId => {
-    navigation.navigate('NewTask', {
-      task: tasks.find(task => task.id === taskId),
-    });
+  const fetchTaskById = async (taskId) => {
+    setLoading(true);
+    
+    const apiUrl = `${global?.userData?.productURL}${API.GET_TASK_BY_ID}/${taskId}`;
+  
+    try {
+      const response = await axios.get(apiUrl, {
+        headers: {
+          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+        },
+      });
+  
+      if (response.data) {
+        navigation.navigate('NewTask', {
+          task: response.data, // Pass the fetched task details
+        });
+      } else {
+        console.error('Unexpected response format:', response.data);
+      }
+    } catch (error) {
+      console.error('Error fetching task details:', error);
+    } finally {
+      setLoading(false);
+    }
   };
+  
 
   const handleAdd = () => {
     navigation.navigate('NewTask', {task: {}});

@@ -495,6 +495,7 @@ import {
   Linking,
   SafeAreaView,
   RefreshControl,
+  AppState,
 } from 'react-native';
 import Geolocation from 'react-native-geolocation-service';
 import axios from 'axios';
@@ -525,6 +526,30 @@ const CustomerLocation = ({ navigation }) => {
   const [traveledDistance, setTraveledDistance] = useState('0 km');
   const [selectedTaskId, setSelectedTaskId] = useState(null);
   const [previousLocation, setPreviousLocation] = useState(null);
+  const appState = React.useRef(AppState.currentState);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      console.log("Screen focused, running useFocusEffect...");
+      initialize();
+    }, [])
+  );
+
+  const handleAppStateChange = (nextAppState) => {
+    if (appState.current.match(/inactive|background/) && nextAppState === "active") {
+      console.log("App resumed from background, reloading data...");
+      initialize();
+    }
+    appState.current = nextAppState;
+  };
+  
+  useEffect(() => {
+    const subscription = AppState.addEventListener("change", handleAppStateChange);
+    
+    return () => {
+      subscription.remove(); // Cleanup listener on unmount
+    };
+  }, []);
 
 
   const [refreshing, setRefreshing] = useState(false);
@@ -543,24 +568,33 @@ const CustomerLocation = ({ navigation }) => {
   //   }, []),
   // );
 
+  useEffect(() => {
+    if (tasks.length > 0) {
+      const updatedTask = tasks.find(task => task.id === selectedTaskId);
+      if (updatedTask) {
+        setSelectedTask(updatedTask);
+      }
+    }
+  }, [tasks, selectedTaskId]);
+  
   useFocusEffect(
     React.useCallback(() => {
-      const initialize = async () => {
-        try {
-          console.log("called requestLocationPermission=================>");
-          await requestLocationPermission();
-          console.log("called getLocation ===================>");
-          await getLocation();
-          console.log("called getTasksAccUser=====================> ");
-          await getTasksAccUser();
-        } catch (error) {
-          console.error('Error during initialization:', error);
-        }
-      };
-
       initialize();
     }, [])
   );
+  
+const initialize = async () => {
+  try {
+    console.log("called requestLocationPermission=================>");
+    await requestLocationPermission();
+    console.log("called getLocation ===================>");
+    await getLocation();
+    console.log("called getTasksAccUser=====================> ");
+    await getTasksAccUser();
+  } catch (error) {
+    console.error("Error during initialization:", error);
+  }
+};
 
 
   useEffect(() => {
@@ -619,6 +653,7 @@ const CustomerLocation = ({ navigation }) => {
           status: task.status || '',
           dueDateStr: task.dueDateStr || '',
           desc: task.desc || '',
+          remarks:task.remarks || '',
           checkIn: task.checkIn || null,
           checkOut: task.checkOut || null,
           locId: task.locId || null,
@@ -627,7 +662,7 @@ const CustomerLocation = ({ navigation }) => {
           changed_loc_latitude:task.changed_loc_latitude || null,
           changed_loc_longitude:task.changed_loc_longitude || null
         }));
-        // console.log('Response:', response.data[0]);
+        console.log('Response:', response.data[0]);
         setTasks(taskOptions);
         setFilteredTasks(taskOptions); // This sets both tasks and filteredTasks
       })
@@ -708,76 +743,56 @@ const CustomerLocation = ({ navigation }) => {
     });
   };
 
-  // const createAddressString = task => {
-
-  //   const {
-  //     customerName = '',
-  //     houseNo = '',
-  //     street = '',
-  //     locationName = '',
-  //     locality = '',
-  //     cityOrTown = '',
-  //     state = '',
-  //     country = '',
-  //     pincode = '',
-  //   } = task;
-
-  //   const addressParts = [
-  //     customerName,
-  //     houseNo,
-  //     street,
-  //     locationName,
-  //     locality,
-  //     cityOrTown,
-  //     state,
-  //     country,
-  //     pincode,
-  //   ];
-  //   const address = addressParts.filter(part => part.trim()).join(', ');
-  //   console.log("address",address)
-
-  //   return address;
-  // };
-
-
-  // const createAddressString = task => {
-  //   const {
-  //     customerName = '',
-  //     houseNo = '',
-  //     street = '',
-  //     locationName = '',
-  //     locality = '',
-  //     cityOrTown = '',
-  //     state = '',
-  //     country = '',
-  //     pincode = '',
-  //     changedLocation = '',
-  //     changedLocFlag = 0
-  //   } = task;
-
-  //   // If changedLocFlag is 1, use changedLocation; otherwise, construct the full address
-  //   let finalLocation = '';
-
-  //   if (changedLocFlag === 1) {
-  //     finalLocation = changedLocation;
-  //   } else {
-  //     finalLocation = [
-  //       customerName,
-  //       houseNo,
-  //       street,
-  //       locationName,
-  //       locality,
-  //       cityOrTown,
-  //       state,
-  //       country,
-  //       pincode
-  //     ].filter(part => part.trim()).join(', ');
-  //   }
-
-  //   console.log("Address:", finalLocation);
-
-  //   return finalLocation;
-  // };
+  useFocusEffect(
+    React.useCallback(() => {
+      const updateDistance = async () => {
+        try {
+          console.log("Rechecking location after returning to the app...");
+          
+          // Get updated current location
+          await requestLocationPermission();
+          await getLocation();
+  
+          if (!mLat || !mLong) {
+            console.error('Current location not available');
+            return;
+          }
+  
+          if (!selectedTask) {
+            console.error('No task selected');
+            return;
+          }
+  
+          // Get customer location
+          const customerAddress = createAddressString(selectedTask);
+          const customerLocation = await geocodeAddress(customerAddress);
+  
+          if (!customerLocation) {
+            console.error('Customer location not available');
+            return;
+          }
+  
+          // Recalculate distance
+          const newDistance = await getRoadDistance(
+            mLat, 
+            mLong, 
+            customerLocation.lat, 
+            customerLocation.lng
+          );
+  
+          console.log('Updated Distance:', newDistance, 'km');
+  
+          // Update state with new distance
+          setDistance(newDistance);
+        } catch (error) {
+          console.error('Error updating distance:', error);
+        }
+      };
+  
+      updateDistance();
+    }, [selectedTask]) // Dependency array ensures update when the selected task changes
+  );
+  
 
   const createAddressString = task => {
     const {
@@ -937,6 +952,7 @@ const CustomerLocation = ({ navigation }) => {
       id: task.id,
       label: task.label,
       desc: task.desc,
+      remarks:task.remarks,
       distance: roadDistance || '0 km',
       traveledDistance: traveledDistance,
       checkIn: task.checkIn,

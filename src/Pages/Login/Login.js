@@ -525,13 +525,14 @@ const Login = () => {
                 styles.inputContainer,
                 errorMsg?.includes('no_Code') && styles.inputContainerError,
               ]}>
-              <TextInput
-                style={styles.input}
-                placeholder="Code"
-                placeholderTextColor="#000"
-                onChangeText={text => setCode(text)}
-                value={code}
-              />
+            <TextInput
+  style={styles.input}
+  placeholder="Code"
+  placeholderTextColor="#000"
+  onChangeText={text => setCode(text.trimStart())}
+  value={code}
+/>
+
               <View
                 style={{
                   backgroundColor: '#F5F5F5',

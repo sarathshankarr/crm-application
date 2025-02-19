@@ -491,9 +491,40 @@ const NewCall = () => {
     setShowDropdownRow(!showDropdownRow);
   };
 
+  // const getUsers = () => {
+  //   setLoading(true);
+  //   const apiUrl = `${global?.userData?.productURL}${API.ADD_USERSDECS}`;
+  //   axios
+  //     .get(apiUrl, {
+  //       headers: {
+  //         Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+  //       },
+  //     })
+  //     .then(response => {
+  //       if (
+  //         response.data &&
+  //         response.data.status &&
+  //         response.data.status.success
+  //       ) {
+  //         setUsers(response.data.response.users);
+  //         setFilteredUsers(response.data.response.users); // Initialize filtered users
+  //       } else {
+  //         console.error('Error fetching users:', response.data);
+  //       }
+  //     })
+  //     .catch(error => {
+  //       console.error('Error fetching users:', error);
+  //     })
+  //     .finally(() => {
+  //       setLoading(false);
+  //     });
+  // };
+
+
   const getUsers = () => {
     setLoading(true);
-    const apiUrl = `${global?.userData?.productURL}${API.ADD_USERS}`;
+    const apiUrl = `${global?.userData?.productURL}${API.ADD_USERSDECS}`;
+    
     axios
       .get(apiUrl, {
         headers: {
@@ -501,13 +532,15 @@ const NewCall = () => {
         },
       })
       .then(response => {
-        if (
-          response.data &&
-          response.data.status &&
-          response.data.status.success
-        ) {
-          setUsers(response.data.response.users);
-          setFilteredUsers(response.data.response.users); // Initialize filtered users
+        if (response.data?.status?.success) {
+          const users = response.data.response.users;
+          setUsers(users);
+  
+          // Apply filtering logic
+          const filteredUsers = users.filter(u => ("," + u.companyId + ",").includes("," + companyId + ","));
+          setFilteredUsers(filteredUsers);
+          
+          // console.log("Filtered Users ======>", filteredUsers);
         } else {
           console.error('Error fetching users:', response.data);
         }
@@ -683,14 +716,47 @@ const NewCall = () => {
     setSelectedDropdownOption(option);
     setShipFromToClicked(false); // Close dropdown after selection (optional)
   };
-  const statusOptions = [
-    'Open',
-    'Pending',
-    'Assigned',
-    'In Progress',
-    'Completed',
-  ];
+  // const statusOptions = [
+  //   'Open',
+  //   'Pending',
+  //   'Assigned',
+  //   'In Progress',
+  //   'Completed',
+  // ];
 
+  const [statusOptions, setStatusOptions] = useState([]);
+  
+  const getStatusOption = () => {
+    setLoading(true);
+    const apiUrl = `${global?.userData?.productURL}${API.STATUS_OPTION}/${companyId}`;
+  
+    axios
+      .get(apiUrl, {
+        headers: {
+          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+        },
+      })
+      .then(response => {
+        if (Array.isArray(response?.data)) {
+          // Extract only the 'stts' field
+          const statusList = response.data.map(item => item.stts.trim()); 
+          setStatusOptions(statusList);
+        } else {
+          console.error('Unexpected response format:', response.data);
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  };
+  
+  useEffect(() => {
+    getStatusOption();
+  }, []);
+  
   const handleSave = () => {
     if (!relatedTo.trim()) {
       Alert.alert('Alert', 'Please fill in all mandatory fields');

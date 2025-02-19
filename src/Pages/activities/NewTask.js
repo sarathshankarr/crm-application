@@ -364,12 +364,20 @@ const NewTask = () => {
   }, [route.params]);
 
   const getNameAndLocation = useCallback(
+    
     async (
       call_customerType,
       call_customerId,
       call_locId,
       call_locationName,
     ) => {
+      console.log(
+        "Inside getNameAndLocation, received params:",
+        call_customerType,
+      call_customerId,
+      call_locId,
+      call_locationName,
+      );
       if (call_customerType && call_customerType === 1) {
         setIsEnabled(true);
 
@@ -416,19 +424,45 @@ const NewTask = () => {
     [customers, distributor, customerLocations],
   );
 
+  // useEffect(() => {
+  //   if (route.params && route.params.task) {
+  //     const {task} = route.params;
+  //     getUserRole(task.assign_to);
+  //     getNameAndLocation(
+  //       task.customerType,
+  //       task.customerId,
+  //       task.locId,
+  //       task.locationName,
+  //     );
+  //   }
+  // }, [route.params, users, customers, distributor]);
+
+
   useEffect(() => {
     if (route.params && route.params.task) {
-      const {task} = route.params;
+      const { task } = route.params;
+  
+      console.log("Task received in useEffect:", task); // Check if task is received correctly
+  
+      console.log("Calling getUserRole with assign_to:", task.assign_to);
       getUserRole(task.assign_to);
+  
+      console.log(
+        "Calling getNameAndLocation with params:",
+        task.customerType,
+        task.customerId,
+        task.locId,
+        task.locationName
+      );
       getNameAndLocation(
         task.customerType,
         task.customerId,
         task.locId,
-        task.locationName,
+        task.locationName
       );
     }
   }, [route.params, users, customers, distributor]);
-
+  
   const getdueDate = date => {
     if (!date) return;
     const formattedDate = date.split('T')[0]; // Formats date to "YYYY-MM-DD"
@@ -469,7 +503,7 @@ const NewTask = () => {
 
     let foundItem = await users?.find(item => item.userId === role);
     if (foundItem) {
-      setSelectedUserOption(foundItem.firstName);
+      setSelectedUserOption(foundItem.fullName);
     }
   };
 
@@ -523,9 +557,41 @@ const NewTask = () => {
     setShowDropdownRow(!showDropdownRow);
   };
 
+  // const getUsers = () => {
+  //   setLoading(true);
+  //   const apiUrl = `${global?.userData?.productURL}${API.ADD_USERSDECS}`;
+  //   axios
+  //     .get(apiUrl, {
+  //       headers: {
+  //         Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+  //       },
+  //     })
+  //     .then(response => {
+  //       if (
+  //         response.data &&
+  //         response.data.status &&
+  //         response.data.status.success
+  //       ) {
+  //         setUsers(response.data.response.users);
+  //         setFilteredUsers(response.data.response.users); // Initialize filtered users
+  //         console.log("response.data.response.users======>",response.data.response.users)
+  //       } else {
+  //         console.error('Error fetching users:', response.data);
+  //       }
+  //     })
+  //     .catch(error => {
+  //       console.error('Error fetching users:', error);
+  //     })
+  //     .finally(() => {
+  //       setLoading(false);
+  //     });
+  // };
+
+
   const getUsers = () => {
     setLoading(true);
-    const apiUrl = `${global?.userData?.productURL}${API.ADD_USERS}`;
+    const apiUrl = `${global?.userData?.productURL}${API.ADD_USERSDECS}`;
+    
     axios
       .get(apiUrl, {
         headers: {
@@ -533,13 +599,15 @@ const NewTask = () => {
         },
       })
       .then(response => {
-        if (
-          response.data &&
-          response.data.status &&
-          response.data.status.success
-        ) {
-          setUsers(response.data.response.users);
-          setFilteredUsers(response.data.response.users); // Initialize filtered users
+        if (response.data?.status?.success) {
+          const users = response.data.response.users;
+          setUsers(users);
+  
+          // Apply filtering logic
+          const filteredUsers = users.filter(u => ("," + u.companyId + ",").includes("," + companyId + ","));
+          setFilteredUsers(filteredUsers);
+          
+          // console.log("Filtered Users ======>", filteredUsers);
         } else {
           console.error('Error fetching users:', response.data);
         }
@@ -552,6 +620,7 @@ const NewTask = () => {
       });
   };
 
+  
   const handleDropdownSelectUser = user => {
     if (selectedUserId === user.userId) {
       setSelectedUserOption(''); // Reset user option
@@ -559,9 +628,9 @@ const NewTask = () => {
       setSelectedUserName(''); // Reset user name
       setSelectedStatusOption(''); // Reset status option
     } else {
-      setSelectedUserOption(user.firstName); // Set user option
+      setSelectedUserOption(user.fullName); // Set user option
       setSelectedUserId(user.userId); // Set user ID
-      setSelectedUserName(user.firstName); // Set user name
+      setSelectedUserName(user.fullName); // Set user name
       setSelectedStatusOption('Assigned'); // Set status to Assigned
     }
     setShipFromToClickedUser(false); // Close User dropdown after selection (optional)
@@ -710,7 +779,7 @@ const NewTask = () => {
       del_stts: task.del_stts,
       created_by:task.created_by
     };
-    // console.log('requestData======>', requestData);
+    console.log('requestData======>', requestData);
 
     axios
       .post(global?.userData?.productURL + API.ADD_UPDATE_TASK, requestData, {
@@ -743,18 +812,52 @@ const NewTask = () => {
     setShipFromToClicked(false); // Close dropdown after selection (optional)
   };
 
-  const statusOptions = [
-    'Open',
-    'Pending',
-    'Assigned',
-    'In Progress',
-    'Completed',
-  ];
+  // const statusOptions = [
+  //   'Open',
+  //   'Pending',
+  //   'Assigned',
+  //   'In Progress',
+  //   'Completed',
+  // ];
+
+  const [statusOptions, setStatusOptions] = useState([]);
+  
+  const getStatusOption = () => {
+    setLoading(true);
+    const apiUrl = `${global?.userData?.productURL}${API.STATUS_OPTION}/${companyId}`;
+  
+    axios
+      .get(apiUrl, {
+        headers: {
+          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+        },
+      })
+      .then(response => {
+        if (Array.isArray(response?.data)) {
+          // Extract only the 'stts' field
+          const statusList = response.data.map(item => item.stts.trim()); 
+          setStatusOptions(statusList);
+        } else {
+          console.error('Unexpected response format:', response.data);
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  };
+  
+
+  useEffect(() => {
+    getStatusOption();
+  }, []);
 
   const handleSearch = text => {
     if (text.trim().length > 0) {
       const filtered = users.filter(user =>
-        user.firstName.toLowerCase().includes(text.toLowerCase()),
+        user.fullName.toLowerCase().includes(text.toLowerCase()),
       );
       setFilteredUsers(filtered);
     } else {
@@ -977,7 +1080,7 @@ const NewTask = () => {
                     key={index}
                     style={styles.dropdownOption}
                     onPress={() => handleDropdownSelectUser(user)}>
-                    <Text style={{color: '#000'}}>{user.firstName}</Text>
+                    <Text style={{color: '#000'}}>{user.fullName}</Text>
                   </TouchableOpacity>
                 ))
               )}

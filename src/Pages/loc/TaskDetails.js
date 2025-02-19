@@ -1,5 +1,5 @@
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import {
   Image,
   PermissionsAndroid,
@@ -13,6 +13,7 @@ import {
   View,
   Alert,
   SafeAreaView,
+  AppState,
 } from 'react-native';
 import { RadioButton } from 'react-native-radio-buttons-group';
 import { API } from '../../config/apiConfig';
@@ -36,6 +37,7 @@ const TaskDetails = ({ route }) => {
     label,
     id,
     desc,
+    remarks,
     task,
     distance,
     traveledDistance,
@@ -71,7 +73,7 @@ const TaskDetails = ({ route }) => {
   const [selfieImages, setSelfieImages] = useState([]); // State for captured images
   const [galleryImages, setGalleryImages] = useState([]); // State for picked images
   const [documents, setDocuments] = useState([]); // State for selected documents
-  const [remark, setRemark] = useState('');
+  const [remark, setRemark] = useState(remarks || '');
   const [loadingg, setLoadingg] = useState(false);
   const [editStatus, setEditStatus] = useState(false);
   const [selfieImageName, setSelfieImageName] = useState(null);
@@ -95,19 +97,63 @@ const TaskDetails = ({ route }) => {
 
   useEffect(() => { }, []);
 
+  // useFocusEffect(
+  //   React.useCallback(() => {
+  //     const initialize = async () => {
+  //       await requestLocationPermission();
+  //       await getLocation();
+  //       getDetails();
+  //       getTasksAccUser();
+  //     };
+
+  //     initialize();
+  //   }, []),
+  // );
+  const appState = React.useRef(AppState.currentState);
+
   useFocusEffect(
     React.useCallback(() => {
-      const initialize = async () => {
-        await requestLocationPermission();
-        await getLocation();
-        getDetails();
-        getTasksAccUser();
-      };
-
+      console.log("Screen focused, running useFocusEffect...");
       initialize();
-    }, []),
+    }, [])
   );
 
+  const handleAppStateChange = (nextAppState) => {
+    if (appState.current.match(/inactive|background/) && nextAppState === "active") {
+      console.log("App resumed from background, reloading data...");
+      initialize();
+    }
+    appState.current = nextAppState;
+  };
+  
+  useEffect(() => {
+    const subscription = AppState.addEventListener("change", handleAppStateChange);
+    
+    return () => {
+      subscription.remove(); // Cleanup listener on unmount
+    };
+  }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      initialize();
+    }, [])
+  );
+  
+
+  const initialize = async () => {
+    try {
+      console.log("called requestLocationPermission=================>");
+      await requestLocationPermission();
+      console.log("called getLocation ===================>");
+      await getLocation();
+      console.log("called getTasksAccUser=====================> ");
+      await getDetails();
+      await getTasksAccUser();
+    } catch (error) {
+      console.error("Error during initialization:", error);
+    }
+  };
   useEffect(() => {
     const fetchInitialSelectedCompany = async () => {
       try {
@@ -179,10 +225,14 @@ const TaskDetails = ({ route }) => {
           status: task.status || '',
           dueDateStr: task.dueDateStr || '',
           desc: task.desc || '',
+          remarks:task.remarks || '',
           checkIn: checkIn || '',
           checkOut: checkOut || '',
           locId: locId || ''
         }));
+
+        console.log('Response========>:', response.data[0]);
+
         setTasks(taskOptions);
         setFilteredTasks(taskOptions);
       })
@@ -386,7 +436,67 @@ const TaskDetails = ({ route }) => {
   // };
 
   
+  useFocusEffect(
+    React.useCallback(() => {
+      const updateDistance = async () => {
+        try {
+          console.log("Rechecking location after returning to the app...");
+          
+          // Get updated current location
+          await requestLocationPermission();
+          await getLocation();
+  
+          if (!mLat || !mLong) {
+            console.error('Current location not available');
+            return;
+          }
+  
+          if (!selectedTask) {
+            console.error('No task selected');
+            return;
+          }
+  
+          // Get customer location
+          const customerAddress = createAddressString(selectedTask);
+          const customerLocation = await geocodeAddress(customerAddress);
+  
+          if (!customerLocation) {
+            console.error('Customer location not available');
+            return;
+          }
+  
+          // Recalculate distance
+          const newDistance = await getRoadDistance(
+            mLat, 
+            mLong, 
+            customerLocation.lat, 
+            customerLocation.lng
+          );
+  
+          console.log('Updated Distance:', newDistance, 'km');
+  
+          // Update state with new distance
+          setDistance(newDistance);
+        } catch (error) {
+          console.error('Error updating distance:', error);
+        }
+      };
+  
+      updateDistance();
+    }, [selectedTask]) // Dependency array ensures update when the selected task changes
+  );
+  
+  
   const createAddressString = task => {
+    console.log('Address to geocode:', {
+      state,
+      houseNo,
+      street,
+      locality,
+      cityOrTown,
+      country,
+      pincode
+    });
     const {
       customerName = '',
       houseNo = '',
@@ -458,22 +568,67 @@ const TaskDetails = ({ route }) => {
     }
   };
 
-  const handleTaskSelect = async task => {
-    setSelectedTask(task);
+  // const handleTaskSelect = async task => {
+  //   setSelectedTask(task);
 
+  //   if (!mLat || !mLong) {
+  //     console.error('Current location not available');
+  //     Alert.alert('Error', 'Current location not available');
+  //     return;
+  //   }
+
+  //   const address = createAddressString(task);
+  //   const location = await geocodeAddress(address);
+
+  //   if (location) {
+  //     openGoogleMaps(mLat, mLong, location.lat, location.lng);
+  //   }
+  // };
+
+  // const handleTaskSelect = async task => {
+  //   setSelectedTask(task);
+
+  //   if (!mLat || !mLong) {
+  //     console.error('Current location not available');
+  //     Alert.alert('Error', 'Current location not available');
+  //     return;
+  //   }
+
+  //   const address = createAddressString(task);
+  //   const location = await geocodeAddress(address);
+
+  //   if (location) {
+  //     openGoogleMaps(mLat, mLong, location.lat, location.lng);
+  //   }
+  // };
+  const [shouldRedirect, setShouldRedirect] = useState(false);
+
+  const handleTaskSelect = async (task) => {
+    setSelectedTask(task);
+  
     if (!mLat || !mLong) {
       console.error('Current location not available');
       Alert.alert('Error', 'Current location not available');
       return;
     }
-
+  
     const address = createAddressString(task);
     const location = await geocodeAddress(address);
-
+  
     if (location) {
+      setShouldRedirect(true);  // Set state to indicate redirection is needed
       openGoogleMaps(mLat, mLong, location.lat, location.lng);
     }
   };
+
+  useFocusEffect(
+    useCallback(() => {
+      if (shouldRedirect) {
+        setShouldRedirect(false);  // Reset state after redirection
+        navigation.replace('CustomerLocation'); // Redirect to CustomerLocation
+      }
+    }, [shouldRedirect])
+  );
 
   const openGoogleMaps = (
     startLat,
@@ -507,14 +662,48 @@ const TaskDetails = ({ route }) => {
     setIsSwitchOn(!isSwitchOn);
   };
 
-  const statusOptions = [
-    'Open',
-    'Pending',
-    'Assigned',
-    'In Progress',
-    'Completed',
-  ];
+  // const statusOptions = [
+  //   'Open',
+  //   'Pending',
+  //   'Assigned',
+  //   'In Progress',
+  //   'Completed',
+  // ];
 
+
+  const [statusOptions, setStatusOptions] = useState([]);
+  
+  const getStatusOption = () => {
+    setLoading(true);
+    const apiUrl = `${global?.userData?.productURL}${API.STATUS_OPTION}/${companyId}`;
+  
+    axios
+      .get(apiUrl, {
+        headers: {
+          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+        },
+      })
+      .then(response => {
+        if (Array.isArray(response?.data)) {
+          // Extract only the 'stts' field
+          const statusList = response.data.map(item => item.stts.trim()); 
+          setStatusOptions(statusList);
+        } else {
+          console.error('Unexpected response format:', response.data);
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  };
+  
+  useEffect(() => {
+    getStatusOption();
+  }, []);
+  
   const handleShipDropdownClickStatus = () => {
     setShipFromToClickedStatus(!shipFromToClickedStatus);
   };
@@ -702,6 +891,7 @@ const TaskDetails = ({ route }) => {
       });
     });
 
+    console.log('formData',formData)
     const apiUrl0 = `${global?.userData?.productURL}${API.ADD_LOCATION_IMAGES}`;
 
     axios
@@ -1088,6 +1278,7 @@ const TaskDetails = ({ route }) => {
         label,
         id,
         desc,
+        remarks,
         task,
         distance,
         traveledDistance,
@@ -1099,7 +1290,7 @@ const TaskDetails = ({ route }) => {
     } catch (error) {
       console.error('Error:', error);
       Alert.alert('Error', 'Failed to punch in/out. Please try again.');
-    }
+    } 
   };
 
 
@@ -1287,7 +1478,7 @@ const TaskDetails = ({ route }) => {
 
           {shipFromToClickedStatus &&
             editStatus &&
-            (status !== 'Completed' || isAdmin) && (
+            (!selectedStatusOption || selectedStatusOption !== "Completed" || isAdmin) && (
               <View style={styles.dropdownContainer}>
                 <ScrollView
                   style={styles.scrollView}

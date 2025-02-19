@@ -16,6 +16,8 @@ export const API = {
   ADD_DISTRIBUTOR_DETAILS: 'erpportal/api/distributors/addDistributor',
   ADD_CUSTOMER_LOCATION: 'erpportal/api/location/addlocation',
   ADD_USERS: 'erpportal/api/users',
+  ADD_USERSDECS: 'erpportal/api/users/getusersDesc',
+  STATUS_OPTION:'erpportal/api/master/getStatusForcompId',
   ADD_PRODUCT_INVENTORY: 'erpportal/api/style/cedge/getMainInventory',
   ADD_LOCATION_INVENTORY: 'erpportal/api/style/cedge/getLocationInventory',
   GET_ORDER_PACKING: 'erpportal/api/ordermgmt/getOrderPacking',

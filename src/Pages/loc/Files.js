@@ -68,6 +68,7 @@ const Files = ({route}) => {
           Authorization: `Bearer ${global?.userData?.token?.access_token}`,
         },
       });
+      console.log("remarkscheck",response.data)
       setLocationDetails(response.data);
     } catch (error) {
       console.error('Error:', error);

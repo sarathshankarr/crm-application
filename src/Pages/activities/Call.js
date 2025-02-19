@@ -316,12 +316,32 @@ const Call = () => {
   }, [navigation,searchOptions]);
 
 
-  const fetchCallById = callId => {
-    navigation.navigate('NewCall', {
-      call: tasks.find(call => call.id === callId),
-    });
+  const fetchCallById = async (callId) => {
+    setLoading(true);
+  
+    const apiUrl = `${global?.userData?.productURL}${API.GET_CALL_BY_ID}/${callId}`;
+  
+    try {
+      const response = await axios.get(apiUrl, {
+        headers: {
+          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+        },
+      });
+  
+      if (response.data) {
+        navigation.navigate('NewCall', {
+          call: response.data, // Pass the fetched call details
+        });
+      } else {
+        console.error('Unexpected response format:', response.data);
+      }
+    } catch (error) {
+      console.error('Error fetching call details:', error);
+    } finally {
+      setLoading(false);
+    }
   };
-
+  
   const handleAdd = () => {
     navigation.navigate('NewCall', { call: {} });
   };
