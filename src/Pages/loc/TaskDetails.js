@@ -436,7 +436,7 @@ const TaskDetails = ({ route }) => {
   // };
 
   
-  useFocusEffect(
+useFocusEffect(
     React.useCallback(() => {
       const updateDistance = async () => {
         try {
@@ -475,8 +475,15 @@ const TaskDetails = ({ route }) => {
   
           console.log('Updated Distance:', newDistance, 'km');
   
-          // Update state with new distance
-          setDistance(newDistance);
+          // Retrieve the last saved distance
+          const savedDistance = await AsyncStorage.getItem('latestDistance');
+          const parsedDistance = savedDistance ? parseFloat(savedDistance) : null;
+  
+          // Update and store the distance only if it has changed
+          if (parsedDistance !== newDistance) {
+            await AsyncStorage.setItem('latestDistance', newDistance.toString());
+            setDistance(newDistance);
+          }
         } catch (error) {
           console.error('Error updating distance:', error);
         }
@@ -485,6 +492,22 @@ const TaskDetails = ({ route }) => {
       updateDistance();
     }, [selectedTask]) // Dependency array ensures update when the selected task changes
   );
+  
+  useEffect(() => {
+    const loadSavedDistance = async () => {
+      try {
+        const savedDistance = await AsyncStorage.getItem('latestDistance');
+        if (savedDistance) {
+          setDistance(parseFloat(savedDistance));
+          console.log('Loaded saved distance:', savedDistance, 'km');
+        }
+      } catch (error) {
+        console.error('Error loading saved distance:', error);
+      }
+    };
+  
+    loadSavedDistance();
+  }, []);
   
   
   const createAddressString = task => {

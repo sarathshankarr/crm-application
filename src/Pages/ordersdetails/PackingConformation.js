@@ -30,7 +30,7 @@ const PackingConformation = ({route}) => {
   const {colors} = useContext(ColorContext);
   const styles = getStyles(colors);
   const [loading, setLoading] = useState(true);
-  const [order, setOrder] = useState(null);
+  const [order, setOrder] = useState({ orderLineItems: [] });
   const [statusOptions, setStatusOptions] = useState([]);
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState('');
@@ -281,24 +281,56 @@ const PackingConformation = ({route}) => {
     }
   }, [companyId, modalVisible]);
 
+  // const updateQty = (index, value) => {
+  //   const newStylesData = [...stylesData];
+  //   newStylesData[index].qty = parseInt(value) || 0; // Convert to integer or set to 0 if invalid
+  //   setStylesData(newStylesData);
+  // };
+
   const updateQty = (index, value) => {
     const newStylesData = [...stylesData];
-    newStylesData[index].qty = parseInt(value) || 0; // Convert to integer or set to 0 if invalid
-    setStylesData(newStylesData);
+  
+    // Remove leading zeros unless it's "0." to allow decimal input
+    if (/^\d*\.?\d*$/.test(value)) {
+      if (value.startsWith("0") && value.length > 1 && !value.startsWith("0.")) {
+        value = value.replace(/^0+/, ""); // Remove leading zeros
+      }
+      newStylesData[index].qty = value; // Store as string
+      setStylesData(newStylesData);
+    }
   };
+  
+
+  
+  // useEffect(() => {
+  //   if (order?.orderLineItems?.length > 0) {
+  //     const map = new Map();
+  //     order.orderLineItems.forEach(item => {
+  //       const key = `${item.styleId}-${item.size}`;
+  //       map.set(key, item.qty);
+  //     });
+  //     setExistingStyleMap(map);
+  //     setOriginalStyleMap(prev => (prev.size === 0 ? new Map(map) : prev)); // Preserve original map
+  //     console.log('Existing style map after update:', map);
+  //   }
+  // }, [order]);
 
   useEffect(() => {
     if (order?.orderLineItems?.length > 0) {
-      const map = new Map();
+      const newMap = new Map(existingStyleMap); // Clone the existing map to avoid overwriting
       order.orderLineItems.forEach(item => {
         const key = `${item.styleId}-${item.size}`;
-        map.set(key, item.qty);
+        newMap.set(key, item.qty);
+        console.log("Processing Item Key:", key, "Qty:", item.qty);
       });
-      setExistingStyleMap(map);
-      setOriginalStyleMap(prev => (prev.size === 0 ? new Map(map) : prev)); // Preserve original map
-      console.log('Existing style map after update:', map);
+  
+      setExistingStyleMap(new Map(newMap)); // Ensure React detects the update
+      setOriginalStyleMap(prev => (prev.size === 0 ? new Map(newMap) : prev)); // Preserve original
+      console.log("Existing style map after update:", newMap);
     }
   }, [order]);
+  
+  
 
   const calculateTotals = orderLineItems => {
     const totalQty = orderLineItems.reduce((sum, item) => {
@@ -398,7 +430,7 @@ const PackingConformation = ({route}) => {
 
     setOrder(prevOrder => {
       // Clone the existing orderLineItems
-      let updatedLineItems = [...prevOrder.orderLineItems];
+      let updatedLineItems = prevOrder?.orderLineItems ? [...prevOrder.orderLineItems] : [];
       console.log('Cloned Order Line Items:', updatedLineItems);
 
       newItems.forEach(newItem => {
@@ -407,8 +439,9 @@ const PackingConformation = ({route}) => {
 
         // Check if the item exists
         const existingIndex = updatedLineItems.findIndex(
-          item => `${item.styleId}-${item.size}` === key, // compare with size
+          item => item.styleId === newItem.styleId && item.size === newItem.sizeDesc
         );
+        
         console.log('Existing Item Index:', existingIndex);
 
         if (existingIndex !== -1) {
@@ -422,6 +455,7 @@ const PackingConformation = ({route}) => {
             discAmnt: newItem.discAmnt ?? existingItem.discAmnt,
             discAmntSec: newItem.discAmntSec ?? existingItem.discAmntSec,
             colorName: newItem.colorName ?? existingItem.colorName,
+            colorId: newItem.colorId ?? existingItem.colorId,
           };
           console.log(
             'Updated Existing Item:',
@@ -442,6 +476,7 @@ const PackingConformation = ({route}) => {
             discAmnt: newItem.discAmnt ?? 0,
             discAmntSec: newItem.discAmntSec ?? 0,
             colorName: newItem.colorName ?? existingItem.colorName,
+            colorId: newItem.colorId ?? existingItem.colorId,
             statusFlag: 0,
           };
           updatedLineItems.push(newLineItem);
@@ -661,24 +696,24 @@ const PackingConformation = ({route}) => {
           style={styles.itemInput}
           value={item.qty.toString()} // Display the current quantity as string
           onChangeText={text => updateQty(index, text)} // Update the quantity when the user types
-          keyboardType="numeric"
+          keyboardType="decimal-pad"
         />
       </View>
     );
   };
 
-  useEffect(() => {
-    if (order?.orderLineItems?.length > 0) {
-      const map = new Map();
-      order.orderLineItems.forEach(item => {
-        const key = `${item.styleId}-${item.size}`;
-        map.set(key, item.qty);
-      });
-      setExistingStyleMap(map);
-      setOriginalStyleMap(prev => (prev.size === 0 ? new Map(map) : prev)); // Preserve original map
-      console.log('Existing style map after update:', map);
-    }
-  }, [order]);
+  // useEffect(() => {
+  //   if (order?.orderLineItems?.length > 0) {
+  //     const map = new Map();
+  //     order.orderLineItems.forEach(item => {
+  //       const key = `${item.styleId}-${item.size}`;
+  //       map.set(key, item.qty);
+  //     });
+  //     setExistingStyleMap(map);
+  //     setOriginalStyleMap(prev => (prev.size === 0 ? new Map(map) : prev)); // Preserve original map
+  //     console.log('Existing style map after update:', map);
+  //   }
+  // }, [order]);
 
   const handleDelete = (styleId, size, qty) => {
     const key = `${styleId}-${size}`;
