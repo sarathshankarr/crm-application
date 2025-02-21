@@ -529,7 +529,9 @@ useEffect(() => {
       'cedgeScaleId',
       (productStyle.cedgeScaleId || 0).toString(),
     );
-    formData.append('pub_to_jakya', 0,);
+    formData.append('pub_to_jakya', productStyle?.pub_to_jakya || 0) ;
+    formData.append('pubToJakyaDate', productStyle?.pubToJakyaDate || '');
+
     formData.append('closureId', productStyle?.closure?.toString());
     formData.append('peakId', productStyle?.peak?.toString());
     formData.append('logoId', productStyle?.logo?.toString());

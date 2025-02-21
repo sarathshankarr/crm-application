@@ -1580,24 +1580,24 @@ const grossPrices = cartItems.map(item => {
     //   }, 0)
     //   .toFixed(2);
 
-    const totalGst = cartItems
-    .reduce((acc, item, index) => {
-      const gstPercentage = parseFloat(
-        gstValues[index] !== undefined && !isNaN(gstValues[index])
-          ? gstValues[index]
-          : item.gst,
-      ); // Use gstValues if available and valid, otherwise fallback to item.gst
+    // const totalGst = cartItems
+    // .reduce((acc, item, index) => {
+    //   const gstPercentage = parseFloat(
+    //     gstValues[index] !== undefined && !isNaN(gstValues[index])
+    //       ? gstValues[index]
+    //       : item.gst,
+    //   ); // Use gstValues if available and valid, otherwise fallback to item.gst
       
-      // Use mrp if pdf_flag is enabled, otherwise use retailerPrice or dealerPrice
-      const itemTotalPrice =
-        pdf_flag
-          ? parseFloat(item?.mrp || 0) // If pdf_flag is true, use mrp
-          : parseFloat(isEnabled ? item?.retailerPrice : item?.dealerPrice); // Otherwise, use retailerPrice or dealerPrice
+    //   // Use mrp if pdf_flag is enabled, otherwise use retailerPrice or dealerPrice
+    //   const itemTotalPrice =
+    //     pdf_flag
+    //       ? parseFloat(item?.mrp || 0) // If pdf_flag is true, use mrp
+    //       : parseFloat(isEnabled ? item?.retailerPrice : item?.dealerPrice); // Otherwise, use retailerPrice or dealerPrice
       
-      const itemGst = (itemTotalPrice * gstPercentage) / 100;
-      return acc + itemGst; // Sum GST
-    }, 0)
-    .toFixed(2);
+    //   const itemGst = (itemTotalPrice * gstPercentage) / 100;
+    //   return acc + itemGst; // Sum GST
+    // }, 0)
+    // .toFixed(2);
   
 
     // Calculate total amount
@@ -2786,7 +2786,7 @@ useEffect(() => {
                       Sorry, no results found!
                     </Text>
                   ) : (
-                    <ScrollView>
+                    <ScrollView style={style.scrollView} nestedScrollEnabled={true}>
                       {filteredCustomers.map((item, index) => (
                         <TouchableOpacity
                           key={index}
@@ -2896,8 +2896,8 @@ useEffect(() => {
                     marginTop: 5,
                   }}>
                   {/* Here you can render your dropdown content */}
-                  <ScrollView>
-                    {customerLocations.map(location => (
+                  <ScrollView style={style.scrollView} nestedScrollEnabled={true}>
+                  {customerLocations.map(location => (
                       <TouchableOpacity
                         key={location.locationId}
                         style={{
@@ -2969,8 +2969,8 @@ useEffect(() => {
                     marginTop: 5,
                   }}>
                   {/* Here you can render your dropdown content */}
-                  <ScrollView>
-                    {customerLocations.map(location => (
+                  <ScrollView style={style.scrollView} nestedScrollEnabled={true}>
+                  {customerLocations.map(location => (
                       <TouchableOpacity
                         key={location.locationId}
                         style={{

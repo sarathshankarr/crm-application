@@ -308,7 +308,41 @@ const TaskDetails = ({ route }) => {
   };
 
 
-  const handleCheckBoxPress = async() => {
+  // const handleCheckBoxPress = async() => {
+  //   if (isChecked) {
+  //     // Uncheck it
+  //     setIsChecked(false);
+  //     AddNewLocation(0); // Call API with flag 0 (canceled)
+  //   } else {
+  //     // Show confirmation alert when checking the box
+  //     Alert.alert(
+  //       'Confirm Location Update',
+  //       'Are you sure you want to update the current location?',
+  //       [
+  //         {
+  //           text: 'Cancel',
+  //           style: 'cancel',
+  //           onPress: () => {
+  //             setIsChecked(false);
+  //           },
+  //         },
+  //         {
+  //           text: 'OK',
+  //           onPress: async () => {
+  //             setIsChecked(true);
+  //             const location = await getLocationcurrent();  // Get current location
+  //             if (location) {
+  //               await AddNewLocation(1, location);  // Call API with flag 1 (confirmed) and location
+  //               await navigation.navigate('CustomerLocation');
+  //             }
+  //           },
+  //         },
+  //       ],
+  //     );
+  //   }
+  // };
+
+  const handleCheckBoxPress = async () => {
     if (isChecked) {
       // Uncheck it
       setIsChecked(false);
@@ -333,14 +367,16 @@ const TaskDetails = ({ route }) => {
               const location = await getLocationcurrent();  // Get current location
               if (location) {
                 await AddNewLocation(1, location);  // Call API with flag 1 (confirmed) and location
-                await navigation.navigate('CustomerLocation');
+                handleTaskSelect(task); // Navigate to Google Maps
               }
             },
           },
         ],
+        { cancelable: false }
       );
     }
   };
+  
 
   const AddNewLocation = async (flag, location) => {
     try {
@@ -1249,11 +1285,62 @@ useFocusEffect(
   //     Alert.alert('Error', 'Failed to punch in/out. Please try again.');
   //   }
   // };
+  const [initialRemark, setInitialRemark] = useState(''); // Store initial remark
+
+  useEffect(() => {
+    setInitialRemark(remark || ''); // Store the remark when the screen loads
+  }, []); // Runs only once when the component mounts
+  
   const PunchInPunchOut = async () => {
+    if (isSignedIn) { // Only show alerts on checkout
+      if (remark?.trim() && remark !== initialRemark) { 
+        Alert.alert(
+          'Remark Entered',
+          'You have entered a remark. Please update it before checking out.',
+          [{ text: 'OK', style: 'cancel' }]
+        );
+        return;
+      }
+  
+      if (selfieImages.length > 0) {
+        Alert.alert(
+          'Selfie Uploaded',
+          'You have uploaded a selfie. Please update it before checking out.',
+          [{ text: 'OK', style: 'cancel' }]
+        );
+        return;
+      }
+  
+      if (galleryImages.length > 0) {
+        Alert.alert(
+          'Images Uploaded',
+          'You have uploaded images. Please update them before checking out.',
+          [{ text: 'OK', style: 'cancel' }]
+        );
+        return;
+      }
+  
+      if (documents.length > 0) {
+        Alert.alert(
+          'Documents Uploaded',
+          'You have uploaded documents. Please update them before checking out.',
+          [{ text: 'OK', style: 'cancel' }]
+        );
+        return;
+      }
+    }
+  
+    // Proceed with check-in or check-out
+    handleCheckInOut();
+  };
+  
+  
+  
+  const handleCheckInOut = async () => {
     const apiUrl = `${global?.userData?.productURL}${API.CHECK_IN_CHECK_OUT}`;
     const now = new Date();
     const formattedDateTime = formatDateTime(now, 'full');
-
+  
     const payload = isSignedIn
       ? {
           id: id,
@@ -1275,9 +1362,9 @@ useFocusEffect(
           t_company_id: companyId,
           taskName: label,
         };
-
+  
     console.log('payload==============>', payload);
-
+  
     try {
       const response = await axios.put(apiUrl, payload, {
         headers: {
@@ -1285,12 +1372,12 @@ useFocusEffect(
           'Content-Type': 'application/json',
         },
       });
-
+  
       console.log('Response:', response.data);
-
+  
       // Toggle the signed-in state (Check-in or Check-out)
       setIsSignedIn(!isSignedIn);
-
+  
       // Reload the page after check-in/out is successful
       navigation.replace('TaskDetails', {
         customerName,
@@ -1309,7 +1396,7 @@ useFocusEffect(
         checkOut: payload.checkOut || checkOut,
         locId,
       });
-
+  
     } catch (error) {
       console.error('Error:', error);
       Alert.alert('Error', 'Failed to punch in/out. Please try again.');

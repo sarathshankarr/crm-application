@@ -688,34 +688,75 @@ const Order = () => {
     : initialSelectedCompany?.id;
 
 
-  useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', () => {
-      // Reset search query and visibility of search input
-      setSearchQuery('');
-      setShowSearchInput(false);
-      setDropdownVisible(false);
-      // setSelectedSearchOption(null);
-      // Reset orders and fetch new data
-      setFrom(0); // Reset the starting index
-      setTo(10); // Reset the ending index
-      if (companyId) {
-        getAllOrders(true, 0, 10);
-      }
-      if (searchOption.length > 0) {
-        setSelectedSearchOption(searchOption[0].label);
-        setSearchKey(searchOption[0].value);
-      }
-      setFilterFlag(false);
-    });
-    return unsubscribe;
-  }, [navigation,companyId,searchOption]);
+  // useEffect(() => {
+  //   const unsubscribe = navigation.addListener('focus', () => {
+  //     // Reset search query and visibility of search input
+  //     setSearchQuery('');
+  //     setShowSearchInput(false);
+  //     setDropdownVisible(false);
+  //     // setSelectedSearchOption(null);
+  //     // Reset orders and fetch new data
+  //     setFrom(0); // Reset the starting index
+  //     setTo(10); // Reset the ending index
+  //     if (companyId) {
+  //       getAllOrders(true, 0, 10);
+  //     }
+  //     if (searchOption.length > 0) {
+  //       setSelectedSearchOption(searchOption[0].label);
+  //       setSearchKey(searchOption[0].value);
+  //     }
+  //     setFilterFlag(false);
+  //   });
+  //   return unsubscribe;
+  // }, [navigation,companyId,searchOption]);
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     console.log("Screen focused, resetting and fetching orders...");
+  
+  //     // Reset filters & pagination
+  //     setSearchQuery('');
+  //     setShowSearchInput(false);
+  //     setDropdownVisible(false);
+  //     setFrom(0); 
+  //     setTo(10);
+  //     setHasMoreTasks(true); 
+  
+  //     if (companyId) {
+  //       console.log("Fetching orders for company ID:", companyId);
+  //       getAllOrders(true, 0, 10);
+  //     } else {
+  //       console.warn("No company ID found, skipping fetch.");
+  //     }
+  
+  //     if (searchOption?.length > 0) {
+  //       setSelectedSearchOption(searchOption[0].label);
+  //       setSearchKey(searchOption[0].value);
+  //     }
+      
+  //     setFilterFlag(false);
+  
+  //     return () => {
+  //       console.log("Cleaning up useFocusEffect...");
+  //     };
+  //   }, [companyId, searchOption])
+  // );
+  
+  
 
 
-  useEffect(() => {
+  // useEffect(() => {
+  //   if (companyId) {
+  //     getAllOrders(true, 0, 10);
+  //   }
+  // }, [companyId]);
+
+  useFocusEffect(
+  useCallback(() => {
     if (companyId) {
       getAllOrders(true, 0, 10);
     }
-  }, [companyId]);
+  }, [companyId])
+);
 
   // useEffect(() => {
   //   const unsubscribe = navigation.addListener('focus', () => {
@@ -732,46 +773,81 @@ const Order = () => {
 
 
   const getAllOrders = async (reset = false, customFrom = from, customTo = to) => {
-    // console.log("getAllOrders b ", customFrom, customTo);
-
     if (loading || loadingMore) return;
-    setLoading(reset);
-
+  
+    setLoading(true); // Ensure loading is always true before fetch starts
+  
     if (reset) {
-      setFrom(0); // Reset pagination
+      setFrom(0);
       setTo(10);
-      setHasMoreTasks(true); // Reset hasMoreTasks for new fetch
+      setHasMoreTasks(true);
     }
-
+  
     const apiUrl = `${global?.userData?.productURL}${API.GET_ALL_ORDER_LAZY}/${customFrom}/${customTo}/${companyId}/${0}`;
-
-    // console.log("getAllOrders A ", customFrom, customTo);
-
-
+  
+    console.log("Fetching orders from API:", apiUrl);
+  
     try {
       const response = await axios.get(apiUrl, {
         headers: {
           Authorization: `Bearer ${global?.userData?.token?.access_token}`,
         },
       });
-
-      const newTasks = response.data.response.ordersList;
+  
+      console.log("API Response:", response.data);
+  
+      const newTasks = response.data.response.ordersList || [];
+  
       if (reset) {
-        setOrders(newTasks); 
+        setOrders(newTasks);
       } else {
         setOrders((prevTasks) => [...(prevTasks || []), ...newTasks]);
       }
-
+  
       if (newTasks.length < 10) {
         setHasMoreTasks(false);
       }
     } catch (error) {
-      console.error('Error:', error);
+      console.error("Error fetching orders:", error);
     } finally {
       setLoading(false);
       setLoadingMore(false);
     }
   };
+  
+
+useFocusEffect(
+    useCallback(() => {
+      setLoading(true);
+      console.log("Screen focused, resetting and fetching orders...");
+
+      setSearchQuery('');
+      setShowSearchInput(false);
+      setDropdownVisible(false);
+      setFrom(0); 
+      setTo(10);
+      setHasMoreTasks(true);
+
+      if (companyId) {
+        console.log("Fetching orders for company ID:", companyId);
+        getAllOrders(true, 0, 10);
+      } else {
+        console.warn("No company ID found, skipping fetch.");
+      }
+
+      if (searchOption?.length > 0) {
+        setSelectedSearchOption(searchOption[0].label);
+        setSearchKey(searchOption[0].value);
+      }
+
+      setFilterFlag(false);
+
+      return () => {
+        console.log("Cleaning up useFocusEffect...");
+        setLoading(true);
+      };
+    }, [companyId, searchOption])
+);
 
 
 

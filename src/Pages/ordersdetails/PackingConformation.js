@@ -211,7 +211,7 @@ const PackingConformation = ({route}) => {
       });
 
       const newTasks = response?.data;
-      console.log('newTasks====>', newTasks);
+      // console.log('newTasks====>', newTasks);
 
       if (reset) {
         setStylesData(newTasks);
@@ -315,21 +315,46 @@ const PackingConformation = ({route}) => {
   //   }
   // }, [order]);
 
+  // useEffect(() => {
+  //   if (order?.orderLineItems?.length > 0) {
+  //     const newMap = new Map(existingStyleMap); // Clone the existing map to avoid overwriting
+  //     order.orderLineItems.forEach(item => {
+  //       const key = `${item.styleId}-${item.size}`;
+  //       newMap.set(key, item.qty);
+  //       console.log("Processing Item Key:", key, "Qty:", item.qty);
+  //     });
+  
+  //     setExistingStyleMap(new Map(newMap)); // Ensure React detects the update
+  //     setOriginalStyleMap(prev => (prev.size === 0 ? new Map(newMap) : prev)); // Preserve original
+  //     console.log("Existing style map after update:", newMap);
+  //   }
+  // }, [order]);
+  
   useEffect(() => {
     if (order?.orderLineItems?.length > 0) {
-      const newMap = new Map(existingStyleMap); // Clone the existing map to avoid overwriting
+      // console.log("Order data:", order);
+  
+      const newMap = new Map();
+      existingStyleMap.forEach((value, key) => {
+        newMap.set(key, value);
+      });
+  
+      console.log("Current existingStyleMap before update:", Array.from(existingStyleMap));
+  
       order.orderLineItems.forEach(item => {
         const key = `${item.styleId}-${item.size}`;
         newMap.set(key, item.qty);
         console.log("Processing Item Key:", key, "Qty:", item.qty);
       });
   
-      setExistingStyleMap(new Map(newMap)); // Ensure React detects the update
-      setOriginalStyleMap(prev => (prev.size === 0 ? new Map(newMap) : prev)); // Preserve original
-      console.log("Existing style map after update:", newMap);
+      console.log("Updated existingStyleMap after update:", Array.from(newMap));
+  
+      setTimeout(() => {
+        setExistingStyleMap(newMap);
+        setOriginalStyleMap(prev => (prev.size === 0 ? new Map(newMap) : prev));
+      }, 100);
     }
   }, [order]);
-  
   
 
   const calculateTotals = orderLineItems => {
@@ -424,112 +449,362 @@ const PackingConformation = ({route}) => {
     };
   };
 
-  const handleAddItems = () => {
-    const newItems = stylesData.filter(item => item.qty > 0);
-    console.log('New Items to Add:', newItems);
+  // const handleAddItems = () => {
+  //   const newItems = stylesData.filter(item => item.qty > 0);
+  //   console.log('New Items to Add:', newItems);
 
-    setOrder(prevOrder => {
-      // Clone the existing orderLineItems
-      let updatedLineItems = prevOrder?.orderLineItems ? [...prevOrder.orderLineItems] : [];
-      console.log('Cloned Order Line Items:', updatedLineItems);
+  //   setOrder(prevOrder => {
+  //     // Clone the existing orderLineItems
+  //     let updatedLineItems = prevOrder?.orderLineItems ? [...prevOrder.orderLineItems] : [];
+  //     console.log('Cloned Order Line Items:', updatedLineItems);
 
-      newItems.forEach(newItem => {
-        const key = `${newItem.styleId}-${newItem.sizeDesc}`; // sizeDesc is used here
-        console.log('Processing Item Key:', key);
+  //     newItems.forEach(newItem => {
+  //       const key = `${newItem.styleId}-${newItem.sizeDesc}-${newItem.style}`; // sizeDesc is used here
+  //       console.log('Processing Item Key:', key);
 
-        // Check if the item exists
-        const existingIndex = updatedLineItems.findIndex(
-          item => item.styleId === newItem.styleId && item.size === newItem.sizeDesc
-        );
+  //       // Check if the item exists
+  //       const existingIndex = updatedLineItems.findIndex(
+  //         item => item.styleId === newItem.styleId && item.size === newItem.sizeDesc
+  //       );
         
-        console.log('Existing Item Index:', existingIndex);
+  //       console.log('Existing Item Index:', existingIndex);
 
-        if (existingIndex !== -1) {
-          // Update existing item
-          const existingItem = updatedLineItems[existingIndex];
-          updatedLineItems[existingIndex] = {
-            ...existingItem,
-            qty: existingItem.qty + newItem.qty,
-            unitPrice: newItem.dealerPrice ?? existingItem.unitPrice,
-            gst: newItem.gst ?? existingItem.gst,
-            discAmnt: newItem.discAmnt ?? existingItem.discAmnt,
-            discAmntSec: newItem.discAmntSec ?? existingItem.discAmntSec,
-            colorName: newItem.colorName ?? existingItem.colorName,
-            colorId: newItem.colorId ?? existingItem.colorId,
-          };
-          console.log(
-            'Updated Existing Item:',
-            updatedLineItems[existingIndex],
-          );
+  //       if (existingIndex !== -1) {
+  //         // Update existing item
+  //         const existingItem = updatedLineItems[existingIndex];
+  //         updatedLineItems[existingIndex] = {
+  //           ...existingItem,
+  //           qty: Number(existingItem.qty) + Number(newItem.qty),
+  //           unitPrice: newItem.dealerPrice ?? existingItem.unitPrice,
+  //           gst: newItem.gst ?? existingItem.gst,
+  //           discAmnt: newItem.discAmnt ?? existingItem.discAmnt,
+  //           discAmntSec: newItem.discAmntSec ?? existingItem.discAmntSec,
+  //           colorName: newItem.colorName ?? existingItem.colorName,
+  //           colorId: newItem.colorId ?? existingItem.colorId,
+  //           styleId:newItem.styleId ?? existingItem.styleId,
+  //           style:newItem.style ?? existingItem.style,
+  //           size:newItem.sizeDesc ?? existingItem.sizeDesc,
+  //           gstSlotId:newItem.gstSlotId ?? existingItem.gstSlotId            
+  //         };
+  //         console.log(
+  //           'Updated Existing Item:',
+  //           updatedLineItems[existingIndex],
+  //         );
+  //       } else {
+  //         // Add new item with a unique id to prevent overlap
+  //         const newLineItem = {
+  //           orderLineitemId: `${newItem.styleId}-${
+  //             newItem.sizeDesc
+  //           }-${new Date().getTime()}`, // Unique id using timestamp
+  //           styleId: newItem.styleId,
+  //           style:newItem.style,
+  //           size: newItem.sizeDesc, // sizeDesc is used here
+  //           qty: Number(newItem.qty),
+  //           unitPrice: newItem.dealerPrice ?? 0,
+  //           gst: newItem.gst ?? 0,
+  //           discAmnt: newItem.discAmnt ?? 0,
+  //           discAmntSec: newItem.discAmntSec ?? 0,
+  //           gstSlotId:newItem.gstSlotId ?? existingItem.gstSlotId,
+  //           colorName: newItem.colorName ?? existingItem.colorName,
+  //           colorId: newItem.colorId ?? existingItem.colorId,
+  //           statusFlag: 0,
+  //         };
+  //         updatedLineItems.push(newLineItem);
+  //         console.log('Added New Item:', newLineItem);
+  //       }
+  //     });
+
+  //     // Recalculate totals
+  //     const totals = calculateTotals(updatedLineItems);
+  //     console.log('Updated Line Items:', updatedLineItems);
+  //     console.log('Updated Totals:', totals);
+
+  //     return {
+  //       ...prevOrder,
+  //       orderLineItems: updatedLineItems,
+  //       totalQty: totals.totalQty,
+  //       totalAmount: totals.totalAmount,
+  //       roundOff: totals.roundOff,
+  //       totalGst: totals.totalGst,
+  //     };
+  //   });
+
+  //   setModalVisible(false); // Close modal after adding
+  // };
+
+
+  const [gstSlotData, setGstSlotData] = useState([]); // Store GST slot data
+
+useEffect(() => {
+  getGstSlot();
+}, []); // Fetch GST data on mount
+
+const getGstSlot = () => {
+  const apiUrl = `${global?.userData?.productURL}${API.GET_GST_SLOT}/${companyId}`;
+  console.log("API URL:", apiUrl);
+  
+  axios
+    .get(apiUrl, {
+      headers: {
+        Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+      },
+    })
+    .then(response => {
+      const gstList = response?.data?.response?.gstList || [];
+      setGstSlotData(gstList);
+    })
+    .catch(error => {
+      console.error('Error fetching GST slot data:', error);
+    });
+};
+
+const handleAddItems = () => {
+  const newItems = stylesData.filter(item => item.qty > 0);
+  console.log('New Items to Add:', newItems);
+
+  setOrder(prevOrder => {
+    let updatedLineItems = prevOrder?.orderLineItems ? JSON.parse(JSON.stringify(prevOrder.orderLineItems)) : [];
+    console.log('Cloned Order Line Items:', updatedLineItems);
+
+    newItems.forEach(newItem => {
+      const key = `${newItem.styleId}-${newItem.sizeDesc}-${newItem.style}`;
+      console.log('Processing Item Key:', key);
+
+      const existingIndex = updatedLineItems.findIndex(
+        item =>
+          item.styleId === newItem.styleId &&
+          item.size.trim().toLowerCase() === newItem.sizeDesc.trim().toLowerCase()
+      );
+
+      console.log('Existing Item Index:', existingIndex);
+
+      // **Calculate GST based on GST Slot Data**
+      const gstSlot = gstSlotData.find(c => c?.id === Number(newItem.gstSlotId));
+      let calculatedGst = 0;
+      if (gstSlot) {
+        const { greterAmount, smalestAmount, greterPercent, smalestPercent } = gstSlot;
+        calculatedGst = newItem.dealerPrice >= greterAmount ? greterPercent :
+                        newItem.dealerPrice <= smalestAmount ? smalestPercent : 0;
+      }
+
+      // **Determine unitPrice using the same logic as renderItem**
+      // let unitPrice;
+      // if (order.orderType === 1) {
+      //   unitPrice = newItem.corRate;
+      // } else if (pdf_flag === 1) {
+      //   unitPrice = newItem.mrp;
+      // } else if (loggedInUser?.customerType === 1) {
+      //   unitPrice = newItem.dealerPrice;
+      // } else if (loggedInUser?.customerType === 2) {
+      //   unitPrice = newItem.retailerPrice;
+      // } else {
+      //   unitPrice = newItem.dealerPrice; // Default fallback
+      // }
+
+      let unitPrice;
+
+      console.log("Customer Type:", order?.customerType);
+      console.log("PDF Flag:", pdf_flag);
+      
+      if (order?.customerType === 3) {
+        unitPrice = newItem.corRate;
+        console.log("Price to Show (corRate):", unitPrice);
+      } else {
+        if (pdf_flag === 1) {
+          unitPrice = newItem.mrp;
+          console.log("Price to Show (MRP due to pdf_flag):", unitPrice);
+        } else if (order?.customerType === 1) {
+          unitPrice = newItem.retailerPrice;
+          console.log("Price to Show (Dealer Price for Customer Type 1):", unitPrice);
+        } else if (order?.customerType === 2) {
+          unitPrice = newItem.dealerPrice;
+          console.log("Price to Show (Retailer Price for Customer Type 2):", unitPrice);
         } else {
-          // Add new item with a unique id to prevent overlap
-          const newLineItem = {
-            orderLineitemId: `${newItem.styleId}-${
-              newItem.sizeDesc
-            }-${new Date().getTime()}`, // Unique id using timestamp
-            styleId: newItem.styleId,
-            style:newItem.style,
-            size: newItem.sizeDesc, // sizeDesc is used here
-            qty: newItem.qty,
-            unitPrice: newItem.dealerPrice ?? 0,
-            gst: newItem.gst ?? 0,
-            discAmnt: newItem.discAmnt ?? 0,
-            discAmntSec: newItem.discAmntSec ?? 0,
-            colorName: newItem.colorName ?? existingItem.colorName,
-            colorId: newItem.colorId ?? existingItem.colorId,
-            statusFlag: 0,
-          };
-          updatedLineItems.push(newLineItem);
-          console.log('Added New Item:', newLineItem);
+          unitPrice = newItem.dealerPrice; // Default fallback
+          console.log("Price to Show (Default - Dealer Price):", unitPrice);
         }
-      });
+      }
 
-      // Recalculate totals
-      const totals = calculateTotals(updatedLineItems);
-      console.log('Updated Line Items:', updatedLineItems);
-      console.log('Updated Totals:', totals);
+      if (existingIndex !== -1) {
+        let existingItem = updatedLineItems[existingIndex];
+        updatedLineItems[existingIndex] = {
+          ...existingItem,
+          qty: existingItem.qty,
+          unitPrice: unitPrice ?? existingItem.unitPrice, // **Updated to match renderItem logic**
+          gst: calculatedGst, // **Updated GST**
+          discAmnt: newItem.discAmnt ?? existingItem.discAmnt,
+          discAmntSec: newItem.discAmntSec ?? existingItem.discAmntSec,
+          colorName: newItem.colorName ?? existingItem.colorName,
+          colorId: newItem.colorId ?? existingItem.colorId,
+          styleId: newItem.styleId,
+          style: newItem.style,
+          size: newItem.sizeDesc,
+          gstSlotId: newItem.gstSlotId ?? existingItem.gstSlotId,
+          fixDisc: newItem.fixDisc ?? existingItem.fixDisc,
 
-      return {
-        ...prevOrder,
-        orderLineItems: updatedLineItems,
-        totalQty: totals.totalQty,
-        totalAmount: totals.totalAmount,
-        roundOff: totals.roundOff,
-        totalGst: totals.totalGst,
-      };
+          
+        };
+        console.log('Updated Existing Item:', updatedLineItems[existingIndex]);
+      } else {
+        const newLineItem = {
+          orderLineitemId: `${newItem.styleId}-${newItem.sizeDesc}-${Date.now()}`, 
+          styleId: newItem.styleId,
+          style: newItem.style,
+          size: newItem.sizeDesc,
+          qty: Number(newItem.qty),
+          unitPrice: unitPrice ?? 0, // **Updated to match renderItem logic**
+          gst: calculatedGst, // **Updated GST**
+          discAmnt: newItem.discAmnt ?? 0,
+          discAmntSec: newItem.discAmntSec ?? 0,
+          gstSlotId: newItem.gstSlotId ?? 0,  
+          colorName: newItem.colorName ?? '', 
+          colorId: newItem.colorId ?? null,
+          statusFlag: 0,
+          fixDisc: newItem.fixDisc ?? 0
+        };
+        updatedLineItems.push(newLineItem);
+        console.log('Added New Item:', newLineItem);
+      }
     });
 
-    setModalVisible(false); // Close modal after adding
-  };
+    const totals = calculateTotals(updatedLineItems);
+    console.log('Updated Line Items:', updatedLineItems);
+    console.log('Updated Totals:', totals);
+
+    return {
+      ...prevOrder,
+      orderLineItems: updatedLineItems,
+      totalQty: totals.totalQty,
+      totalAmount: totals.totalAmount,
+      roundOff: totals.roundOff,
+      totalGst: totals.totalGst,
+    };
+  });
+
+  setModalVisible(false);
+};
+
+
+  
+  // const handleAddItems = () => {
+  //   const newItems = stylesData.filter(item => item.qty > 0);
+  //   console.log('New Items to Add:', newItems);
+  
+  //   setOrder(prevOrder => {
+  //     let updatedLineItems = prevOrder?.orderLineItems ? JSON.parse(JSON.stringify(prevOrder.orderLineItems)) : [];
+  //     console.log('Cloned Order Line Items:', updatedLineItems);
+  
+  //     newItems.forEach(newItem => {
+  //       const key = `${newItem.styleId}-${newItem.sizeDesc}-${newItem.style}`;
+  //       console.log('Processing Item Key:', key);
+  
+  //       const existingIndex = updatedLineItems.findIndex(
+  //         item =>
+  //           item.styleId === newItem.styleId &&
+  //           item.size.trim().toLowerCase() === newItem.sizeDesc.trim().toLowerCase()
+  //       );
+        
+        
+  //       console.log('Existing Item Index:', existingIndex);
+  
+  //       if (existingIndex !== -1) {
+  //         let existingItem = updatedLineItems[existingIndex];
+  //         updatedLineItems[existingIndex] = {
+  //           ...existingItem,
+  //           qty: Number(existingItem.qty) + Number(newItem.qty),
+  //           unitPrice: newItem.dealerPrice ?? existingItem.unitPrice,
+  //           gst: newItem.gst ?? existingItem.gst,
+  //           discAmnt: newItem.discAmnt ?? existingItem.discAmnt,
+  //           discAmntSec: newItem.discAmntSec ?? existingItem.discAmntSec,
+  //           colorName: newItem.colorName ?? existingItem.colorName,
+  //           colorId: newItem.colorId ?? existingItem.colorId,
+  //           styleId: newItem.styleId,
+  //           style: newItem.style,
+  //           size: newItem.sizeDesc,
+  //           gstSlotId: newItem.gstSlotId ?? existingItem.gstSlotId,
+  //         };
+  //         console.log('Updated Existing Item:', updatedLineItems[existingIndex]);
+  //       } else {
+  //         const newLineItem = {
+  //           orderLineitemId: `${newItem.styleId}-${newItem.sizeDesc}-${Date.now()}`, 
+  //           styleId: newItem.styleId,
+  //           style: newItem.style,
+  //           size: newItem.sizeDesc,
+  //           qty: Number(newItem.qty),
+  //           unitPrice: newItem.dealerPrice ?? 0,
+  //           gst: newItem.gst ?? 0,
+  //           discAmnt: newItem.discAmnt ?? 0,
+  //           discAmntSec: newItem.discAmntSec ?? 0,
+  //           gstSlotId: newItem.gstSlotId ?? 0,  // Avoid `existingItem` reference
+  //           colorName: newItem.colorName ?? '', // Avoid `existingItem` reference
+  //           colorId: newItem.colorId ?? null,
+  //           statusFlag: 0,
+  //         };
+  //         updatedLineItems.push(newLineItem);
+  //         console.log('Added New Item:', newLineItem);
+  //       }
+  //     });
+  
+  //     const totals = calculateTotals(updatedLineItems);
+  //     console.log('Updated Line Items:', updatedLineItems);
+  //     console.log('Updated Totals:', totals);
+  
+  //     return {
+  //       ...prevOrder,
+  //       orderLineItems: updatedLineItems,
+  //       totalQty: totals.totalQty,
+  //       totalAmount: totals.totalAmount,
+  //       roundOff: totals.roundOff,
+  //       totalGst: totals.totalGst,
+  //     };
+  //   });
+  
+  //   setModalVisible(false);
+  // };
+  
 
   const handleUnitPriceChange = (newPrice, itemId) => {
     const formattedPrice = newPrice.replace(/^0+/, '') || '0';
-
+  
     const isValidPrice =
       !isNaN(formattedPrice) &&
       formattedPrice.trim() !== '' &&
       !formattedPrice.includes(',');
-
+  
     console.log('Formatted Price:', formattedPrice);
     console.log('Is Valid Price:', isValidPrice);
-
+  
     setOrder(prevOrder => {
       const updatedOrderLineItems = prevOrder.orderLineItems.map(item => {
         console.log('Checking Item:', item);
+  
         if (item.orderLineitemId === itemId && isValidPrice) {
           console.log('Updating Item with New Price:', item);
-          return {...item, unitPrice: formattedPrice};
+          
+          const updatedItem = { ...item, unitPrice: formattedPrice };
+  
+          // Recalculate GST dynamically
+          const gstSlot = gstSlotData.find(c => c.id === Number(updatedItem.gstSlotId));
+          if (gstSlot) {
+            const { greterAmount, smalestAmount, greterPercent, smalestPercent } = gstSlot;
+            updatedItem.gst = updatedItem.unitPrice >= greterAmount ? greterPercent : 
+                              updatedItem.unitPrice <= smalestAmount ? smalestPercent : 0;
+          } else {
+            updatedItem.gst = 0;
+          }
+  
+          return updatedItem;
         }
         return item;
       });
-
+  
       const totals = calculateTotals(updatedOrderLineItems);
       console.log(
         'Updated Order Line Items after Price Change:',
         updatedOrderLineItems,
       );
       console.log('Updated Totals:', totals);
-
+  
       return {
         ...prevOrder,
         orderLineItems: updatedOrderLineItems,
@@ -540,6 +815,7 @@ const PackingConformation = ({route}) => {
       };
     });
   };
+  
 
   const handleQuantityChange = (newQuantity, itemId) => {
     // Ensure newQuantity is treated as a float and handle invalid inputs
@@ -665,19 +941,46 @@ const PackingConformation = ({route}) => {
 
   const renderItem = ({item, index, updateQty}) => {
     // Determine the price based on the conditions
-    let priceToShow;
-    if (order.orderType === 1) {
-      priceToShow = item.corRate;
-    } else if (pdf_flag === 1) {
-      priceToShow = item.mrp;
-    } else if (loggedInUser?.customerType === 1) {
-      priceToShow = item.dealerPrice;
-    } else if (loggedInUser?.customerType === 2) {
-      priceToShow = item.retailerPrice;
-    } else {
-      priceToShow = item.dealerPrice; // Default fallback
-    }
+    // let priceToShow;
+    // if (order.orderType === 1) {
+    //   priceToShow = item.corRate;
+    // } else if (pdf_flag === 1) {
+    //   priceToShow = item.mrp;
+    // } else if (loggedInUser?.customerType === 1) {
+    //   priceToShow = item.dealerPrice;
+    // } else if (loggedInUser?.customerType === 2) {
+    //   priceToShow = item.retailerPrice;
+    // } else {
+    //   priceToShow = item.dealerPrice; // Default fallback
+    // }
 
+
+    let priceToShow;
+
+    console.log("Customer Type:", order?.customerType);
+    console.log("PDF Flag:", pdf_flag);
+    
+    if (order?.customerType === 3) {
+      priceToShow = item.corRate;
+      console.log("Price to Show (corRate):", priceToShow);
+    } else {
+      if (pdf_flag === 1) {
+        priceToShow = item.mrp;
+        console.log("Price to Show (MRP due to pdf_flag):", priceToShow);
+      } else if (order?.customerType === 1) {
+        priceToShow = item.retailerPrice;
+        console.log("Price to Show (Dealer Price for Customer Type 1):", priceToShow);
+      } else if (order?.customerType === 2) {
+        priceToShow = item.dealerPrice;
+        console.log("Price to Show (Retailer Price for Customer Type 2):", priceToShow);
+      } else {
+        priceToShow = item.dealerPrice; // Default fallback
+        console.log("Price to Show (Default - Dealer Price):", priceToShow);
+      }
+    }
+    
+    console.log("Final Price to Show:", priceToShow);
+    
     return (
       <View
         style={{
@@ -1001,7 +1304,9 @@ const PackingConformation = ({route}) => {
 
   useEffect(() => {
     if (triggerUpdate) {
-      updateDisOrder();
+      setTimeout(() => {
+        updateDisOrder();
+      }, 100); // Adding a slight delay to ensure state updates
       setTriggerUpdate(false);
     }
   }, [triggerUpdate]);
@@ -1102,177 +1407,369 @@ const PackingConformation = ({route}) => {
     return total;
   };
   
-  const updateDisOrder = () => {
-    console.log(
-      'selectedStatus at the start of updateDisOrder:',
-      selectedStatus,
-    );
+  // const updateDisOrder = () => {
+  //   console.log(
+  //     'selectedStatus at the start of updateDisOrder:',
+  //     selectedStatus,
+  //   );
 
-    const selectedStatuss = selectedStatus;
+  //   const selectedStatuss = selectedStatus;
 
-    if (selectedStatuss === 'Cancelled') {
-      order.totalAmount -= order.roundOff || 0;
-    }
+  //   if (selectedStatuss === 'Cancelled') {
+  //     order.totalAmount -= order.roundOff || 0;
+  //   }
 
-    if (order.orderLineItems) {
-      order.orderLineItems.forEach(item => {
-        item.sttsFlag = selectedItems[item.orderLineitemId] || false;
-        console.log('selectedStatus', selectedStatuss);
-        console.log('item.sttsFlag', item.sttsFlag);
+  //   if (order.orderLineItems) {
+  //     order.orderLineItems.forEach(item => {
+  //       item.sttsFlag = selectedItems[item.orderLineitemId] || false;
+  //       console.log('selectedStatus', selectedStatuss);
+  //       console.log('item.sttsFlag', item.sttsFlag);
 
-        const total = calculateTotal(item);
-        const totalFormatted = isNaN(total) ? "0.00" : total.toFixed(2);
+  //       const total = calculateTotal(item);
+  //       const totalFormatted = isNaN(total) ? "0.00" : total.toFixed(2);
 
-        if (selectedStatuss === 'Cancelled' && item.sttsFlag === true) {
-          console.log(' order.totalAmount ', order.totalAmount);
-          console.log(' item.gross ', item.gross);
-          order.totalGst -= item.gstAmnt || 0;
-          order.totalDiscount -= item.discAmnt || 0;
-          order.totalDiscountSec -= item.discAmntSec || 0;
-          order.totalAmount -= parseFloat(totalFormatted) || 0; // Use totalFormatted here
-          order.totalQty -= item.qty || 0;
-          item.statusFlag = 2;
-          item.unitPrice = 0;
-          item.fixDisc = 0;
-          item.discountPercentageThird = 0;
-          item.price = 0;
-          item.gross = 0;
-          item.gst = 0;
-          item.gstAmnt = 0;
-          item.discountPercentage = 0;
-          item.discountPercentageSec = 0;
+  //       if (selectedStatuss === 'Cancelled' && item.sttsFlag === true) {
+  //         console.log(' order.totalAmount ', order.totalAmount);
+  //         console.log(' item.gross ', item.gross);
+  //         order.totalGst -= item.gstAmnt || 0;
+  //         order.totalDiscount -= item.discAmnt || 0;
+  //         order.totalDiscountSec -= item.discAmntSec || 0;
+  //         order.totalAmount -= parseFloat(totalFormatted) || 0; // Use totalFormatted here
+  //         order.totalQty -= item.qty || 0;
+  //         item.statusFlag = 2;
+  //         item.unitPrice = 0;
+  //         item.fixDisc = 0;
+  //         item.discountPercentageThird = 0;
+  //         item.price = 0;
+  //         item.gross = 0;
+  //         item.gst = 0;
+  //         item.gstAmnt = 0;
+  //         item.discountPercentage = 0;
+  //         item.discountPercentageSec = 0;
 
-          return;
-        } else {
-          if (selectedStatuss === 'Confirmed' && item.sttsFlag === true) {
-            item.statusFlag = 1;
-          }
-          item.gross = totalFormatted; // Update gross with totalFormatted
-          item.sizeDesc = item.size;
-          item.price = item.unitPrice;
-          item.discountPercentageThird = item.fixDisc || 0;
-        }
-      });
+  //         return;
+  //       } else {
+  //         if (selectedStatuss === 'Confirmed' && item.sttsFlag === true) {
+  //           item.statusFlag = 1;
+  //         }
+  //         item.gross = totalFormatted; // Update gross with totalFormatted
+  //         item.sizeDesc = item.size;
+  //         item.price = item.unitPrice;
+  //         item.discountPercentageThird = item.fixDisc || 0;
+  //       }
+  //     });
 
+  //     if (selectedStatuss === 'Cancelled') {
+  //       try {
+  //         const total = order.totalAmount;
+  //         const decimal = parseFloat((total - Math.floor(total)).toFixed(2));
+  //         let roundedTotal = 0;
+  //         let roundOffValue = 0;
+
+  //         if (decimal >= 0.5) {
+  //           roundedTotal = Math.ceil(total);
+  //           roundOffValue = +(roundedTotal - total).toFixed(2);
+  //         } else {
+  //           roundedTotal = Math.floor(total);
+  //           roundOffValue = -(total - roundedTotal).toFixed(2);
+  //         }
+
+  //         order.roundOff = roundOffValue;
+  //         order.totalAmount = roundedTotal;
+  //       } catch (error) {
+  //         console.error('Error rounding off total:', error);
+  //       }
+  //     }
+  //   }
+  //   console.log('order=========>', order.orderLineItems);
+  //   console.log('order=========>', order.orderLineItems.length);
+  //   const requestData = {
+  //     orderId: order?.orderId || 0,
+  //     totalGst: order?.totalGst || 0,
+  //     totalAmount: order?.totalAmount || 0,
+  //     colorId:order?.colorId || 0,
+  //     colorName:order?.colorName || 0,
+  //     totalDiscount: order?.totalDiscount || 0,
+  //     totalDiscountSec: order?.totalDiscountSec || 0,
+  //     companyId: companyId || '',
+  //     userId: userId || '',
+  //     totalQty: order?.totalQty || 0,
+  //     updateStatus: selectedStatus || '',
+  //     linkType: 1,
+  //     appComments: comments,
+  //     customerLocation: order?.customerLocation,
+  //     d_pkg_flag: order.d_pkg_flag ? order.d_pkg_flag : 0,
+  //     roundOff: order?.roundOff ? order?.roundOff : 0,
+  //     inclusive: order?.inclusive ? order?.inclusive : 0,
+  //     gOtherExp: order?.gOtherExp ? order?.gOtherExp : 0,
+  //     gTranspExp: order?.gTranspExp ? order?.gTranspExp : 0,
+  //     approveFlag: 0,
+  //     orderNum: order.orderNum || 0,
+  //     totalDiscountThird: order.totalDiscountThird,
+  //     existingStyleMap: Array.from(originalStyleMap).reduce(
+  //       (obj, [key, value]) => {
+  //         obj[key] = value;
+  //         return obj;
+  //       },
+  //       {},
+  //     ),
+  //     deletedStyleMap: Array.from(deletedStyleMap).reduce(
+  //       (obj, [key, value]) => {
+  //         obj[key] = value;
+  //         return obj;
+  //       },
+  //       {},
+  //     ),
+  //     orderLineItems: order?.orderLineItems.map(item => {
+  //       const total = calculateTotal(item);
+  //       const totalFormatted = total.toFixed(2).padStart(5, '0');
+
+  //       const isManuallyCanceled = item.statusFlag === 2;
+  //       return {
+  //         orderLineitemId: parseInt(item.orderLineitemId, 10),
+  //         orderId: item.orderId,
+  //         qty: item.qty,
+  //         unitPrice: item.unitPrice,
+  //         colorId:item?.colorId || 0,
+  //         colorName:item?.colorName || 0,
+  //         price: item.unitPrice,
+  //         gross:totalFormatted,
+  //         discountPercentage: item.discountPercentage,
+  //         gst: item.gst,
+  //         discountPercentageSec: item.discountPercentageSec,
+  //         discAmnt: item.discAmnt,
+  //         discAmntSec: item.discAmntSec,
+  //         gstAmnt: item.gstAmnt,
+  //         discountPercentageThird: item.discountPercentageThird,
+  //         statusFlag: item.statusFlag,
+  //         styleId: item?.styleId,
+  //         closeFlag:0,
+  //         size: item?.size,
+  //         sizeDesc: item?.size,
+  //         packageId: item?.packageId || 0,
+  //         cedgeStyleId: item?.cedgeStyleId || 0,
+  //         pack_qty: item?.pack_qty || 0,
+  //         cedgeStyleId: item?.cedgeStyleId || 0,
+  //         pack_qty: item?.pack_qty || 0,
+  //         boxQty:item?.boxQty || 0,
+  //         poId: item?.poId ? item?.poId : 0,
+  //         availQty: item.availQty ? item.availQty : 0,
+  //         cedgeStyleId: item?.cedgeStyleId ? item?.cedgeStyleId : 0,
+  //         sttsFlag: selectedItems[item.orderLineitemId] || false,
+  //       };
+  //     }),
+  //   };
+
+  //   console.log('requestData====>', requestData); // Log the request data for debugging
+  //   // Show success alert before making the API call (for UI purposes)
+  //   // Alert.alert(
+  //   //   "Success",
+  //   //   "Order updated successfully",
+  //   //   [
+  //   //     {
+  //   //       text: "OK",
+  //   //       onPress: () => {
+  //   //         // After the user presses "OK", navigate back immediately
+  //   //         navigation.goBack();
+  //   //       },
+  //   //     },
+  //   //   ],
+  //   //   { cancelable: false }
+  //   // );
+
+  //   axios
+  //     .post(
+  //       `${global?.userData?.productURL}${API.UPDATE_DIS_ORDER}`,
+  //       requestData,
+  //       {
+  //         headers: {
+  //           'Content-Type': 'application/json',
+  //           Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+  //         },
+  //       },
+  //     )
+  //     .then(response => {
+  //       if (response.data.status.success) {
+  //         console.log('Order update successful:', response.data);
+
+  //         // Show success alert after successful API response
+  //         Alert.alert(
+  //           'Success',
+  //           'Order updated successfully',
+  //           [
+  //             {
+  //               text: 'OK',
+  //               onPress: () => {
+  //                 // After the user presses "OK", navigate back immediately
+  //                 navigation.goBack();
+  //               },
+  //             },
+  //           ],
+  //           {cancelable: false},
+  //         );
+  //       } else {
+  //         console.error('Failed to update order:', response.data.status);
+  //       }
+  //     })
+  //     .catch(error => {
+  //       // Log detailed error information
+  //       console.error('Error updating order:', error);
+
+  //       // Check if error has a response, and log response data if available
+  //       if (error.response) {
+  //         console.error('Error response data:', error.response.data);
+  //         console.error('Error response status:', error.response.status);
+  //         console.error('Error response headers:', error.response.headers);
+  //       } else if (error.request) {
+  //         console.error('Error request data:', error.request);
+  //       } else {
+  //         console.error('Error message:', error.message);
+  //       }
+  //     });
+  // };
+
+  const updateDisOrder = async () => {
+    try {
+      console.log('selectedStatus at the start of updateDisOrder:', selectedStatus);
+  
+      const selectedStatuss = selectedStatus;
+  
       if (selectedStatuss === 'Cancelled') {
-        try {
-          const total = order.totalAmount;
-          const decimal = parseFloat((total - Math.floor(total)).toFixed(2));
-          let roundedTotal = 0;
-          let roundOffValue = 0;
-
-          if (decimal >= 0.5) {
-            roundedTotal = Math.ceil(total);
-            roundOffValue = +(roundedTotal - total).toFixed(2);
+        order.totalAmount -= order.roundOff || 0;
+      }
+  
+      if (order.orderLineItems) {
+        for (const item of order.orderLineItems) {
+          item.sttsFlag = selectedItems[item.orderLineitemId] || false;
+          console.log('selectedStatus', selectedStatuss);
+          console.log('item.sttsFlag', item.sttsFlag);
+  
+          const total = calculateTotal(item);
+          const totalFormatted = isNaN(total) ? '0.00' : total.toFixed(2);
+  
+          if (selectedStatuss === 'Cancelled' && item.sttsFlag === true) {
+            console.log(' order.totalAmount ', order.totalAmount);
+            console.log(' item.gross ', item.gross);
+            order.totalGst -= item.gstAmnt || 0;
+            order.totalDiscount -= item.discAmnt || 0;
+            order.totalDiscountSec -= item.discAmntSec || 0;
+            order.totalAmount -= parseFloat(totalFormatted) || 0; // Use totalFormatted here
+            order.totalQty -= item.qty || 0;
+            item.statusFlag = 2;
+            item.unitPrice = 0;
+            item.fixDisc = 0;
+            item.discountPercentageThird = 0;
+            item.price = 0;
+            item.gross = 0;
+            item.gst = 0;
+            item.gstAmnt = 0;
+            item.discountPercentage = 0;
+            item.discountPercentageSec = 0;
+  
+            continue;
           } else {
-            roundedTotal = Math.floor(total);
-            roundOffValue = -(total - roundedTotal).toFixed(2);
+            if (selectedStatuss === 'Confirmed' && item.sttsFlag === true) {
+              item.statusFlag = 1;
+            }
+            item.gross = totalFormatted; // Update gross with totalFormatted
+            item.sizeDesc = item.size;
+            item.price = item.unitPrice;
+            item.discountPercentageThird = item.fixDisc || 0;
           }
-
-          order.roundOff = roundOffValue;
-          order.totalAmount = roundedTotal;
-        } catch (error) {
-          console.error('Error rounding off total:', error);
+        }
+  
+        if (selectedStatuss === 'Cancelled') {
+          try {
+            const total = order.totalAmount;
+            const decimal = parseFloat((total - Math.floor(total)).toFixed(2));
+            let roundedTotal = 0;
+            let roundOffValue = 0;
+  
+            if (decimal >= 0.5) {
+              roundedTotal = Math.ceil(total);
+              roundOffValue = +(roundedTotal - total).toFixed(2);
+            } else {
+              roundedTotal = Math.floor(total);
+              roundOffValue = -(total - roundedTotal).toFixed(2);
+            }
+  
+            order.roundOff = roundOffValue;
+            order.totalAmount = roundedTotal;
+          } catch (error) {
+            console.error('Error rounding off total:', error);
+          }
         }
       }
-    }
-    console.log('order=========>', order.orderLineItems);
-    const requestData = {
-      orderId: order?.orderId || 0,
-      totalGst: order?.totalGst || 0,
-      totalAmount: order?.totalAmount || 0,
-      colorId:order?.colorId || 0,
-      colorName:order?.colorName || 0,
-      totalDiscount: order?.totalDiscount || 0,
-      totalDiscountSec: order?.totalDiscountSec || 0,
-      companyId: companyId || '',
-      userId: userId || '',
-      totalQty: order?.totalQty || 0,
-      updateStatus: selectedStatus || '',
-      linkType: 1,
-      appComments: comments,
-      customerLocation: order?.customerLocation,
-      d_pkg_flag: order.d_pkg_flag ? order.d_pkg_flag : 0,
-      roundOff: order?.roundOff ? order?.roundOff : 0,
-      inclusive: order?.inclusive ? order?.inclusive : 0,
-      gOtherExp: order?.gOtherExp ? order?.gOtherExp : 0,
-      gTranspExp: order?.gTranspExp ? order?.gTranspExp : 0,
-      approveFlag: 0,
-      orderNum: order.orderNum || 0,
-      totalDiscountThird: order.totalDiscountThird,
-      existingStyleMap: Array.from(originalStyleMap).reduce(
-        (obj, [key, value]) => {
-          obj[key] = value;
-          return obj;
-        },
-        {},
-      ),
-      deletedStyleMap: Array.from(deletedStyleMap).reduce(
-        (obj, [key, value]) => {
-          obj[key] = value;
-          return obj;
-        },
-        {},
-      ),
-      orderLineItems: order?.orderLineItems.map(item => {
-        const total = calculateTotal(item);
-        const totalFormatted = total.toFixed(2).padStart(5, '0');
-
-        const isManuallyCanceled = item.statusFlag === 2;
-        return {
-          orderLineitemId: parseInt(item.orderLineitemId, 10),
-          orderId: item.orderId,
-          qty: item.qty,
-          unitPrice: item.unitPrice,
-          colorId:item?.colorId || 0,
-          colorName:item?.colorName || 0,
-          price: item.unitPrice,
-          gross:totalFormatted,
-          discountPercentage: item.discountPercentage,
-          gst: item.gst,
-          discountPercentageSec: item.discountPercentageSec,
-          discAmnt: item.discAmnt,
-          discAmntSec: item.discAmntSec,
-          gstAmnt: item.gstAmnt,
-          discountPercentageThird: item.discountPercentageThird,
-          statusFlag: item.statusFlag,
-          styleId: item?.styleId,
-          closeFlag:0,
-          size: item?.size,
-          sizeDesc: item?.size,
-          packageId: item?.packageId || 0,
-          cedgeStyleId: item?.cedgeStyleId || 0,
-          pack_qty: item?.pack_qty || 0,
-          cedgeStyleId: item?.cedgeStyleId || 0,
-          pack_qty: item?.pack_qty || 0,
-          boxQty:item?.boxQty || 0,
-          poId: item?.poId ? item?.poId : 0,
-          availQty: item.availQty ? item.availQty : 0,
-          cedgeStyleId: item?.cedgeStyleId ? item?.cedgeStyleId : 0,
-          sttsFlag: selectedItems[item.orderLineitemId] || false,
-        };
-      }),
-    };
-
-    console.log('requestData====>', requestData); // Log the request data for debugging
-    // Show success alert before making the API call (for UI purposes)
-    // Alert.alert(
-    //   "Success",
-    //   "Order updated successfully",
-    //   [
-    //     {
-    //       text: "OK",
-    //       onPress: () => {
-    //         // After the user presses "OK", navigate back immediately
-    //         navigation.goBack();
-    //       },
-    //     },
-    //   ],
-    //   { cancelable: false }
-    // );
-
-    axios
-      .post(
+  
+      console.log('order=========>', order.orderLineItems);
+      console.log('order=========>', order.orderLineItems.length);
+  let i2 =0;
+      const requestData = {
+        orderId: order?.orderId || 0,
+        totalGst: order?.totalGst || 0,
+        totalAmount: order?.totalAmount || 0,
+        colorId: order?.colorId || 0,
+        colorName: order?.colorName || '',
+        totalDiscount: order?.totalDiscount || 0,
+        totalDiscountSec: order?.totalDiscountSec || 0,
+        companyId: companyId || '',
+        userId: userId || '',
+        totalQty: order?.totalQty || 0,
+        updateStatus: selectedStatus || '',
+        linkType: 1,
+        appComments: comments,
+        customerLocation: order?.customerLocation,
+        d_pkg_flag: order.d_pkg_flag ? order.d_pkg_flag : 0,
+        roundOff: order?.roundOff ? order?.roundOff : 0,
+        inclusive: order?.inclusive ? order?.inclusive : 0,
+        gOtherExp: order?.gOtherExp ? order?.gOtherExp : 0,
+        gTranspExp: order?.gTranspExp ? order?.gTranspExp : 0,
+        approveFlag: 0,
+        orderNum: order.orderNum || 0,
+        totalDiscountThird: order.totalDiscountThird || 0,
+        existingStyleMap: Object.fromEntries(originalStyleMap),
+        deletedStyleMap: Object.fromEntries(deletedStyleMap),
+        orderLineItems: order?.orderLineItems.map(item => {
+          const total = calculateTotal(item);
+          const totalFormatted = total.toFixed(2).padStart(5, '0');
+  console.log("before inside lineitems=====>" ,i2++)
+          return {
+            // orderLineitemId: parseInt(item.orderLineitemId, 10),
+            orderId: item.orderId  || 0,
+            qty: item.qty  || 0,
+            unitPrice: item.unitPrice  || 0,
+            colorId: item?.colorId || 0,
+            colorName: item?.colorName || '',
+            price: item.unitPrice  || 0,
+            gross: totalFormatted  || 0,
+            discountPercentage: item.discountPercentage  || 0,
+            gst: item.gst  || 0,
+            discountPercentageSec: item.discountPercentageSec  || 0,
+            discAmnt: item.discAmnt  || 0,
+            discAmntSec: item.discAmntSec  || 0,
+            gstAmnt: item.gstAmnt  || 0,
+            discountPercentageThird: item.discountPercentageThird  || 0,
+            statusFlag: item.statusFlag  || 0,
+            styleId: item?.styleId  || 0,
+            closeFlag: 0,
+            size: item?.size  || '',
+            sizeDesc: item?.size  || '',
+            packageId: item?.packageId || 0,
+            cedgeStyleId: item?.cedgeStyleId || 0,
+            pack_qty: item?.pack_qty || 0,
+            boxQty: item?.boxQty || 0,
+            poId: item?.poId ? item?.poId : 0,
+            availQty: item.availQty ? item.availQty : 0,
+            cedgeStyleId: item?.cedgeStyleId ? item?.cedgeStyleId : 0,
+            sttsFlag: selectedItems[item.orderLineitemId] || false,
+          };
+        }),
+      };
+      console.log('requestData====>', requestData);
+  console.log('requestData====>', requestData.orderLineItems);
+      console.log('requestData====>', requestData.orderLineItems.length);
+  
+      const response = await axios.post(
         `${global?.userData?.productURL}${API.UPDATE_DIS_ORDER}`,
         requestData,
         {
@@ -1281,46 +1778,36 @@ const PackingConformation = ({route}) => {
             Authorization: `Bearer ${global?.userData?.token?.access_token}`,
           },
         },
-      )
-      .then(response => {
-        if (response.data.status.success) {
-          console.log('Order update successful:', response.data);
-
-          // Show success alert after successful API response
-          Alert.alert(
-            'Success',
-            'Order updated successfully',
-            [
-              {
-                text: 'OK',
-                onPress: () => {
-                  // After the user presses "OK", navigate back immediately
-                  navigation.goBack();
-                },
-              },
-            ],
-            {cancelable: false},
-          );
-        } else {
-          console.error('Failed to update order:', response.data.status);
-        }
-      })
-      .catch(error => {
-        // Log detailed error information
-        console.error('Error updating order:', error);
-
-        // Check if error has a response, and log response data if available
-        if (error.response) {
-          console.error('Error response data:', error.response.data);
-          console.error('Error response status:', error.response.status);
-          console.error('Error response headers:', error.response.headers);
-        } else if (error.request) {
-          console.error('Error request data:', error.request);
-        } else {
-          console.error('Error message:', error.message);
-        }
-      });
+      );
+  
+      if (response.data.status.success) {
+      console.log('Order update successful:', JSON.stringify(response.data, null, 2));
+        Alert.alert('Success', 'Order updated successfully', [
+          {
+            text: 'OK',
+            onPress: () => {
+              navigation.goBack();
+            },
+          },
+        ]);
+      } else {
+        console.error('Failed to update order:', response.data.status);
+      }
+    } catch (error) {
+      console.error('Error updating order:', error);
+  
+      if (error.response) {
+        console.error('Error response data:', error.response.data);
+        console.error('Error response status:', error.response.status);
+        console.error('Error response headers:', error.response.headers);
+      } else if (error.request) {
+        console.error('Error request data:', error.request);
+      } else {
+        console.error('Error message:', error.message);
+      }
+    }
   };
+  
   useEffect(() => {
     if (order && order.orderLineItems) {
       const totalAmount = order.orderLineItems.reduce((sum, item) => {
@@ -1614,7 +2101,7 @@ const PackingConformation = ({route}) => {
   
   
   const renderOrderLineItem = ({item}) => {
-    console.log('Rendering Item:', item);
+    // console.log('Rendering Item:', item);
 
     const getCheckboxColor = statusFlag => {
       if (statusFlag === 2) {
@@ -1642,7 +2129,7 @@ const PackingConformation = ({route}) => {
       fixedPrice = item.unitPrice || 0;
     }
 
-    console.log('Fixed Price:', fixedPrice);
+    // console.log('Fixed Price:', fixedPrice);
 
     let discountAmount = 0;
     let discountAmountSec = 0;
@@ -1655,7 +2142,7 @@ const PackingConformation = ({route}) => {
         ? item.unitPrice -
           (item.unitPrice * (item.discountPercentage || 0)) / 100
         : 0;
-      console.log('Discount Amount:', discountAmount);
+      // console.log('Discount Amount:', discountAmount);
 
       if (gst_price_cal_flag === 1 && gst && item.unitPrice) {
         item.orgPrice = item.unitPrice / (1.0 + (gst || 0) / 100);
@@ -1704,7 +2191,7 @@ const PackingConformation = ({route}) => {
         ? 0
         : (item.qty * fixedPrice * (item.discountPercentage || 0)) / 100;
 
-      console.log('Discount Amount:', discountAmount);
+      // console.log('Discount Amount:', discountAmount);
 
       discountAmountSec = isNaN(
         ((item.qty * fixedPrice - discountAmount) *
@@ -1716,7 +2203,7 @@ const PackingConformation = ({route}) => {
             (item.discountPercentageSec || 0)) /
           100;
 
-      console.log('Discount Amount (Secondary):', discountAmountSec);
+      // console.log('Discount Amount (Secondary):', discountAmountSec);
 
       grosss = isNaN(item.qty * fixedPrice) ? 0 : item.qty * fixedPrice;
 
@@ -1730,7 +2217,7 @@ const PackingConformation = ({route}) => {
             (item.gst || 0)) /
           100;
 
-      console.log('GST Amount:', gstAmnt);
+      // console.log('GST Amount:', gstAmnt);
 
       total = isNaN(
         item.qty * fixedPrice - discountAmount - discountAmountSec + gstAmnt,
@@ -1738,7 +2225,7 @@ const PackingConformation = ({route}) => {
         ? 0
         : item.qty * fixedPrice - discountAmount - discountAmountSec + gstAmnt;
 
-      console.log('Total:', total);
+      // console.log('Total:', total);
     }
 
     // Ensure all formatted values are valid
@@ -1746,11 +2233,11 @@ const PackingConformation = ({route}) => {
     const totalFormatted = total.toFixed(2).padStart(5, '0');
     const gstAmntFormatted = gstAmnt.toFixed(2).padStart(5, '0');
 
-    console.log('Formatted Values:', {
-      grosssFormatted,
-      totalFormatted,
-      gstAmntFormatted,
-    });
+    // console.log('Formatted Values:', {
+    //   grosssFormatted,
+    //   totalFormatted,
+    //   gstAmntFormatted,
+    // });
     return (
       <View style={styles.orderItem}>
         <View style={{flexDirection: 'row', marginLeft: 10, marginBottom: 10}}>
@@ -2236,9 +2723,10 @@ const PackingConformation = ({route}) => {
               <Text style={styles.orderDate}>
                 Order Date : {order?.orderDate}
               </Text>
-              <Text style={styles.ordertotalQty}>
-                Total Qty : {order?.totalQty}
-              </Text>
+             <Text style={styles.ordertotalQty}>
+  Total Qty : {order?.totalQty?.toFixed(2)}
+</Text>
+
             </View>
           </View>
           <View style={styles.selectheader}>
