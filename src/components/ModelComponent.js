@@ -153,7 +153,21 @@ const ModalComponent = ({
             styleDesc: style.styleDesc,
             gstSlotId:style.gstSlotId,
             price: style.price,
-            mrp:style.mrp,
+            // mrp:
+            // style.mrp && style.mrp > 0 && style.fixDisc && style.fixDisc > 0 && style.mrp >= style.fixDisc
+            //   ? style.mrp - style.fixDisc
+            //   : style.mrp, // Apply fixDisc deduction
+            mrp:
+  style.mrp &&
+  style.mrp > 0 &&
+  style.fixDisc &&
+  style.fixDisc > 0 &&
+  style.mrp >= style.fixDisc
+    ? pdf_flag === 1
+      ? style.mrp - style.fixDisc
+      : style.mrp
+    : style.mrp,
+
             discount: style.styleDiscountRequest
               ? style.styleDiscountRequest.discountName
               : '',
@@ -166,6 +180,7 @@ const ModalComponent = ({
             dealerPrice: dealerPrice,
             retailerPrice: retailerPrice,
             gst: gst, // Use the gst value from style
+            fixDisc:style.fixDisc,
             sourceScreen: 'ModalComponent', // Include source screen
           };
   
@@ -202,70 +217,6 @@ const ModalComponent = ({
   
 
 
-  // const handleSaveItem = () => {
-  //   if (isSaveDisabled) return; // Prevent save action if button is disabled
-  
-  //   // Check if there are any items from a different screen
-  //   const existingItemFromOtherScreen = cartItems.find(
-  //     item => item.sourceScreen && item.sourceScreen !== 'ModalComponent'
-  //   );
-  
-  //   if (existingItemFromOtherScreen) {
-  //     Alert.alert('Cannot add items from two screens simultaneously.');
-  //     return;
-  //   }
-  
-  //   let itemsToUpdate = [];
-  
-  //   stylesData.forEach(style => {
-  //     if (!style.sizeList || style.sizeList.length === 0) return;
-  
-  //     style.sizeList.forEach(size => {
-  //       const sizeDesc = size.sizeDesc;
-  //       const dealerPrice = size.dealerPrice;
-  //       const retailerPrice = size.retailerPrice;
-  //       const inputValue = inputValues[sizeDesc] || '0';
-  
-  //       if (parseInt(inputValue, 10) > 0) {
-  //         const itemBaseDetails = {
-  //           styleId: style.styleId,
-  //           styleName: style.styleName,
-  //           colorName: style.colorName,
-  //           sizeDesc: sizeDesc,
-  //           quantity: inputValue,
-  //           dealerPrice: dealerPrice,
-  //           retailerPrice: retailerPrice,
-  //           price: dealerPrice || retailerPrice,
-  //           sourceScreen: 'ModalComponent',
-  //         };
-  
-  //         const existingItemIndex = cartItems.findIndex(
-  //           cartItem => cartItem.styleId === style.styleId,
-  //         );
-  
-  //         if (existingItemIndex !== -1) {
-  //           const updatedQuantity = parseInt(inputValue, 10);
-  //           const updatedItem = {
-  //             ...cartItems[existingItemIndex],
-  //             quantity: updatedQuantity.toString(),
-  //             price: dealerPrice || retailerPrice,
-  //           };
-  //           dispatch(updateCartItem(existingItemIndex, updatedItem));
-  //         } else {
-  //           itemsToUpdate.push(itemBaseDetails);
-  //         }
-  //       }
-  //     });
-  //   });
-  
-  //   if (itemsToUpdate.length > 0) {
-  //     itemsToUpdate.forEach(item => dispatch(addItemToCart(item)));
-  //   }
-  
-  //   clearAllInputs();
-  //   closeModal();
-  // };
-  
 
   useEffect(() => {
     if (modalVisible && stylesData.length > 0) {

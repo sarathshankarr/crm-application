@@ -14,6 +14,7 @@ import {
   Alert,
   SafeAreaView,
   AppState,
+  Dimensions,
 } from 'react-native';
 import { RadioButton } from 'react-native-radio-buttons-group';
 import { API } from '../../config/apiConfig';
@@ -89,6 +90,7 @@ const TaskDetails = ({ route }) => {
   const isAdmin = loginuser?.role?.some(role => role.role.toLowerCase() === 'admin');
   const isDistributor = loginuser?.role?.some(role => role.role.toLowerCase() === 'distributor');
 
+  const screenHeight = Dimensions.get('window').height;
 
   const selectedCompany = useSelector(state => state.selectedCompany);
   const goToFiles = id => {
@@ -1739,7 +1741,7 @@ useFocusEffect(
   );
 };
 
-const getStyles = (colors) => StyleSheet.create({
+const getStyles = (colors,screenHeight) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
@@ -1899,16 +1901,15 @@ const getStyles = (colors) => StyleSheet.create({
   },
   dropdownContainer: {
     position: 'absolute',
-    top: 47, // Adjust this value based on the height of your dropdown button
     right: 0,
     marginRight: 8,
     width: '45%',
     backgroundColor: 'white',
     borderWidth: 0.5,
     borderRadius: 10,
-    zIndex: 10, // Ensure the dropdown appears above other elements
+    zIndex: 10,
     elevation: 10,
-   
+    ...(screenHeight > 700 ? { top: 47 } : { bottom: 47 }), // Adjust based on screen size
   },
   scrollView: {
     minHeight: 70,

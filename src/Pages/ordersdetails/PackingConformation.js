@@ -15,6 +15,7 @@ import {
   Modal,
   FlatList,
   RefreshControl,
+  Dimensions,
 } from 'react-native';
 import {API} from '../../config/apiConfig';
 import axios from 'axios';
@@ -69,6 +70,7 @@ const PackingConformation = ({route}) => {
   const [selectedSku, setSelectedSku] = useState('Select'); // State for the selected SKU
   const [searchFilterFlag, setsearchFilterFlag] = useState(false);
 
+  const screenHeight = Dimensions.get('window').height;
 
 
 
@@ -363,74 +365,178 @@ const PackingConformation = ({route}) => {
       return item.statusFlag !== 2 ? sum + qty : sum;
     }, 0);
 
+    // const totalAmount = orderLineItems.reduce((sum, item) => {
+    //   if (item.statusFlag !== 2) {
+    //     const qty = parseFloat(item.qty) || 0;
+    //     const unitPrice = parseFloat(item.unitPrice) || 0;
+    //     const gst = parseFloat(item.gst) || 0;
+    //     const discountPercentage = parseFloat(item.discountPercentage) || 0;
+    //     const discountPercentageSec =
+    //       parseFloat(item.discountPercentageSec) || 0;
+    //     const discountAmountThird =
+    //       parseFloat(item.discountPercentageThird) || 0;
+
+    //     // Ensure we have valid fixedPrice
+    //     let fixedPrice = unitPrice;
+    //     if (pdf_flag === 1 && discountAmountThird) {
+    //       fixedPrice = unitPrice - discountAmountThird;
+    //     }
+
+    //     // Validate all intermediate calculations to avoid NaN
+    //     const basePrice = qty * fixedPrice;
+    //     const discountAmount = (basePrice * discountPercentage) / 100 || 0;
+    //     const discountAmountSec =
+    //       ((basePrice - discountAmount) * discountPercentageSec) / 100 || 0;
+    //     const gstAmount =
+    //       (basePrice - discountAmount - discountAmountSec) * (gst / 100) || 0;
+
+    //     // Calculate the final line item total
+    //     const lineitemTotal =
+    //       basePrice - discountAmount - discountAmountSec + gstAmount || 0;
+
+    //     // Log all intermediate and final calculations for debugging
+    //     console.log(
+    //       `Calculating totals for item ${item.styleId || item.orderLineitemId}`,
+    //     );
+    //     console.log({
+    //       qty,
+    //       fixedPrice,
+    //       basePrice,
+    //       discountAmount,
+    //       discountAmountSec,
+    //       gstAmount,
+    //       lineitemTotal,
+    //     });
+
+    //     // Check for NaN in final calculation
+    //     if (isNaN(lineitemTotal)) {
+    //       console.error(
+    //         `NaN detected in lineitemTotal calculation for item: `,
+    //         item,
+    //       );
+    //     }
+
+    //     return sum + lineitemTotal; // Accumulate the total
+    //   }
+    //   return sum;
+    // }, 0);
+
+    // console.log(`Total Amount Before Rounding: ${totalAmount}`);
+
+    // const totalGst = orderLineItems.reduce((sum, item) => {
+    //   if (item.statusFlag !== 2) {
+    //     const qty = parseFloat(item.qty) || 0;
+    //     const unitPrice = parseFloat(item.unitPrice) || 0;
+    //     const gst = parseFloat(item.gst) || 0;
+
+    //     const basePrice = qty * unitPrice;
+    //     const gstAmount = basePrice * (gst / 100);
+
+    //     return sum + gstAmount;
+    //   }
+    //   return sum;
+    // }, 0);
+
+
     const totalAmount = orderLineItems.reduce((sum, item) => {
       if (item.statusFlag !== 2) {
-        const qty = parseFloat(item.qty) || 0;
+        const qty = item.qty || 0;
         const unitPrice = parseFloat(item.unitPrice) || 0;
+        const discountAmount = parseFloat(item.discountAmount) || 0;
+        const discountAmountSec = parseFloat(item.discountAmountSec) || 0;
+        const discountPercentageThird = parseFloat(item.discountPercentageThird) || 0;
+        const fixDisc = parseFloat(item.fixDisc) || 0;
         const gst = parseFloat(item.gst) || 0;
-        const discountPercentage = parseFloat(item.discountPercentage) || 0;
-        const discountPercentageSec =
-          parseFloat(item.discountPercentageSec) || 0;
-        const discountAmountThird =
-          parseFloat(item.discountPercentageThird) || 0;
+        const pdfFlag = Number(pdf_flag); 
 
-        // Ensure we have valid fixedPrice
-        let fixedPrice = unitPrice;
-        if (pdf_flag === 1 && discountAmountThird) {
-          fixedPrice = unitPrice - discountAmountThird;
-        }
+    let fixedPrice = 0;
+if (pdfFlag !== 1) {
+  if (unitPrice) {
+    if (discountPercentageThird) {
+      fixedPrice = item.unitPrice - item.discountPercentageThird;
+    } else {
+      fixedPrice = item.unitPrice;
+    }
 
-        // Validate all intermediate calculations to avoid NaN
+    if (item.fixDisc) {
+      fixedPrice -= fixDisc
+    }
+  } else {
+    fixedPrice = 0;
+  }
+} else {
+  fixedPrice = unitPrice || 0;
+}
+
+
+
+// let gstAmnt;
+// if (pdfFlag === 1) {
+//   gstAmnt = ((qty * discountAmount - discountAmountSec) * gst) / 100;
+// } else {
+//   gstAmnt = ((qty * fixedPrice - discountAmount - discountAmountSec) * gst) / 100;
+// }
+
+
+
+    
+          // let gstAmnt = pdf_flag === 1
+          // ? ((qty * discountAmount - discountAmountSec) * gst) / 100
+          // : ((qty * fixedPrice - discountAmount - discountAmountSec) * gst) / 100;
+        
+        // console.log("First GST Calculation:", { pdf_flag, qty, discountAmount, discountAmountSec, fixedPrice, gst, gstAmnt });
+        let gstAmnt = pdf_flag === 1
+        ? ((qty * fixedPrice - discountAmount - discountAmountSec) * gst) / 100
+        : ((qty * (fixedPrice - discountAmount - discountAmountSec)) * gst) / 100;
+      
+        console.log("Final GST Calculation:", { pdf_flag, qty, discountAmount, discountAmountSec, fixedPrice, gst, gstAmnt });
+        console.log("checking condition",pdf_flag === 1 ? 'block1':'block2' )
+
         const basePrice = qty * fixedPrice;
-        const discountAmount = (basePrice * discountPercentage) / 100 || 0;
-        const discountAmountSec =
-          ((basePrice - discountAmount) * discountPercentageSec) / 100 || 0;
-        const gstAmount =
-          (basePrice - discountAmount - discountAmountSec) * (gst / 100) || 0;
-
-        // Calculate the final line item total
-        const lineitemTotal =
-          basePrice - discountAmount - discountAmountSec + gstAmount || 0;
-
-        // Log all intermediate and final calculations for debugging
-        console.log(
-          `Calculating totals for item ${item.styleId || item.orderLineitemId}`,
-        );
-        console.log({
-          qty,
-          fixedPrice,
-          basePrice,
-          discountAmount,
-          discountAmountSec,
-          gstAmount,
-          lineitemTotal,
-        });
-
-        // Check for NaN in final calculation
-        if (isNaN(lineitemTotal)) {
-          console.error(
-            `NaN detected in lineitemTotal calculation for item: `,
-            item,
-          );
-        }
-
-        return sum + lineitemTotal; // Accumulate the total
+        return sum + basePrice + gstAmnt;
       }
       return sum;
     }, 0);
-
-    console.log(`Total Amount Before Rounding: ${totalAmount}`);
-
+    
+    
     const totalGst = orderLineItems.reduce((sum, item) => {
       if (item.statusFlag !== 2) {
-        const qty = parseFloat(item.qty) || 0;
+        const qty = item.qty || 0;
         const unitPrice = parseFloat(item.unitPrice) || 0;
+        const discountAmount = parseFloat(item.discountAmount) || 0;
+        const discountAmountSec = parseFloat(item.discountAmountSec) || 0;
+        const discountPercentageThird = parseFloat(item.discountPercentageThird) || 0;
+        const fixDisc = parseFloat(item.fixDisc) || 0;
         const gst = parseFloat(item.gst) || 0;
+    
 
-        const basePrice = qty * unitPrice;
-        const gstAmount = basePrice * (gst / 100);
+        let fixedPrice = 0;
+if (pdf_flag !== 1) {
+  if (unitPrice) {
+    if (discountPercentageThird) {
+      fixedPrice = item.unitPrice - item.discountPercentageThird;
+    } else {
+      fixedPrice = item.unitPrice;
+    }
 
-        return sum + gstAmount;
+    if (item.fixDisc) {
+      fixedPrice -= fixDisc
+    }
+  } else {
+    fixedPrice = 0;
+  }
+} else {
+  fixedPrice = unitPrice || 0;
+}
+
+
+        // Apply both discountPercentageThird and fixDisc
+        let gstAmnt = pdf_flag === 1
+        ? ((qty * fixedPrice - discountAmount - discountAmountSec) * gst) / 100
+        : ((qty * (fixedPrice - discountAmount - discountAmountSec)) * gst) / 100;
+      
+          
+        return sum + gstAmnt;
       }
       return sum;
     }, 0);
@@ -601,29 +707,37 @@ const handleAddItems = () => {
       //   unitPrice = newItem.dealerPrice; // Default fallback
       // }
 
+      
       let unitPrice;
 
-      console.log("Customer Type:", order?.customerType);
-      console.log("PDF Flag:", pdf_flag);
-      
-      if (order?.customerType === 3) {
-        unitPrice = newItem.corRate;
-        console.log("Price to Show (corRate):", unitPrice);
-      } else {
-        if (pdf_flag === 1) {
-          unitPrice = newItem.mrp;
-          console.log("Price to Show (MRP due to pdf_flag):", unitPrice);
-        } else if (order?.customerType === 1) {
-          unitPrice = newItem.retailerPrice;
-          console.log("Price to Show (Dealer Price for Customer Type 1):", unitPrice);
-        } else if (order?.customerType === 2) {
-          unitPrice = newItem.dealerPrice;
-          console.log("Price to Show (Retailer Price for Customer Type 2):", unitPrice);
-        } else {
-          unitPrice = newItem.dealerPrice; // Default fallback
-          console.log("Price to Show (Default - Dealer Price):", unitPrice);
-        }
-      }
+console.log("Customer Type:", order?.customerType);
+console.log("PDF Flag:", pdf_flag);
+
+// Apply discount logic before setting unitPrice
+if (newItem?.mrp && newItem?.mrp > 0 && newItem?.fixDisc && newItem?.fixDisc > 0 && newItem?.mrp >= newItem?.fixDisc) {
+    newItem.mrp = newItem.mrp - newItem.fixDisc;
+    console.log("Updated MRP after FixDisc:", newItem.mrp);
+}
+
+if (order?.customerType === 3) {
+    unitPrice = newItem.corRate;
+    console.log("Price to Show (corRate):", unitPrice);
+} else {
+    if (pdf_flag === 1) {
+        unitPrice = newItem.mrp; // Already adjusted above
+        console.log("Price to Show (MRP due to pdf_flag):", unitPrice);
+    } else if (order?.customerType === 1) {
+        unitPrice = newItem.retailerPrice;
+        console.log("Price to Show (Retailer Price for Customer Type 1):", unitPrice);
+    } else if (order?.customerType === 2) {
+        unitPrice = newItem.dealerPrice;
+        console.log("Price to Show (Dealer Price for Customer Type 2):", unitPrice);
+    } else {
+        unitPrice = newItem.dealerPrice; // Default fallback
+        console.log("Price to Show (Default - Dealer Price):", unitPrice);
+    }
+}
+
 
       if (existingIndex !== -1) {
         let existingItem = updatedLineItems[existingIndex];
@@ -896,25 +1010,131 @@ const handleAddItems = () => {
       const totalQty = updatedOrderLineItems.reduce((sum, item) => {
         return item.statusFlag !== 2 ? sum + parseFloat(item.qty || 0) : sum;
       }, 0);
+      
   
+      // const totalAmount = updatedOrderLineItems.reduce((sum, item) => {
+      //   if (item.statusFlag !== 2) {
+      //     const basePrice =
+      //       parseFloat(item.qty || 0) * parseFloat(item.unitPrice);
+      //     const gstAmount = basePrice * (item.gst / 100);
+      //     return sum + basePrice + gstAmount;
+      //   }
+      //   return sum;
+      // }, 0);
+  
+      // const totalGst = updatedOrderLineItems.reduce((sum, item) => {
+      //   if (item.statusFlag !== 2) {
+      //     const basePrice =
+      //       parseFloat(item.qty || 0) * parseFloat(item.unitPrice);
+      //     return sum + basePrice * (item.gst / 100);
+      //   }
+      //   return sum;
+      // }, 0);
+
+
       const totalAmount = updatedOrderLineItems.reduce((sum, item) => {
         if (item.statusFlag !== 2) {
-          const basePrice =
-            parseFloat(item.qty || 0) * parseFloat(item.unitPrice);
-          const gstAmount = basePrice * (item.gst / 100);
-          return sum + basePrice + gstAmount;
+          const qty = item.qty || 0;
+          const unitPrice = parseFloat(item.unitPrice) || 0;
+          const discountAmount = parseFloat(item.discountAmount) || 0;
+          const discountAmountSec = parseFloat(item.discountAmountSec) || 0;
+          const discountPercentageThird = parseFloat(item.discountPercentageThird) || 0;
+          const fixDisc = parseFloat(item.fixDisc) || 0;
+          const gst = parseFloat(item.gst) || 0;
+          const pdfFlag = Number(pdf_flag); 
+  
+      let fixedPrice = 0;
+  if (pdfFlag !== 1) {
+    if (unitPrice) {
+      if (discountPercentageThird) {
+        fixedPrice = item.unitPrice - item.discountPercentageThird;
+      } else {
+        fixedPrice = item.unitPrice;
+      }
+  
+      if (item.fixDisc) {
+        fixedPrice -= fixDisc
+      }
+    } else {
+      fixedPrice = 0;
+    }
+  } else {
+    fixedPrice = unitPrice || 0;
+  }
+  
+  
+  
+  // let gstAmnt;
+  // if (pdfFlag === 1) {
+  //   gstAmnt = ((qty * discountAmount - discountAmountSec) * gst) / 100;
+  // } else {
+  //   gstAmnt = ((qty * fixedPrice - discountAmount - discountAmountSec) * gst) / 100;
+  // }
+  
+  
+  
+      
+            // let gstAmnt = pdf_flag === 1
+            // ? ((qty * discountAmount - discountAmountSec) * gst) / 100
+            // : ((qty * fixedPrice - discountAmount - discountAmountSec) * gst) / 100;
+          
+          // console.log("First GST Calculation:", { pdf_flag, qty, discountAmount, discountAmountSec, fixedPrice, gst, gstAmnt });
+          let gstAmnt = pdf_flag === 1
+          ? ((qty * fixedPrice - discountAmount - discountAmountSec) * gst) / 100
+          : ((qty * (fixedPrice - discountAmount - discountAmountSec)) * gst) / 100;
+        
+          console.log("Final GST Calculation:", { pdf_flag, qty, discountAmount, discountAmountSec, fixedPrice, gst, gstAmnt });
+          console.log("checking condition",pdf_flag === 1 ? 'block1':'block2' )
+  
+          const basePrice = qty * fixedPrice;
+          return sum + basePrice + gstAmnt;
+        }
+        return sum;
+      }, 0);
+      
+      
+      const totalGst = updatedOrderLineItems.reduce((sum, item) => {
+        if (item.statusFlag !== 2) {
+          const qty = item.qty || 0;
+          const unitPrice = parseFloat(item.unitPrice) || 0;
+          const discountAmount = parseFloat(item.discountAmount) || 0;
+          const discountAmountSec = parseFloat(item.discountAmountSec) || 0;
+          const discountPercentageThird = parseFloat(item.discountPercentageThird) || 0;
+          const fixDisc = parseFloat(item.fixDisc) || 0;
+          const gst = parseFloat(item.gst) || 0;
+      
+  
+          let fixedPrice = 0;
+  if (pdf_flag !== 1) {
+    if (unitPrice) {
+      if (discountPercentageThird) {
+        fixedPrice = item.unitPrice - item.discountPercentageThird;
+      } else {
+        fixedPrice = item.unitPrice;
+      }
+  
+      if (item.fixDisc) {
+        fixedPrice -= fixDisc
+      }
+    } else {
+      fixedPrice = 0;
+    }
+  } else {
+    fixedPrice = unitPrice || 0;
+  }
+  
+  
+          // Apply both discountPercentageThird and fixDisc
+          let gstAmnt = pdf_flag === 1
+          ? ((qty * fixedPrice - discountAmount - discountAmountSec) * gst) / 100
+          : ((qty * (fixedPrice - discountAmount - discountAmountSec)) * gst) / 100;
+        
+            
+          return sum + gstAmnt;
         }
         return sum;
       }, 0);
   
-      const totalGst = updatedOrderLineItems.reduce((sum, item) => {
-        if (item.statusFlag !== 2) {
-          const basePrice =
-            parseFloat(item.qty || 0) * parseFloat(item.unitPrice);
-          return sum + basePrice * (item.gst / 100);
-        }
-        return sum;
-      }, 0);
   
       const {roundedTotal, roundOff} = calculateRoundOff(totalAmount);
   
@@ -1045,20 +1265,124 @@ const handleAddItems = () => {
         return item.statusFlag !== 2 ? sum + item.qty : sum;
       }, 0);
 
+      // const totalAmount = updatedOrderLineItems.reduce((sum, item) => {
+      //   if (item.statusFlag !== 2) {
+      //     const basePrice = item.qty * parseFloat(item.unitPrice);
+      //     const gstAmount = basePrice * (parseFloat(item.gst) / 100);
+      //     return sum + basePrice + gstAmount;
+      //   }
+      //   return sum;
+      // }, 0);
+
+      // const totalGst = updatedOrderLineItems.reduce((sum, item) => {
+      //   if (item.statusFlag !== 2) {
+      //     const basePrice = item.qty * parseFloat(item.unitPrice);
+      //     const gstAmount = basePrice * (parseFloat(item.gst) / 100);
+      //     return sum + gstAmount;
+      //   }
+      //   return sum;
+      // }, 0);
+
+     
       const totalAmount = updatedOrderLineItems.reduce((sum, item) => {
         if (item.statusFlag !== 2) {
-          const basePrice = item.qty * parseFloat(item.unitPrice);
-          const gstAmount = basePrice * (parseFloat(item.gst) / 100);
-          return sum + basePrice + gstAmount;
+          const qty = item.qty || 0;
+          const unitPrice = parseFloat(item.unitPrice) || 0;
+          const discountAmount = parseFloat(item.discountAmount) || 0;
+          const discountAmountSec = parseFloat(item.discountAmountSec) || 0;
+          const discountPercentageThird = parseFloat(item.discountPercentageThird) || 0;
+          const fixDisc = parseFloat(item.fixDisc) || 0;
+          const gst = parseFloat(item.gst) || 0;
+          const pdfFlag = Number(pdf_flag); 
+  
+      let fixedPrice = 0;
+  if (pdfFlag !== 1) {
+    if (unitPrice) {
+      if (discountPercentageThird) {
+        fixedPrice = item.unitPrice - item.discountPercentageThird;
+      } else {
+        fixedPrice = item.unitPrice;
+      }
+  
+      if (item.fixDisc) {
+        fixedPrice -= fixDisc
+      }
+    } else {
+      fixedPrice = 0;
+    }
+  } else {
+    fixedPrice = unitPrice || 0;
+  }
+  
+  
+  
+  // let gstAmnt;
+  // if (pdfFlag === 1) {
+  //   gstAmnt = ((qty * discountAmount - discountAmountSec) * gst) / 100;
+  // } else {
+  //   gstAmnt = ((qty * fixedPrice - discountAmount - discountAmountSec) * gst) / 100;
+  // }
+  
+  
+  
+      
+            // let gstAmnt = pdf_flag === 1
+            // ? ((qty * discountAmount - discountAmountSec) * gst) / 100
+            // : ((qty * fixedPrice - discountAmount - discountAmountSec) * gst) / 100;
+          
+          // console.log("First GST Calculation:", { pdf_flag, qty, discountAmount, discountAmountSec, fixedPrice, gst, gstAmnt });
+          let gstAmnt = pdf_flag === 1
+          ? ((qty * fixedPrice - discountAmount - discountAmountSec) * gst) / 100
+          : ((qty * (fixedPrice - discountAmount - discountAmountSec)) * gst) / 100;
+        
+          console.log("Final GST Calculation:", { pdf_flag, qty, discountAmount, discountAmountSec, fixedPrice, gst, gstAmnt });
+          console.log("checking condition",pdf_flag === 1 ? 'block1':'block2' )
+  
+          const basePrice = qty * fixedPrice;
+          return sum + basePrice + gstAmnt;
         }
         return sum;
       }, 0);
-
+      
+      
       const totalGst = updatedOrderLineItems.reduce((sum, item) => {
         if (item.statusFlag !== 2) {
-          const basePrice = item.qty * parseFloat(item.unitPrice);
-          const gstAmount = basePrice * (parseFloat(item.gst) / 100);
-          return sum + gstAmount;
+          const qty = item.qty || 0;
+          const unitPrice = parseFloat(item.unitPrice) || 0;
+          const discountAmount = parseFloat(item.discountAmount) || 0;
+          const discountAmountSec = parseFloat(item.discountAmountSec) || 0;
+          const discountPercentageThird = parseFloat(item.discountPercentageThird) || 0;
+          const fixDisc = parseFloat(item.fixDisc) || 0;
+          const gst = parseFloat(item.gst) || 0;
+      
+  
+          let fixedPrice = 0;
+  if (pdf_flag !== 1) {
+    if (unitPrice) {
+      if (discountPercentageThird) {
+        fixedPrice = item.unitPrice - item.discountPercentageThird;
+      } else {
+        fixedPrice = item.unitPrice;
+      }
+  
+      if (item.fixDisc) {
+        fixedPrice -= fixDisc
+      }
+    } else {
+      fixedPrice = 0;
+    }
+  } else {
+    fixedPrice = unitPrice || 0;
+  }
+  
+  
+          // Apply both discountPercentageThird and fixDisc
+          let gstAmnt = pdf_flag === 1
+          ? ((qty * fixedPrice - discountAmount - discountAmountSec) * gst) / 100
+          : ((qty * (fixedPrice - discountAmount - discountAmountSec)) * gst) / 100;
+        
+            
+          return sum + gstAmnt;
         }
         return sum;
       }, 0);
@@ -1628,6 +1952,10 @@ const handleAddItems = () => {
   //     });
   // };
 
+  useEffect(() => {
+    console.log("Updated orderLineItems:", order.orderLineItems);
+}, [order.orderLineItems]);
+
   const updateDisOrder = async () => {
     try {
       console.log('selectedStatus at the start of updateDisOrder:', selectedStatus);
@@ -1674,7 +2002,7 @@ const handleAddItems = () => {
             item.gross = totalFormatted; // Update gross with totalFormatted
             item.sizeDesc = item.size;
             item.price = item.unitPrice;
-            item.discountPercentageThird = item.fixDisc || 0;
+            item.discountPercentageThird = parseFloat(item.discountPercentageThird) || parseFloat(item.fixDisc) || 0;
           }
         }
   
@@ -1748,7 +2076,7 @@ const handleAddItems = () => {
             discAmnt: item.discAmnt  || 0,
             discAmntSec: item.discAmntSec  || 0,
             gstAmnt: item.gstAmnt  || 0,
-            discountPercentageThird: item.discountPercentageThird  || 0,
+discountPercentageThird: parseFloat(item.discountPercentageThird) || parseFloat(item.fixDisc) || 0,
             statusFlag: item.statusFlag  || 0,
             styleId: item?.styleId  || 0,
             closeFlag: 0,
@@ -1768,7 +2096,8 @@ const handleAddItems = () => {
       console.log('requestData====>', requestData);
   console.log('requestData====>', requestData.orderLineItems);
       console.log('requestData====>', requestData.orderLineItems.length);
-  
+  console.log("Final orderLineItems being sent:", JSON.stringify(requestData.orderLineItems, null, 2));
+
       const response = await axios.post(
         `${global?.userData?.productURL}${API.UPDATE_DIS_ORDER}`,
         requestData,
@@ -1807,6 +2136,11 @@ const handleAddItems = () => {
       }
     }
   };
+
+
+ 
+  
+
   
   useEffect(() => {
     if (order && order.orderLineItems) {
@@ -2024,25 +2358,134 @@ const handleAddItems = () => {
       });
 
       const totalQty = updatedOrderLineItems.reduce((sum, item) => {
-        return item.statusFlag !== 2 ? sum + item.qty : sum;
+        return item.statusFlag !== 2 ? sum + parseFloat(item.qty || 0) : sum;
       }, 0);
+      
 
+      // const totalAmount = updatedOrderLineItems.reduce((sum, item) => {
+      //   if (item.statusFlag !== 2) {
+      //     const basePrice = item.qty * parseFloat(item.unitPrice);
+      //     const gstAmount = basePrice * (parseFloat(item.gst) / 100);
+      //     return sum + basePrice + gstAmount;
+      //   }
+      //   return sum;
+      // }, 0);
+
+
+    
       const totalAmount = updatedOrderLineItems.reduce((sum, item) => {
         if (item.statusFlag !== 2) {
-          const basePrice = item.qty * parseFloat(item.unitPrice);
-          const gstAmount = basePrice * (parseFloat(item.gst) / 100);
-          return sum + basePrice + gstAmount;
+          const qty = item.qty || 0;
+          const unitPrice = parseFloat(item.unitPrice) || 0;
+          const discountAmount = parseFloat(item.discountAmount) || 0;
+          const discountAmountSec = parseFloat(item.discountAmountSec) || 0;
+          const discountPercentageThird = parseFloat(item.discountPercentageThird) || 0;
+          const fixDisc = parseFloat(item.fixDisc) || 0;
+          const gst = parseFloat(item.gst) || 0;
+          const pdfFlag = Number(pdf_flag); 
+  
+      let fixedPrice = 0;
+  if (pdfFlag !== 1) {
+    if (unitPrice) {
+      if (discountPercentageThird) {
+        fixedPrice = item.unitPrice - item.discountPercentageThird;
+      } else {
+        fixedPrice = item.unitPrice;
+      }
+  
+      if (item.fixDisc) {
+        fixedPrice -= fixDisc
+      }
+    } else {
+      fixedPrice = 0;
+    }
+  } else {
+    fixedPrice = unitPrice || 0;
+  }
+  
+  
+  
+  // let gstAmnt;
+  // if (pdfFlag === 1) {
+  //   gstAmnt = ((qty * discountAmount - discountAmountSec) * gst) / 100;
+  // } else {
+  //   gstAmnt = ((qty * fixedPrice - discountAmount - discountAmountSec) * gst) / 100;
+  // }
+  
+  
+  
+      
+            // let gstAmnt = pdf_flag === 1
+            // ? ((qty * discountAmount - discountAmountSec) * gst) / 100
+            // : ((qty * fixedPrice - discountAmount - discountAmountSec) * gst) / 100;
+          
+          // console.log("First GST Calculation:", { pdf_flag, qty, discountAmount, discountAmountSec, fixedPrice, gst, gstAmnt });
+          let gstAmnt = pdf_flag === 1
+          ? ((qty * fixedPrice - discountAmount - discountAmountSec) * gst) / 100
+          : ((qty * (fixedPrice - discountAmount - discountAmountSec)) * gst) / 100;
+        
+          console.log("Final GST Calculation:", { pdf_flag, qty, discountAmount, discountAmountSec, fixedPrice, gst, gstAmnt });
+          console.log("checking condition",pdf_flag === 1 ? 'block1':'block2' )
+  
+          const basePrice = qty * fixedPrice;
+          return sum + basePrice + gstAmnt;
         }
         return sum;
       }, 0);
-
+      
+      
       const totalGst = updatedOrderLineItems.reduce((sum, item) => {
         if (item.statusFlag !== 2) {
-          const basePrice = item.qty * parseFloat(item.unitPrice);
-          return sum + basePrice * (parseFloat(item.gst) / 100);
+          const qty = item.qty || 0;
+          const unitPrice = parseFloat(item.unitPrice) || 0;
+          const discountAmount = parseFloat(item.discountAmount) || 0;
+          const discountAmountSec = parseFloat(item.discountAmountSec) || 0;
+          const discountPercentageThird = parseFloat(item.discountPercentageThird) || 0;
+          const fixDisc = parseFloat(item.fixDisc) || 0;
+          const gst = parseFloat(item.gst) || 0;
+      
+  
+          let fixedPrice = 0;
+  if (pdf_flag !== 1) {
+    if (unitPrice) {
+      if (discountPercentageThird) {
+        fixedPrice = item.unitPrice - item.discountPercentageThird;
+      } else {
+        fixedPrice = item.unitPrice;
+      }
+  
+      if (item.fixDisc) {
+        fixedPrice -= fixDisc
+      }
+    } else {
+      fixedPrice = 0;
+    }
+  } else {
+    fixedPrice = unitPrice || 0;
+  }
+  
+  
+          // Apply both discountPercentageThird and fixDisc
+          let gstAmnt = pdf_flag === 1
+          ? ((qty * fixedPrice - discountAmount - discountAmountSec) * gst) / 100
+          : ((qty * (fixedPrice - discountAmount - discountAmountSec)) * gst) / 100;
+        
+            
+          return sum + gstAmnt;
         }
         return sum;
       }, 0);
+  
+      
+      // const totalGst = updatedOrderLineItems.reduce((sum, item) => {
+      //   if (item.statusFlag !== 2) {
+      //     const basePrice = item.qty * parseFloat(item.unitPrice);
+      //     return sum + basePrice * (parseFloat(item.gst) / 100);
+      //   }
+      //   return sum;
+      // }, 0);
+      
+
 
       const {roundedTotal, roundOff} = calculateRoundOff(totalAmount);
       const {roundedGst, gstRoundOff} = calculateRoundOff(totalGst);
@@ -2114,20 +2557,40 @@ const handleAddItems = () => {
 
     const checkboxColor = getCheckboxColor(item.statusFlag);
 
+    // let fixedPrice = 0;
+    // if (pdf_flag !== 1) {
+    //   if (item.discountPercentageThird) {
+    //     if (item.unitPrice) {
+    //       fixedPrice = item.unitPrice - item.discountPercentageThird;
+    //     } else {
+    //       fixedPrice = 0;
+    //     }
+    //   } else {
+    //     fixedPrice = item.unitPrice || 0;
+    //   }
+    // } else {
+    //   fixedPrice = item.unitPrice || 0;
+    // }
+
     let fixedPrice = 0;
-    if (pdf_flag === 1) {
-      if (item.discountPercentageThird) {
-        if (item.unitPrice) {
-          fixedPrice = item.unitPrice - item.discountPercentageThird;
-        } else {
-          fixedPrice = 0;
-        }
-      } else {
-        fixedPrice = item.unitPrice || 0;
-      }
+if (pdf_flag !== 1) {
+  if (item.unitPrice) {
+    if (item.discountPercentageThird) {
+      fixedPrice = item.unitPrice - item.discountPercentageThird;
     } else {
-      fixedPrice = item.unitPrice || 0;
+      fixedPrice = item.unitPrice;
     }
+
+    if (item.fixDisc) {
+      fixedPrice -= item.fixDisc;
+    }
+  } else {
+    fixedPrice = 0;
+  }
+} else {
+  fixedPrice = item.unitPrice || 0;
+}
+
 
     // console.log('Fixed Price:', fixedPrice);
 
@@ -2675,7 +3138,7 @@ const handleAddItems = () => {
                     marginRight: 10,
                     marginVertical: 5,
                   }}>
-                  {item?.discountPercentageThird}
+                  {item?.discountPercentageThird|| item.fixDisc}
                 </Text>
               </View>
             )}
@@ -3017,8 +3480,7 @@ const handleAddItems = () => {
   );
 };
 
-const getStyles = colors =>
-  StyleSheet.create({
+const getStyles = (colors,screenHeight) => StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: '#fff',
@@ -3147,15 +3609,29 @@ const getStyles = colors =>
       marginRight: 5,
       marginLeft: 20,
     },
+    // dropdownContainer: {
+    //   marginLeft: 15,
+    //   marginTop: 1,
+    //   marginBottom: 50,
+    //   width: '51%',
+    //   backgroundColor: 'white',
+    //   borderWidth: 0.5,
+    //   borderRadius: 10,
+    //   alignSelf: 'center',
+    //   ...(screenHeight > 20 ? { top: 50 } : { bottom: 50 }), // Adjust based on screen size
+
+    // },
+
     dropdownContainer: {
-      marginLeft: 15,
-      marginTop: 1,
-      marginBottom: 50,
+      position: 'absolute',
       width: '51%',
+      alignSelf: 'center',
       backgroundColor: 'white',
       borderWidth: 0.5,
       borderRadius: 10,
-      alignSelf: 'center',
+      zIndex: 10,
+      elevation: 10,
+      ...(screenHeight > 700 ? { top: 35 } : { bottom: 47 }), // Adjust based on screen size
     },
     dropdownOption: {
       padding: 10,

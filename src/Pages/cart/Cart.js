@@ -513,24 +513,73 @@ const handleGstChange = (index, text) => {
     }));
   }
 };
+const [fixDiscValues, setFixDiscValues] = useState({});
+
+const handleFixDiscChange = (index, text) => {
+  // Allow only whole numbers (no decimals)
+  const isValidInput = /^\d*$/.test(text);
+
+  if (isValidInput) {
+    let validFixDisc = text.trim() === '' ? '0' : parseInt(text, 10).toString();
+
+
+    setFixDiscValues(prevValues => ({
+      ...prevValues,
+      [index]: validFixDisc,
+    }));
+  }
+};
+
 
   
 
-const grossPrices = cartItems.map(item => {
-  if (!item || !item.quantity) return 0; // Fallback if item or quantity is missing
+// const grossPrices = cartItems.map(item => {
+//   if (!item || !item.quantity) return 0; // Fallback if item or quantity is missing
 
-  // Determine the appropriate price based on pdf_flag and isEnabled
-  const price = pdf_flag
-    ? item?.mrp || 0 // If pdf_flag is enabled, show mrp
+//   // Determine the appropriate price based on pdf_flag and isEnabled
+//   const price = pdf_flag
+//     ? item?.mrp || 0 // If pdf_flag is enabled, show mrp
+//     : isEnabled
+//     ? item?.retailerPrice || 0 // If isEnabled is true, show retailerPrice
+//     : item?.dealerPrice || item?.price || 0; // Otherwise, show dealerPrice or price
+
+    
+//   // Calculate gross price for this item
+//   const grossPrice = (Number(price) * Number(item?.quantity || 0)).toFixed(2);
+
+//   return parseFloat(grossPrice); // Convert to a float for accurate display
+// });
+
+const grossPrices = cartItems.map((item, index) => {
+  if (!item || !item.quantity) return 0; // Ensure item and quantity exist
+
+  // Determine the price based on pdf_flag and isEnabled
+  let price = pdf_flag
+    ? item?.mrp || 0 // If pdf_flag is enabled, use MRP
     : isEnabled
-    ? item?.retailerPrice || 0 // If isEnabled is true, show retailerPrice
-    : item?.dealerPrice || item?.price || 0; // Otherwise, show dealerPrice or price
+    ? item?.retailerPrice || 0 // If enabled, use retailerPrice
+    : item?.dealerPrice || item?.price || 0; // Otherwise, use dealerPrice or price
 
-  // Calculate gross price for this item
-  const grossPrice = (Number(price) * Number(item?.quantity || 0)).toFixed(2);
+  // If pdf_flag is enabled, use price directly
+  if (pdf_flag) {
+    return parseFloat((Number(price) * Number(item?.quantity || 0)).toFixed(2));
+  }
 
-  return parseFloat(grossPrice); // Convert to a float for accurate display
+  // Get updated fixDisc value from state, fallback to item.fixDisc
+  let updatedFixDisc = fixDiscValues[index] !== undefined 
+    ? Number(fixDiscValues[index]) 
+    : Number(item.fixDisc || 0);
+
+  // Ensure fixedPrice does not go negative
+  let fixedPrice = Math.max(price - updatedFixDisc, 0);
+
+  // Calculate gross price
+  const grossPrice = (fixedPrice * Number(item?.quantity || 0)).toFixed(2);
+
+  return parseFloat(grossPrice); // Convert to float for accurate display
 });
+
+
 
 
   // Calculate the total gross price
@@ -1637,17 +1686,18 @@ const grossPrices = cartItems.map(item => {
         : isEnabled
         ? item?.retailerPrice?.toString() // Otherwise, use retailerPrice if isEnabled
         : item?.dealerPrice?.toString() || item?.price?.toString(),
-        gross : (
-          parseFloat(
-            pdf_flag
-              ? item?.mrp || 0 // Use mrp if pdf_flag is enabled
-              : isEnabled
-              ? item?.retailerPrice || 0 // Use retailerPrice if isEnabled
-              : item?.dealerPrice || 0 // Otherwise, use dealerPrice
-          ) *
-          (1 + (parseFloat(gstValues) || 0) / 100) *
-          (parseInt(item?.quantity) || 1)
-        ).toString(),
+        gross:lineItemTotals[index]?.toString() || '0',
+        // gross : (
+        //   parseFloat(
+        //     pdf_flag
+        //       ? item?.mrp || 0 // Use mrp if pdf_flag is enabled
+        //       : isEnabled
+        //       ? item?.retailerPrice || 0 // Use retailerPrice if isEnabled
+        //       : item?.dealerPrice || 0 // Otherwise, use dealerPrice
+        //   ) *
+        //   (1 + (parseFloat(gstValues) || 0) / 100) *
+        //   (parseInt(item?.quantity) || 1)
+        // ).toString(),
         // gross: ((parseFloat(isEnabled ? item?.retailerPrice : item?.dealerPrice) * 1.05) * parseInt(item?.quantity || 1)).toString(),
         // gross: ((parseFloat(isEnabled ? item?.retailerPrice : item?.dealerPrice) * (parseFloat( 1 + parseFloat(gstValues)/100))) * parseInt(item?.quantity || 1)).toString(),
         // gross: parseFloat((parseFloat(isEnabled ? item?.retailerPrice?.toString() : item?.dealerPrice?.toString()) + parseFloat(item.gst.toString())) * parseInt(item.quantity))?.toString(),
@@ -1677,7 +1727,9 @@ const grossPrices = cartItems.map(item => {
         cedgeFlag: '0',
         cedgeStyleId: 0,
         discountPercentageSec: 0,
-        discountPercentageThird: 0,
+        discountPercentageThird: fixDiscValues[index] !== undefined
+        ? fixDiscValues[index].toString()
+        : item?.fixDisc?.toString() || '0', // Send fixedDisc as a string  
         closeFlag: 0,
         statusFlag: 0,
         poId: 0,
@@ -2045,23 +2097,94 @@ const grossPrices = cartItems.map(item => {
   //   return totalPrice;
   // };
 
+  // const calculateTotalPrice = (styleId, colorId) => {
+  //   let totalPrice = 0;
+    
+  //   for (let item of cartItems) {
+  //     if (item.styleId === styleId && item.colorId === colorId) {
+  //       const price = pdf_flag
+  //         ? parseFloat(item?.mrp?.toString() || 0) // If pdf_flag is true, use mrp
+  //         : isEnabled
+  //         ? parseFloat(item?.retailerPrice?.toString() || 0) // If isEnabled is true, use retailerPrice
+  //         : parseFloat(item?.dealerPrice?.toString() || item?.price?.toString() || 0); // Otherwise, use dealerPrice or price
+  
+  //       totalPrice += price * item.quantity; // Multiply price by quantity and accumulate total price
+  //     }
+  //   }
+  
+  //   return totalPrice.toFixed(2); // Ensure the result is formatted to 2 decimal places
+  // };
   const calculateTotalPrice = (styleId, colorId) => {
     let totalPrice = 0;
-    
-    for (let item of cartItems) {
+  
+    cartItems.forEach((item, index) => {
       if (item.styleId === styleId && item.colorId === colorId) {
-        const price = pdf_flag
-          ? parseFloat(item?.mrp?.toString() || 0) // If pdf_flag is true, use mrp
+        let price = pdf_flag
+          ? item?.mrp || 0 // If pdf_flag is enabled, use MRP
           : isEnabled
-          ? parseFloat(item?.retailerPrice?.toString() || 0) // If isEnabled is true, use retailerPrice
-          : parseFloat(item?.dealerPrice?.toString() || item?.price?.toString() || 0); // Otherwise, use dealerPrice or price
+          ? item?.retailerPrice || 0 // If enabled, use retailerPrice
+          : item?.dealerPrice || item?.price || 0; // Otherwise, use dealerPrice or price
   
-        totalPrice += price * item.quantity; // Multiply price by quantity and accumulate total price
+        // If pdf_flag is enabled, use price directly
+        if (pdf_flag) {
+          totalPrice += price * (item?.quantity || 0);
+          return;
+        }
+  
+        // Get updated fixDisc value from state, fallback to item.fixDisc
+        let updatedFixDisc = fixDiscValues[index] !== undefined 
+          ? Number(fixDiscValues[index]) 
+          : Number(item.fixDisc || 0);
+  
+        // Ensure fixedPrice does not go negative
+        let fixedPrice = Math.max(price - updatedFixDisc, 0);
+  
+        // Add to total price
+        totalPrice += fixedPrice * (item?.quantity || 0);
       }
-    }
+    });
   
-    return totalPrice.toFixed(2); // Ensure the result is formatted to 2 decimal places
+    return totalPrice.toFixed(2); // Format result to 2 decimal places
   };
+  
+
+  const lineItemTotals = cartItems.map((item, index) => {
+    if (!item || !item.quantity) return 0; // Ensure item and quantity exist
+  
+    let price = pdf_flag
+      ? item?.mrp || 0
+      : isEnabled
+      ? item?.retailerPrice || 0
+      : item?.dealerPrice || item?.price || 0;
+  
+    let quantity = Number(item?.quantity || 0);
+    let updatedFixDisc = fixDiscValues[index] !== undefined 
+      ? Number(fixDiscValues[index]) 
+      : Number(item.fixDisc || 0);
+  
+    let fixedPrice = Math.max(price - updatedFixDisc, 0);
+    
+    let discountAmount = Number(item?.discountAmount || 0);
+    let discountAmountSec = Number(item?.discountAmountSec || 0);
+    let discountPercentageSec = Number(item?.discountPercentageSec || 0);
+    let gstRate = Number(item?.gst || 0);
+  
+    // Calculate gstAmnt based on pdf_flag
+    let gstAmnt = pdf_flag
+      ? ((quantity * discountAmount - discountAmountSec) * gstRate) / 100 || 0
+      : ((quantity * fixedPrice - discountAmount - discountAmountSec) * gstRate) / 100 || 0;
+  
+    // Calculate lineTotal based on pdf_flag
+    let lineTotal = pdf_flag
+      ? quantity * discountAmount - (quantity * discountAmount * discountPercentageSec) / 100 + gstAmnt
+      : (quantity * fixedPrice) - discountAmount - discountAmountSec + gstAmnt;
+  
+    return parseFloat(lineTotal.toFixed(2)); // Convert to float with 2 decimal places
+  });
+  
+  console.log(lineItemTotals); // Array of totals per line item
+  
+  
   
 
   const uniqueSets = new Set(
@@ -2103,31 +2226,64 @@ const grossPrices = cartItems.map(item => {
   //     return acc + itemGst; // Sum GST
   //   }, 0)
   //   .toFixed(2);
-  const totalGst = cartItems
-    .reduce((acc, item, index) => {
-      // Parse GST percentage as a float
-      const gstPercentage = parseFloat(
-        gstValues[index] !== undefined ? gstValues[index] : item.gst,
-      ); // Use updated GST if available
+  // const totalGst = cartItems
+  //   .reduce((acc, item, index) => {
+  //     // Parse GST percentage as a float
+  //     const gstPercentage = parseFloat(
+  //       gstValues[index] !== undefined ? gstValues[index] : item.gst,
+  //     ); // Use updated GST if available
 
-      // Parse price and quantity as floats for accurate calculations
-      const itemTotalPrice =
-      parseFloat(
-        pdf_flag
-          ? item?.mrp?.toString() // Use mrp if pdf_flag is true
-          : isEnabled
-          ? item?.retailerPrice?.toString() // Use retailerPrice if isEnabled is true
-          : item?.dealerPrice?.toString() || item?.price?.toString() // Otherwise, use dealerPrice or price
-      ) * parseFloat(item.quantity);
+  //     // Parse price and quantity as floats for accurate calculations
+  //     const itemTotalPrice =
+  //     parseFloat(
+  //       pdf_flag
+  //         ? item?.mrp?.toString() // Use mrp if pdf_flag is true
+  //         : isEnabled
+  //         ? item?.retailerPrice?.toString() // Use retailerPrice if isEnabled is true
+  //         : item?.dealerPrice?.toString() || item?.price?.toString() // Otherwise, use dealerPrice or price
+  //     ) * parseFloat(item.quantity);
     
 
-      // Calculate GST for the item
-      const itemGst = (itemTotalPrice * gstPercentage) / 100;
+  //     // Calculate GST for the item
+  //     const itemGst = (itemTotalPrice * gstPercentage) / 100;
 
-      // Accumulate GST
-      return acc + itemGst;
-    }, 0) // Initial accumulator is 0
-    .toFixed(2); // Round the final sum to 2 decimal places
+  //     // Accumulate GST
+  //     return acc + itemGst;
+  //   }, 0) // Initial accumulator is 0
+  //   .toFixed(2); // Round the final sum to 2 decimal places
+
+  const totalGst = cartItems
+  .reduce((acc, item, index) => {
+    // Parse GST percentage as a float
+    const gstPercentage = parseFloat(
+      gstValues[index] !== undefined ? gstValues[index] : item.gst
+    ); // Use updated GST if available
+
+    // Parse price and quantity for accurate calculations
+    let price = pdf_flag
+      ? parseFloat(item?.mrp) || 0 // Use MRP if pdf_flag is enabled
+      : isEnabled
+      ? parseFloat(item?.retailerPrice) || 0 // Use retailerPrice if isEnabled
+      : parseFloat(item?.dealerPrice) || parseFloat(item?.price) || 0; // Otherwise, use dealerPrice or price
+
+    // If pdf_flag is disabled, adjust price using fixDisc
+    if (!pdf_flag) {
+      let updatedFixDisc = fixDiscValues[index] !== undefined 
+        ? parseFloat(fixDiscValues[index]) 
+        : parseFloat(item.fixDisc || 0);
+
+      // Ensure fixedPrice does not go negative
+      price = Math.max(price - updatedFixDisc, 0);
+    }
+
+    // Calculate GST Amount
+    const itemGst = ((parseFloat(item.quantity) * price - parseFloat(item.discountAmount || 0) - parseFloat(item.discountAmountSec || 0)) * gstPercentage) / 100;
+
+    // Accumulate GST
+    return acc + itemGst;
+  }, 0) // Initial accumulator is 0
+  .toFixed(2); // Round the final sum to 2 decimal places
+
 
   // Calculate total amount
   // const totalAmount = (parseFloat(totalPrice) + parseFloat(totalGst)).toFixed(
@@ -3186,15 +3342,15 @@ useEffect(() => {
                           </View>
                         </View>
                         <View style={style.sizehead}>
-                          <View style={{flex: 0.5}}>
+                          <View style={{flex: 0.4}}>
                             <Text style={{color: '#000', marginLeft: 5}}>
                               SIZE
                             </Text>
                           </View>
-                          <View style={{flex: 0.8, marginLeft: 29}}>
-                            <Text style={{color: '#000'}}>QUANTITY</Text>
+                          <View style={{flex: 0.4, marginLeft: 32}}>
+                            <Text style={{color: '#000'}}>QTY</Text>
                           </View>
-                          <View style={{ flex: 0.5, marginLeft: 30 }}>
+                          <View style={{ flex: 0.4, marginLeft: 37 }}>
   <Text style={{ color: '#000' }}>
     {pdf_flag ? 'MRP' : 'PRICE'}
   </Text>
@@ -3203,14 +3359,21 @@ useEffect(() => {
                           <View style={{flex: 0.4, marginLeft: 20}}>
                             <Text style={{color: '#000'}}>GST</Text>
                           </View>
+                          {!pdf_flag && (
+                          <View
+                            style={{flex: 0.4, marginRight: 8}}>
+                            <Text style={{color: '#000'}}>Fixed Disc</Text>
+                          </View>
+                          )}
                           <View
                             style={{flex: 0.5, marginLeft: 5, marginRight: 8}}>
-                            <Text style={{color: '#000'}}>GROSS PRICE</Text>
+                            <Text style={{color: '#000'}}>Gross Price</Text>
                           </View>
+                        
                           <TouchableOpacity
                             onPress={() => copyValueToClipboard(index)}>
                             <Image
-                              style={{height: 25, width: 25, marginRight: 8}}
+                              style={{height: 25, width: 25}}
                               source={require('../../../assets/copy.png')}
                             />
                           </TouchableOpacity>
@@ -3272,7 +3435,6 @@ useEffect(() => {
                       <View
                         style={{
                           flex: 0.4,
-                          marginLeft: 10,
                           borderBottomWidth: 1,
                           borderColor: '#000',
                         }}>
@@ -3293,7 +3455,7 @@ useEffect(() => {
                       </View>
                       <View
                         style={{
-                          flex: 0.2,
+                          flex: 0.3,
                           marginLeft: 30,
                           borderBottomWidth: 1,
                           borderColor: '#000',
@@ -3309,7 +3471,23 @@ useEffect(() => {
                           keyboardType="numeric" // Numeric input
                         />
                       </View>
-
+                      {!pdf_flag && (
+                      <View style={{flex: 0.3, marginLeft: 25, borderBottomWidth: 1,
+                          borderColor: '#000',}}>
+                    
+                      <TextInput
+    style={{color: '#000', alignSelf: 'center'}}
+    value={
+      fixDiscValues[index] !== undefined
+        ? fixDiscValues[index]
+        : item?.fixDisc?.toString()
+    }
+    onChangeText={text => handleFixDiscChange(index, text)}
+    keyboardType="numeric"
+  />
+                        
+                      </View>
+                      )}
                       <View style={{flex: 0.3, marginLeft: 30}}>
                         {/* <Text style={{color: '#000'}}>
                           {(
@@ -3324,7 +3502,9 @@ useEffect(() => {
                         <Text style={{color: '#000'}}>
                           {grossPrices[index]} {/* Individual gross price */}
                         </Text>
+                        
                       </View>
+                    
                       <TouchableOpacity onPress={() => handleRemoveItem(index)}>
                         <Image
                           style={style.buttonIcon}
@@ -3347,7 +3527,7 @@ useEffect(() => {
                           borderRadius: 20,
                           flex: 1,
                         }}>
-                        <View style={{flex: 1.5, marginLeft: 18}}>
+                        <View style={{flex: 1.1, marginLeft: 18}}>
                           <Text style={{color: '#000'}}>Total</Text>
                         </View>
                         {/* <View
@@ -3358,7 +3538,7 @@ useEffect(() => {
                           </Text>
                         </View> */}
                         <View
-  style={{flex: 2.1, marginLeft: 10, marginRight: 20}}>
+  style={{flex: 2.1, marginLeft: 10, marginRight: 30}}>
   <Text style={{color: '#000'}}>
     {calculateTotalQty(item.styleId, item.colorId) !== undefined
       ? Number(calculateTotalQty(item.styleId, item.colorId)).toFixed(2)
@@ -3370,7 +3550,7 @@ useEffect(() => {
                           <Text style={{color:"#000"}}>Total Set: {calculateTotalItems(item.styleId, item.colorId)}</Text>
                         </View> */}
                         <View
-                          style={{flex: 1.5, marginLeft: 90, marginRight: 10}}>
+                          style={{flex: 1.5, marginLeft: 90, }}>
                           <Text style={{color: '#000'}}>
                             {calculateTotalPrice(item.styleId, item.colorId)}
                           </Text>
@@ -4149,7 +4329,7 @@ const getStyles = colors =>
       alignItems: 'center',
     },
     quantityInputContainer: {
-      flex: 0.3,
+      flex: 0.4,
     },
     quantityInput: {
       borderWidth: 1,
