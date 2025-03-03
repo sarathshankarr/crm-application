@@ -54,10 +54,10 @@ const Cart = () => {
   const [inputValuess, setInputValuess] = useState({});
 
   const cartItems = useSelector(state => state.cartItems);
-console.log("cartItems======>",cartItems)
+  console.log('cartItems======>', cartItems);
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [selatedDate, setSelectedDate] = useState('Expected delivery date');
-  
+
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
@@ -260,7 +260,7 @@ console.log("cartItems======>",cartItems)
         quantity: item.qty || 1, // Default to 1 if quantity is not available
         dealerPrice: item.dealerPrice,
         retailerPrice: item.retailerPrice,
-        mrp:item.mrp,
+        mrp: item.mrp,
         price: item.unitPrice,
         gst: item.gst,
         imageUrls: item.imageUrls, // Add imageUrls to the cart item details
@@ -464,7 +464,7 @@ console.log("cartItems======>",cartItems)
             quantity: inputValue,
             dealerPrice: modalData?.price || 0,
             retailerPrice: modalData?.retailerPrice || 0,
-            mrp:modalData.mrp || 0,
+            mrp: modalData.mrp || 0,
             price: modalData?.price || 0,
             gst: item.gst || 0,
             sourceScreen: 'PackageDetail',
@@ -489,98 +489,105 @@ console.log("cartItems======>",cartItems)
   //   }));
   // };
 
+  const handleGstChange = (index, text) => {
+    // Allow only whole numbers (no decimals)
+    const isValidInput = /^\d*$/.test(text);
 
-const handleGstChange = (index, text) => {
-  // Allow only whole numbers (no decimals)
-  const isValidInput = /^\d*$/.test(text);
+    if (isValidInput) {
+      // Convert to integer, default to '0' if empty
+      let validGst = text.trim() === '' ? '0' : parseInt(text, 10).toString();
 
-  if (isValidInput) {
-    // Convert to integer, default to '0' if empty
-    let validGst = text.trim() === '' ? '0' : parseInt(text, 10).toString();
+      // Check if GST is more than 100
+      if (parseInt(validGst, 10) > 100) {
+        Alert.alert(
+          'crm.codeverse.co says', // Title of the alert
+          'GST % cannot be more than 100', // Message
+        );
+        return; // Prevent updating the state
+      }
 
-    // Check if GST is more than 100
-    if (parseInt(validGst, 10) > 100) {
-      Alert.alert(
-        'crm.codeverse.co says', // Title of the alert
-        'GST % cannot be more than 100', // Message
-      );
-      return; // Prevent updating the state
+      setGstValues(prevValues => ({
+        ...prevValues,
+        [index]: validGst, // Update GST value for the specific index/item
+      }));
     }
+  };
+  const [fixDiscValues, setFixDiscValues] = useState({});
 
-    setGstValues(prevValues => ({
-      ...prevValues,
-      [index]: validGst, // Update GST value for the specific index/item
-    }));
-  }
-};
-const [fixDiscValues, setFixDiscValues] = useState({});
+  // const handleFixDiscChange = (index, text) => {
+  //   // Allow only whole numbers (no decimals)
+  //   const isValidInput = /^\d*\.?\d*$/.test(text);
 
-const handleFixDiscChange = (index, text) => {
-  // Allow only whole numbers (no decimals)
-  const isValidInput = /^\d*$/.test(text);
+  //   if (isValidInput) {
+  //     let validFixDisc =
+  //       text.trim() === '' ? '0' : parseInt(text, 10).toString();
 
-  if (isValidInput) {
-    let validFixDisc = text.trim() === '' ? '0' : parseInt(text, 10).toString();
-
-
-    setFixDiscValues(prevValues => ({
-      ...prevValues,
-      [index]: validFixDisc,
-    }));
-  }
-};
-
-
+  //     setFixDiscValues(prevValues => ({
+  //       ...prevValues,
+  //       [index]: validFixDisc,
+  //     }));
+  //   }
+  // };
+  const handleFixDiscChange = (index, text) => {
+    // Allow numbers with optional decimals (e.g., 1, 1.1, 10.50)
+    const isValidInput = /^\d*\.?\d*$/.test(text);
+  
+    if (isValidInput) {
+      setFixDiscValues(prevValues => ({
+        ...prevValues,
+        [index]: text, // Keep the exact text entered by the user
+      }));
+    }
+  };
   
 
-// const grossPrices = cartItems.map(item => {
-//   if (!item || !item.quantity) return 0; // Fallback if item or quantity is missing
+  // const grossPrices = cartItems.map(item => {
+  //   if (!item || !item.quantity) return 0; // Fallback if item or quantity is missing
 
-//   // Determine the appropriate price based on pdf_flag and isEnabled
-//   const price = pdf_flag
-//     ? item?.mrp || 0 // If pdf_flag is enabled, show mrp
-//     : isEnabled
-//     ? item?.retailerPrice || 0 // If isEnabled is true, show retailerPrice
-//     : item?.dealerPrice || item?.price || 0; // Otherwise, show dealerPrice or price
+  //   // Determine the appropriate price based on pdf_flag and isEnabled
+  //   const price = pdf_flag
+  //     ? item?.mrp || 0 // If pdf_flag is enabled, show mrp
+  //     : isEnabled
+  //     ? item?.retailerPrice || 0 // If isEnabled is true, show retailerPrice
+  //     : item?.dealerPrice || item?.price || 0; // Otherwise, show dealerPrice or price
 
-    
-//   // Calculate gross price for this item
-//   const grossPrice = (Number(price) * Number(item?.quantity || 0)).toFixed(2);
+  //   // Calculate gross price for this item
+  //   const grossPrice = (Number(price) * Number(item?.quantity || 0)).toFixed(2);
 
-//   return parseFloat(grossPrice); // Convert to a float for accurate display
-// });
+  //   return parseFloat(grossPrice); // Convert to a float for accurate display
+  // });
 
-const grossPrices = cartItems.map((item, index) => {
-  if (!item || !item.quantity) return 0; // Ensure item and quantity exist
+  const grossPrices = cartItems.map((item, index) => {
+    if (!item || !item.quantity) return 0; // Ensure item and quantity exist
 
-  // Determine the price based on pdf_flag and isEnabled
-  let price = pdf_flag
-    ? item?.mrp || 0 // If pdf_flag is enabled, use MRP
-    : isEnabled
-    ? item?.retailerPrice || 0 // If enabled, use retailerPrice
-    : item?.dealerPrice || item?.price || 0; // Otherwise, use dealerPrice or price
+    // Determine the price based on pdf_flag and isEnabled
+    let price = pdf_flag
+      ? item?.mrp || 0 // If pdf_flag is enabled, use MRP
+      : isEnabled
+      ? item?.retailerPrice || 0 // If enabled, use retailerPrice
+      : item?.dealerPrice || item?.price || 0; // Otherwise, use dealerPrice or price
 
-  // If pdf_flag is enabled, use price directly
-  if (pdf_flag) {
-    return parseFloat((Number(price) * Number(item?.quantity || 0)).toFixed(2));
-  }
+    // If pdf_flag is enabled, use price directly
+    if (pdf_flag) {
+      return parseFloat(
+        (Number(price) * Number(item?.quantity || 0)).toFixed(2),
+      );
+    }
 
-  // Get updated fixDisc value from state, fallback to item.fixDisc
-  let updatedFixDisc = fixDiscValues[index] !== undefined 
-    ? Number(fixDiscValues[index]) 
-    : Number(item.fixDisc || 0);
+    // Get updated fixDisc value from state, fallback to item.fixDisc
+    let updatedFixDisc =
+      fixDiscValues[index] !== undefined
+        ? Number(fixDiscValues[index])
+        : Number(item.fixDisc || 0);
 
-  // Ensure fixedPrice does not go negative
-  let fixedPrice = Math.max(price - updatedFixDisc, 0);
+    // Ensure fixedPrice does not go negative
+    let fixedPrice = Math.max(price - updatedFixDisc, 0);
 
-  // Calculate gross price
-  const grossPrice = (fixedPrice * Number(item?.quantity || 0)).toFixed(2);
+    // Calculate gross price
+    const grossPrice = (fixedPrice * Number(item?.quantity || 0)).toFixed(2);
 
-  return parseFloat(grossPrice); // Convert to float for accurate display
-});
-
-
-
+    return parseFloat(grossPrice); // Convert to float for accurate display
+  });
 
   // Calculate the total gross price
   const totalGrossPrice = grossPrices
@@ -592,11 +599,11 @@ const grossPrices = cartItems.map((item, index) => {
 
   const textInputStyle = {
     borderWidth: 1,
-    borderColor: '#000',
+    borderColor: "#000",
     borderRadius: 5,
-    flex: 0.4,
-    color: '#000', // Default text color
-    textAlign: 'center',
+    width: "100%", // Ensures the input stays within the fixed container
+    color: "#000",
+    textAlign: "center",
   };
 
   useEffect(() => {
@@ -1080,7 +1087,7 @@ const grossPrices = cartItems.map((item, index) => {
     console.log('Comments changed:', text);
     setComments(text);
   };
-  
+
   const getLocations = () => {
     if (comp_flag === 0) {
       const apiUrl0 = `${global?.userData?.productURL}${API.GET_LOCATION_C0_LIST}`;
@@ -1278,27 +1285,30 @@ const grossPrices = cartItems.map((item, index) => {
 
   const [hasUserSelectedLocation, setHasUserSelectedLocation] = useState(false); // Flag to track manual selection
 
-  const [hasUserSelectedLocationDistributor, setHasUserSelectedLocationDistributor] = useState(false); // Flag to track manual selection
+  const [
+    hasUserSelectedLocationDistributor,
+    setHasUserSelectedLocationDistributor,
+  ] = useState(false); // Flag to track manual selection
 
   const handleLocationSelection = location => {
     setSelectedLocation(location.locationName);
     setSelectedLocationId(location.locationId);
     setHasUserSelectedLocation(true); // Set the flag to true when the user selects a location
-    setHasUserSelectedLocationDistributor(true)
+    setHasUserSelectedLocationDistributor(true);
     setFromToClicked(false);
     console.log('Selected Location:', location.locationName);
   };
-  
+
   const handleShipLocation = location => {
     setSelectedShipLocation(location.locationName);
     setSelectedShipLocationId(location.locationId);
     setShipFromToClicked(false);
   };
-  
+
   useEffect(() => {
     // Watch for changes in customerLocations
     console.log('Updated customerLocations:', customerLocations);
-  
+
     // Automatically select the first location if available and the user hasn't selected one
     if (customerLocations.length > 0 && !hasUserSelectedLocation) {
       console.log('First Location:', customerLocations[0]);
@@ -1307,12 +1317,10 @@ const grossPrices = cartItems.map((item, index) => {
     }
   }, [customerLocations]);
 
-
-  
   useEffect(() => {
     // Watch for changes in customerLocations for shipping location
     console.log('Updated dis:', customerLocations);
-  
+
     // Automatically select the first location for shipping if available and the user hasn't selected one
     if (customerLocations.length > 0 && !hasUserSelectedLocationDistributor) {
       console.log('First Location:', customerLocations[0]);
@@ -1324,7 +1332,7 @@ const grossPrices = cartItems.map((item, index) => {
   useEffect(() => {
     // Watch for changes in customerLocations for shipping location
     console.log('Updated dis:', distributorLocations);
-  
+
     // Automatically select the first location for shipping if available and the user hasn't selected one
     if (distributorLocations.length > 0 && !hasUserSelectedLocation) {
       console.log('First Location:', distributorLocations[0]);
@@ -1332,7 +1340,7 @@ const grossPrices = cartItems.map((item, index) => {
       setSelectedShipLocationId(distributorLocations[0].locationId);
     }
   }, [distributorLocations]);
-  
+
   const handleCustomerSelection = (firstName, lastName, customerId) => {
     setSelectedCustomer(`${firstName} ${lastName}`);
     setClicked(false);
@@ -1342,17 +1350,17 @@ const grossPrices = cartItems.map((item, index) => {
     setSelectedLocationId('');
     setSelectedShipLocationId('');
     setHasUserSelectedLocation(false); // Reset the manual selection flag
-    
+
     // Fetch locations for the customer
     console.log('Fetching customer locations for customerId:', customerId);
     getCustomerLocations(customerId);
-  
+
     const selectedCustomer = customers.find(
       customer => customer.customerId === customerId,
     );
     setSelectedCustomerDetails([selectedCustomer]);
   };
-  
+
   const handleDistributorSelection = (firstName, lastName, customerId) => {
     setSelectedDistributor(`${firstName} ${lastName}`);
     setClicked(false);
@@ -1362,19 +1370,16 @@ const grossPrices = cartItems.map((item, index) => {
     setSelectedLocationId('');
     setSelectedShipLocationId('');
     setHasUserSelectedLocationDistributor(false); // Reset the manual selection flag
-  
+
     // Fetch locations for the distributor
     console.log('Fetching distributor locations for customerId:', customerId);
     getCustomerLocations(customerId);
-  
+
     const selectedDistributor = distributors.find(
       distributor => distributor.id === customerId,
     );
     setSelectedDistributorDetails([selectedDistributor]);
   };
-  
-
-  
 
   useEffect(() => {
     if (clicked) {
@@ -1386,7 +1391,6 @@ const grossPrices = cartItems.map((item, index) => {
     setSelectedShipLocationId('');
     setCustomerLocations([]);
   }, [clicked, isEnabled]);
-  
 
   // const handleLocationSelection = location => {
   //   setSelectedLocation(location.locationName);
@@ -1469,7 +1473,6 @@ const grossPrices = cartItems.map((item, index) => {
     //   // No alert for Distributor or Retailer
     // }
 
-   
     if (switchStatus) {
       if (!selectedCustomer) {
         Alert.alert('Alert', 'Please select a customer.');
@@ -1521,33 +1524,34 @@ const grossPrices = cartItems.map((item, index) => {
         : isEnabled
         ? parseFloat(cartItems[i].retailerPrice) || 0
         : parseFloat(cartItems[i].dealerPrice) || 0;
-    
+
       if (itemPrice === 0) {
-        Alert.alert('crm.codeverse.co says', 'Style price is mandatory for creating an order.');
+        Alert.alert(
+          'crm.codeverse.co says',
+          'Style price is mandatory for creating an order.',
+        );
         return;
       }
     }
-    
 
     setIsSubmitting(true);
 
-
     if (hold_qty_flag === 1) {
       const availabilityCheck = await checkStyleAvailability(cartItems);
-  
+
       if (!availabilityCheck.success) {
         Alert.alert('Alert', availabilityCheck.message);
         setIsSubmitting(false);
         return;
       }
     }
-  //   if (hold_qty_flag === 1) {
-  //   if (!availabilityCheck.success) {
-  //     Alert.alert('Alert', availabilityCheck.message);
-  //     setIsSubmitting(false);
-  //     return;
-  //   }
-  // }
+    //   if (hold_qty_flag === 1) {
+    //   if (!availabilityCheck.success) {
+    //     Alert.alert('Alert', availabilityCheck.message);
+    //     setIsSubmitting(false);
+    //     return;
+    //   }
+    // }
 
     setIsSubmitting(true);
 
@@ -1636,18 +1640,17 @@ const grossPrices = cartItems.map((item, index) => {
     //       ? gstValues[index]
     //       : item.gst,
     //   ); // Use gstValues if available and valid, otherwise fallback to item.gst
-      
+
     //   // Use mrp if pdf_flag is enabled, otherwise use retailerPrice or dealerPrice
     //   const itemTotalPrice =
     //     pdf_flag
     //       ? parseFloat(item?.mrp || 0) // If pdf_flag is true, use mrp
     //       : parseFloat(isEnabled ? item?.retailerPrice : item?.dealerPrice); // Otherwise, use retailerPrice or dealerPrice
-      
+
     //   const itemGst = (itemTotalPrice * gstPercentage) / 100;
     //   return acc + itemGst; // Sum GST
     // }, 0)
     // .toFixed(2);
-  
 
     // Calculate total amount
     // const totalAmount = (
@@ -1681,12 +1684,12 @@ const grossPrices = cartItems.map((item, index) => {
         gsCode: '8907536002462',
         availQty: item.quantity.toString(),
         // price: item.price.toString(),
-        price : pdf_flag
-        ? item?.mrp?.toString() // If pdf_flag is enabled, use mrp
-        : isEnabled
-        ? item?.retailerPrice?.toString() // Otherwise, use retailerPrice if isEnabled
-        : item?.dealerPrice?.toString() || item?.price?.toString(),
-        gross:lineItemTotals[index]?.toString() || '0',
+        price: pdf_flag
+          ? item?.mrp?.toString() // If pdf_flag is enabled, use mrp
+          : isEnabled
+          ? item?.retailerPrice?.toString() // Otherwise, use retailerPrice if isEnabled
+          : item?.dealerPrice?.toString() || item?.price?.toString(),
+        gross: lineItemTotals[index]?.toString() || '0',
         // gross : (
         //   parseFloat(
         //     pdf_flag
@@ -1711,9 +1714,11 @@ const grossPrices = cartItems.map((item, index) => {
               ? item?.mrp?.toString() // If pdf_flag is enabled, use mrp
               : isEnabled
               ? item?.retailerPrice?.toString() // If isEnabled is true, use retailerPrice
-              : item?.dealerPrice?.toString() // Otherwise, use dealerPrice
-          ) || parseFloat(item?.price?.toString()) * parseInt(item?.quantity, 10) // Fallback to price if other values are not available
-        )?.toString(),        
+              : item?.dealerPrice?.toString(), // Otherwise, use dealerPrice
+          ) ||
+          parseFloat(item?.price?.toString()) * parseInt(item?.quantity, 10)
+        ) // Fallback to price if other values are not available
+          ?.toString(),
         itemStatus: 'OPEN',
         pcqty: '0',
         pack_qty: 0,
@@ -1727,17 +1732,18 @@ const grossPrices = cartItems.map((item, index) => {
         cedgeFlag: '0',
         cedgeStyleId: 0,
         discountPercentageSec: 0,
-        discountPercentageThird: fixDiscValues[index] !== undefined
-        ? fixDiscValues[index].toString()
-        : item?.fixDisc?.toString() || '0', // Send fixedDisc as a string  
+        discountPercentageThird:
+          fixDiscValues[index] !== undefined
+            ? fixDiscValues[index].toString()
+            : item?.fixDisc?.toString() || '0', // Send fixedDisc as a string
         closeFlag: 0,
         statusFlag: 0,
         poId: 0,
         orgPrice: pdf_flag
-        ? item?.mrp?.toString() // If pdf_flag is enabled, use mrp
-        : isEnabled
-        ? item?.retailerPrice?.toString() // If isEnabled is true, use retailerPrice
-        : item?.dealerPrice?.toString() || item?.price?.toString(), // Otherwise, use dealerPrice or fallback to price      
+          ? item?.mrp?.toString() // If pdf_flag is enabled, use mrp
+          : isEnabled
+          ? item?.retailerPrice?.toString() // If isEnabled is true, use retailerPrice
+          : item?.dealerPrice?.toString() || item?.price?.toString(), // Otherwise, use dealerPrice or fallback to price
       })),
       comments: comments,
       customerType: customerType,
@@ -1876,26 +1882,26 @@ const grossPrices = cartItems.map((item, index) => {
   const handleDateConfirm = date => {
     const today = new Date();
     today.setHours(0, 0, 0, 0); // Set time to midnight for comparison
-  
+
     if (date < today) {
       Alert.alert(
         'Invalid Date',
-        "Please select today's date or a future date."
+        "Please select today's date or a future date.",
       );
       hideDatePicker();
       return;
     }
-  
+
     console.warn('A date has been picked: ', date);
-  
+
     // Extract day, month, and year
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0'); // getMonth() returns month from 0-11
     const year = date.getFullYear();
-  
+
     // Format date as DD-MM-YYYY
     const formattedDate = `${day}-${month}-${year}`;
-  
+
     setSelectedDate('Expected Delivery Date: ' + formattedDate);
     setShipDate(date); // Store selected date
     hideDatePicker();
@@ -1990,12 +1996,25 @@ const grossPrices = cartItems.map((item, index) => {
   //   }
   // };
 
+  // const handleIncrementQuantityCart = index => {
+  //   const updatedItems = [...cartItems];
+  //   updatedItems[index].quantity =
+  //     parseInt(updatedItems[index].quantity, 10) + 1;
+  //   dispatch(updateCartItem(index, updatedItems[index]));
+  // };
+
   const handleIncrementQuantityCart = index => {
     const updatedItems = [...cartItems];
-    updatedItems[index].quantity =
-      parseInt(updatedItems[index].quantity, 10) + 1;
+
+    // Ensure quantity is a number, default to 0 if empty or invalid
+    let currentQuantity = parseInt(updatedItems[index].quantity, 10);
+    if (isNaN(currentQuantity)) {
+        currentQuantity = 0; // Default to 0 when input is empty
+    }
+
+    updatedItems[index].quantity = currentQuantity + 1;
     dispatch(updateCartItem(index, updatedItems[index]));
-  };
+};
 
   // Function to handle decrementing quantity in cartItems
   const handleDecrementQuantityCart = index => {
@@ -2060,8 +2079,8 @@ const grossPrices = cartItems.map((item, index) => {
       return total; // Ignore invalid quantities
     }
   }, 0);
-  const formattedTotalQty = totalQty !== 0 ? parseFloat(totalQty.toFixed(5)) : '0';
-
+  const formattedTotalQty =
+    totalQty !== 0 ? parseFloat(totalQty.toFixed(5)) : '0';
 
   const calculateTotalQty = (styleId, colorId) => {
     let totalQty = 0;
@@ -2099,7 +2118,7 @@ const grossPrices = cartItems.map((item, index) => {
 
   // const calculateTotalPrice = (styleId, colorId) => {
   //   let totalPrice = 0;
-    
+
   //   for (let item of cartItems) {
   //     if (item.styleId === styleId && item.colorId === colorId) {
   //       const price = pdf_flag
@@ -2107,16 +2126,16 @@ const grossPrices = cartItems.map((item, index) => {
   //         : isEnabled
   //         ? parseFloat(item?.retailerPrice?.toString() || 0) // If isEnabled is true, use retailerPrice
   //         : parseFloat(item?.dealerPrice?.toString() || item?.price?.toString() || 0); // Otherwise, use dealerPrice or price
-  
+
   //       totalPrice += price * item.quantity; // Multiply price by quantity and accumulate total price
   //     }
   //   }
-  
+
   //   return totalPrice.toFixed(2); // Ensure the result is formatted to 2 decimal places
   // };
   const calculateTotalPrice = (styleId, colorId) => {
     let totalPrice = 0;
-  
+
     cartItems.forEach((item, index) => {
       if (item.styleId === styleId && item.colorId === colorId) {
         let price = pdf_flag
@@ -2124,68 +2143,70 @@ const grossPrices = cartItems.map((item, index) => {
           : isEnabled
           ? item?.retailerPrice || 0 // If enabled, use retailerPrice
           : item?.dealerPrice || item?.price || 0; // Otherwise, use dealerPrice or price
-  
+
         // If pdf_flag is enabled, use price directly
         if (pdf_flag) {
           totalPrice += price * (item?.quantity || 0);
           return;
         }
-  
+
         // Get updated fixDisc value from state, fallback to item.fixDisc
-        let updatedFixDisc = fixDiscValues[index] !== undefined 
-          ? Number(fixDiscValues[index]) 
-          : Number(item.fixDisc || 0);
-  
+        let updatedFixDisc =
+          fixDiscValues[index] !== undefined
+            ? Number(fixDiscValues[index])
+            : Number(item.fixDisc || 0);
+
         // Ensure fixedPrice does not go negative
         let fixedPrice = Math.max(price - updatedFixDisc, 0);
-  
+
         // Add to total price
         totalPrice += fixedPrice * (item?.quantity || 0);
       }
     });
-  
+
     return totalPrice.toFixed(2); // Format result to 2 decimal places
   };
-  
 
   const lineItemTotals = cartItems.map((item, index) => {
     if (!item || !item.quantity) return 0; // Ensure item and quantity exist
-  
+
     let price = pdf_flag
       ? item?.mrp || 0
       : isEnabled
       ? item?.retailerPrice || 0
       : item?.dealerPrice || item?.price || 0;
-  
+
     let quantity = Number(item?.quantity || 0);
-    let updatedFixDisc = fixDiscValues[index] !== undefined 
-      ? Number(fixDiscValues[index]) 
-      : Number(item.fixDisc || 0);
-  
+    let updatedFixDisc =
+      fixDiscValues[index] !== undefined
+        ? Number(fixDiscValues[index])
+        : Number(item.fixDisc || 0);
+
     let fixedPrice = Math.max(price - updatedFixDisc, 0);
-    
+
     let discountAmount = Number(item?.discountAmount || 0);
     let discountAmountSec = Number(item?.discountAmountSec || 0);
     let discountPercentageSec = Number(item?.discountPercentageSec || 0);
     let gstRate = Number(item?.gst || 0);
-  
+
     // Calculate gstAmnt based on pdf_flag
     let gstAmnt = pdf_flag
       ? ((quantity * discountAmount - discountAmountSec) * gstRate) / 100 || 0
-      : ((quantity * fixedPrice - discountAmount - discountAmountSec) * gstRate) / 100 || 0;
-  
+      : ((quantity * fixedPrice - discountAmount - discountAmountSec) *
+          gstRate) /
+          100 || 0;
+
     // Calculate lineTotal based on pdf_flag
     let lineTotal = pdf_flag
-      ? quantity * discountAmount - (quantity * discountAmount * discountPercentageSec) / 100 + gstAmnt
-      : (quantity * fixedPrice) - discountAmount - discountAmountSec + gstAmnt;
-  
+      ? quantity * discountAmount -
+        (quantity * discountAmount * discountPercentageSec) / 100 +
+        gstAmnt
+      : quantity * fixedPrice - discountAmount - discountAmountSec + gstAmnt;
+
     return parseFloat(lineTotal.toFixed(2)); // Convert to float with 2 decimal places
   });
-  
+
   console.log(lineItemTotals); // Array of totals per line item
-  
-  
-  
 
   const uniqueSets = new Set(
     cartItems.map(item => `${item.styleId}-${item.colorId}-${item.sizeId}`),
@@ -2200,8 +2221,8 @@ const grossPrices = cartItems.map((item, index) => {
           ? item?.mrp?.toString() // If pdf_flag is enabled, use mrp
           : isEnabled
           ? item?.retailerPrice?.toString() // If isEnabled is true, use retailerPrice
-          : item?.dealerPrice?.toString() || item?.price?.toString() // Otherwise, use dealerPrice or price
-      );      
+          : item?.dealerPrice?.toString() || item?.price?.toString(), // Otherwise, use dealerPrice or price
+      );
       const parsedQuantity = parseInt(item.quantity, 10);
 
       // Check if parsedPrice and parsedQuantity are valid numbers
@@ -2242,7 +2263,6 @@ const grossPrices = cartItems.map((item, index) => {
   //         ? item?.retailerPrice?.toString() // Use retailerPrice if isEnabled is true
   //         : item?.dealerPrice?.toString() || item?.price?.toString() // Otherwise, use dealerPrice or price
   //     ) * parseFloat(item.quantity);
-    
 
   //     // Calculate GST for the item
   //     const itemGst = (itemTotalPrice * gstPercentage) / 100;
@@ -2253,37 +2273,42 @@ const grossPrices = cartItems.map((item, index) => {
   //   .toFixed(2); // Round the final sum to 2 decimal places
 
   const totalGst = cartItems
-  .reduce((acc, item, index) => {
-    // Parse GST percentage as a float
-    const gstPercentage = parseFloat(
-      gstValues[index] !== undefined ? gstValues[index] : item.gst
-    ); // Use updated GST if available
+    .reduce((acc, item, index) => {
+      // Parse GST percentage as a float
+      const gstPercentage = parseFloat(
+        gstValues[index] !== undefined ? gstValues[index] : item.gst,
+      ); // Use updated GST if available
 
-    // Parse price and quantity for accurate calculations
-    let price = pdf_flag
-      ? parseFloat(item?.mrp) || 0 // Use MRP if pdf_flag is enabled
-      : isEnabled
-      ? parseFloat(item?.retailerPrice) || 0 // Use retailerPrice if isEnabled
-      : parseFloat(item?.dealerPrice) || parseFloat(item?.price) || 0; // Otherwise, use dealerPrice or price
+      // Parse price and quantity for accurate calculations
+      let price = pdf_flag
+        ? parseFloat(item?.mrp) || 0 // Use MRP if pdf_flag is enabled
+        : isEnabled
+        ? parseFloat(item?.retailerPrice) || 0 // Use retailerPrice if isEnabled
+        : parseFloat(item?.dealerPrice) || parseFloat(item?.price) || 0; // Otherwise, use dealerPrice or price
 
-    // If pdf_flag is disabled, adjust price using fixDisc
-    if (!pdf_flag) {
-      let updatedFixDisc = fixDiscValues[index] !== undefined 
-        ? parseFloat(fixDiscValues[index]) 
-        : parseFloat(item.fixDisc || 0);
+      // If pdf_flag is disabled, adjust price using fixDisc
+      if (!pdf_flag) {
+        let updatedFixDisc =
+          fixDiscValues[index] !== undefined
+            ? parseFloat(fixDiscValues[index])
+            : parseFloat(item.fixDisc || 0);
 
-      // Ensure fixedPrice does not go negative
-      price = Math.max(price - updatedFixDisc, 0);
-    }
+        // Ensure fixedPrice does not go negative
+        price = Math.max(price - updatedFixDisc, 0);
+      }
 
-    // Calculate GST Amount
-    const itemGst = ((parseFloat(item.quantity) * price - parseFloat(item.discountAmount || 0) - parseFloat(item.discountAmountSec || 0)) * gstPercentage) / 100;
+      // Calculate GST Amount
+      const itemGst =
+        ((parseFloat(item.quantity) * price -
+          parseFloat(item.discountAmount || 0) -
+          parseFloat(item.discountAmountSec || 0)) *
+          gstPercentage) /
+        100;
 
-    // Accumulate GST
-    return acc + itemGst;
-  }, 0) // Initial accumulator is 0
-  .toFixed(2); // Round the final sum to 2 decimal places
-
+      // Accumulate GST
+      return acc + itemGst;
+    }, 0) // Initial accumulator is 0
+    .toFixed(2); // Round the final sum to 2 decimal places
 
   // Calculate total amount
   // const totalAmount = (parseFloat(totalPrice) + parseFloat(totalGst)).toFixed(
@@ -2294,183 +2319,199 @@ const grossPrices = cartItems.map((item, index) => {
   //   (parseFloat(totalPrice) || 0) + (parseFloat(totalGst) || 0)
   // ).toFixed(2); // Total amount formatted to 2 decimal places
 
-  const [totalAmount, setTotalAmount] = useState(0);  // Updated to hold a number value
-const [roundOff, setRoundOff] = useState('');
+  const [totalAmount, setTotalAmount] = useState(0); // Updated to hold a number value
+  const [roundOff, setRoundOff] = useState('');
 
-// Function to calculate round-off value
-const calculateRoundOff = (amount) => {
-  const decimal = parseFloat((amount - Math.floor(amount)).toFixed(2));
+  // Function to calculate round-off value
+  const calculateRoundOff = amount => {
+    const decimal = parseFloat((amount - Math.floor(amount)).toFixed(2));
 
-  let roundOff = 0; // Default to 0 if there's no rounding required
+    let roundOff = 0; // Default to 0 if there's no rounding required
 
-  if (decimal >= 0.5) {
-    roundOff = (Math.ceil(amount) - amount).toFixed(2); // Positive round-off
-    roundOff = `+${roundOff}`; // Add "+" sign for positive values
-  } else if (decimal > 0) {
-    roundOff = (amount - Math.floor(amount)).toFixed(2); // Negative round-off
-    roundOff = `-${roundOff}`;
-  }
-
-  // Ensure "-0.00" or "+0.00" is returned as "0.00"
-  return parseFloat(roundOff) === 0 ? "0.00" : roundOff;
-};
-
-
-
-useEffect(() => {
-  const totalAmount = (parseFloat(totalGst) || 0) + (parseFloat(totalGrossPrice) || 0);
-  const roundOff = calculateRoundOff(totalAmount);
-
-  // Round the total amount to the nearest integer (so it reflects rounded value)
-  const roundedTotal = Math.round(totalAmount);
-
-  // Update state variables for totalAmount and roundOff
-  setTotalAmount(roundedTotal);
-  setRoundOff(roundOff);
-
-}, [totalGst, totalGrossPrice]); // Recalculate whenever totalGst or totalGrossPrice change
-
-// Handle price change function (for updating price input):
-// const handlePriceChange = (index, text) => {
-//   const updatedItems = [...cartItems];
-
-//   const isValidInput = /^\d*\.?\d*$/.test(text); // Validate input
-
-//   if (isValidInput) {
-//     const parsedPrice = text.includes('.')
-//       ? text
-//       : parseInt(text, 10).toString(); // Parse integer if no decimal
-//     const formattedPrice = text === '' ? '0' : parsedPrice;
-
-//     // Update price based on pdf_flag and isEnabled
-//     if (pdf_flag) {
-//       // If pdf_flag is enabled, update mrp
-//       updatedItems[index].mrp = formattedPrice;
-//     } else if (isEnabled) {
-//       // If isEnabled is true, update retailerPrice
-//       updatedItems[index].retailerPrice = formattedPrice;
-//     } else {
-//       // Otherwise, update dealerPrice
-//       updatedItems[index].dealerPrice = formattedPrice;
-//     }
-
-//     // After updating price, recalculate totalAmount and roundOff
-//     const totalAmount = (parseFloat(totalGst) || 0) + (parseFloat(totalGrossPrice) || 0);
-//     const roundOff = calculateRoundOff(totalAmount);
-
-//     // Round the total amount to the nearest integer
-//     const roundedTotal = Math.round(totalAmount);
-
-//     // Update the state again
-//     setTotalAmount(roundedTotal);
-//     setRoundOff(roundOff);
-
-//     // Dispatch updated cart item
-//     dispatch(updateCartItem(index, updatedItems[index]));
-//   }
-// };
-
-const [gstSlotData, setGstSlotData] = useState([]); // Store GST slot data
-
-
-useEffect(() => {
-  getGstSlot();
-}, []); // Fetch GST data on mount
-
-
-const getGstSlot = () => {
-  const apiUrl = `${global?.userData?.productURL}${API.GET_GST_SLOT}/${companyId}`;
-  console.log("API URL:", apiUrl);
-  
-  axios
-    .get(apiUrl, {
-      headers: {
-        Authorization: `Bearer ${global?.userData?.token?.access_token}`,
-      },
-    })
-    .then(response => {
-      const gstList = response?.data?.response?.gstList || [];
-      setGstSlotData(gstList);
-    })
-    .catch(error => {
-      console.error('Error fetching GST slot data:', error);
-    });
-};
-
-const handlePriceChange = (index, text) => {
-  if (/^\d*\.?\d*$/.test(text)) {
-    const parsedPrice = text.includes('.') ? text : parseInt(text, 10).toString();
-    const formattedPrice = text === '' ? '0' : parsedPrice;
-
-    const updatedItem = { ...cartItems[index], price: parseFloat(formattedPrice) || 0 };
-
-    if (pdf_flag) {
-      updatedItem.mrp = formattedPrice;
-    } else if (isEnabled) {
-      updatedItem.retailerPrice = formattedPrice;
-    } else {
-      updatedItem.dealerPrice = formattedPrice;
+    if (decimal >= 0.5) {
+      roundOff = (Math.ceil(amount) - amount).toFixed(2); // Positive round-off
+      roundOff = `+${roundOff}`; // Add "+" sign for positive values
+    } else if (decimal > 0) {
+      roundOff = (amount - Math.floor(amount)).toFixed(2); // Negative round-off
+      roundOff = `-${roundOff}`;
     }
 
-    // Recalculate GST dynamically
-    const gstSlot = gstSlotData.find(c => c.id === Number(updatedItem.gstSlotId));
-    if (gstSlot) {
-      const { greterAmount, smalestAmount, greterPercent, smalestPercent } = gstSlot;
-      updatedItem.gst = updatedItem.price >= greterAmount ? greterPercent : 
-                        updatedItem.price <= smalestAmount ? smalestPercent : 0;
-    } else {
-      updatedItem.gst = 0;
-    }
+    // Ensure "-0.00" or "+0.00" is returned as "0.00"
+    return parseFloat(roundOff) === 0 ? '0.00' : roundOff;
+  };
 
-    // Update Redux store
-    dispatch(updateCartItem(index, updatedItem));
-  }
-};
+  useEffect(() => {
+    const totalAmount =
+      (parseFloat(totalGst) || 0) + (parseFloat(totalGrossPrice) || 0);
+    const roundOff = calculateRoundOff(totalAmount);
 
-useEffect(() => {
-  getGstSlot();
-}, []);
+    // Round the total amount to the nearest integer (so it reflects rounded value)
+    const roundedTotal = Math.round(totalAmount);
 
-useEffect(() => {
-  if (gstSlotData.length > 0) {
-    // Update each cart item with the correct GST
-    const updatedCartItems = cartItems.map(item => {
-      const gstSlot = gstSlotData.find(c => c?.id === Number(item.gstSlotId));
-      if (gstSlot) {
-        const { greterAmount, smalestAmount, greterPercent, smalestPercent } = gstSlot;
-        item.gst = item.price >= greterAmount ? greterPercent : 
-                   item.price <= smalestAmount ? smalestPercent : 0;
+    // Update state variables for totalAmount and roundOff
+    setTotalAmount(roundedTotal);
+    setRoundOff(roundOff);
+  }, [totalGst, totalGrossPrice]); // Recalculate whenever totalGst or totalGrossPrice change
+
+  // Handle price change function (for updating price input):
+  // const handlePriceChange = (index, text) => {
+  //   const updatedItems = [...cartItems];
+
+  //   const isValidInput = /^\d*\.?\d*$/.test(text); // Validate input
+
+  //   if (isValidInput) {
+  //     const parsedPrice = text.includes('.')
+  //       ? text
+  //       : parseInt(text, 10).toString(); // Parse integer if no decimal
+  //     const formattedPrice = text === '' ? '0' : parsedPrice;
+
+  //     // Update price based on pdf_flag and isEnabled
+  //     if (pdf_flag) {
+  //       // If pdf_flag is enabled, update mrp
+  //       updatedItems[index].mrp = formattedPrice;
+  //     } else if (isEnabled) {
+  //       // If isEnabled is true, update retailerPrice
+  //       updatedItems[index].retailerPrice = formattedPrice;
+  //     } else {
+  //       // Otherwise, update dealerPrice
+  //       updatedItems[index].dealerPrice = formattedPrice;
+  //     }
+
+  //     // After updating price, recalculate totalAmount and roundOff
+  //     const totalAmount = (parseFloat(totalGst) || 0) + (parseFloat(totalGrossPrice) || 0);
+  //     const roundOff = calculateRoundOff(totalAmount);
+
+  //     // Round the total amount to the nearest integer
+  //     const roundedTotal = Math.round(totalAmount);
+
+  //     // Update the state again
+  //     setTotalAmount(roundedTotal);
+  //     setRoundOff(roundOff);
+
+  //     // Dispatch updated cart item
+  //     dispatch(updateCartItem(index, updatedItems[index]));
+  //   }
+  // };
+
+  const [gstSlotData, setGstSlotData] = useState([]); // Store GST slot data
+
+  useEffect(() => {
+    getGstSlot();
+  }, []); // Fetch GST data on mount
+
+  const getGstSlot = () => {
+    const apiUrl = `${global?.userData?.productURL}${API.GET_GST_SLOT}/${companyId}`;
+    console.log('API URL:', apiUrl);
+
+    axios
+      .get(apiUrl, {
+        headers: {
+          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+        },
+      })
+      .then(response => {
+        const gstList = response?.data?.response?.gstList || [];
+        setGstSlotData(gstList);
+      })
+      .catch(error => {
+        console.error('Error fetching GST slot data:', error);
+      });
+  };
+
+  const handlePriceChange = (index, text) => {
+    if (/^\d*\.?\d*$/.test(text)) {
+      const parsedPrice = text.includes('.')
+        ? text
+        : parseInt(text, 10).toString();
+      const formattedPrice = text === '' ? '0' : parsedPrice;
+
+      const updatedItem = {
+        ...cartItems[index],
+        price: parseFloat(formattedPrice) || 0,
+      };
+
+      if (pdf_flag) {
+        updatedItem.mrp = formattedPrice;
+      } else if (isEnabled) {
+        updatedItem.retailerPrice = formattedPrice;
       } else {
-        item.gst = 0;
+        updatedItem.dealerPrice = formattedPrice;
       }
-      return item;
+
+      // Recalculate GST dynamically
+      const gstSlot = gstSlotData.find(
+        c => c.id === Number(updatedItem.gstSlotId),
+      );
+      if (gstSlot) {
+        const {greterAmount, smalestAmount, greterPercent, smalestPercent} =
+          gstSlot;
+        updatedItem.gst =
+          updatedItem.price >= greterAmount
+            ? greterPercent
+            : updatedItem.price <= smalestAmount
+            ? smalestPercent
+            : 0;
+      } else {
+        updatedItem.gst = 0;
+      }
+
+      // Update Redux store
+      dispatch(updateCartItem(index, updatedItem));
+    }
+  };
+
+  useEffect(() => {
+    getGstSlot();
+  }, []);
+
+  useEffect(() => {
+    if (gstSlotData.length > 0) {
+      // Update each cart item with the correct GST
+      const updatedCartItems = cartItems.map(item => {
+        const gstSlot = gstSlotData.find(c => c?.id === Number(item.gstSlotId));
+        if (gstSlot) {
+          const {greterAmount, smalestAmount, greterPercent, smalestPercent} =
+            gstSlot;
+          item.gst =
+            item.price >= greterAmount
+              ? greterPercent
+              : item.price <= smalestAmount
+              ? smalestPercent
+              : 0;
+        } else {
+          item.gst = 0;
+        }
+        return item;
+      });
+
+      // Update Redux store or state
+      dispatch(updateCartItem(updatedCartItems));
+    }
+  }, [gstSlotData]); // Re-run when gstSlotData is updated
+
+  // ✅ Calculate GST Based on Price
+  const calculateGST = () => {
+    const updatedCart = cartItems.map((item, index) => {
+      const gstSlot = gstSlotData.find(c => c.id === Number(item.gstSlotId)); // Find matching GST slot
+
+      let gstPercent = 0;
+      if (gstSlot) {
+        const {greterAmount, smalestAmount, greterPercent, smalestPercent} =
+          gstSlot;
+        gstPercent =
+          item.price >= greterAmount
+            ? greterPercent
+            : item.price <= smalestAmount
+            ? smalestPercent
+            : 0;
+      }
+
+      return {...item, gst: gstValues[index] ?? gstPercent}; // Use manual GST if available
     });
 
-    // Update Redux store or state
-    dispatch(updateCartItem(updatedCartItems)); 
-  }
-}, [gstSlotData]); // Re-run when gstSlotData is updated
+    dispatch(updateCartItems(updatedCart)); // Update Redux state
+  };
 
-// ✅ Calculate GST Based on Price
-const calculateGST = () => {
-  const updatedCart = cartItems.map((item, index) => {
-    const gstSlot = gstSlotData.find(c => c.id === Number(item.gstSlotId)); // Find matching GST slot
-
-    let gstPercent = 0;
-    if (gstSlot) {
-      const { greterAmount, smalestAmount, greterPercent, smalestPercent } = gstSlot;
-      gstPercent = item.price >= greterAmount ? greterPercent : 
-                   item.price <= smalestAmount ? smalestPercent : 0;
-    }
-
-    return { ...item, gst: gstValues[index] ?? gstPercent }; // Use manual GST if available
-  });
-
-  dispatch(updateCartItems(updatedCart)); // Update Redux state
-};
-
-
-  
   const [locationInputValues, setLocationInputValues] = useState({
     locationName: '',
     phoneNumber: '',
@@ -2669,246 +2710,284 @@ const calculateGST = () => {
 
   const inputRef = useRef(null);
 
-useEffect(() => {
-  inputRef.current?.focus();
-}, []);
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
 
   return (
-<KeyboardAvoidingView
-  style={{ flex: 1, backgroundColor: '#fff' }}
-  behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-  keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
->
-<ScrollView>
-      <SafeAreaView style={{flex: 1, backgroundColor: '#fff'}}>
-        <View
-          style={{
-            marginVertical: 10,
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            marginLeft: 10,
-          }}>
-          <View style={style.switchContainer}>
-            <Switch
-              trackColor={{false: '#767577', true: '#81b0ff'}}
-              thumbColor={isEnabled ? '#f5dd4b' : '#f4f3f4'}
-              ios_backgroundColor="#3e3e3e"
-              onValueChange={toggleSwitch}
-              value={isEnabled}
-            />
-            <Text
-              style={{
-                fontWeight: 'bold',
-                fontSize: 15,
-                color: '#000',
-                marginLeft: 10,
-              }}>
-              Slide For Retailer
-            </Text>
-          </View>
-          {package_barcode_flag !== 0 && (
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                marginRight: 2,
-              }}>
+    <KeyboardAvoidingView
+      style={{flex: 1, backgroundColor: '#fff'}}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}>
+      <ScrollView>
+        <SafeAreaView style={{flex: 1, backgroundColor: '#fff'}}>
+          <View
+            style={{
+              marginVertical: 10,
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              marginLeft: 10,
+            }}>
+            <View style={style.switchContainer}>
+              <Switch
+                trackColor={{false: '#767577', true: '#81b0ff'}}
+                thumbColor={isEnabled ? '#f5dd4b' : '#f4f3f4'}
+                ios_backgroundColor="#3e3e3e"
+                onValueChange={toggleSwitch}
+                value={isEnabled}
+              />
               <Text
                 style={{
-                  color: '#000',
                   fontWeight: 'bold',
                   fontSize: 15,
                   color: '#000',
+                  marginLeft: 10,
                 }}>
-                Qr-Scanner
+                Slide For Retailer
               </Text>
-
-              <TouchableOpacity
-                style={{marginHorizontal: 10, alignItems: 'center'}}
-                onPress={toggleSearchVisibility}>
-                <Image
-                  style={{height: 20, width: 20}}
-                  source={require('../../../assets/dropdown.png')}
-                />
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() =>
-                  navigation.navigate('QRCodeScanner', {
-                    onRead: scannedCode => {
-                      if (scannedCode) {
-                        setSearchQueryCode(scannedCode); // Set the scanned code in the search input
-                        if (selectedOption === 'Style') {
-                          getStyle(scannedCode); // Fetch style data based on the scanned code
-                        } else if (selectedOption === 'Package') {
-                          getPackage(scannedCode); // Fetch package data based on the scanned code
-                        }
-                      }
-                    },
-                  })
-                }
-                style={{
-                  marginHorizontal: 11,
-                }}>
-                <Image
-                  style={{height: 27, width: 27}}
-                  source={require('../../../assets/qr-scan.png')}
-                />
-              </TouchableOpacity>
             </View>
-          )}
-        </View>
-        {isSearchVisible && (
-          <View>
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                paddingHorizontal: 10,
-                marginVertical: 10,
-              }}>
-              <View style={style.searchContainer}>
-                <TextInput
-                  style={style.searchInput}
-                  value={searchQueryCode}
-                  onChangeText={text => {
-                    setSearchQueryCode(text);
-                    console.log('TextInput Value:', text);
-                    if (text.trim()) {
-                      if (selectedOption === 'Style') {
-                        console.log('Calling getStyle...');
-                        getStyle(text); // Call getStyle when there is input
-                      } else if (selectedOption === 'Package') {
-                        console.log('Calling getPackage...');
-                        getPackage(text); // Call getPackage when there is input
-                      }
-                    }
-                  }}
-                  onSubmitEditing={() => {
-                    console.log(
-                      'Submit Editing triggered with:',
-                      searchQueryCode,
-                    );
-                    if (searchQueryCode.trim()) {
-                      if (selectedOption === 'Style') {
-                        console.log('Calling getStyle on Submit...');
-                        getStyle(searchQueryCode); // Call getStyle on Enter key
-                      } else if (selectedOption === 'Package') {
-                        console.log('Calling getPackage on Submit...');
-                        getPackage(searchQueryCode); // Call getPackage on Enter key
-                      }
-                    }
-                  }}
-                  placeholder="Search"
-                  placeholderTextColor="#000"
-                  returnKeyType="search" // Changes the keyboard 'Enter' button to 'Search'
-                />
+            {package_barcode_flag !== 0 && (
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  marginRight: 2,
+                }}>
+                <Text
+                  style={{
+                    color: '#000',
+                    fontWeight: 'bold',
+                    fontSize: 15,
+                    color: '#000',
+                  }}>
+                  Qr-Scanner
+                </Text>
 
                 <TouchableOpacity
-                  style={style.dropdownButton}
-                  onPress={toggleDropdown}>
-                  <Text style={{color: '#000', marginRight: 5}}>
-                    {selectedOption}
-                  </Text>
+                  style={{marginHorizontal: 10, alignItems: 'center'}}
+                  onPress={toggleSearchVisibility}>
                   <Image
-                    style={style.dropdownIcon}
+                    style={{height: 20, width: 20}}
                     source={require('../../../assets/dropdown.png')}
                   />
                 </TouchableOpacity>
-              </View>
-            </View>
-
-            {isDropdownVisible && (
-              <View style={style.dropdownContent1}>
-                {StylePublish.map((option, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    style={style.dropdownOption}
-                    onPress={() => handleOptionSelect(option)}>
-                    <Text style={style.dropdownItemText}>{option}</Text>
-                  </TouchableOpacity>
-                ))}
+                <TouchableOpacity
+                  onPress={() =>
+                    navigation.navigate('QRCodeScanner', {
+                      onRead: scannedCode => {
+                        if (scannedCode) {
+                          setSearchQueryCode(scannedCode); // Set the scanned code in the search input
+                          if (selectedOption === 'Style') {
+                            getStyle(scannedCode); // Fetch style data based on the scanned code
+                          } else if (selectedOption === 'Package') {
+                            getPackage(scannedCode); // Fetch package data based on the scanned code
+                          }
+                        }
+                      },
+                    })
+                  }
+                  style={{
+                    marginHorizontal: 11,
+                  }}>
+                  <Image
+                    style={{height: 27, width: 27}}
+                    source={require('../../../assets/qr-scan.png')}
+                  />
+                </TouchableOpacity>
               </View>
             )}
           </View>
-        )}
-
-        <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-          {/* {userRole &&
-              userRole.toLowerCase &&
-              userRole.toLowerCase() === 'admin' && ( */}
-          <View>
+          {isSearchVisible && (
             <View>
-              <TouchableOpacity
+              <View
                 style={{
-                  width: '90%',
-                  height: 50,
-                  borderRadius: 10,
-                  borderWidth: 0.5,
-                  alignSelf: 'center',
                   flexDirection: 'row',
                   justifyContent: 'space-between',
                   alignItems: 'center',
-                  paddingLeft: 15,
-                  paddingRight: 15,
-                  marginBottom: 8,
-                }}
-                onPress={handleDropdownClick}>
-                <Text style={{fontWeight: '600', color: '#000'}}>
-                  {isEnabled
-                    ? selectedCustomerDetails &&
-                      selectedCustomerDetails.length > 0
-                      ? `${selectedCustomerDetails[0].firstName} ${selectedCustomerDetails[0].lastName}`
-                      : 'Retailer *'
-                    : selectedDistributorDetails &&
-                      selectedDistributorDetails.length > 0
-                    ? `${selectedDistributorDetails[0].distributorName}`
-                    : 'Distributor *'}
-                </Text>
-
-                <Image
-                  source={require('../../../assets/dropdown.png')}
-                  style={{width: 20, height: 20}}
-                />
-              </TouchableOpacity>
-
-              {clicked && (
-                <View
-                  style={{
-                    height: 230,
-                    alignSelf: 'center',
-                    width: '90%',
-                    borderRadius: 10,
-                    zIndex: 1, // Ensure stacking order
-                    borderColor: 'gray', // Optional: Adds subtle border (for effect)
-                    borderWidth: 1, // Optional: Adds subtle border (for effect)
-                    marginBottom: 7,
-                  }}>
+                  paddingHorizontal: 10,
+                  marginVertical: 10,
+                }}>
+                <View style={style.searchContainer}>
                   <TextInput
-                    style={{
-                      marginTop: 10,
-                      borderRadius: 10,
-                      height: 40,
-                      borderColor: 'gray',
-                      borderWidth: 1,
-                      marginHorizontal: 10,
-                      paddingLeft: 10,
-                      marginBottom: 10,
-                      color: '#000000',
+                    style={style.searchInput}
+                    value={searchQueryCode}
+                    onChangeText={text => {
+                      setSearchQueryCode(text);
+                      console.log('TextInput Value:', text);
+                      if (text.trim()) {
+                        if (selectedOption === 'Style') {
+                          console.log('Calling getStyle...');
+                          getStyle(text); // Call getStyle when there is input
+                        } else if (selectedOption === 'Package') {
+                          console.log('Calling getPackage...');
+                          getPackage(text); // Call getPackage when there is input
+                        }
+                      }
                     }}
-                    placeholderTextColor="#000"
+                    onSubmitEditing={() => {
+                      console.log(
+                        'Submit Editing triggered with:',
+                        searchQueryCode,
+                      );
+                      if (searchQueryCode.trim()) {
+                        if (selectedOption === 'Style') {
+                          console.log('Calling getStyle on Submit...');
+                          getStyle(searchQueryCode); // Call getStyle on Enter key
+                        } else if (selectedOption === 'Package') {
+                          console.log('Calling getPackage on Submit...');
+                          getPackage(searchQueryCode); // Call getPackage on Enter key
+                        }
+                      }
+                    }}
                     placeholder="Search"
-                    value={searchQuery}
-                    onChangeText={text => setSearchQuery(text)}
+                    placeholderTextColor="#000"
+                    returnKeyType="search" // Changes the keyboard 'Enter' button to 'Search'
                   />
-                  {!isEnabled ? (
-                    filteredDistributors.length === 0 && !isLoading ? (
+
+                  <TouchableOpacity
+                    style={style.dropdownButton}
+                    onPress={toggleDropdown}>
+                    <Text style={{color: '#000', marginRight: 5}}>
+                      {selectedOption}
+                    </Text>
+                    <Image
+                      style={style.dropdownIcon}
+                      source={require('../../../assets/dropdown.png')}
+                    />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {isDropdownVisible && (
+                <View style={style.dropdownContent1}>
+                  {StylePublish.map((option, index) => (
+                    <TouchableOpacity
+                      key={index}
+                      style={style.dropdownOption}
+                      onPress={() => handleOptionSelect(option)}>
+                      <Text style={style.dropdownItemText}>{option}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
+            </View>
+          )}
+
+          <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+            {/* {userRole &&
+              userRole.toLowerCase &&
+              userRole.toLowerCase() === 'admin' && ( */}
+            <View>
+              <View>
+                <TouchableOpacity
+                  style={{
+                    width: '90%',
+                    height: 50,
+                    borderRadius: 10,
+                    borderWidth: 0.5,
+                    alignSelf: 'center',
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    paddingLeft: 15,
+                    paddingRight: 15,
+                    marginBottom: 8,
+                  }}
+                  onPress={handleDropdownClick}>
+                  <Text style={{fontWeight: '600', color: '#000'}}>
+                    {isEnabled
+                      ? selectedCustomerDetails &&
+                        selectedCustomerDetails.length > 0
+                        ? `${selectedCustomerDetails[0].firstName} ${selectedCustomerDetails[0].lastName}`
+                        : 'Retailer *'
+                      : selectedDistributorDetails &&
+                        selectedDistributorDetails.length > 0
+                      ? `${selectedDistributorDetails[0].distributorName}`
+                      : 'Distributor *'}
+                  </Text>
+
+                  <Image
+                    source={require('../../../assets/dropdown.png')}
+                    style={{width: 20, height: 20}}
+                  />
+                </TouchableOpacity>
+
+                {clicked && (
+                  <View
+                    style={{
+                      height: 230,
+                      alignSelf: 'center',
+                      width: '90%',
+                      borderRadius: 10,
+                      zIndex: 1, // Ensure stacking order
+                      borderColor: 'gray', // Optional: Adds subtle border (for effect)
+                      borderWidth: 1, // Optional: Adds subtle border (for effect)
+                      marginBottom: 7,
+                    }}>
+                    <TextInput
+                      style={{
+                        marginTop: 10,
+                        borderRadius: 10,
+                        height: 40,
+                        borderColor: 'gray',
+                        borderWidth: 1,
+                        marginHorizontal: 10,
+                        paddingLeft: 10,
+                        marginBottom: 10,
+                        color: '#000000',
+                      }}
+                      placeholderTextColor="#000"
+                      placeholder="Search"
+                      value={searchQuery}
+                      onChangeText={text => setSearchQuery(text)}
+                    />
+                    {!isEnabled ? (
+                      filteredDistributors.length === 0 && !isLoading ? (
+                        <Text style={style.noCategoriesText}>
+                          Sorry, no results found!
+                        </Text>
+                      ) : (
+                        <ScrollView
+                          style={style.scrollView}
+                          nestedScrollEnabled={true}>
+                          {filteredDistributors.map((item, index) => (
+                            <TouchableOpacity
+                              key={index}
+                              style={{
+                                width: '100%',
+                                height: 50,
+                                justifyContent: 'center',
+                                borderBottomWidth: 0.5,
+                                borderColor: '#8e8e8e',
+                              }}
+                              onPress={() =>
+                                handleDistributorSelection(
+                                  item?.firstName,
+                                  item?.distributorName,
+                                  item?.id,
+                                )
+                              }>
+                              <Text
+                                style={{
+                                  fontWeight: '600',
+                                  marginHorizontal: 15,
+                                  color: '#000',
+                                }}>
+                                {item.firstName}
+                              </Text>
+                            </TouchableOpacity>
+                          ))}
+                        </ScrollView>
+                      )
+                    ) : filteredCustomers.length === 0 && !isLoading ? (
                       <Text style={style.noCategoriesText}>
                         Sorry, no results found!
                       </Text>
                     ) : (
-                      <ScrollView style={style.scrollView} nestedScrollEnabled={true}>
-                        {filteredDistributors.map((item, index) => (
+                      <ScrollView
+                        style={style.scrollView}
+                        nestedScrollEnabled={true}>
+                        {filteredCustomers.map((item, index) => (
                           <TouchableOpacity
                             key={index}
                             style={{
@@ -2919,10 +2998,10 @@ useEffect(() => {
                               borderColor: '#8e8e8e',
                             }}
                             onPress={() =>
-                              handleDistributorSelection(
+                              handleCustomerSelection(
                                 item?.firstName,
-                                item?.distributorName,
-                                item?.id,
+                                item?.lastName,
+                                item?.customerId,
                               )
                             }>
                             <Text
@@ -2931,642 +3010,612 @@ useEffect(() => {
                                 marginHorizontal: 15,
                                 color: '#000',
                               }}>
-                              {item.firstName}
+                              {item.firstName} {item.lastName}
                             </Text>
                           </TouchableOpacity>
                         ))}
                       </ScrollView>
-                    )
-                  ) : filteredCustomers.length === 0 && !isLoading ? (
-                    <Text style={style.noCategoriesText}>
-                      Sorry, no results found!
-                    </Text>
-                  ) : (
-                    <ScrollView style={style.scrollView} nestedScrollEnabled={true}>
-                      {filteredCustomers.map((item, index) => (
+                    )}
+                  </View>
+                )}
+
+                {isLoading && ( // Show ActivityIndicator if isLoading is true
+                  <ActivityIndicator
+                    style={{
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      marginLeft: -20,
+                      marginTop: -20,
+                    }}
+                    size="large"
+                    color="#1F74BA"
+                  />
+                )}
+              </View>
+            </View>
+            {/* )} */}
+            <View style={{marginTop: 10, marginRight: 10}}>
+              <TouchableOpacity onPress={toggleModal} style={style.plusButton}>
+                <Image
+                  style={{
+                    height: 30,
+                    width: 30,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}
+                  source={require('../../../assets/plus.png')}
+                />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <View style={{flexDirection: 'row'}}>
+            <View style={{flex: 1}}>
+              <TouchableOpacity
+                onPress={handleFromDropdownClick}
+                style={{
+                  width: '90%',
+                  height: 50,
+                  borderRadius: 10,
+                  borderWidth: 0.5,
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  paddingLeft: 15,
+                  paddingRight: 15,
+                  marginLeft: 18,
+                }}>
+                {/* <Text>{selectedLocation.locationName || 'Billing to *'}</Text> */}
+                <Text style={{fontWeight: '600', color: '#000'}}>
+                  {selectedLocation.length > 0
+                    ? `${selectedLocation}`
+                    : 'Billing to *'}
+                </Text>
+                <Image
+                  source={require('../../../assets/dropdown.png')}
+                  style={{width: 20, height: 20}}
+                />
+              </TouchableOpacity>
+              {fromToClicked ? (
+                customerLocations.length === 0 && !isLoading ? (
+                  <Text style={[style.noResultsLocation, {marginLeft: 15}]}>
+                    Sorry , no results found!
+                  </Text>
+                ) : (
+                  <View
+                    style={{
+                      height: 175,
+                      alignSelf: 'center',
+                      width: '85%',
+                      backgroundColor: '#fff',
+                      borderRadius: 10,
+                      marginLeft: 15,
+                      borderColor: 'gray', // Optional: Adds subtle border (for effect)
+                      borderWidth: 1,
+                      marginTop: 5,
+                    }}>
+                    {/* Here you can render your dropdown content */}
+                    <ScrollView
+                      style={style.scrollView}
+                      nestedScrollEnabled={true}>
+                      {customerLocations.map(location => (
                         <TouchableOpacity
-                          key={index}
+                          key={location.locationId}
                           style={{
-                            width: '100%',
-                            height: 50,
-                            justifyContent: 'center',
-                            borderBottomWidth: 0.5,
-                            borderColor: '#8e8e8e',
+                            paddingHorizontal: 10,
+                            paddingVertical: 15,
+                            borderBottomWidth: 1,
+                            borderBottomColor: '#ccc',
                           }}
-                          onPress={() =>
-                            handleCustomerSelection(
-                              item?.firstName,
-                              item?.lastName,
-                              item?.customerId,
-                            )
-                          }>
-                          <Text
-                            style={{
-                              fontWeight: '600',
-                              marginHorizontal: 15,
-                              color: '#000',
-                            }}>
-                            {item.firstName} {item.lastName}
+                          onPress={() => handleLocationSelection(location)}>
+                          <Text style={{color: '#000'}}>
+                            {location.locationName}
                           </Text>
                         </TouchableOpacity>
                       ))}
                     </ScrollView>
-                  )}
-                </View>
-              )}
-
-              {isLoading && ( // Show ActivityIndicator if isLoading is true
-                <ActivityIndicator
-                  style={{
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    marginLeft: -20,
-                    marginTop: -20,
-                  }}
-                  size="large"
-                  color="#1F74BA"
-                />
-              )}
+                  </View>
+                )
+              ) : null}
             </View>
-          </View>
-          {/* )} */}
-          <View style={{marginTop: 10, marginRight: 10}}>
-            <TouchableOpacity onPress={toggleModal} style={style.plusButton}>
-              <Image
+
+            <View style={{flex: 1}}>
+              <TouchableOpacity
+                onPress={handleShipDropdownClick}
                 style={{
-                  height: 30,
-                  width: 30,
-                  justifyContent: 'center',
+                  width: '86%',
+                  height: 50,
+                  borderRadius: 10,
+                  borderWidth: 0.5,
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
                   alignItems: 'center',
-                }}
-                source={require('../../../assets/plus.png')}
-              />
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        <View style={{flexDirection: 'row'}}>
-          <View style={{flex: 1}}>
-            <TouchableOpacity
-              onPress={handleFromDropdownClick}
-              style={{
-                width: '90%',
-                height: 50,
-                borderRadius: 10,
-                borderWidth: 0.5,
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                paddingLeft: 15,
-                paddingRight: 15,
-                marginLeft: 18,
-              }}>
-              {/* <Text>{selectedLocation.locationName || 'Billing to *'}</Text> */}
-              <Text style={{fontWeight: '600', color: '#000'}}>
-                {selectedLocation.length > 0
-                  ? `${selectedLocation}`
-                  : 'Billing to *'}
-              </Text>
-              <Image
-                source={require('../../../assets/dropdown.png')}
-                style={{width: 20, height: 20}}
-              />
-            </TouchableOpacity>
-            {fromToClicked ? (
-              customerLocations.length === 0 && !isLoading ? (
-                <Text style={[style.noResultsLocation, {marginLeft: 15}]}>
-                  Sorry , no results found!
-                </Text>
-              ) : (
-                <View
-                  style={{
-                    height: 175,
-                    alignSelf: 'center',
-                    width: '85%',
-                    backgroundColor: '#fff',
-                    borderRadius: 10,
-                    marginLeft: 15,
-                    borderColor: 'gray', // Optional: Adds subtle border (for effect)
-                    borderWidth: 1,
-                    marginTop: 5,
-                  }}>
-                  {/* Here you can render your dropdown content */}
-                  <ScrollView style={style.scrollView} nestedScrollEnabled={true}>
-                  {customerLocations.map(location => (
-                      <TouchableOpacity
-                        key={location.locationId}
-                        style={{
-                          paddingHorizontal: 10,
-                          paddingVertical: 15,
-                          borderBottomWidth: 1,
-                          borderBottomColor: '#ccc',
-                        }}
-                        onPress={() => handleLocationSelection(location)}>
-                        <Text style={{color: '#000'}}>
-                          {location.locationName}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </ScrollView>
-                </View>
-              )
-            ) : null}
-          </View>
-
-          <View style={{flex: 1}}>
-            <TouchableOpacity
-              onPress={handleShipDropdownClick}
-              style={{
-                width: '86%',
-                height: 50,
-                borderRadius: 10,
-                borderWidth: 0.5,
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                paddingLeft: 15,
-                paddingRight: 15,
-                marginLeft: 5,
-              }}>
-              {/* <Text>{selectedShipLocation.locationName || 'Shiping to *'}</Text> */}
-              {/* <Text style={{fontWeight: '600', color: '#000'}}>
+                  paddingLeft: 15,
+                  paddingRight: 15,
+                  marginLeft: 5,
+                }}>
+                {/* <Text>{selectedShipLocation.locationName || 'Shiping to *'}</Text> */}
+                {/* <Text style={{fontWeight: '600', color: '#000'}}>
                 {selectedShipLocation.length > 0
                   ? `${selectedShipLocation}`
                   : 'Shipping to *'}
               </Text> */}
 
-              <Text style={{fontWeight: '600', color: '#000'}}>
-                {selectedShipLocation.length > 0
-                  ? `${selectedShipLocation}`
-                  : 'Shipping to *'}
-              </Text>
-              <Image
-                source={require('../../../assets/dropdown.png')}
-                style={{width: 20, height: 20}}
+                <Text style={{fontWeight: '600', color: '#000'}}>
+                  {selectedShipLocation.length > 0
+                    ? `${selectedShipLocation}`
+                    : 'Shipping to *'}
+                </Text>
+                <Image
+                  source={require('../../../assets/dropdown.png')}
+                  style={{width: 20, height: 20}}
+                />
+              </TouchableOpacity>
+              {shipFromToClicked &&
+                (customerLocations.length === 0 && !isLoading ? (
+                  <Text style={[style.noResultsLocation, {marginRight: 17}]}>
+                    Sorry , no results found!
+                  </Text>
+                ) : (
+                  <View
+                    style={{
+                      height: 175,
+                      alignSelf: 'center',
+                      width: '85%',
+                      backgroundColor: '#fff',
+                      borderRadius: 10,
+                      marginRight: 17,
+                      borderColor: 'gray', // Optional: Adds subtle border (for effect)
+                      borderWidth: 1,
+                      marginTop: 5,
+                    }}>
+                    {/* Here you can render your dropdown content */}
+                    <ScrollView
+                      style={style.scrollView}
+                      nestedScrollEnabled={true}>
+                      {customerLocations.map(location => (
+                        <TouchableOpacity
+                          key={location.locationId}
+                          style={{
+                            paddingHorizontal: 10,
+                            paddingVertical: 15,
+                            borderBottomWidth: 1,
+                            borderBottomColor: '#ccc',
+                          }}
+                          onPress={() => handleShipLocation(location)}>
+                          <Text style={{color: '#000'}}>
+                            {location.locationName}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
+                  </View>
+                ))}
+            </View>
+            <View style={{marginRight: 10, marginTop: 5}}>
+              <TouchableOpacity
+                style={style.plusButton}
+                onPress={() => toggleLocationModal()}>
+                <Image
+                  style={{
+                    height: 30,
+                    width: 30,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    marginTop: 5,
+                  }}
+                  source={require('../../../assets/plus.png')}
+                />
+              </TouchableOpacity>
+            </View>
+          </View>
+          {hold_qty_flag === 1 && (
+            <View style={{flexDirection: 'row', marginTop: 10}}>
+              <TouchableOpacity
+                style={{
+                  width: '81%',
+                  height: 50,
+                  borderRadius: 10,
+                  borderWidth: 0.5,
+                  alignSelf: 'center',
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  paddingLeft: 15,
+                  paddingRight: 15,
+                  marginHorizontal: 20,
+                  backgroundColor: editCompanyLocation ? '#fff' : '#f1e8e6',
+                }}
+                onPress={() =>
+                  setShowCompanyLocationList(!showCompanyLocationList)
+                }>
+                <Text style={{fontWeight: '600', color: '#000'}}>
+                  {selectedCompanyLocationId
+                    ? selectedCompanyLocation
+                    : 'Company Location*'}
+                </Text>
+
+                <Image
+                  source={require('../../../assets/dropdown.png')}
+                  style={{width: 20, height: 20}}
+                />
+              </TouchableOpacity>
+            </View>
+          )}
+          {showCompanyLocationList && editCompanyLocation && (
+            <View
+              style={{
+                elevation: 5,
+                height: 300,
+                alignSelf: 'center',
+                width: '90%',
+                backgroundColor: '#fff',
+                borderRadius: 10,
+              }}>
+              <TextInput
+                style={{
+                  marginTop: 10,
+                  borderRadius: 10,
+                  height: 40,
+                  borderColor: 'gray',
+                  borderWidth: 1,
+                  marginHorizontal: 10,
+                  paddingLeft: 10,
+                  marginBottom: 10,
+                  color: '#000000',
+                }}
+                placeholderTextColor="#000"
+                placeholder="Search"
+                onChangeText={filterLocation}
               />
-            </TouchableOpacity>
-            {shipFromToClicked &&
-              (customerLocations.length === 0 && !isLoading ? (
-                <Text style={[style.noResultsLocation, {marginRight: 17}]}>
-                  Sorry , no results found!
+
+              {filteredCompanyLocationList.length === 0 && !isLoading ? (
+                <Text style={style.noCategoriesText}>
+                  Sorry, no results found!
                 </Text>
               ) : (
-                <View
-                  style={{
-                    height: 175,
-                    alignSelf: 'center',
-                    width: '85%',
-                    backgroundColor: '#fff',
-                    borderRadius: 10,
-                    marginRight: 17,
-                    borderColor: 'gray', // Optional: Adds subtle border (for effect)
-                    borderWidth: 1,
-                    marginTop: 5,
-                  }}>
-                  {/* Here you can render your dropdown content */}
-                  <ScrollView style={style.scrollView} nestedScrollEnabled={true}>
-                  {customerLocations.map(location => (
-                      <TouchableOpacity
-                        key={location.locationId}
-                        style={{
-                          paddingHorizontal: 10,
-                          paddingVertical: 15,
-                          borderBottomWidth: 1,
-                          borderBottomColor: '#ccc',
-                        }}
-                        onPress={() => handleShipLocation(location)}>
-                        <Text style={{color: '#000'}}>
-                          {location.locationName}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </ScrollView>
-                </View>
-              ))}
-          </View>
-          <View style={{marginRight: 10, marginTop: 5}}>
-            <TouchableOpacity
-              style={style.plusButton}
-              onPress={() => toggleLocationModal()}>
-              <Image
-                style={{
-                  height: 30,
-                  width: 30,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  marginTop: 5,
-                }}
-                source={require('../../../assets/plus.png')}
-              />
-            </TouchableOpacity>
-          </View>
-        </View>
-        {hold_qty_flag === 1 && (
-          <View style={{flexDirection: 'row', marginTop: 10}}>
-            <TouchableOpacity
-              style={{
-                width: '81%',
-                height: 50,
-                borderRadius: 10,
-                borderWidth: 0.5,
-                alignSelf: 'center',
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                paddingLeft: 15,
-                paddingRight: 15,
-                marginHorizontal: 20,
-                backgroundColor: editCompanyLocation ? '#fff' : '#f1e8e6',
-              }}
-              onPress={() =>
-                setShowCompanyLocationList(!showCompanyLocationList)
-              }>
-              <Text style={{fontWeight: '600', color: '#000'}}>
-                {selectedCompanyLocationId
-                  ? selectedCompanyLocation
-                  : 'Company Location*'}
-              </Text>
-
-              <Image
-                source={require('../../../assets/dropdown.png')}
-                style={{width: 20, height: 20}}
-              />
-            </TouchableOpacity>
-          </View>
-        )}
-        {showCompanyLocationList && editCompanyLocation && (
-          <View
-            style={{
-              elevation: 5,
-              height: 300,
-              alignSelf: 'center',
-              width: '90%',
-              backgroundColor: '#fff',
-              borderRadius: 10,
-            }}>
-            <TextInput
-              style={{
-                marginTop: 10,
-                borderRadius: 10,
-                height: 40,
-                borderColor: 'gray',
-                borderWidth: 1,
-                marginHorizontal: 10,
-                paddingLeft: 10,
-                marginBottom: 10,
-                color: '#000000',
-              }}
-              placeholderTextColor="#000"
-              placeholder="Search"
-              onChangeText={filterLocation}
-            />
-
-            {filteredCompanyLocationList.length === 0 && !isLoading ? (
-              <Text style={style.noCategoriesText}>
-                Sorry, no results found!
-              </Text>
-            ) : (
-              <ScrollView nestedScrollEnabled={true}>
-                {filteredCompanyLocationList?.map((item, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    style={{
-                      width: '100%',
-                      height: 50,
-                      justifyContent: 'center',
-                      borderBottomWidth: 0.5,
-                      borderColor: '#8e8e8e',
-                    }}
-                    onPress={() => handleSelectLocation(item)}>
-                    <Text
+                <ScrollView nestedScrollEnabled={true}>
+                  {filteredCompanyLocationList?.map((item, index) => (
+                    <TouchableOpacity
+                      key={index}
                       style={{
-                        fontWeight: '600',
-                        marginHorizontal: 15,
-                        color: '#000',
-                      }}>
-                      {item?.locationName}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            )}
-          </View>
-        )}
-        <View style={{marginBottom: 10}} />
+                        width: '100%',
+                        height: 50,
+                        justifyContent: 'center',
+                        borderBottomWidth: 0.5,
+                        borderColor: '#8e8e8e',
+                      }}
+                      onPress={() => handleSelectLocation(item)}>
+                      <Text
+                        style={{
+                          fontWeight: '600',
+                          marginHorizontal: 15,
+                          color: '#000',
+                        }}>
+                        {item?.locationName}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              )}
+            </View>
+          )}
+          <View style={{marginBottom: 10}} />
 
           {/* <View style={style.header}>
             <Text style={style.txt}>Total Items: {cartItems.length}</Text>
           </View> */}
-          {cartItems.length === 0 ? (
-            <View style={{marginVertical: 50}}>
-              <Image
-                style={{alignSelf: 'center', tintColor: 'black'}}
-                resizeMode="cover"
-                source={require('../../../assets/no-cart-product.png')}
-              />
-              <Text
-                style={{
-                  marginLeft: 10,
-                  color: '#000',
-                  alignSelf: 'center',
-                  fontWeight: 'bold',
-                  fontSize: 20,
-                }}>
-                No items in cart
-              </Text>
-            </View>
-          ) : (
+          <ScrollView horizontal contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', alignItems: 'center' }}>
+  {cartItems.length === 0 ? (
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', marginVertical: 50 }}>
+      <Image
+        style={{ width: 150, height: 150, tintColor: 'black' }}
+        resizeMode="contain"
+        source={require('../../../assets/no-cart-product.png')}
+      />
+      <Text
+        style={{
+          color: '#000',
+          fontWeight: 'bold',
+          fontSize: 20,
+          textAlign: 'center',
+          marginTop: 10,
+        }}>
+        No items in cart
+      </Text>
+    </View>
+  ) : (
             <View>
-              {cartItems.map((item, index) => (
-                <View
-                  key={`${item.styleId}-${item.colorId}-${item.sizeId}-${index}`}>
+             
+                {cartItems.map((item, index) => (
                   <View
-                    key={`${item.styleId}-${item.colorId}-${item.sizeId}-${index}`}
-                    style={{marginBottom: 20}}>
-                    {(index === 0 ||
-                      item.styleId !== cartItems[index - 1].styleId ||
-                      item.colorId !== cartItems[index - 1].colorId) && (
-                      <View style={style.itemContainer}>
-                        <View style={style.imgContainer}>
-                          {item.imageUrls && item.imageUrls.length > 0 && (
-                            <Image
-                              source={{uri: item.imageUrls[0]}}
-                              style={{
-                                width: 100,
-                                height: 100,
-                                resizeMode: 'cover',
-                                margin: 5,
-                              }}
-                            />
-                          )}
-
-                          <View style={{flex: 1}}>
-                            <Text
-                              style={{
-                                fontSize: 15,
-                                fontWeight: 'bold',
-                                marginLeft: 5,
-                                color: '#000',
-                              }}>
-                              {item.styleName}
-                            </Text>
-                            <Text
-                              style={{
-                                fontSize: 15,
-                                fontWeight: 'bold',
-                                marginLeft: 5,
-                                color: '#000',
-                              }}>
-                              {item.styleDesc}
-                            </Text>
-                            <Text
-                              style={{
-                                fontSize: 15,
-                                fontWeight: 'bold',
-                                marginLeft: 5,
-                                color: '#000',
-                              }}>
-                              Color Name - {item.colorName}
-                            </Text>
-                          </View>
-                          <View style={style.buttonsContainer}>
-                            <TouchableOpacity
-                              onPress={() => openModal(item)}
-                              disabled={item.sourceScreen === 'PackageDetail'}>
+                    key={`${item.styleId}-${item.colorId}-${item.sizeId}-${index}`}>
+                    <View
+                      key={`${item.styleId}-${item.colorId}-${item.sizeId}-${index}`}
+                      style={{
+                        marginBottom: 20,
+                       
+                      }}>
+                      {(index === 0 ||
+                        item.styleId !== cartItems[index - 1].styleId ||
+                        item.colorId !== cartItems[index - 1].colorId) && (
+                        <View style={style.itemContainer}>
+                          <View style={style.imgContainer}>
+                            {item.imageUrls && item.imageUrls.length > 0 && (
                               <Image
-                                style={style.buttonIcon}
-                                source={require('../../../assets/edit.png')}
+                                source={{uri: item.imageUrls[0]}}
+                                style={{
+                                  width: 100,
+                                  height: 100,
+                                  resizeMode: 'cover',
+                                  margin: 5,
+                                }}
+                              />
+                            )}
+
+                            <View style={{flex: 1}}>
+                              <Text
+                                style={{
+                                  fontSize: 15,
+                                  fontWeight: 'bold',
+                                  marginLeft: 5,
+                                  color: '#000',
+                                }}>
+                                {item.styleName}
+                              </Text>
+                              <Text
+                                style={{
+                                  fontSize: 15,
+                                  fontWeight: 'bold',
+                                  marginLeft: 5,
+                                  color: '#000',
+                                }}>
+                                {item.styleDesc}
+                              </Text>
+                              <Text
+                                style={{
+                                  fontSize: 15,
+                                  fontWeight: 'bold',
+                                  marginLeft: 5,
+                                  color: '#000',
+                                }}>
+                                Color Name - {item.colorName}
+                              </Text>
+                            </View>
+                            <View style={style.buttonsContainer}>
+                              <TouchableOpacity
+                                onPress={() => openModal(item)}
+                                disabled={
+                                  item.sourceScreen === 'PackageDetail'
+                                }>
+                                <Image
+                                  style={style.buttonIcon}
+                                  source={require('../../../assets/edit.png')}
+                                />
+                              </TouchableOpacity>
+                            </View>
+                          </View>
+                          <View style={style.sizehead}>
+                            <View style={{flex: 2,marginLeft:10}}>
+                              <Text style={{color: '#000',alignSelf:"center"}}>
+                                SIZE
+                              </Text>
+                            </View>
+                            <View style={{flex: 2,marginLeft:50, }}>
+                              <Text style={{color: '#000'}}>QUANTITY  </Text>
+                            </View>
+                            <View style={{flex: 2,marginLeft:30,  }}>
+                              <Text style={{color: '#000'}}>
+                                {pdf_flag ? 'MRP' : 'PRICE'}
+                              </Text>
+                            </View>
+
+                            <View style={{flex: 2,marginLeft:20, }}>
+                              <Text style={{color: '#000'}}>GST</Text>
+                            </View>
+                            {!pdf_flag && (
+                              <View style={{width:50,marginLeft:30}}>
+                                <Text style={{color: '#000'}}>Fixed Disc</Text>
+                              </View>
+                            )}
+                            <View
+                              style={{
+                                width:50,marginLeft:10,marginRight:22
+                           
+                              }}>
+                              <Text style={{color: '#000'}}>Gross Price</Text>
+                            </View>
+
+                            <TouchableOpacity
+                              onPress={() => copyValueToClipboard(index)}>
+                              <Image
+                                style={{height: 25, width: 25}}
+                                source={require('../../../assets/copy.png')}
                               />
                             </TouchableOpacity>
                           </View>
                         </View>
-                        <View style={style.sizehead}>
-                          <View style={{flex: 0.4}}>
-                            <Text style={{color: '#000', marginLeft: 5}}>
-                              SIZE
-                            </Text>
-                          </View>
-                          <View style={{flex: 0.4, marginLeft: 32}}>
-                            <Text style={{color: '#000'}}>QTY</Text>
-                          </View>
-                          <View style={{ flex: 0.4, marginLeft: 37 }}>
-  <Text style={{ color: '#000' }}>
-    {pdf_flag ? 'MRP' : 'PRICE'}
-  </Text>
-</View>
+                      )}
+                      <TouchableOpacity 
+  onLongPress={() => 
+    Alert.alert("Alert", "Do you want to remove this item?", [
+      { text: "Cancel", style: "cancel" },
+      { text: "Yes", onPress: () => handleRemoveItem(index) }
+    ])
+  } 
+  activeOpacity={0.1}
+>
+                      <View style={[style.itemDetails, { alignItems: "center", paddingVertical: 5 }]}>
+  {/* Size Description */}
+  <View style={{ width: 50 , marginRight: 5 }}>
+    <Text style={{ color: "#000", fontWeight: "bold" }}>{item.sizeDesc}</Text>
+  </View>
 
-                          <View style={{flex: 0.4, marginLeft: 20}}>
-                            <Text style={{color: '#000'}}>GST</Text>
-                          </View>
-                          {!pdf_flag && (
-                          <View
-                            style={{flex: 0.4, marginRight: 8}}>
-                            <Text style={{color: '#000'}}>Fixed Disc</Text>
-                          </View>
-                          )}
-                          <View
-                            style={{flex: 0.5, marginLeft: 5, marginRight: 8}}>
-                            <Text style={{color: '#000'}}>Gross Price</Text>
-                          </View>
-                        
-                          <TouchableOpacity
-                            onPress={() => copyValueToClipboard(index)}>
-                            <Image
-                              style={{height: 25, width: 25}}
-                              source={require('../../../assets/copy.png')}
-                            />
-                          </TouchableOpacity>
-                        </View>
-                      </View>
-                    )}
-                    <View style={style.itemDetails}>
-                      <View style={{flex: 0.3}}>
-                        <Text style={{color: '#000'}}>{item.sizeDesc}</Text>
-                      </View>
-                      <TouchableOpacity
-                        onPress={() => handleDecrementQuantityCart(index)}>
-                        <Image
-                          style={{
-                            height: 23,
-                            width: 23,
-                            marginHorizontal: 10,
-                          }}
-                          source={require('../../../assets/sub1.png')}
-                        />
-                      </TouchableOpacity>
-                      <View style={style.quantityInputContainer}>
-                        <TextInput
-                          placeholderTextColor="#000"
-                          style={textInputStyle}
-                          value={
-                            item.quantity !== undefined
-                              ? item.quantity.toString()
-                              : ''
-                          }
-                          onChangeText={text =>
-                            handleQuantityChange(index, text)
-                          }
-                          keyboardType="numeric" // Optional: Restricts input to numeric keyboard
-                        />
-                      </View>
-                      <TouchableOpacity
-                        onPress={() => handleIncrementQuantityCart(index)}>
-                        <Image
-                          style={{
-                            height: 20,
-                            width: 20,
-                            // marginHorizontal: 10,
-                            marginLeft: 10,
-                            marginRight: 15,
-                          }}
-                          source={require('../../../assets/add1.png')}
-                        />
-                      </TouchableOpacity>
-                      {/* <View style={{ flex: 0.4, marginLeft: 10, borderBottomWidth: 1, borderColor: "#000" }}>
-                        <TextInput
-                          style={{ color: '#000', alignSelf: "center" }}
-                          value={isEnabled ? item?.retailerPrice?.toString() : item?.dealerPrice?.toString() || item?.price?.toString()}
-                          // value={item.price}
-                          onChangeText={text => handlePriceChange(index, text)}
-                          keyboardType="numeric"
-                        />
-                      </View> */}
-                      <View
-                        style={{
-                          flex: 0.4,
-                          borderBottomWidth: 1,
-                          borderColor: '#000',
-                        }}>
-                <TextInput
-  style={{ color: '#000', alignSelf: 'center' }}
-  value={
-    pdf_flag
-      ? item?.mrp?.toString() || '' // Allow editing of mrp if pdf_flag is true
-      : isEnabled
-      ? item?.retailerPrice?.toString() || '' // Show retailerPrice if isEnabled is true
-      : item?.dealerPrice?.toString() || '' // Show dealerPrice otherwise
-  }
-  onChangeText={text => handlePriceChange(index, text)} // Handle price change for all cases
-  keyboardType="numeric"
-/>
+  {/* Decrease Quantity */}
+  <TouchableOpacity onPress={() => handleDecrementQuantityCart(index)}>
+    <Image
+      style={{ height: 23, width: 23, marginHorizontal: 5 }}
+      source={require("../../../assets/sub1.png")}
+    />
+  </TouchableOpacity>
 
-
-                      </View>
-                      <View
-                        style={{
-                          flex: 0.3,
-                          marginLeft: 30,
-                          borderBottomWidth: 1,
-                          borderColor: '#000',
-                        }}>
-                        <TextInput
-                          style={{color: '#000', alignSelf: 'center'}}
-                          value={
-                            gstValues[index] !== undefined
-                              ? gstValues[index]
-                              : item?.gst?.toString()
-                          } // Using gstValues if edited, otherwise item.gst
-                          onChangeText={text => handleGstChange(index, text)} // Update gstValues state
-                          keyboardType="numeric" // Numeric input
-                        />
-                      </View>
-                      {!pdf_flag && (
-                      <View style={{flex: 0.3, marginLeft: 25, borderBottomWidth: 1,
-                          borderColor: '#000',}}>
-                    
-                      <TextInput
-    style={{color: '#000', alignSelf: 'center'}}
-    value={
-      fixDiscValues[index] !== undefined
-        ? fixDiscValues[index]
-        : item?.fixDisc?.toString()
-    }
-    onChangeText={text => handleFixDiscChange(index, text)}
+  {/* Quantity Input */}
+  <View style={[style.quantityInputContainer, { width: 50 }]}>
+  <TextInput
+    placeholderTextColor="#000"
+    style={[textInputStyle, { textAlign: "center", width: "100%" }]}
+    value={item.quantity !== undefined ? item.quantity.toString() : ""}
+    onChangeText={(text) => handleQuantityChange(index, text)}
     keyboardType="numeric"
   />
-                        
-                      </View>
-                      )}
-                      <View style={{flex: 0.3, marginLeft: 30}}>
-                        {/* <Text style={{color: '#000'}}>
-                          {(
-                            Number(
-                              isEnabled
-                                ? item?.retailerPrice?.toString()
-                                : item?.dealerPrice?.toString() ||
-                                    item?.price?.toString(),
-                            ) * Number(item.quantity)
-                          ).toString()}
-                        </Text> */}
-                        <Text style={{color: '#000'}}>
-                          {grossPrices[index]} {/* Individual gross price */}
-                        </Text>
-                        
-                      </View>
-                    
-                      <TouchableOpacity onPress={() => handleRemoveItem(index)}>
-                        <Image
-                          style={style.buttonIcon}
-                          source={require('../../../assets/del.png')}
-                        />
-                      </TouchableOpacity>
+</View>
+
+
+  {/* Increase Quantity */}
+  <TouchableOpacity onPress={() => handleIncrementQuantityCart(index)}>
+    <Image
+      style={{ height: 20, width: 20, marginLeft: 5, marginRight: 10 }}
+      source={require("../../../assets/add1.png")}
+    />
+  </TouchableOpacity>
+
+  {/* Price Input */}
+  <View style={{ width: 50 , marginHorizontal:5 }}>
+    <TextInput
+      style={{   borderWidth: 1,
+        borderColor: "#000",
+        borderRadius: 5,
+        width: "100%", // Ensures the input stays within the fixed container
+        color: "#000",
+        textAlign: "center",}}
+      value={
+        pdf_flag
+          ? item?.mrp?.toString() || ""
+          : isEnabled
+          ? item?.retailerPrice?.toString() || ""
+          : item?.dealerPrice?.toString() || ""
+      }
+      onChangeText={(text) => handlePriceChange(index, text)}
+      keyboardType="numeric"
+    />
+  </View>
+
+  {/* GST Input */}
+  <View style={{ width: 50 ,marginHorizontal:5  }}>
+    <TextInput
+     style={{   borderWidth: 1,
+      borderColor: "#000",
+      borderRadius: 5,
+      width: "100%", // Ensures the input stays within the fixed container
+      color: "#000",
+      textAlign: "center",}}
+      value={
+        gstValues[index] !== undefined ? gstValues[index] : item?.gst?.toString()
+      }
+      onChangeText={(text) => handleGstChange(index, text)}
+      keyboardType="numeric"
+    />
+  </View>
+
+  {/* Fixed Discount (if applicable) */}
+  {!pdf_flag && (
+  <View style={{ width: 50 , marginHorizontal:5 }}>
+      <TextInput
+      style={{   borderWidth: 1,
+        borderColor: "#000",
+        borderRadius: 5,
+        width: "100%", // Ensures the input stays within the fixed container
+        color: "#000",
+        textAlign: "center",}}
+        value={
+          fixDiscValues[index] !== undefined
+            ? fixDiscValues[index]
+            : item?.fixDisc?.toString()
+        }
+        onChangeText={(text) => handleFixDiscChange(index, text)}
+        keyboardType="numeric"
+      />
+    </View>
+  )}
+
+  {/* Gross Price */}
+  <View style={{ width: 50, marginLeft: 13 }}>
+    <Text style={{ color: "#000",  }}>{grossPrices[index]}</Text>
+  </View>
+
+  {/* Delete Button */}
+  <TouchableOpacity onPress={() => handleRemoveItem(index)}>
+    <Image style={style.buttonIcon} source={require("../../../assets/del.png")} />
+  </TouchableOpacity>
+</View></TouchableOpacity>
+
+                      {/* <View style={style.separator} /> */}
                     </View>
-                    {/* <View style={style.separator} /> */}
-                  </View>
-                  {(index === cartItems.length - 1 ||
-                    item.styleId !== cartItems[index + 1]?.styleId ||
-                    item.colorId !== cartItems[index + 1]?.colorId) && (
-                    <>
-                      <View
-                        style={{
-                          flexDirection: 'row',
-                          alignItems: 'center',
-                          backgroundColor: 'lightgray',
-                          paddingVertical: 10,
-                          borderRadius: 20,
-                          flex: 1,
-                        }}>
-                        <View style={{flex: 1.1, marginLeft: 18}}>
-                          <Text style={{color: '#000'}}>Total</Text>
-                        </View>
-                        {/* <View
+                    {(index === cartItems.length - 1 ||
+                      item.styleId !== cartItems[index + 1]?.styleId ||
+                      item.colorId !== cartItems[index + 1]?.colorId) && (
+                      <>
+                        <View
+                          style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            backgroundColor: 'lightgray',
+                            paddingVertical: 10,
+                            borderRadius: 20,
+                            flex: 1,
+                            justifyContent:"space-between"
+                          }}>
+                          <View style={{width:50, marginLeft: 18}}>
+                            <Text style={{color: '#000'}}>Total</Text>
+                          </View>
+                          {/* <View
                           style={{flex: 2.1, marginLeft: 10, marginRight: 20}}>
                           <Text style={{color: '#000'}}>
                             {' '}
                             {calculateTotalQty(item.styleId, item.colorId)}
                           </Text>
                         </View> */}
-                        <View
-  style={{flex: 2.1, marginLeft: 10, marginRight: 30}}>
-  <Text style={{color: '#000'}}>
-    {calculateTotalQty(item.styleId, item.colorId) !== undefined
-      ? Number(calculateTotalQty(item.styleId, item.colorId)).toFixed(2)
-      : '0'}
-  </Text>
-</View>
+                          <View
+                            style={{
+                              width:50,
+                             
+                              marginRight: 170,
+                            }}>
+                            <Text style={{color: '#000'}}>
+                              {calculateTotalQty(item.styleId, item.colorId) !==
+                              undefined
+                                ? Number(
+                                    calculateTotalQty(
+                                      item.styleId,
+                                      item.colorId,
+                                    ),
+                                  ).toFixed(2)
+                                : '0'}
+                            </Text>
+                          </View>
 
-                        {/* <View style={{ flex: 1 }}>
+                          {/* <View style={{ flex: 1 }}>
                           <Text style={{color:"#000"}}>Total Set: {calculateTotalItems(item.styleId, item.colorId)}</Text>
                         </View> */}
-                        <View
-                          style={{flex: 1.5, marginLeft: 90, }}>
-                          <Text style={{color: '#000'}}>
-                            {calculateTotalPrice(item.styleId, item.colorId)}
-                          </Text>
+                          <View style={{width:50, marginRight:43}}>
+                            <Text style={{color: '#000'}}>
+                              {calculateTotalPrice(item.styleId, item.colorId)}
+                            </Text>
+                          </View>
                         </View>
-                      </View>
-                      {/* <View style={style.separatorr} /> */}
-                      <View />
-                    </>
-                  )}
-                </View>
-              ))}
+                        {/* <View style={style.separatorr} /> */}
+                        <View />
+                      </>
+                    )}
+                  </View>
+                ))}
+             
             </View>
           )}
-             <View>
-  
-{/* <TextInput
+          </ScrollView>
+          <View>
+            {/* <TextInput
   ref={inputRef}
   style={{
     marginLeft: 10,
@@ -3579,22 +3628,20 @@ useEffect(() => {
   placeholderTextColor={isDarkTheme ? '#fff' : '#000'}
 /> */}
 
-<TextInput
-  style={{
-    marginLeft: 10,
-    marginTop: Platform.OS === 'ios' ? 10 : 0,
-    color: isDarkTheme ? '#fff' : 'black',
-  }}
-  placeholder="Enter comments"
-  value={comments}
-  onFocus={() => console.log('TextInput focused')}
-  onBlur={() => console.log('TextInput blurred')}
-  onChangeText={handleCommentsChange}
-  placeholderTextColor={isDarkTheme ? '#fff' : '#000'}
-/>
-
+            <TextInput
+              style={{
+                marginLeft: 10,
+                marginTop: Platform.OS === 'ios' ? 10 : 0,
+                color: isDarkTheme ? '#fff' : 'black',
+              }}
+              placeholder="Enter comments"
+              value={comments}
+              onFocus={() => console.log('TextInput focused')}
+              onBlur={() => console.log('TextInput blurred')}
+              onChangeText={handleCommentsChange}
+              placeholderTextColor={isDarkTheme ? '#fff' : '#000'}
+            />
           </View>
-         
 
           <View
             style={{
@@ -3602,7 +3649,7 @@ useEffect(() => {
               borderBottomColor: 'gray',
               marginTop: 10,
             }}></View>
-        <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+          <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
             <TouchableOpacity
               onPress={showDatePicker}
               style={{flexDirection: 'row', alignItems: 'center'}}>
@@ -3631,9 +3678,9 @@ useEffect(() => {
               borderBottomColor: 'gray',
               paddingVertical: 7,
             }}></View>
-      
-        <View style={{backgroundColor: '#faf7f6', borderTopWidth: 1}}>
-          {/* <View style={style.bottomContainer}>
+
+          <View style={{backgroundColor: '#faf7f6', borderTopWidth: 1}}>
+            {/* <View style={style.bottomContainer}>
             <View style={style.row}>
               <Text style={style.label1}>Total Qty</Text>
               <Text style={style.colon}>:</Text>
@@ -3656,341 +3703,32 @@ useEffect(() => {
             </View>
           </View> */}
 
-          <View
-            style={{
-              marginHorizontal: 15,
-              marginBottom: 15,
-              marginVertical: 25,
-            }}>
-            <OrderDetailRow label="Total Qty" value={formattedTotalQty} />
-            <OrderDetailRow label="Total Items" value={totalItems} />
-            <OrderDetailRow label="Total Gst" value={totalGst} />
-            <OrderDetailRow label="Round Off" value={roundOff} />
-            <OrderDetailRow label="Total Amt" value={totalAmount} />
-            
-          </View>
-         
-          <ModalComponent
-            modalVisible={modalVisible}
-            closeModal={closeModal}
-            selectedItem={selectedItem}
-            inputValuess={inputValuess}
-            onInputValueChange={handleInputValueChange} // Pass the function to handle input value changes
-          />
-          <Modal
-            animationType="fade"
-            transparent={true}
-            visible={isModalVisible}
-            onRequestClose={() => {
-              toggleModal();
-            }}>
-            <View style={style.modalContainerr}>
-              <View style={style.modalContentt}>
-                <View
-                  style={{
-                    backgroundColor: colors.color2,
-                    borderRadius: 10,
-                    marginHorizontal: 10,
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    marginTop: 10,
-                    paddingVertical: 5,
-                    width: '100%',
-                    justifyContent: 'space-between',
-                    marginBottom: 15,
-                  }}>
-                  <Text
-                    style={[style.modalTitle, {textAlign: 'center', flex: 1}]}>
-                    {isEnabled ? 'Retailer Details' : 'Distributor Details'}
-                  </Text>
-                  <TouchableOpacity
-                    onPress={handleCloseModalDisRet}
-                    style={{alignSelf: 'flex-end'}}>
-                    <Image
-                      style={{height: 30, width: 30, marginRight: 5}}
-                      source={require('../../../assets/close.png')}
-                    />
-                  </TouchableOpacity>
-                </View>
-
-                <ScrollView style={{width: '100%', height: '65%'}}>
-                  <TextInput
-                    style={[
-                      style.input,
-                      {color: '#000'},
-                      errorFields.includes('firstName')
-                        ? style.errorBorder
-                        : null,
-                    ]}
-                    placeholder={
-                      isEnabled ? 'Retailer Name *' : 'Distributor Name *'
-                    }
-                    placeholderTextColor="#000"
-                    onChangeText={text =>
-                      setInputValues({...inputValues, firstName: text})
-                    }
-                    value={inputValues.firstName}
-                  />
-                  {errorFields.includes('firstName') && (
-                    <Text style={style.errorText}>
-                      {isEnabled
-                        ? 'Please Enter Retailer Name'
-                        : 'Please Enter Distributor Name'}
-                    </Text>
-                  )}
-
-                  <TextInput
-                    style={[
-                      style.input,
-                      {color: '#000'},
-                      errorFields.includes('phoneNumber')
-                        ? style.errorBorder
-                        : null,
-                    ]}
-                    placeholder="Phone Number *"
-                    placeholderTextColor="#000"
-                    onChangeText={text =>
-                      setInputValues({...inputValues, phoneNumber: text})
-                    }
-                  />
-                  {errorFields.includes('phoneNumber') && (
-                    <Text style={style.errorText}>
-                      Please Enter Phone Number
-                    </Text>
-                  )}
-
-                  <TextInput
-                    style={[style.input, {color: '#000'}]}
-                    placeholder="Whatsapp Number *"
-                    placeholderTextColor="#000"
-                    onChangeText={text =>
-                      setInputValues({...inputValues, whatsappId: text})
-                    }
-                  />
-                  {errorFields.includes('whatsappId') && (
-                    <Text style={style.errorText}>
-                      Please Enter Whatsapp Number
-                    </Text>
-                  )}
-                  <TextInput
-                    style={[
-                      style.input,
-                      {color: '#000'},
-                      errorFields.includes('cityOrTown')
-                        ? style.errorBorder
-                        : null,
-                    ]}
-                    placeholder="City or Town *"
-                    placeholderTextColor="#000"
-                    onChangeText={text =>
-                      setInputValues({...inputValues, cityOrTown: text})
-                    }
-                  />
-                  {errorFields.includes('cityOrTown') && (
-                    <Text style={style.errorText}>
-                      Please Enter City Or Town
-                    </Text>
-                  )}
-                  {/* <TextInput
-                    style={[
-                      style.input,
-                      {color: '#000'},
-                      errorFields.includes('state') ? style.errorBorder : null,
-                    ]}
-                    placeholderTextColor="#000"
-                    placeholder="State *"
-                    onChangeText={text =>
-                      setInputValues({...inputValues, state: text})
-                    }
-                  />
-                  {errorFields.includes('state') && (
-                    <Text style={style.errorText}>Please Enter State</Text>
-                  )} */}
-
-                  <Text style={style.headerTxt}>
-                    {isEnabled ? 'State *' : 'State'}{' '}
-                    {/* Append '*' when isEnabled is true */}
-                  </Text>
-
-                  <View style={style.container1}>
-                    <View style={style.container2}>
-                      <TouchableOpacity
-                        style={style.container3}
-                        onPress={toggleStateDropdown}>
-                        <Text style={{fontWeight: '600', color: '#000'}}>
-                          {selectedState?.stateName || 'Select'}{' '}
-                          {/* Display the stateName if selected, otherwise 'Select' */}
-                        </Text>
-                        <Image
-                          source={require('../../../assets/dropdown.png')}
-                          style={{width: 20, height: 20}}
-                        />
-                      </TouchableOpacity>
-
-                      {/* Dropdown list */}
-                      {showStateDropdown && (
-                        <View style={style.dropdownContentstate}>
-                          <ScrollView
-                            style={style.scrollView}
-                            nestedScrollEnabled={true}>
-                            {states.map(state => (
-                              <TouchableOpacity
-                                key={state.stateId}
-                                style={style.dropdownItem}
-                                onPress={() => handleSelectState(state)} // Pass the full state object
-                              >
-                                <Text style={style.dropdownText}>
-                                  {state.stateName}
-                                </Text>
-                              </TouchableOpacity>
-                            ))}
-                          </ScrollView>
-                        </View>
-                      )}
-                    </View>
-                  </View>
-
-                  <TextInput
-                    style={[
-                      style.input,
-                      {color: '#000'},
-                      errorFields.includes('country')
-                        ? style.errorBorder
-                        : null,
-                    ]}
-                    placeholderTextColor="#000"
-                    placeholder="Country *"
-                    onChangeText={text =>
-                      setInputValues({...inputValues, country: text})
-                    }
-                  />
-                  {errorFields.includes('country') && (
-                    <Text style={style.errorText}>Please Enter Country</Text>
-                  )}
-                  <TextInput
-                    style={[
-                      style.input,
-                      {color: '#000'},
-                      errorFields.includes('pincode')
-                        ? style.errorBorder
-                        : null,
-                    ]}
-                    placeholderTextColor="#000"
-                    placeholder="Pincode *"
-                    onChangeText={text =>
-                      setInputValues({...inputValues, pincode: text})
-                    }
-                  />
-                  {errorFields.includes('pincode') && (
-                    <Text style={style.errorText}>Please Enter Pincode</Text>
-                  )}
-                  <TextInput
-                    style={[
-                      style.input,
-                      {color: '#000'},
-                      errorFields.includes('locationName')
-                        ? style.errorBorder
-                        : null,
-                    ]}
-                    placeholderTextColor="#000"
-                    placeholder="Location Name *"
-                    onChangeText={text =>
-                      setInputValues({...inputValues, locationName: text})
-                    }
-                  />
-                  {errorFields.includes('locationName') && (
-                    <Text style={style.errorText}>
-                      Please Enter Location Name
-                    </Text>
-                  )}
-                  <TextInput
-                    style={[
-                      style.input,
-                      {color: '#000'},
-                      errorFields.includes('locationDescription')
-                        ? style.errorBorder
-                        : null,
-                    ]}
-                    placeholderTextColor="#000"
-                    placeholder="Location Description *"
-                    onChangeText={text =>
-                      setInputValues({
-                        ...inputValues,
-                        locationDescription: text,
-                      })
-                    }
-                  />
-                  {errorFields.includes('locationDescription') && (
-                    <Text style={style.errorText}>
-                      Please Enter Location Description
-                    </Text>
-                  )}
-
-                  <Text style={style.headerTxt}>{'Status *'}</Text>
-                  <View style={style.container1}>
-                    <View style={style.container2}>
-                      <TouchableOpacity
-                        style={style.container3}
-                        onPress={toggleStatusDropdown}>
-                        <Text style={{fontWeight: '600', color: '#000'}}>
-                          {selectedStatus}
-                        </Text>
-                        <Image
-                          source={require('../../../assets/dropdown.png')}
-                          style={{width: 20, height: 20}}
-                        />
-                      </TouchableOpacity>
-                      {showStatusDropdown && (
-                        <View style={style.dropdownContainersstatus}>
-                          {statusOptions.map((status, index) => (
-                            <TouchableOpacity
-                              key={index}
-                              style={style.dropdownItem}
-                              onPress={() => handleSelectStatus(status)}>
-                              <Text style={style.dropdownText}>
-                                {status.label}
-                              </Text>
-                            </TouchableOpacity>
-                          ))}
-                        </View>
-                      )}
-                    </View>
-                  </View>
-                  <TouchableOpacity
-                    style={style.saveButton}
-                    onPress={handleSaveButtonPress}
-                    disabled={isSaving} // Disable button when saving
-                  >
-                    <Text style={style.saveButtonText}>
-                      {isSaving ? 'Saving...' : 'Save'}
-                    </Text>
-                  </TouchableOpacity>
-                </ScrollView>
-              </View>
+            <View
+              style={{
+                marginHorizontal: 15,
+                marginBottom: 15,
+                marginVertical: 25,
+              }}>
+              <OrderDetailRow label="Total Qty" value={formattedTotalQty} />
+              <OrderDetailRow label="Total Items" value={totalItems} />
+              <OrderDetailRow label="Total Gst" value={totalGst} />
+              <OrderDetailRow label="Round Off" value={roundOff} />
+              <OrderDetailRow label="Total Amt" value={totalAmount} />
             </View>
-          </Modal>
 
-          {/* <DateTimePickerModal
-            isVisible={isDatePickerVisible}
-            mode="date"
-            onConfirm={handleDateConfirm}
-            onCancel={hideDatePicker}
-          /> */}
-         <DateTimePickerModal
-  isVisible={isDatePickerVisible}
-  mode="date"
-  onConfirm={handleDateConfirm}
-  onCancel={hideDatePicker}
-  date={shipDate ? new Date(shipDate) : new Date()} // Use the previously selected date
-  onHide={() => {}}
-/>
-          <View>
+            <ModalComponent
+              modalVisible={modalVisible}
+              closeModal={closeModal}
+              selectedItem={selectedItem}
+              inputValuess={inputValuess}
+              onInputValueChange={handleInputValueChange} // Pass the function to handle input value changes
+            />
             <Modal
               animationType="fade"
               transparent={true}
-              visible={isLocationModalVisible}
+              visible={isModalVisible}
               onRequestClose={() => {
-                toggleLocationModal();
+                toggleModal();
               }}>
               <View style={style.modalContainerr}>
                 <View style={style.modalContentt}>
@@ -4010,40 +3748,43 @@ useEffect(() => {
                     <Text
                       style={[
                         style.modalTitle,
-                        {flex: 1, textAlign: 'center'},
+                        {textAlign: 'center', flex: 1},
                       ]}>
-                      Location Details
+                      {isEnabled ? 'Retailer Details' : 'Distributor Details'}
                     </Text>
-
-                    <TouchableOpacity onPress={handleCloseModalLocation}>
+                    <TouchableOpacity
+                      onPress={handleCloseModalDisRet}
+                      style={{alignSelf: 'flex-end'}}>
                       <Image
                         style={{height: 30, width: 30, marginRight: 5}}
                         source={require('../../../assets/close.png')}
                       />
                     </TouchableOpacity>
                   </View>
+
                   <ScrollView style={{width: '100%', height: '65%'}}>
                     <TextInput
                       style={[
                         style.input,
                         {color: '#000'},
-                        locationErrorFields.includes('locationName')
+                        errorFields.includes('firstName')
                           ? style.errorBorder
                           : null,
                       ]}
-                      placeholder="Location Name *"
+                      placeholder={
+                        isEnabled ? 'Retailer Name *' : 'Distributor Name *'
+                      }
                       placeholderTextColor="#000"
                       onChangeText={text =>
-                        setLocationInputValues({
-                          ...locationInputValues,
-                          locationName: text,
-                        })
+                        setInputValues({...inputValues, firstName: text})
                       }
-                      value={locationInputValues.locationName}
+                      value={inputValues.firstName}
                     />
-                    {locationErrorFields.includes('locationName') && (
+                    {errorFields.includes('firstName') && (
                       <Text style={style.errorText}>
-                        Please Enter Location Name
+                        {isEnabled
+                          ? 'Please Enter Retailer Name'
+                          : 'Please Enter Distributor Name'}
                       </Text>
                     )}
 
@@ -4051,154 +3792,466 @@ useEffect(() => {
                       style={[
                         style.input,
                         {color: '#000'},
-                        errorFields.includes('state')
-                          ? style.errorBorder
-                          : null,
-                        locationErrorFields.includes('phoneNumber')
+                        errorFields.includes('phoneNumber')
                           ? style.errorBorder
                           : null,
                       ]}
                       placeholder="Phone Number *"
                       placeholderTextColor="#000"
                       onChangeText={text =>
-                        setLocationInputValues({
-                          ...locationInputValues,
-                          phoneNumber: text,
-                        })
+                        setInputValues({...inputValues, phoneNumber: text})
                       }
                     />
-                    {locationErrorFields.includes('phoneNumber') && (
+                    {errorFields.includes('phoneNumber') && (
                       <Text style={style.errorText}>
                         Please Enter Phone Number
                       </Text>
                     )}
+
                     <TextInput
                       style={[style.input, {color: '#000'}]}
-                      placeholder="Locality"
+                      placeholder="Whatsapp Number *"
                       placeholderTextColor="#000"
                       onChangeText={text =>
-                        setLocationInputValues({
-                          ...locationInputValues,
-                          locality: text,
-                        })
+                        setInputValues({...inputValues, whatsappId: text})
                       }
                     />
+                    {errorFields.includes('whatsappId') && (
+                      <Text style={style.errorText}>
+                        Please Enter Whatsapp Number
+                      </Text>
+                    )}
                     <TextInput
                       style={[
                         style.input,
                         {color: '#000'},
-                        locationErrorFields.includes('cityOrTown')
+                        errorFields.includes('cityOrTown')
                           ? style.errorBorder
                           : null,
                       ]}
                       placeholder="City or Town *"
                       placeholderTextColor="#000"
                       onChangeText={text =>
-                        setLocationInputValues({
-                          ...locationInputValues,
-                          cityOrTown: text,
-                        })
+                        setInputValues({...inputValues, cityOrTown: text})
                       }
                     />
-                    {locationErrorFields.includes('cityOrTown') && (
+                    {errorFields.includes('cityOrTown') && (
                       <Text style={style.errorText}>
                         Please Enter City Or Town
                       </Text>
                     )}
+                    {/* <TextInput
+                    style={[
+                      style.input,
+                      {color: '#000'},
+                      errorFields.includes('state') ? style.errorBorder : null,
+                    ]}
+                    placeholderTextColor="#000"
+                    placeholder="State *"
+                    onChangeText={text =>
+                      setInputValues({...inputValues, state: text})
+                    }
+                  />
+                  {errorFields.includes('state') && (
+                    <Text style={style.errorText}>Please Enter State</Text>
+                  )} */}
+
+                    <Text style={style.headerTxt}>
+                      {isEnabled ? 'State *' : 'State'}{' '}
+                      {/* Append '*' when isEnabled is true */}
+                    </Text>
+
+                    <View style={style.container1}>
+                      <View style={style.container2}>
+                        <TouchableOpacity
+                          style={style.container3}
+                          onPress={toggleStateDropdown}>
+                          <Text style={{fontWeight: '600', color: '#000'}}>
+                            {selectedState?.stateName || 'Select'}{' '}
+                            {/* Display the stateName if selected, otherwise 'Select' */}
+                          </Text>
+                          <Image
+                            source={require('../../../assets/dropdown.png')}
+                            style={{width: 20, height: 20}}
+                          />
+                        </TouchableOpacity>
+
+                        {/* Dropdown list */}
+                        {showStateDropdown && (
+                          <View style={style.dropdownContentstate}>
+                            <ScrollView
+                              style={style.scrollView}
+                              nestedScrollEnabled={true}>
+                              {states.map(state => (
+                                <TouchableOpacity
+                                  key={state.stateId}
+                                  style={style.dropdownItem}
+                                  onPress={() => handleSelectState(state)} // Pass the full state object
+                                >
+                                  <Text style={style.dropdownText}>
+                                    {state.stateName}
+                                  </Text>
+                                </TouchableOpacity>
+                              ))}
+                            </ScrollView>
+                          </View>
+                        )}
+                      </View>
+                    </View>
+
                     <TextInput
                       style={[
                         style.input,
                         {color: '#000'},
-                        locationErrorFields.includes('state')
-                          ? style.errorBorder
-                          : null,
-                      ]}
-                      placeholderTextColor="#000"
-                      placeholder="State *"
-                      onChangeText={text =>
-                        setLocationInputValues({
-                          ...locationInputValues,
-                          state: text,
-                        })
-                      }
-                    />
-                    {locationErrorFields.includes('state') && (
-                      <Text style={style.errorText}>Please Enter State</Text>
-                    )}
-                    <TextInput
-                      style={[
-                        style.input,
-                        {color: '#000'},
-                        locationErrorFields.includes('pincode')
-                          ? style.errorBorder
-                          : null,
-                      ]}
-                      placeholderTextColor="#000"
-                      placeholder="Pincode *"
-                      onChangeText={text =>
-                        setLocationInputValues({
-                          ...locationInputValues,
-                          pincode: text,
-                        })
-                      }
-                    />
-                    {locationErrorFields.includes('pincode') && (
-                      <Text style={style.errorText}>Please Enter Pincode</Text>
-                    )}
-                    <TextInput
-                      style={[
-                        style.input,
-                        {color: '#000'},
-                        locationErrorFields.includes('country')
+                        errorFields.includes('country')
                           ? style.errorBorder
                           : null,
                       ]}
                       placeholderTextColor="#000"
                       placeholder="Country *"
                       onChangeText={text =>
-                        setLocationInputValues({
-                          ...locationInputValues,
-                          country: text,
+                        setInputValues({...inputValues, country: text})
+                      }
+                    />
+                    {errorFields.includes('country') && (
+                      <Text style={style.errorText}>Please Enter Country</Text>
+                    )}
+                    <TextInput
+                      style={[
+                        style.input,
+                        {color: '#000'},
+                        errorFields.includes('pincode')
+                          ? style.errorBorder
+                          : null,
+                      ]}
+                      placeholderTextColor="#000"
+                      placeholder="Pincode *"
+                      onChangeText={text =>
+                        setInputValues({...inputValues, pincode: text})
+                      }
+                    />
+                    {errorFields.includes('pincode') && (
+                      <Text style={style.errorText}>Please Enter Pincode</Text>
+                    )}
+                    <TextInput
+                      style={[
+                        style.input,
+                        {color: '#000'},
+                        errorFields.includes('locationName')
+                          ? style.errorBorder
+                          : null,
+                      ]}
+                      placeholderTextColor="#000"
+                      placeholder="Location Name *"
+                      onChangeText={text =>
+                        setInputValues({...inputValues, locationName: text})
+                      }
+                    />
+                    {errorFields.includes('locationName') && (
+                      <Text style={style.errorText}>
+                        Please Enter Location Name
+                      </Text>
+                    )}
+                    <TextInput
+                      style={[
+                        style.input,
+                        {color: '#000'},
+                        errorFields.includes('locationDescription')
+                          ? style.errorBorder
+                          : null,
+                      ]}
+                      placeholderTextColor="#000"
+                      placeholder="Location Description *"
+                      onChangeText={text =>
+                        setInputValues({
+                          ...inputValues,
+                          locationDescription: text,
                         })
                       }
                     />
-                    {locationErrorFields.includes('country') && (
-                      <Text style={style.errorText}>Please Enter Country</Text>
+                    {errorFields.includes('locationDescription') && (
+                      <Text style={style.errorText}>
+                        Please Enter Location Description
+                      </Text>
                     )}
+
+                    <Text style={style.headerTxt}>{'Status *'}</Text>
+                    <View style={style.container1}>
+                      <View style={style.container2}>
+                        <TouchableOpacity
+                          style={style.container3}
+                          onPress={toggleStatusDropdown}>
+                          <Text style={{fontWeight: '600', color: '#000'}}>
+                            {selectedStatus}
+                          </Text>
+                          <Image
+                            source={require('../../../assets/dropdown.png')}
+                            style={{width: 20, height: 20}}
+                          />
+                        </TouchableOpacity>
+                        {showStatusDropdown && (
+                          <View style={style.dropdownContainersstatus}>
+                            {statusOptions.map((status, index) => (
+                              <TouchableOpacity
+                                key={index}
+                                style={style.dropdownItem}
+                                onPress={() => handleSelectStatus(status)}>
+                                <Text style={style.dropdownText}>
+                                  {status.label}
+                                </Text>
+                              </TouchableOpacity>
+                            ))}
+                          </View>
+                        )}
+                      </View>
+                    </View>
                     <TouchableOpacity
-                      onPress={handleSaveLocationButtonPress}
-                      style={style.saveButton}>
-                      <Text style={style.saveButtonText}>Save</Text>
+                      style={style.saveButton}
+                      onPress={handleSaveButtonPress}
+                      disabled={isSaving} // Disable button when saving
+                    >
+                      <Text style={style.saveButtonText}>
+                        {isSaving ? 'Saving...' : 'Save'}
+                      </Text>
                     </TouchableOpacity>
                   </ScrollView>
                 </View>
               </View>
             </Modal>
+
+            {/* <DateTimePickerModal
+            isVisible={isDatePickerVisible}
+            mode="date"
+            onConfirm={handleDateConfirm}
+            onCancel={hideDatePicker}
+          /> */}
+            <DateTimePickerModal
+              isVisible={isDatePickerVisible}
+              mode="date"
+              onConfirm={handleDateConfirm}
+              onCancel={hideDatePicker}
+              date={shipDate ? new Date(shipDate) : new Date()} // Use the previously selected date
+              onHide={() => {}}
+            />
+            <View>
+              <Modal
+                animationType="fade"
+                transparent={true}
+                visible={isLocationModalVisible}
+                onRequestClose={() => {
+                  toggleLocationModal();
+                }}>
+                <View style={style.modalContainerr}>
+                  <View style={style.modalContentt}>
+                    <View
+                      style={{
+                        backgroundColor: colors.color2,
+                        borderRadius: 10,
+                        marginHorizontal: 10,
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        marginTop: 10,
+                        paddingVertical: 5,
+                        width: '100%',
+                        justifyContent: 'space-between',
+                        marginBottom: 15,
+                      }}>
+                      <Text
+                        style={[
+                          style.modalTitle,
+                          {flex: 1, textAlign: 'center'},
+                        ]}>
+                        Location Details
+                      </Text>
+
+                      <TouchableOpacity onPress={handleCloseModalLocation}>
+                        <Image
+                          style={{height: 30, width: 30, marginRight: 5}}
+                          source={require('../../../assets/close.png')}
+                        />
+                      </TouchableOpacity>
+                    </View>
+                    <ScrollView style={{width: '100%', height: '65%'}}>
+                      <TextInput
+                        style={[
+                          style.input,
+                          {color: '#000'},
+                          locationErrorFields.includes('locationName')
+                            ? style.errorBorder
+                            : null,
+                        ]}
+                        placeholder="Location Name *"
+                        placeholderTextColor="#000"
+                        onChangeText={text =>
+                          setLocationInputValues({
+                            ...locationInputValues,
+                            locationName: text,
+                          })
+                        }
+                        value={locationInputValues.locationName}
+                      />
+                      {locationErrorFields.includes('locationName') && (
+                        <Text style={style.errorText}>
+                          Please Enter Location Name
+                        </Text>
+                      )}
+
+                      <TextInput
+                        style={[
+                          style.input,
+                          {color: '#000'},
+                          errorFields.includes('state')
+                            ? style.errorBorder
+                            : null,
+                          locationErrorFields.includes('phoneNumber')
+                            ? style.errorBorder
+                            : null,
+                        ]}
+                        placeholder="Phone Number *"
+                        placeholderTextColor="#000"
+                        onChangeText={text =>
+                          setLocationInputValues({
+                            ...locationInputValues,
+                            phoneNumber: text,
+                          })
+                        }
+                      />
+                      {locationErrorFields.includes('phoneNumber') && (
+                        <Text style={style.errorText}>
+                          Please Enter Phone Number
+                        </Text>
+                      )}
+                      <TextInput
+                        style={[style.input, {color: '#000'}]}
+                        placeholder="Locality"
+                        placeholderTextColor="#000"
+                        onChangeText={text =>
+                          setLocationInputValues({
+                            ...locationInputValues,
+                            locality: text,
+                          })
+                        }
+                      />
+                      <TextInput
+                        style={[
+                          style.input,
+                          {color: '#000'},
+                          locationErrorFields.includes('cityOrTown')
+                            ? style.errorBorder
+                            : null,
+                        ]}
+                        placeholder="City or Town *"
+                        placeholderTextColor="#000"
+                        onChangeText={text =>
+                          setLocationInputValues({
+                            ...locationInputValues,
+                            cityOrTown: text,
+                          })
+                        }
+                      />
+                      {locationErrorFields.includes('cityOrTown') && (
+                        <Text style={style.errorText}>
+                          Please Enter City Or Town
+                        </Text>
+                      )}
+                      <TextInput
+                        style={[
+                          style.input,
+                          {color: '#000'},
+                          locationErrorFields.includes('state')
+                            ? style.errorBorder
+                            : null,
+                        ]}
+                        placeholderTextColor="#000"
+                        placeholder="State *"
+                        onChangeText={text =>
+                          setLocationInputValues({
+                            ...locationInputValues,
+                            state: text,
+                          })
+                        }
+                      />
+                      {locationErrorFields.includes('state') && (
+                        <Text style={style.errorText}>Please Enter State</Text>
+                      )}
+                      <TextInput
+                        style={[
+                          style.input,
+                          {color: '#000'},
+                          locationErrorFields.includes('pincode')
+                            ? style.errorBorder
+                            : null,
+                        ]}
+                        placeholderTextColor="#000"
+                        placeholder="Pincode *"
+                        onChangeText={text =>
+                          setLocationInputValues({
+                            ...locationInputValues,
+                            pincode: text,
+                          })
+                        }
+                      />
+                      {locationErrorFields.includes('pincode') && (
+                        <Text style={style.errorText}>
+                          Please Enter Pincode
+                        </Text>
+                      )}
+                      <TextInput
+                        style={[
+                          style.input,
+                          {color: '#000'},
+                          locationErrorFields.includes('country')
+                            ? style.errorBorder
+                            : null,
+                        ]}
+                        placeholderTextColor="#000"
+                        placeholder="Country *"
+                        onChangeText={text =>
+                          setLocationInputValues({
+                            ...locationInputValues,
+                            country: text,
+                          })
+                        }
+                      />
+                      {locationErrorFields.includes('country') && (
+                        <Text style={style.errorText}>
+                          Please Enter Country
+                        </Text>
+                      )}
+                      <TouchableOpacity
+                        onPress={handleSaveLocationButtonPress}
+                        style={style.saveButton}>
+                        <Text style={style.saveButtonText}>Save</Text>
+                      </TouchableOpacity>
+                    </ScrollView>
+                  </View>
+                </View>
+              </Modal>
+            </View>
           </View>
-        </View>
-      </SafeAreaView>
+        </SafeAreaView>
       </ScrollView>
       <TouchableOpacity
-            onPress={PlaceAddOrder}
-            disabled={isSubmitting} // Disable button when submitting
-            style={{
-              borderWidth: 1,
-              // backgroundColor: '#f55951',
-              backgroundColor: '#F09120',
-              paddingVertical: 15,
-              paddingHorizontal: 20,
-              opacity: isSubmitting ? 0.5 : 1, // Dim button when submitting
-            }}>
-            <Text
-              style={{
-                textAlign: 'center',
-                color: '#fff',
-                fontWeight: 'bold',
-                fontSize: 20,
-              }}>
-              {isSubmitting ? 'Placing Order...' : 'PLACE ORDER'}
-            </Text>
-          </TouchableOpacity>
+        onPress={PlaceAddOrder}
+        disabled={isSubmitting} // Disable button when submitting
+        style={{
+          borderWidth: 1,
+          // backgroundColor: '#f55951',
+          backgroundColor: '#F09120',
+          paddingVertical: 15,
+          paddingHorizontal: 20,
+          opacity: isSubmitting ? 0.5 : 1, // Dim button when submitting
+        }}>
+        <Text
+          style={{
+            textAlign: 'center',
+            color: '#fff',
+            fontWeight: 'bold',
+            fontSize: 20,
+          }}>
+          {isSubmitting ? 'Placing Order...' : 'PLACE ORDER'}
+        </Text>
+      </TouchableOpacity>
     </KeyboardAvoidingView>
   );
 };
@@ -4237,9 +4290,8 @@ const getStyles = colors =>
       marginLeft: 'auto',
     },
     buttonIcon: {
-      width: 25,
-      height: 25,
-      marginLeft: 10,
+      width: 30,
+      height: 30,
     },
     bottomContainer: {
       alignItems: 'flex-start',
@@ -4305,12 +4357,7 @@ const getStyles = colors =>
       paddingLeft: 20,
       marginHorizontal: 15,
     },
-    sizehead: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      backgroundColor: 'lightgray',
-      paddingVertical: 5,
-    },
+  
     dateIcon: {
       height: 25,
       width: 25,
@@ -4328,9 +4375,11 @@ const getStyles = colors =>
       marginBottom: 10,
       alignItems: 'center',
     },
-    quantityInputContainer: {
-      flex: 0.4,
+     quantityInputContainer : {
+      // Fixed width to prevent expansion
+      alignItems: "center",
     },
+    
     quantityInput: {
       borderWidth: 1,
       borderColor: '#ccc',

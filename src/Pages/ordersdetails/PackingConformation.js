@@ -198,46 +198,55 @@ const PackingConformation = ({route}) => {
     gettasksearch(true, 0, 20);
   };
 
-  const getAllProducts = async (reset = false) => {
-    if (isLoading || loadingMore) return; // Use 'isLoading' instead of 'loading'
-    setIsLoading(reset); // Use the renamed 'setIsLoading'
+  const getAllProducts = async (reset = false, start = from, end = to) => {
+    if (isLoading || loadingMore) return;
+    
+    if (reset) {
+        start = 0;
+        end = 20;
+        setFrom(start);
+        setTo(end);
+    }
 
-    const apiUrl = `${global?.userData?.productURL}${API.GET_SELECT_STYLE}/${from}/${to}/${companyId}/${order.customerLocation}`;
+    setIsLoading(reset);
+
+    const apiUrl = `${global?.userData?.productURL}${API.GET_SELECT_STYLE}/${start}/${end}/${companyId}/${order.customerLocation}`;
     console.log('apiUrl:', apiUrl);
 
     try {
-      const response = await axios.get(apiUrl, {
-        headers: {
-          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
-        },
-      });
+        const response = await axios.get(apiUrl, {
+            headers: {
+                Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+            },
+        });
 
-      const newTasks = response?.data;
-      // console.log('newTasks====>', newTasks);
+        const newTasks = response?.data;
+        console.log('newTasks====>', newTasks);
 
-      if (reset) {
-        setStylesData(newTasks);
-      } else {
-        setStylesData(prevTasks => [...prevTasks, ...newTasks]);
-      }
+        if (reset) {
+            setStylesData(newTasks);
+        } else {
+            setStylesData(prevTasks => [...prevTasks, ...newTasks]);
+        }
 
-      if (newTasks.length < 15) {
-        setHasMoreTasks(false);
-      }
+        if (newTasks.length < 15) {
+            setHasMoreTasks(false);
+        }
     } catch (error) {
-      console.error('Error:', error);
+        console.error('Error:', error);
     } finally {
-      setIsLoading(false); // Reset 'isLoading' after the request completes
-      setLoadingMore(false);
+        setIsLoading(false);
+        setLoadingMore(false);
     }
-  };
+};
+
 
   const loadMoreTasks = async () => {
     if (!hasMoreTasks || loadingMore) return;
 
     setLoadingMore(true);
     const newFrom = to + 1;
-    const newTo = to + 20;
+    const newTo = newFrom + 19;
     setFrom(newFrom);
     setTo(newTo);
 
@@ -755,8 +764,7 @@ if (order?.customerType === 3) {
           size: newItem.sizeDesc,
           gstSlotId: newItem.gstSlotId ?? existingItem.gstSlotId,
           fixDisc: newItem.fixDisc ?? existingItem.fixDisc,
-
-          
+          imageUrl: newItem.imageUrls?.length > 0 ? newItem.imageUrls[0] : existingItem.imageUrl,           
         };
         console.log('Updated Existing Item:', updatedLineItems[existingIndex]);
       } else {
@@ -774,8 +782,9 @@ if (order?.customerType === 3) {
           colorName: newItem.colorName ?? '', 
           colorId: newItem.colorId ?? null,
           statusFlag: 0,
-          fixDisc: newItem.fixDisc ?? 0
-        };
+          fixDisc: newItem.fixDisc ?? 0,
+          imageUrl: newItem.imageUrls?.length > 0 ? newItem.imageUrls[0] : '', // **Add Image URL**
+                };
         updatedLineItems.push(newLineItem);
         console.log('Added New Item:', newLineItem);
       }
@@ -2703,7 +2712,7 @@ if (pdf_flag !== 1) {
     // });
     return (
       <View style={styles.orderItem}>
-        <View style={{flexDirection: 'row', marginLeft: 10, marginBottom: 10}}>
+        <View style={{flexDirection: 'row', marginLeft: 10, }}>
           <CustomCheckBoxStatus
             isChecked={
               !!selectedItems[item.orderLineitemId] ||
@@ -2716,8 +2725,9 @@ if (pdf_flag !== 1) {
             disabled={item.statusFlag !== 0}
             borderColor={checkboxColor}
           />
-
+      
           <Text style={styles.orderstylenametxt}>{item?.styleName || item.style}</Text>
+        
           {item.statusFlag !== 1 && item.statusFlag !== 2 && (
             <TouchableOpacity
               onPress={() => handleDelete(item.styleId, item.size, item.qty)}>
@@ -2727,10 +2737,21 @@ if (pdf_flag !== 1) {
               />
             </TouchableOpacity>
           )}
+          
         </View>
+
+        {(item.imageUrl || item.imageUrl1) && (
+  <Image
+    source={{ uri: item.imageUrl || item.imageUrl1 }}
+    style={{ width: 50, height: 50, marginHorizontal: 10, borderRadius: 5 }}
+    resizeMode="contain"
+  />
+)}
+
 
         <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
           <View style={{flex: 1, alignItems: 'flex-start'}}>
+        
             <View style={{flexDirection: 'row'}}>
               <Text
                 style={{
@@ -2799,12 +2820,12 @@ if (pdf_flag !== 1) {
             <View style={{flexDirection: 'row'}}>
               <Text
                 style={{
-                  width: 45,
+                  width: 46,
                   color: '#000',
                   marginLeft: 10,
                   marginVertical: 5,
                 }}>
-                {pdf_flag ? 'WSP' : 'Dis Amnt'}
+                {pdf_flag ? 'WSP' : 'Dis Amnt 1'}
               </Text>
               <Text
                 style={{
