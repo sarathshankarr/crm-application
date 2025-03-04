@@ -3430,7 +3430,7 @@ const Cart = () => {
                             <TouchableOpacity
                               onPress={() => copyValueToClipboard(index)}>
                               <Image
-                                style={{height: 25, width: 25}}
+                                style={{height: 25, width: 25,marginRight:20}}
                                 source={require('../../../assets/copy.png')}
                               />
                             </TouchableOpacity>
@@ -3598,7 +3598,7 @@ const Cart = () => {
                           {/* <View style={{ flex: 1 }}>
                           <Text style={{color:"#000"}}>Total Set: {calculateTotalItems(item.styleId, item.colorId)}</Text>
                         </View> */}
-                          <View style={{width:50, marginRight:43}}>
+                          <View style={{width:50, marginRight:60}}>
                             <Text style={{color: '#000'}}>
                               {calculateTotalPrice(item.styleId, item.colorId)}
                             </Text>
@@ -4288,10 +4288,12 @@ const getStyles = colors =>
     buttonsContainer: {
       flexDirection: 'row',
       marginLeft: 'auto',
+      marginRight:5
     },
     buttonIcon: {
       width: 30,
       height: 30,
+      marginLeft:13
     },
     bottomContainer: {
       alignItems: 'flex-start',

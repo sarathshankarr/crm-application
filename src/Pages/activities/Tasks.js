@@ -20,6 +20,7 @@ import {formatDateIntoDMY} from '../../Helper/Helper';
 import {useSelector} from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ColorContext } from '../../components/colortheme/colorTheme';
+import AddRetailerDistributor from '../../components/AddRetailerDistributor';
 
 const Tasks = () => {
   const { colors } = useContext(ColorContext);
@@ -42,6 +43,7 @@ const Tasks = () => {
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [filterFlag, setFilterFlag] = useState(false);
   const selectedCompany = useSelector(state => state.selectedCompany);
+  const [ShowModal, setShowModal] = useState(false);
 
   useEffect(() => {
     const fetchInitialSelectedCompany = async () => {
@@ -488,6 +490,8 @@ const Tasks = () => {
           <Text style={styles.addButtonText}>Add</Text>
         </TouchableOpacity>
       </View>
+      {/* <AddRetailerDistributor visible={ShowModal} onClose={() => setShowModal(false)} type="Retailer" /> */}
+
       {dropdownVisible && (
         <View style={styles.dropdownContent1}>
           <ScrollView>
