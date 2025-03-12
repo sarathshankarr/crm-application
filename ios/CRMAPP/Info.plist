@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>CodvCRM</string>
+	<string>HexaCrm</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -17,11 +17,13 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.1</string>
+	<string>1.2</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>8</string>
+	<string>2</string>
+	<key>LSApplicationCategoryType</key>
+	<string></string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>LSSupportsOpeningDocumentsInPlace</key>
@@ -33,42 +35,39 @@
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>We need your location to help you create and complete location-based tasks, track visits, and find nearby customers or distributors.</string>
-	<key>NSLocationAlwaysUsageDescription</key>
-	<string>We need continuous location access to allow tracking of field visits, improve sales route efficiency, and verify task completions.</string>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>We require location access to provide real-time tracking, ensure location-based task completion, and improve field sales operations.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>We need access to your camera so you can take and upload product images, invoices, and other documents required for sales and inventory management.</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>We need access to your photo library so you can upload previously saved product images, invoices, or customer documents.</string>
-	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>We need permission to save images of invoices, products, and reports that you capture using the app.</string>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>We need microphone access to allow you to record voice notes for customer interactions, meetings, and sales reports.</string>
 	<key>NSDocumentsFolderUsageDescription</key>
-	<string>We need access to your documents folder to store and retrieve invoices, product catalogs, and customer reports.</string><key>UIStatusBarStyle</key>
-<string>UIStatusBarStyleLightContent</string>
-<key>UIViewControllerBasedStatusBarAppearance</key>
-<false/>
+	<string>We need access to your documents folder to store and retrieve invoices, product catalogs, and customer reports.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>We need access to your location to provide location-based services in the app.</string>
-
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>We need continuous location access to allow tracking of field visits, improve sales route efficiency, and verify task completions.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>We need your location to help you create and complete location-based tasks, track visits, and find nearby customers or distributors.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>We need microphone access to allow you to record voice notes for customer interactions, meetings, and sales reports.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>We need permission to save images of invoices, products, and reports that you capture using the app.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We need access to your photo library so you can upload previously saved product images, invoices, or customer documents.</string>
 	<key>UIFileSharingEnabled</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
-	<key>UIRequiredDeviceCapabilities</key>	
+	<key>UIRequiredDeviceCapabilities</key>
 	<array>
 		<string>arm64</string>
 	</array>
+	<key>UIStatusBarStyle</key>
+	<string>UIStatusBarStyleLightContent</string>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-	
+	<key>UIViewControllerBasedStatusBarAppearance</key>
+	<false/>
 </dict>
 </plist>

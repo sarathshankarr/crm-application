@@ -682,7 +682,7 @@ const Login = () => {
           <View
             style={{justifyContent: 'flex-end', flex: 1, marginVertical: 10}}>
             <Text style={{textAlign: 'center', color: '#000'}}>
-              All rights with Codeverse Technologies 1.0
+              All rights with Codeverse Technologies 1.1
             </Text>
           </View>
         </View>

@@ -72,6 +72,19 @@ const PackingConformation = ({route}) => {
 
   const screenHeight = Dimensions.get('window').height;
 
+  const [isImageModalVisible, setIsImageModalVisible] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+
+  const openImageModal = (imageUrl) => {
+    setSelectedImage(imageUrl);
+    setIsImageModalVisible(true);
+  };
+  
+  const closeModal = () => {
+    setIsImageModalVisible(false);
+    setSelectedImage(null);
+  };
+  
 
 
   const gettasksearch = async (
@@ -2741,13 +2754,14 @@ if (pdf_flag !== 1) {
         </View>
 
         {(item.imageUrl || item.imageUrl1) && (
-  <Image
-    source={{ uri: item.imageUrl || item.imageUrl1 }}
-    style={{ width: 50, height: 50, marginHorizontal: 10, borderRadius: 5 }}
-    resizeMode="contain"
-  />
-)}
-
+        <TouchableOpacity onPress={() => openImageModal(item.imageUrl || item.imageUrl1)}>
+          <Image
+            source={{ uri: item.imageUrl || item.imageUrl1 }}
+            style={{ width: 50, height: 50, marginHorizontal: 10, borderRadius: 5 }}
+            resizeMode="contain"
+          />
+        </TouchableOpacity>
+      )}
 
         <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
           <View style={{flex: 1, alignItems: 'flex-start'}}>
@@ -3496,6 +3510,27 @@ if (pdf_flag !== 1) {
             </View>
           </View>
         </Modal>
+
+        <Modal transparent={true} visible={isImageModalVisible} onRequestClose={closeModal} animationType="fade">
+        <View style={styles.modalOverlayImage}>
+       
+          <View style={styles.modalContentImage}>
+             <TouchableOpacity
+                  style={styles.closeButtonImageModel}
+                  onPress={closeModal}>
+                  <Image
+                    style={{height: 30, width: 30,}}
+                    source={require('../../../assets/close.png')}
+                  />
+                </TouchableOpacity>
+            {selectedImage && <Image source={{ uri: selectedImage }} style={styles.modalImageImage} />}
+            {/* <TouchableOpacity onPress={closeModal} style={styles.closeButtonImage}>
+              <Text style={styles.closeButtonTextImage}>Close</Text>
+            </TouchableOpacity> */}
+        
+          </View>
+        </View>
+      </Modal>
       </SafeAreaView>
     </KeyboardAvoidingView>
   );
@@ -3902,6 +3937,39 @@ const getStyles = (colors,screenHeight) => StyleSheet.create({
       borderColor: 'lightgray', // Optional: Adds subtle border (for effect)
       borderWidth: 1,
       marginBottom:5
+    },
+    modalOverlayImage: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: 'rgba(0,0,0,0.5)',
+    },
+    modalContentImage: {
+      backgroundColor: '#fff',
+      padding: 20,
+      borderRadius: 10,
+      alignItems: 'center',
+    },
+    modalImageImage: {
+      width: 300,
+      height: 300,
+      marginBottom: 15,
+    },
+    closeButtonImage: {
+      padding: 10,
+      backgroundColor: '#007bff',
+      borderRadius: 5,
+    },
+    closeButtonTextImage: {
+      color: '#fff',
+      fontSize: 16,
+    },
+    closeButtonImageModel: {
+      backgroundColor: 'lightgray',
+      padding: 3,
+      borderRadius: 5,
+      alignSelf: 'flex-end',
+      marginBottom: 10,
     },
   });
 
