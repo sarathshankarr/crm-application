@@ -11,6 +11,7 @@ import {
   TextInput,
   ScrollView,
   Alert,
+  Modal,
 } from 'react-native';
 import {API} from '../../config/apiConfig';
 import axios from 'axios';
@@ -45,6 +46,20 @@ const DistributorInventory = () => {
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [selectedSearchOption, setSelectedSearchOption] = useState(null);
   const [searchFilterFlag, setsearchFilterFlag] = useState(false);
+
+
+  const [isImageModalVisible, setIsImageModalVisible] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+
+  const openImageModal = (imageUrl) => {
+    setSelectedImage(imageUrl);
+    setIsImageModalVisible(true);
+  };
+  
+  const closeModal = () => {
+    setIsImageModalVisible(false);
+    setSelectedImage(null);
+  };
 
   useEffect(() => {
     const fetchInitialSelectedCompany = async () => {
@@ -270,6 +285,17 @@ const DistributorInventory = () => {
       <TouchableOpacity style={styles.orderItem}>
         <Text style={styles.orderIdText}>{item.distributorName}</Text>
         <Text style={styles.customerText}>{item.shippingLocality}</Text>
+        <TouchableOpacity onPress={() => openImageModal(item.imageUrls?.[0] || '')}>
+        {item.imageUrls?.length > 0 && item.imageUrls[0] ? (
+  <Image
+    source={{ uri: item.imageUrls[0] }}
+    style={{ width: 50, height: 50, }}
+    resizeMode="contain"
+  />
+) : (
+  <Text style={{ color: "#000",marginHorizontal:1 }}>No Image</Text>
+)}
+      </TouchableOpacity>
         <Text style={styles.qtyText}>{item.styleName}</Text>
         <Text style={styles.dateText}>{item.size}</Text>
         <Text style={styles.dateText}>{item.availQty}</Text>
@@ -340,6 +366,7 @@ const DistributorInventory = () => {
       <View style={styles.header}>
         <Text style={styles.orderIdText}>Distributor Name</Text>
         <Text style={styles.customerText}>Location</Text>
+        <Text style={styles.headerTextImage}>Image</Text>
         <Text style={styles.qtyText}>Style</Text>
         <Text style={styles.dateText}>Size</Text>
         <Text style={styles.dateText}>Avail Qty</Text>
@@ -370,6 +397,26 @@ const DistributorInventory = () => {
       {loadingMore && !hasMoreData && (
         <ActivityIndicator size="large" color="#000" />
       )}
+        <Modal transparent={true} visible={isImageModalVisible} onRequestClose={closeModal} animationType="fade">
+        <View style={styles.modalOverlayImage}>
+       
+          <View style={styles.modalContentImage}>
+             <TouchableOpacity
+                  style={styles.closeButtonImageModel}
+                  onPress={closeModal}>
+                  <Image
+                    style={{height: 30, width: 30,}}
+                    source={require('../../../assets/close.png')}
+                  />
+                </TouchableOpacity>
+            {selectedImage && <Image source={{ uri: selectedImage }} style={styles.modalImageImage} />}
+            {/* <TouchableOpacity onPress={closeModal} style={styles.closeButtonImage}>
+              <Text style={styles.closeButtonTextImage}>Close</Text>
+            </TouchableOpacity> */}
+        
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -395,12 +442,19 @@ const getStyles = (colors) => StyleSheet.create({
     borderBottomColor: '#f0f0f0',
   },
   orderIdText: {
-    flex: 1.8,
+    flex: 1.7,
     color: '#000',
   },
   customerText: {
-    flex: 1.3,
+    flex: 1.2,
     color: '#000',
+    marginLeft:10
+  },
+  headerTextImage:{
+    flex: 1.1,
+    textAlign: 'center',
+    color: '#000',
+    
   },
   qtyText: {
     flex: 1.5,
@@ -499,6 +553,39 @@ const getStyles = (colors) => StyleSheet.create({
     paddingVertical: 6,
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
+  },
+  modalOverlayImage: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  modalContentImage: {
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  modalImageImage: {
+    width: 320,
+    height: 470,
+    marginBottom: 15,
+  },
+  closeButtonImage: {
+    padding: 10,
+    backgroundColor: '#007bff',
+    borderRadius: 5,
+  },
+  closeButtonTextImage: {
+    color: '#fff',
+    fontSize: 16,
+  },
+  closeButtonImageModel: {
+    backgroundColor: 'lightgray',
+    padding: 3,
+    borderRadius: 5,
+    alignSelf: 'flex-end',
+    marginBottom: 10,
   },
 });
 

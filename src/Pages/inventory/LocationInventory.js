@@ -12,6 +12,7 @@ import {
   ActivityIndicator,
   RefreshControl,
   ScrollView,
+  Modal,
 } from 'react-native';
 import {API} from '../../config/apiConfig';
 import axios from 'axios';
@@ -43,6 +44,20 @@ const LocationInventory = () => {
   const [to, setTo] = useState(20);
   const [hasMoreTasks, setHasMoreTasks] = useState(true);
   const [searchFilterFlag, setsearchFilterFlag] = useState(false);
+
+
+  const [isImageModalVisible, setIsImageModalVisible] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+
+  const openImageModal = (imageUrl) => {
+    setSelectedImage(imageUrl);
+    setIsImageModalVisible(true);
+  };
+  
+  const closeModal = () => {
+    setIsImageModalVisible(false);
+    setSelectedImage(null);
+  };
 
   const selectedCompany = useSelector(state => state.selectedCompany);
   const hold_flag = useSelector(state => state.selectedCompany.hold_qty_flag);
@@ -283,6 +298,17 @@ const LocationInventory = () => {
       <View style={styles.inventoryItem}>
         <Text style={styles.itemText}> {item.locationName}</Text>
         <Text style={styles.itemText1}>{item.styleName}</Text>
+        <TouchableOpacity onPress={() => openImageModal(item.imageUrls?.[0] || '')}>
+        {item.imageUrls?.length > 0 && item.imageUrls[0] ? (
+  <Image
+    source={{ uri: item.imageUrls[0] }}
+    style={{ width: 50, height: 50, }}
+    resizeMode="contain"
+  />
+) : (
+  <Text style={{ color: "#000",marginHorizontal:1 }}>No Image</Text>
+)}
+      </TouchableOpacity>
         <Text style={styles.itemText2}>{item.sizeCode}</Text>
         <Text style={styles.itemText3}>{item.availQty}</Text>
         {comp_flag && hold_flag ? (
@@ -356,6 +382,7 @@ const LocationInventory = () => {
       <View style={styles.header}>
         <Text style={styles.headerText}>Location Name</Text>
         <Text style={styles.headerText1}>Style Name</Text>
+        <Text style={styles.headerTextImage}>Image</Text>
         <Text style={styles.headerText2}>Size</Text>
         <Text style={styles.headerText3}>Avail Qty</Text>
         {comp_flag && hold_flag ? (
@@ -383,6 +410,26 @@ const LocationInventory = () => {
           }
         />
       )}
+         <Modal transparent={true} visible={isImageModalVisible} onRequestClose={closeModal} animationType="fade">
+        <View style={styles.modalOverlayImage}>
+       
+          <View style={styles.modalContentImage}>
+             <TouchableOpacity
+                  style={styles.closeButtonImageModel}
+                  onPress={closeModal}>
+                  <Image
+                    style={{height: 30, width: 30,}}
+                    source={require('../../../assets/close.png')}
+                  />
+                </TouchableOpacity>
+            {selectedImage && <Image source={{ uri: selectedImage }} style={styles.modalImageImage} />}
+            {/* <TouchableOpacity onPress={closeModal} style={styles.closeButtonImage}>
+              <Text style={styles.closeButtonTextImage}>Close</Text>
+            </TouchableOpacity> */}
+        
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -437,7 +484,12 @@ const getStyles = colors =>
       color: '#000',
     },
     headerText1: {
-      flex: 2,
+      flex: 2.6,
+      textAlign: 'center',
+      color: '#000',
+    },
+    headerTextImage:{
+      flex: 1,
       textAlign: 'center',
       color: '#000',
     },
@@ -475,7 +527,7 @@ const getStyles = colors =>
       paddingVertical: 10,
     },
     itemText: {
-      flex: 1.2,
+      flex: 1.4,
       textAlign: 'center',
       color: '#000',
     },
@@ -545,6 +597,39 @@ const getStyles = colors =>
       paddingVertical: 6,
       borderBottomWidth: 1,
       borderBottomColor: '#ccc',
+    },
+    modalOverlayImage: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: 'rgba(0,0,0,0.5)',
+    },
+    modalContentImage: {
+      backgroundColor: '#fff',
+      padding: 20,
+      borderRadius: 10,
+      alignItems: 'center',
+    },
+    modalImageImage: {
+      width: 320,
+      height: 470,
+      marginBottom: 15,
+    },
+    closeButtonImage: {
+      padding: 10,
+      backgroundColor: '#007bff',
+      borderRadius: 5,
+    },
+    closeButtonTextImage: {
+      color: '#fff',
+      fontSize: 16,
+    },
+    closeButtonImageModel: {
+      backgroundColor: 'lightgray',
+      padding: 3,
+      borderRadius: 5,
+      alignSelf: 'flex-end',
+      marginBottom: 10,
     },
   });
 

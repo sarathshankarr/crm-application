@@ -7,8 +7,8 @@ const ColorProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   const [colors, setColors] = useState({
-    color2: '#1F74BA', 
-    lightcolor: '#9DE4DC',
+    color2: '#246EE9', 
+    lightcolor: '#1F74BA',
     color3: '#DDD', 
     color4: '#007167', 
     color5: '#DDD', 

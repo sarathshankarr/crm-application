@@ -172,7 +172,9 @@ const Login = () => {
       } else {
         Alert.alert('Invalid Code', 'Please enter a valid customer code.');
       }
+      // handleLogin('https://us.codeverse.co/')
     } catch (error) {
+      console.log('error======>',error)
       setLoading(false);
       if (error.response && error.response.status === 400) {
         Alert.alert('Invalid Code', 'Please enter a valid customer code.');
@@ -514,12 +516,19 @@ const Login = () => {
         <View style={styles.container}>
           <View style={styles.imageContainer}>
             <Image
-              style={{height: 103, width: 103, marginTop: 30}}
-              source={require('../../../assets/loghighcon.png')}
+              style={{
+                height: 100,
+                width: 150,
+                resizeMode: 'contain',
+            
+             }}
+              source={require('../../../assets/Logo.png')}
             />
           </View>
+          <Text style={styles.titlehead}>
+          <Text style={styles.titleHighlight}>Hexa</Text>CRM
+        </Text>
           <View style={styles.formContainer}>
-            <Text style={styles.title}>Login to Your Account</Text>
             <View
               style={[
                 styles.inputContainer,
@@ -535,7 +544,7 @@ const Login = () => {
 
               <View
                 style={{
-                  backgroundColor: '#F5F5F5',
+                  backgroundColor:  '#F8FAFF',
                   borderRadius: 10,
                   paddingHorizontal: 9,
                   paddingVertical: 2,
@@ -543,6 +552,7 @@ const Login = () => {
                 <Image
                   source={require('../../../assets/code-lock.png')}
                   style={styles.inputImage}
+
                 />
               </View>
             </View>
@@ -565,7 +575,7 @@ const Login = () => {
               />
               <View
                 style={{
-                  backgroundColor: '#F5F5F5',
+                  backgroundColor:  '#F8FAFF',
                   borderRadius: 10,
                   paddingHorizontal: 10,
                   paddingVertical: 1,
@@ -608,7 +618,7 @@ const Login = () => {
               />
               <TouchableOpacity
                 style={{
-                  backgroundColor: '#F5F5F5',
+                  backgroundColor:  '#F8FAFF',
                   borderRadius: 10,
                   paddingHorizontal: 10,
                   paddingVertical: 1,
@@ -679,6 +689,9 @@ const Login = () => {
             </TouchableOpacity>
             <View style={styles.line} />
           </View>
+          < View>
+          <Text style={styles.title}>Login to Your Account</Text>
+          </View>
           <View
             style={{justifyContent: 'flex-end', flex: 1, marginVertical: 10}}>
             <Text style={{textAlign: 'center', color: '#000'}}>
@@ -698,11 +711,16 @@ const getStyles = (colors) => StyleSheet.create({
     paddingHorizontal: 20,
     backgroundColor: '#fff',
   },
+  imageContainer:{
+    top: 20,
+ right:10
+  },
   title: {
-    fontSize: 25,
-    marginBottom: 30,
-    color: '#390050',
+    fontSize: 16,
+    fontWeight:"600",
+    color: colors.color2,
     alignItems: 'center',
+    alignSelf:'center',
     justifyContent: 'center',
   },
   inputContainer: {
@@ -714,13 +732,41 @@ const getStyles = (colors) => StyleSheet.create({
     paddingHorizontal: 10,
     marginVertical: 10,
     // backgroundColor: '#D9D9D947',
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: '#D9D9D9',
+    backgroundColor: '#F8FAFF',
   },
   inputContainerError: {
     borderColor: 'red',
   },
 
+  titlehead: {
+    fontSize: 36,
+    fontWeight: '700',
+    // color: '#888888',
+    color: colors.color2,
+    // color: 'purple',
+    // color: '#000',
+    textAlign: 'center',
+    marginTop: 20,
+    // fontFamily:'serif'
+    fontFamily: Platform.select({
+      ios: 'Georgia',
+      android: 'serif',
+    }),
+  },
+  titleHighlight: {
+    color: '#3BC3FF',
+    // color: 'purple',
+    // color: colors.color2,
+    // color: '#000',
+
+    fontWeight: '700',
+    fontFamily: Platform.select({
+      ios: 'Georgia',
+      android: 'serif',
+    }),
+  },
   formContainer: {
     width: '100%',
     marginTop: 30,
@@ -728,16 +774,19 @@ const getStyles = (colors) => StyleSheet.create({
   inputImage: {
     width: 28,
     height: 28,
+    tintColor:colors.color2
   },
   inputImagee: {
     width: 29,
     height: 29,
+    tintColor:colors.color2
   },
   input: {
     flex: 1,
     height: '100%',
     color: 'black',
     fontSize: 16,
+    
   },
   rowContainer: {
     flexDirection: 'row',
@@ -756,6 +805,7 @@ const getStyles = (colors) => StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 5,
+    borderRadius:20
   },
   buttonText: {
     fontSize: 18,
@@ -764,8 +814,9 @@ const getStyles = (colors) => StyleSheet.create({
   line: {
     borderBottomColor: '#615858C7',
     borderBottomWidth: 1,
-    marginVertical: 30,
+    marginTop: 30,
     marginHorizontal: 30,
+    marginBottom:20,
   },
   signintext: {
     textAlign: 'center',

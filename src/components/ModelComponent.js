@@ -37,7 +37,7 @@ const ModalComponent = ({
   const currentScreen = useSelector(state => state.cartItems.currentSourceScreen);
   const selectedCompany = useSelector(state => state.selectedCompany);
 
-  const pdf_flag = useSelector(state => state.selectedCompany.pdf_flag);
+  const pdf_flag = useSelector(state => state.selectedCompany?.pdf_flag);
 
   useEffect(() => {
     dispatch(setSourceScreen('ModalComponent')); // Track current screen

@@ -13,6 +13,7 @@ import {
   RefreshControl,
   ScrollView,
   Alert,
+  Modal,
 } from 'react-native';
 import { API } from '../../config/apiConfig';
 import axios from 'axios';
@@ -41,7 +42,19 @@ const ProductInventory = () => {
   const [to, setTo] = useState(20); 
   const [searchFilterFlag, setsearchFilterFlag] = useState(false);
 
+  const [isImageModalVisible, setIsImageModalVisible] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
 
+  const openImageModal = (imageUrl) => {
+    setSelectedImage(imageUrl);
+    setIsImageModalVisible(true);
+  };
+  
+  const closeModal = () => {
+    setIsImageModalVisible(false);
+    setSelectedImage(null);
+  };
+  
   const selectedCompany = useSelector(state => state.selectedCompany);
 
   useEffect(() => {
@@ -281,6 +294,18 @@ const ProductInventory = () => {
             {item.gsCode}
           </Text>
         </View>
+        <TouchableOpacity onPress={() => openImageModal(item.imageUrls?.[0] || '')}>
+        {item.imageUrls?.length > 0 && item.imageUrls[0] ? (
+  <Image
+    source={{ uri: item.imageUrls[0] }}
+    style={{ width: 50, height: 50,}}
+    resizeMode="contain"
+  />
+) : (
+  <Text style={{ color: "#000",marginHorizontal:1 }}>No Image</Text>
+)}
+      </TouchableOpacity>
+        
         <Text style={styles.itemText}>{item.sizeCode}</Text>
         <Text style={styles.itemText}>{item.availQty}</Text>
       </View>
@@ -349,6 +374,8 @@ const ProductInventory = () => {
         <View style={{ flex: 3 }}>
           <Text style={styles.headerText1}>Style Name</Text>
         </View>
+        <Text style={styles.headerTextImage}>Image</Text>
+
         <Text style={styles.headerText}>Size</Text>
         <Text style={styles.headerText}>Avail Qty</Text>
       </View>
@@ -374,7 +401,28 @@ const ProductInventory = () => {
           }
         />
       )}
+        <Modal transparent={true} visible={isImageModalVisible} onRequestClose={closeModal} animationType="fade">
+        <View style={styles.modalOverlayImage}>
+       
+          <View style={styles.modalContentImage}>
+             <TouchableOpacity
+                  style={styles.closeButtonImageModel}
+                  onPress={closeModal}>
+                  <Image
+                    style={{height: 30, width: 30,}}
+                    source={require('../../../assets/close.png')}
+                  />
+                </TouchableOpacity>
+            {selectedImage && <Image source={{ uri: selectedImage }} style={styles.modalImageImage} />}
+            {/* <TouchableOpacity onPress={closeModal} style={styles.closeButtonImage}>
+              <Text style={styles.closeButtonTextImage}>Close</Text>
+            </TouchableOpacity> */}
+        
+          </View>
+        </View>
+      </Modal>
     </View>
+    
   );
 };
 
@@ -440,7 +488,11 @@ const getStyles = (colors) => StyleSheet.create({
     textAlign: 'left',
     color: '#000',
   },
-
+  headerTextImage:{
+    flex: 1,
+    textAlign: 'center',
+    color: '#000',
+  },
   listContainer: {
     paddingHorizontal: 20,
   },
@@ -506,6 +558,39 @@ const getStyles = (colors) => StyleSheet.create({
     paddingVertical: 6,
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
+  },
+  modalOverlayImage: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  modalContentImage: {
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  modalImageImage: {
+    width: 320,
+    height: 470,
+    marginBottom: 15,
+  },
+  closeButtonImage: {
+    padding: 10,
+    backgroundColor: '#007bff',
+    borderRadius: 5,
+  },
+  closeButtonTextImage: {
+    color: '#fff',
+    fontSize: 16,
+  },
+  closeButtonImageModel: {
+    backgroundColor: 'lightgray',
+    padding: 3,
+    borderRadius: 5,
+    alignSelf: 'flex-end',
+    marginBottom: 10,
   },
 });
 
