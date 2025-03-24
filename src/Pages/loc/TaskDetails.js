@@ -1337,73 +1337,152 @@ useFocusEffect(
   };
   
   
+const handleCheckInOut = async () => {
+  // Fetch the latest GPS location
+  Geolocation.getCurrentPosition(
+    async (position) => {
+      const { latitude, longitude } = position.coords;
+      console.log('Current Location:', latitude, longitude);
+
+      const apiUrl = `${global?.userData?.productURL}${API.CHECK_IN_CHECK_OUT}`;
+      const now = new Date();
+      const formattedDateTime = formatDateTime(now, 'full');
+
+      const payload = isSignedIn
+        ? {
+            id: id,
+            checkOut: formattedDateTime,
+            check_out_latitude: latitude, // Use the latest latitude
+            check_out_longitude: longitude, // Use the latest longitude
+            type: 1,
+            userId: userId,
+            t_company_id: companyId,
+            taskName: label,
+          }
+        : {
+            id: id,
+            checkIn: formattedDateTime,
+            check_in_latitude: latitude, // Use the latest latitude
+            check_in_longitude: longitude, // Use the latest longitude
+            type: 0,
+            userId: userId,
+            t_company_id: companyId,
+            taskName: label,
+          };
+
+      console.log('Payload:', payload);
+
+      try {
+        const response = await axios.put(apiUrl, payload, {
+          headers: {
+            Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        console.log('Response:', response.data);
+
+        // Toggle the signed-in state (Check-in or Check-out)
+        setIsSignedIn(!isSignedIn);
+
+        // Reload the page after check-in/out is successful
+        navigation.replace('TaskDetails', {
+          customerName,
+          locationName,
+          state,
+          status,
+          dueDateStr,
+          label,
+          id,
+          desc,
+          remarks,
+          task,
+          distance,
+          traveledDistance,
+          checkIn: payload.checkIn || checkIn,
+          checkOut: payload.checkOut || checkOut,
+          locId,
+        });
+
+      } catch (error) {
+        console.error('Error:', error);
+        Alert.alert('Error', 'Failed to punch in/out. Please try again.');
+      }
+    },
+    (error) => {
+      console.error('Location Error:', error);
+      Alert.alert('Error', 'Failed to get current location.');
+    },
+    { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+  );
+};
+
+  // const handleCheckInOut = async () => {
+  //   const apiUrl = `${global?.userData?.productURL}${API.CHECK_IN_CHECK_OUT}`;
+  //   const now = new Date();
+  //   const formattedDateTime = formatDateTime(now, 'full');
   
-  const handleCheckInOut = async () => {
-    const apiUrl = `${global?.userData?.productURL}${API.CHECK_IN_CHECK_OUT}`;
-    const now = new Date();
-    const formattedDateTime = formatDateTime(now, 'full');
+  //   const payload = isSignedIn
+  //     ? {
+  //         id: id,
+  //         checkOut: formattedDateTime,
+  //         check_out_latitude: mLat,
+  //         check_out_longitude: mLong,
+  //         type: 1,
+  //         userId: userId,
+  //         t_company_id: companyId,
+  //         taskName: label,
+  //       }
+  //     : {
+  //         id: id,
+  //         checkIn: formattedDateTime,
+  //         check_in_latitude: mLat,
+  //         check_in_longitude: mLong,
+  //         type: 0,
+  //         userId: userId,
+  //         t_company_id: companyId,
+  //         taskName: label,
+  //       };
   
-    const payload = isSignedIn
-      ? {
-          id: id,
-          checkOut: formattedDateTime,
-          check_out_latitude: mLat,
-          check_out_longitude: mLong,
-          type: 1,
-          userId: userId,
-          t_company_id: companyId,
-          taskName: label,
-        }
-      : {
-          id: id,
-          checkIn: formattedDateTime,
-          check_in_latitude: mLat,
-          check_in_longitude: mLong,
-          type: 0,
-          userId: userId,
-          t_company_id: companyId,
-          taskName: label,
-        };
+  //   console.log('payload==============>', payload);
   
-    console.log('payload==============>', payload);
+  //   try {
+  //     const response = await axios.put(apiUrl, payload, {
+  //       headers: {
+  //         Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+  //         'Content-Type': 'application/json',
+  //       },
+  //     });
   
-    try {
-      const response = await axios.put(apiUrl, payload, {
-        headers: {
-          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
-          'Content-Type': 'application/json',
-        },
-      });
+  //     console.log('Response:', response.data);
   
-      console.log('Response:', response.data);
+  //     // Toggle the signed-in state (Check-in or Check-out)
+  //     setIsSignedIn(!isSignedIn);
   
-      // Toggle the signed-in state (Check-in or Check-out)
-      setIsSignedIn(!isSignedIn);
+  //     // Reload the page after check-in/out is successful
+  //     navigation.replace('TaskDetails', {
+  //       customerName,
+  //       locationName,
+  //       state,
+  //       status,
+  //       dueDateStr,
+  //       label,
+  //       id,
+  //       desc,
+  //       remarks,
+  //       task,
+  //       distance,
+  //       traveledDistance,
+  //       checkIn: payload.checkIn || checkIn,
+  //       checkOut: payload.checkOut || checkOut,
+  //       locId,
+  //     });
   
-      // Reload the page after check-in/out is successful
-      navigation.replace('TaskDetails', {
-        customerName,
-        locationName,
-        state,
-        status,
-        dueDateStr,
-        label,
-        id,
-        desc,
-        remarks,
-        task,
-        distance,
-        traveledDistance,
-        checkIn: payload.checkIn || checkIn,
-        checkOut: payload.checkOut || checkOut,
-        locId,
-      });
-  
-    } catch (error) {
-      console.error('Error:', error);
-      Alert.alert('Error', 'Failed to punch in/out. Please try again.');
-    } 
-  };
+  //   } catch (error) {
+  //     console.error('Error:', error);
+  //     Alert.alert('Error', 'Failed to punch in/out. Please try again.');
+  //   } 
+  // };
 
 
   return (
@@ -1425,12 +1504,23 @@ useFocusEffect(
           </TouchableOpacity>
         </View>
         <View style={{ marginHorizontal: 10, flexDirection: 'row', alignItems: 'center', marginVertical: 10 }}>
-          {task.changedLocFlag === 0 && (
+          {/* {task.changedLocFlag === 0 && (
             <CustomCheckBox isChecked={isChecked} onToggle={handleCheckBoxPress} />
           )}
            {task.changedLocFlag === 0 && (
           <Text style={{ fontWeight: 'bold', marginHorizontal: 5, color: '#000' }}>Changed the Current Location</Text>
-           )}
+           )} */}
+           <CustomCheckBox 
+  isChecked={isChecked || task.changedLocFlag === 1} 
+  onToggle={task.changedLocFlag === 1 ? null : handleCheckBoxPress} 
+  disabled={task.changedLocFlag === 1} 
+/>
+
+<Text style={{ fontWeight: 'bold', marginHorizontal: 5, color: '#000' }}>
+  {task.changedLocFlag === 1 ? 'Current Location Updated' : 'Changed the Current Location'}
+</Text>
+
+
         </View>
         <View style={styles.dateContainer}>
           <Text style={styles.dateText}>{dueDateStr}</Text>

@@ -264,22 +264,24 @@ const Login = () => {
       const response = await axios.post(
         productURL + API.LOGIN,
         postData.toString(),
-        {
-          headers,
-        },
+        { headers }
       );
+  
       if (isValidString(response.data)) {
-        let data = {token: response.data, productURL: productURL};
+        let data = { token: response.data, productURL: productURL };
         await saveToken(data);
         await getUsers(response.data, productURL);
-
         await getRollMenu(roleIdd, companyIdd);
-
         LoginAudit(data);
-
+  
+        // Set a timeout to refresh the token before it expires
+        const expiresIn = response.data.expires_in * 1000; // Convert to milliseconds
+        const refreshTimeout = expiresIn - 60000; // Refresh 1 minute before expiration
+        setTimeout(refreshToken, refreshTimeout);
+  
         navigation.reset({
           index: 0,
-          routes: [{name: 'Main'}],
+          routes: [{ name: 'Main' }],
         });
       } else {
         console.log('Response:', JSON.stringify(response.data));
@@ -288,7 +290,7 @@ const Login = () => {
       if (error?.response?.data?.error_description) {
         Alert.alert(
           'crm.codeverse.co.says',
-          error.response.data.error_description,
+          error.response.data.error_description
         );
       }
     } finally {
@@ -297,22 +299,45 @@ const Login = () => {
     }
   };
 
-  const saveToken = async data => {
+  // const saveToken = async data => {
+  //   try {
+  //     console.log('Saving token:', JSON.stringify(data));
+  //     await AsyncStorage.setItem('userdata', JSON.stringify(data));
+  //     await AsyncStorage.setItem('loggedIn', 'true');
+  //     global.userData = data; // Ensure global userData is updated
+  //     console.log('globaluserData', global.userData);
+  //     if (isChecked) {
+  //       const existingCredentials =
+  //         JSON.parse(await AsyncStorage.getItem('credentials')) || [];
+  //       const newCredential = {username, password, code};
+  //       const updatedCredentials = [...existingCredentials, newCredential];
+  //       await AsyncStorage.setItem(
+  //         'credentials',
+  //         JSON.stringify(updatedCredentials),
+  //       );
+  //     } else {
+  //       await AsyncStorage.removeItem('username');
+  //       await AsyncStorage.removeItem('password');
+  //       await AsyncStorage.removeItem('code');
+  //     }
+  //   } catch (error) {
+  //     console.error('Error saving token:', error);
+  //   }
+  // };
+
+  const saveToken = async (data) => {
     try {
-      console.log('Saving token:', JSON.stringify(data));
-      await AsyncStorage.setItem('userdata', JSON.stringify(data));
+      const expiryTime = new Date().getTime() + data.token.expires_in * 1000;
+      const tokenData = { ...data, expiryTime };
+      await AsyncStorage.setItem('userdata', JSON.stringify(tokenData));
       await AsyncStorage.setItem('loggedIn', 'true');
-      global.userData = data; // Ensure global userData is updated
+      global.userData = tokenData; // Ensure global userData is updated
       console.log('globaluserData', global.userData);
       if (isChecked) {
-        const existingCredentials =
-          JSON.parse(await AsyncStorage.getItem('credentials')) || [];
-        const newCredential = {username, password, code};
+        const existingCredentials = JSON.parse(await AsyncStorage.getItem('credentials')) || [];
+        const newCredential = { username, password, code };
         const updatedCredentials = [...existingCredentials, newCredential];
-        await AsyncStorage.setItem(
-          'credentials',
-          JSON.stringify(updatedCredentials),
-        );
+        await AsyncStorage.setItem('credentials', JSON.stringify(updatedCredentials));
       } else {
         await AsyncStorage.removeItem('username');
         await AsyncStorage.removeItem('password');
@@ -320,6 +345,45 @@ const Login = () => {
       }
     } catch (error) {
       console.error('Error saving token:', error);
+    }
+  };
+
+  const checkTokenExpiry = async () => {
+    const userData = JSON.parse(await AsyncStorage.getItem('userdata'));
+    if (userData && userData.expiryTime) {
+      const currentTime = new Date().getTime();
+      if (currentTime >= userData.expiryTime - 60000) { // Refresh token 1 minute before expiry
+        await refreshToken(userData);
+      }
+    }
+  };
+  
+  const refreshToken = async (userData) => {
+    const postData = new URLSearchParams();
+    postData.append('grant_type', 'refresh_token');
+    postData.append('refresh_token', userData.token.refresh_token);
+    const credentials = base64Encode(`${USER_ID}:${USER_PASSWORD}`);
+  
+    const headers = {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      Authorization: `Basic ${credentials}`,
+    };
+  
+    try {
+      const response = await axios.post(
+        userData.productURL + API.LOGIN,
+        postData.toString(),
+        { headers }
+      );
+      if (isValidString(response.data)) {
+        const expiryTime = new Date().getTime() + response.data.expires_in * 1000;
+        const newTokenData = { token: response.data, productURL: userData.productURL, expiryTime };
+        await AsyncStorage.setItem('userdata', JSON.stringify(newTokenData));
+        global.userData = newTokenData;
+      }
+    } catch (error) {
+      console.error('Error refreshing token:', error);
+      // Handle token refresh failure (e.g., logout user)
     }
   };
 
@@ -384,6 +448,7 @@ const Login = () => {
   
   
   const getUsers = async (userData, productURL) => {
+    await checkTokenExpiry(); 
     console.log('getUsers userData:', userData);
     const apiUrl = `${productURL}${API.ADD_USERS}/${userData.userId}`; // Update API URL dynamically
     console.log('apiUrl', apiUrl);
@@ -426,57 +491,14 @@ const Login = () => {
   
   
 
-  // const getUsers = async (userData, productURL) => {
-  //   console.log('getUsers userData:', userData);
-  //   const apiUrl = `${productURL}${API.ADD_USERS}/${userData.userId}`; // Update API URL to include dynamic
-  //   console.log('apurl', apiUrl);
-  //   try {
-  //     const response = await axios.get(apiUrl, {
-  //       headers: {Authorization: `Bearer ${userData.access_token}`},
-  //     });
-  //     const loggedInUser = response.data.response.users[0]; // Since response is expected to have only one user with given
-  //     if (loggedInUser) {
-  //       console.log('Logged in user:', loggedInUser);
-  //       dispatch(setLoggedInUser(loggedInUser));
-  //       dispatch(setUserRole(loggedInUser.role));
-  //       await saveUserDataToStorage(loggedInUser);
-  //       // const roles = loggedInUser.role;
-  //       // let roleName = '';
-  //       // let roleId = '';
-  //       // for (const role of roles) {
-  //       //   const name = role.role;
-  //       //   if (name) {
-  //       //     if (
-  //       //       name === 'admin' ||
-  //       //       name === 'Distributor' ||
-  //       //       name === 'Retailer'
-  //       //     ) {
-  //       //       roleName = name;
-  //       //       roleId = role.id;
-  //       //       break;
-  //       //     }
-  //       //   }
-  //       // }
-  //       // if (roleName && roleId) {
-  //       //   await saveRoleToStorage({roleName, roleId});
-  //       // }
-  //       // else {
-  //       //   Alert.alert(
-  //       //     'Unauthorized role',
-  //       //     'You do not have access to this application.',
-  //       //   );
-  //       // }
-  //     } else {
-  //       Alert.alert('No user data found', 'Failed to fetch user data.');
-  //     }
-  //   } catch (error) {
-  //     console.error('Error fetching user data:', error);
-  //     Alert.alert(
-  //       'Failed to fetch user data',
-  //       'An error occurred while fetching user data.',
-  //     );
-  //   }
-  // };
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      checkTokenExpiry();
+    }, 300000); // Check every 5 minutes
+  
+    return () => clearInterval(interval);
+  }, []);
 
   const saveUserDataToStorage = async userData => {
     try {
