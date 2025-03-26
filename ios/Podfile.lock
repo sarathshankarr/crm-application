@@ -9,17 +9,17 @@ PODS:
   - hermes-engine (0.75.4):
     - hermes-engine/Pre-built (= 0.75.4)
   - hermes-engine/Pre-built (0.75.4)
-  - libwebp (1.3.2):
-    - libwebp/demux (= 1.3.2)
-    - libwebp/mux (= 1.3.2)
-    - libwebp/sharpyuv (= 1.3.2)
-    - libwebp/webp (= 1.3.2)
-  - libwebp/demux (1.3.2):
+  - libwebp (1.5.0):
+    - libwebp/demux (= 1.5.0)
+    - libwebp/mux (= 1.5.0)
+    - libwebp/sharpyuv (= 1.5.0)
+    - libwebp/webp (= 1.5.0)
+  - libwebp/demux (1.5.0):
     - libwebp/webp
-  - libwebp/mux (1.3.2):
+  - libwebp/mux (1.5.0):
     - libwebp/demux
-  - libwebp/sharpyuv (1.3.2)
-  - libwebp/webp (1.3.2):
+  - libwebp/sharpyuv (1.5.0)
+  - libwebp/webp (1.5.0):
     - libwebp/sharpyuv
   - RCT-Folly (2024.01.01.00):
     - boost
@@ -1747,7 +1747,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNScreens (3.36.0):
+  - RNScreens (3.37.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2059,7 +2059,7 @@ SPEC CHECKSUMS:
   fmt: 4c2741a687cc09f0634a2e2c72a838b99f1ff120
   glog: 69ef571f3de08433d766d614c73a9838a06bf7eb
   hermes-engine: ea92f60f37dba025e293cbe4b4a548fd26b610a0
-  libwebp: 1786c9f4ff8a279e4dac1e8f385004d5fc253009
+  libwebp: 02b23773aedb6ff1fd38cec7a77b81414c6842a8
   RCT-Folly: 4464f4d875961fce86008d45f4ecf6cef6de0740
   RCTDeprecation: 726d24248aeab6d7180dac71a936bbca6a994ed1
   RCTRequired: a94e7febda6db0345d207e854323c37e3a31d93b
@@ -2132,7 +2132,7 @@ SPEC CHECKSUMS:
   RNGestureHandler: 2e4971181218718ab9c5871ea5ef855ec5c389fe
   RNImageCropPicker: 8e39c01f205e00d739c31e682f068aac315587bf
   RNReanimated: 8b36a458b255be4d4b2e02bacc3e06e18254db9a
-  RNScreens: 274d7cc1d2abb2497b8c20561cc9e3a344a19095
+  RNScreens: 6649de620b77a84d4bf7c7c8ff8830cc96f11cac
   RNSVG: 8b18fe2c2884a86e5e2e008acee0f3503dc19ff2
   SDWebImage: a7f831e1a65eb5e285e3fb046a23fcfbf08e696d
   SDWebImageWebPCoder: 908b83b6adda48effe7667cd2b7f78c897e5111d

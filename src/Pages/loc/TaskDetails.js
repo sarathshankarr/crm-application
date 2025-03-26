@@ -176,11 +176,11 @@ const TaskDetails = ({ route }) => {
 
   useEffect(() => {
     if (distance) {
-      // if (parseFloat(distance) * 1000 > 100) {
+      // if (parseFloat(distance) * 1000 > 1000) {
       if (
         (distance.includes('km')
           ? parseFloat(distance) * 1000
-          : parseFloat(distance)) > 100
+          : parseFloat(distance)) > 1000
       ) {
         setEditStatus(false);
       } else {
@@ -300,7 +300,7 @@ const TaskDetails = ({ route }) => {
               1000,
             ); // Wait 1 second before retrying
           } else {
-            Alert.alert('Error', 'Current location not available');
+            Alert.alert('Error', 'Location permission denied. Please enable it in app settings.');
             reject(error);
           }
         },
@@ -844,11 +844,11 @@ useFocusEffect(
     if (
       (distance.includes('km')
         ? parseFloat(distance) * 1000
-        : parseFloat(distance)) > 100
+        : parseFloat(distance)) > 1000
     ) {
       Alert.alert(
         'Warning',
-        'You must be within 100 meters of the destination to upload a selfie',
+        'You must be within 1000 meters of the destination to upload a selfie',
       );
       return;
     }
@@ -1627,40 +1627,39 @@ const handleCheckInOut = async () => {
             justifyContent: 'space-between',
           }}>
           <TouchableOpacity
-            style={[
-              styles.signOutButton,
-              // Disable the button if checkIn and checkOut values are not null or undefined
-              checkIn && checkOut ? { backgroundColor: '#d3d3d3' } : null, // Grey out the button if disabled
-            ]}
-            onPress={() => {
-              // If both checkIn and checkOut values are present, disable the action
-              if (checkIn && checkOut) {
-                Alert.alert('You have already checked in and checked out');
-                return;
-              }
+  style={[
+    styles.signOutButton,
+    checkIn && checkOut ? { backgroundColor: '#d3d3d3' } : null, // Grey out the button if disabled
+  ]}
+  onPress={() => {
+    if (checkIn && checkOut) {
+      Alert.alert('You have already checked in and checked out');
+      return;
+    }
 
-              // Check if the user is within 100 meters
-              // if (parseFloat(distance) * 1000 >= 100) {
-              if (
-                (distance.includes('km')
-                  ? parseFloat(distance) * 1000
-                  : parseFloat(distance)) > 100
-              ) {
-                Alert.alert(
-                  'Warning',  // This is the header/title of the alert
-                  'You must be within 100 meters of the destination to Punch In or Punch Out',);
-                return;
-              }
+    // Allow punch in/out if the user is within 1000 meters
+    if (
+      (distance.includes('km')
+        ? parseFloat(distance) * 1000
+        : parseFloat(distance)) > 1000
+    ) {
+      Alert.alert(
+        'Warning',  
+        'You must be within 1000 meters of the destination to Punch In or Punch Out'
+      );
+      return;
+    }
 
-              // Call PunchInPunchOut function if within range
-              PunchInPunchOut();
-            }}
-            disabled={!!checkIn && !!checkOut} // Use double negation to cast strings to booleans
-          >
-            <Text style={{ color: '#000', fontSize: 15 }}>
-              {isSignedIn ? 'Check Out' : 'Check In'}
-            </Text>
-          </TouchableOpacity>
+    // Call PunchInPunchOut function if within range
+    PunchInPunchOut();
+  }}
+  disabled={!!checkIn && !!checkOut} 
+>
+  <Text style={{ color: '#000', fontSize: 15 }}>
+    {isSignedIn ? 'Check Out' : 'Check In'}
+  </Text>
+</TouchableOpacity>
+
           <View style={styles.switchContainer}>
             <TouchableOpacity
               onPress={handleShipDropdownClickStatus}

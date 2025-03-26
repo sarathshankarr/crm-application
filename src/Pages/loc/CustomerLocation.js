@@ -734,7 +734,7 @@ const initialize = async () => {
               1000,
             ); // Wait 1 second before retrying
           } else {
-            Alert.alert('Error', 'Current location not available');
+            Alert.alert('Location permission denied. Please enable it in app settings.');
             reject(error);
           }
         },
@@ -755,7 +755,7 @@ const initialize = async () => {
           await getLocation();
   
           if (!mLat || !mLong) {
-            console.error('Current location not available');
+            console.error('Location permission denied. Please enable it in app settings.');
             return;
           }
   
@@ -899,7 +899,7 @@ const initialize = async () => {
 
     if (!mLat || !mLong) {
       console.error('Current location not available');
-      Alert.alert('Error', 'Current location not available');
+      Alert.alert('Location permission denied. Please enable it in app settings.');
       return;
     }
 
@@ -953,7 +953,7 @@ const initialize = async () => {
 
     if (!mLat || !mLong) {
       console.error('Current location not available');
-      Alert.alert('Error', 'Current location not available');
+      Alert.alert('Location permission denied. Please enable it in app settings.');
       return;
     }
 

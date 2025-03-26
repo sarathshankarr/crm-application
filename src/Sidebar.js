@@ -651,8 +651,8 @@ const Sidebar = ({navigation, route}) => {
                 ? {uri: `data:image/png;base64,${companyLogo}`}
                 : require('../assets/NewNoImage.jpg')
             }
-            resizeMode='cover'
-            style={{height: 30, width: 45,marginHorizontal:5}}
+            resizeMode='contain'
+            style={{height: 30, width: 100}}
           />
             <Text style={styles.headerSubtitle}>{companyName} ({companyCode})</Text>
           </View>
