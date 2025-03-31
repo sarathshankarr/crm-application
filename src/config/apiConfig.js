@@ -41,6 +41,7 @@ export const API = {
   VALIDATIONLOACTION:"erpportal/api/location/isValid",
   ALL_PRODUCTS_DATA_NEW: 'erpportal/api/style/getAll',
   GET_TASKS_ACC_USER:'erpportal/api/master/getTasksAccUser',
+  GET_TASKS_ACC_USER_LAZY:'erpportal/api/master/getTasksAccUserLazy',
   GET_Fields_List:'erpportal/api/master/getField',
   GET_CATEGORY_LIST:'erpportal/api/category/getAllCategories/',
   GET_COLOR_LIST:'erpportal/api/color/getByCompanyId/',

@@ -16,6 +16,7 @@ import {
   TextInput,
   ActivityIndicator,
   Alert,
+  Modal,
 } from 'react-native';
 import {useSelector} from 'react-redux';
 import axios from 'axios';
@@ -50,6 +51,15 @@ const NewCategoryUi = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [imageModalVisible, setImageModalVisible] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+
+  
+
+  const closeModal = () => {
+    setImageModalVisible(false);
+    setSelectedImage(null);
+  };
 
   const selectedCompany = useSelector(state => state.selectedCompany);
   const companyId = selectedCompany
@@ -521,19 +531,29 @@ const NewCategoryUi = () => {
       <TouchableOpacity
         style={styles.productCard}
         onPress={() => navigation.navigate('Details', {item})}>
-        {/* Product Image */}
-        <Image
-          style={styles.productImage}
-          source={
-            item.imageUrls && item.imageUrls.length > 0
-              ? {uri: item.imageUrls[0]}
-              : require('../../../assets/NewNoImage.jpg')
-          }
-        />
+        {/* Product Image with click handler */}
+        <TouchableOpacity 
+          onPress={(e) => {
+            e.stopPropagation(); // Prevent triggering the parent TouchableOpacity
+            if (item.imageUrls && item.imageUrls.length > 0) {
+              setSelectedImage(item.imageUrls[0]);
+              setImageModalVisible(true);
+            }
+          }}>
+          <Image
+            style={styles.productImage}
+            source={
+              item.imageUrls && item.imageUrls.length > 0
+                ? {uri: item.imageUrls[0]}
+                : require('../../../assets/NewNoImage.jpg')
+            }
+          />
+        </TouchableOpacity>
+        
         {/* Product Details */}
         <View style={styles.productDetails}>
-        <Text style={styles.productTitle} numberOfLines={1} ellipsizeMode="tail">{item.styleName}</Text>
-        <Text style={styles.productTitle} numberOfLines={1} ellipsizeMode="tail">{item.styleDesc}</Text>
+          <Text style={styles.productTitle} numberOfLines={1} ellipsizeMode="tail">{item.styleName}</Text>
+          <Text style={styles.productTitle} numberOfLines={1} ellipsizeMode="tail">{item.styleDesc}</Text>
           <View style={styles.priceContainer}>
             <Text style={styles.productPrice}>₹{item.mrp}</Text>
           </View>
@@ -542,10 +562,9 @@ const NewCategoryUi = () => {
             onPress={() => openModal(item)}>
             <Text style={styles.addButtonText}>ADD</Text>
             <Image
-
-                                style={{height: 20, width: 20, marginLeft: 10,tintColor:"#fff"}}
-                                source={require('../../../assets/add1.png')}
-                              />
+              style={{height: 20, width: 20, marginLeft: 10, tintColor: "#fff"}}
+              source={require('../../../assets/add1.png')}
+            />
           </TouchableOpacity>
         </View>
       </TouchableOpacity>
@@ -1031,6 +1050,34 @@ const NewCategoryUi = () => {
         closeModal={() => setModalVisible(false)}
         selectedItem={selectedItem}
       />
+      <Modal
+  visible={imageModalVisible}
+  transparent={true}
+  onRequestClose={() => setImageModalVisible(false)}>
+    
+  <TouchableOpacity 
+    style={styles.fullscreenModal}
+    activeOpacity={1}
+    onPress={() => setImageModalVisible(false)}>
+    <View style={styles.modalContent}>
+    <TouchableOpacity style={styles.closeButtonimages} onPress={closeModal}>
+           <Image
+             style={{height: 30, width: 30,tintColor: '#000',}}
+             source={require('../../../assets/close.png')}
+           />
+         </TouchableOpacity>
+      <Image
+        style={styles.fullscreenImage}
+        source={
+          selectedImage 
+            ? { uri: selectedImage } 
+            : require('../../../assets/NewNoImage.jpg')
+        }
+        resizeMode="contain"
+      />
+    </View>
+  </TouchableOpacity>
+</Modal>
     </View>
   );
 };
@@ -1291,6 +1338,35 @@ const getStyles = colors =>
       flexDirection: 'row',
       alignItems: 'center',
       flex: 1,
+    },
+    fullscreenModal: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.9)',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    modalContent: {
+      width: '100%',
+      height: '80%',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    fullscreenImage: {
+      width: '80%',
+      height: '80%',
+    },
+    modalContainerimages: {
+      flex: 1,
+      backgroundColor: 'rgba(0, 0, 0, 0.8)', // Slightly transparent background
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    closeButtonimages: {
+      position: 'absolute', // Position it relative to the modal
+      top: 70, // Adjust for desired distance from the top
+      right: 20, // Adjust for desired distance from the right
+      zIndex: 10, // Ensure it stays on top of the image
+      backgroundColor:"#fff"
     },
   });
 
