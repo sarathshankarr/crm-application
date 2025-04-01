@@ -54,8 +54,6 @@ const NewCategoryUi = () => {
   const [imageModalVisible, setImageModalVisible] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
 
-  
-
   const closeModal = () => {
     setImageModalVisible(false);
     setSelectedImage(null);
@@ -89,7 +87,6 @@ const NewCategoryUi = () => {
       fetchCategories(companyId);
     }
   }, [companyId]);
-
 
   // useEffect(() => {
   //   if (pageNo > 1) {
@@ -130,14 +127,14 @@ const NewCategoryUi = () => {
   //         Authorization: `Bearer ${global?.userData?.token?.access_token}`,
   //       },
   //     });
-  
+
   //     const categories = response?.data || [];
   //     setSelectedDetails(categories);
-  
+
   //     // Set "All Products" as default instead of the first category
   //     setSelectedCategory('All Products');
   //     setActiveCategoryId(null);
-      
+
   //     // Fetch all products initially
   //     if (selectedCategory === 'All Products') {
   //       await getAllProducts(companyId);
@@ -150,26 +147,27 @@ const NewCategoryUi = () => {
   //     setIsLoading(false);
   //   }
   // };
-  
 
   const fetchCategories = async companyId => {
     setIsLoading(true);
-    const apiUrl = `${global?.userData?.productURL}${API.ALL_CATEGORIES_LL_LIST}/${0}/${10000}/${companyId}`;
-  
+    const apiUrl = `${global?.userData?.productURL}${
+      API.ALL_CATEGORIES_LL_LIST
+    }/${0}/${10000}/${companyId}`;
+
     try {
       const response = await axios.get(apiUrl, {
         headers: {
           Authorization: `Bearer ${global?.userData?.token?.access_token}`,
         },
       });
-  
+
       const categories = response?.data || [];
       setSelectedDetails(categories);
-  
+
       // Set "All Products" as default instead of the first category
       setSelectedCategory('All Products');
       setActiveCategoryId(null);
-      
+
       // Fetch all products initially
       getAllProducts(companyId);
     } catch (error) {
@@ -228,7 +226,6 @@ const NewCategoryUi = () => {
   //     handleAllProducts(companyId); // Directly call the function to load "All"
   //   }, [companyId])
   // );
-  
 
   const handleAllProducts = companyId => {
     setIsLoading(true);
@@ -275,23 +272,22 @@ const NewCategoryUi = () => {
 
   const [stopLoad, setStopLoad] = useState(false);
 
+  const getAllProducts = async (companyId, reset = false, page = 1) => {
+    setIsLoading(true);
+    setStopLoad(false);
+    const apiUrl = `${global?.userData?.productURL}${API.ALL_PRODUCTS_DATA}`;
 
-      const getAllProducts = async (companyId, reset = false, page = 1) => {
-        setIsLoading(true);
-        setStopLoad(false);
-        const apiUrl = `${global?.userData?.productURL}${API.ALL_PRODUCTS_DATA}`;
-    
-        try {
-          const userData = await AsyncStorage.getItem('userdata');
-          const userDetails = JSON.parse(userData);
-    
-          const requestData = {
-            pageNo: reset ? 1 : String(page),
-            pageSize: '15',
-            categoryId: '',
-            companyId: companyId,
-          };
-    
+    try {
+      const userData = await AsyncStorage.getItem('userdata');
+      const userDetails = JSON.parse(userData);
+
+      const requestData = {
+        pageNo: reset ? 1 : String(page),
+        pageSize: '15',
+        categoryId: '',
+        companyId: companyId,
+      };
+
       const response = await axios.post(apiUrl, requestData, {
         headers: {
           Authorization: `Bearer ${global?.userData?.token?.access_token}`,
@@ -463,18 +459,18 @@ const NewCategoryUi = () => {
     console.log('searchQuery:', searchQuery);
 
     if (!searchKey) {
-        Alert.alert(
-            'Alert',
-            'Please select an option from the dropdown before searching',
-        );
-        console.log('Search Key is missing');
-        return;
+      Alert.alert(
+        'Alert',
+        'Please select an option from the dropdown before searching',
+      );
+      console.log('Search Key is missing');
+      return;
     }
 
     if (!searchQuery.trim()) {
-        Alert.alert('Alert', 'Please enter a search query before searching');
-        console.log('Search Query is empty');
-        return;
+      Alert.alert('Alert', 'Please enter a search query before searching');
+      console.log('Search Query is empty');
+      return;
     }
 
     setAppliedSearchQuery(searchQuery);
@@ -485,34 +481,32 @@ const NewCategoryUi = () => {
     setTo(15);
 
     setTimeout(async () => {
-        console.log('Calling gettasksearch...');
-        await gettasksearch(true);
-        console.log('gettasksearch completed.');
+      console.log('Calling gettasksearch...');
+      await gettasksearch(true);
+      console.log('gettasksearch completed.');
 
-        setActiveCategoryId(prevId => {
-            console.log('Updated activeCategoryId:', prevId);
+      setActiveCategoryId(prevId => {
+        console.log('Updated activeCategoryId:', prevId);
 
-            if (prevId) {
-                console.log(
-                    'Fetching selected category products...',
-                    prevId,
-                    companyId,
-                );
-                getSelectedCategoryAllProducts(prevId, companyId);
-            } else {
-                console.log('Fetching all products...');
-                handleCategory();
-            }
+        if (prevId) {
+          console.log(
+            'Fetching selected category products...',
+            prevId,
+            companyId,
+          );
+          getSelectedCategoryAllProducts(prevId, companyId);
+        } else {
+          console.log('Fetching all products...');
+          handleCategory();
+        }
 
-            return prevId;
-        });
+        return prevId;
+      });
 
-        // Ensure scroll moves to the top
-        scrollViewRef.current?.scrollTo({ y: 0, animated: true });
-
+      // Ensure scroll moves to the top
+      scrollViewRef.current?.scrollTo({y: 0, animated: true});
     }, 0);
-};
-
+  };
 
   const handleSearchInputChange = query => {
     setSearchQuery(query);
@@ -532,8 +526,8 @@ const NewCategoryUi = () => {
         style={styles.productCard}
         onPress={() => navigation.navigate('Details', {item})}>
         {/* Product Image with click handler */}
-        <TouchableOpacity 
-          onPress={(e) => {
+        <TouchableOpacity
+          onPress={e => {
             e.stopPropagation(); // Prevent triggering the parent TouchableOpacity
             if (item.imageUrls && item.imageUrls.length > 0) {
               setSelectedImage(item.imageUrls[0]);
@@ -549,11 +543,21 @@ const NewCategoryUi = () => {
             }
           />
         </TouchableOpacity>
-        
+
         {/* Product Details */}
         <View style={styles.productDetails}>
-          <Text style={styles.productTitle} numberOfLines={1} ellipsizeMode="tail">{item.styleName}</Text>
-          <Text style={styles.productTitle} numberOfLines={1} ellipsizeMode="tail">{item.styleDesc}</Text>
+          <Text
+            style={styles.productTitle}
+            numberOfLines={1}
+            ellipsizeMode="tail">
+            {item.styleName}
+          </Text>
+          <Text
+            style={styles.productTitle}
+            numberOfLines={1}
+            ellipsizeMode="tail">
+            {item.styleDesc}
+          </Text>
           <View style={styles.priceContainer}>
             <Text style={styles.productPrice}>₹{item.mrp}</Text>
           </View>
@@ -562,7 +566,7 @@ const NewCategoryUi = () => {
             onPress={() => openModal(item)}>
             <Text style={styles.addButtonText}>ADD</Text>
             <Image
-              style={{height: 20, width: 20, marginLeft: 10, tintColor: "#fff"}}
+              style={{height: 20, width: 20, marginLeft: 10, tintColor: '#fff'}}
               source={require('../../../assets/add1.png')}
             />
           </TouchableOpacity>
@@ -577,11 +581,16 @@ const NewCategoryUi = () => {
 
   const handleEndReached = () => {
     if (stopLoad || isFetching || loadingMore) return;
-  
-    console.log('handleEndReached triggered. Page:', pageNo, 'Total:', totalPages);
-  
+
+    console.log(
+      'handleEndReached triggered. Page:',
+      pageNo,
+      'Total:',
+      totalPages,
+    );
+
     setLoadingMore(true); // Start loading indicator
-  
+
     if (searchFilterFlag) {
       if (pageNo < totalPages) {
         searchAPI(false, pageNo + 1)
@@ -593,15 +602,14 @@ const NewCategoryUi = () => {
     } else {
       if (pageNo < totalPages) {
         setPageNo(prevPage => prevPage + 1);
-        getAllProducts(companyId, false, pageNo + 1)
-          .finally(() => setLoadingMore(false));
+        getAllProducts(companyId, false, pageNo + 1).finally(() =>
+          setLoadingMore(false),
+        );
       } else {
         setLoadingMore(false);
       }
     }
   };
-  
-
 
   const onRefresh = async () => {
     setPageNo(1);
@@ -858,71 +866,66 @@ const NewCategoryUi = () => {
                       <Image
                         source={require('../../../assets/img4.jpg')}
                         style={styles.categoryImage}
-                        resizeMode='contain'
-                                              />
-
-                    
+                        resizeMode="contain"
+                      />
                     </View>
-                     <Text
-                    style={[
-                      styles.productName,
-                      {
-                        // backgroundColor: 'rgba(0, 0, 0, 0.3)',
-                      },
-                      selectedCategory === 'All Products'
-                      ? styles.activeCategoryText
-                      : styles.productName,
-                    ]}>
-                        All
-                      </Text>
+                    <Text
+                      style={[
+                        styles.productName,
+                        {
+                          // backgroundColor: 'rgba(0, 0, 0, 0.3)',
+                        },
+                        selectedCategory === 'All Products'
+                          ? styles.activeCategoryText
+                          : styles.productName,
+                      ]}>
+                      All
+                    </Text>
                   </TouchableOpacity>
                 )}
-<View style={{backgroundColor:"#fff"}}>
-                <TouchableOpacity
-                  style={[
-                    styles.categoryButton,
-                    category.categoryId === activeCategoryId &&
-                      styles.activeCategoryButton,
-                  ]}
-                  onPress={() => handleCategory(category)}>
-                  {category.imageUrls && category.imageUrls.length > 0 ? (
-                    <FastImage
-                      style={styles.categoryImage}
-                      source={{uri: category.imageUrls[0]}}
-                       resizeMode='contain'
-                    />
-                  ) : (
-                    <Image
-                      style={styles.categoryImage}
-                      resizeMode="contain"
-                      source={require('../../../assets/NewNoImage.jpg')}
-                    />
-                  )}
-                  <Text
+                <View style={{backgroundColor: '#fff'}}>
+                  <TouchableOpacity
                     style={[
-                      styles.productName,
-                      {
-                        // backgroundColor: 'rgba(0, 0, 0, 0.3)',
-                      },
-                      category.categoryId === activeCategoryId
-                        ? styles.activeCategoryText
-                        : styles.productName,
-                    ]}>
-                    {category.category}
-                  </Text>
-                  <View style={{
-  borderWidth: 0.6,
-  // borderColor: category.categoryId === activeCategoryId ? colors.color2 : 'lightgray', 
-  borderColor:  'lightgray', 
+                      styles.categoryButton,
+                      category.categoryId === activeCategoryId &&
+                        styles.activeCategoryButton,
+                    ]}
+                    onPress={() => handleCategory(category)}>
+                    {category.imageUrls && category.imageUrls.length > 0 ? (
+                      <FastImage
+                        style={styles.categoryImage}
+                        source={{uri: category.imageUrls[0]}}
+                        resizeMode="contain"
+                      />
+                    ) : (
+                      <Image
+                        style={styles.categoryImage}
+                        resizeMode="contain"
+                        source={require('../../../assets/NewNoImage.jpg')}
+                      />
+                    )}
+                    <Text
+                      style={[
+                        styles.productName,
+                        {
+                          // backgroundColor: 'rgba(0, 0, 0, 0.3)',
+                        },
+                        category.categoryId === activeCategoryId
+                          ? styles.activeCategoryText
+                          : styles.productName,
+                      ]}>
+                      {category.category}
+                    </Text>
+                    <View
+                      style={{
+                        borderWidth: 0.6,
+                        // borderColor: category.categoryId === activeCategoryId ? colors.color2 : 'lightgray',
+                        borderColor: 'lightgray',
 
-  width: '80%'
-}}>
-
-
-                  </View>
-                </TouchableOpacity>
-               
-                  </View>
+                        width: '80%',
+                      }}></View>
+                  </TouchableOpacity>
+                </View>
                 {index === selectedDetails.length - 1 && (
                   <View style={{marginBottom: 90}} />
                 )}
@@ -986,7 +989,12 @@ const NewCategoryUi = () => {
               onPress={executeSearch}>
               {/* <Text style={styles.searchButtonText}>S</Text> */}
               <Image
-                style={{height: 15, width: 15, marginHorizontal: 10,tintColor:"#fff"}}
+                style={{
+                  height: 15,
+                  width: 15,
+                  marginHorizontal: 10,
+                  tintColor: '#fff',
+                }}
                 source={require('../../../assets/search.png')}
               />
             </TouchableOpacity>
@@ -1007,7 +1015,6 @@ const NewCategoryUi = () => {
             </View>
           )}
 
-
           {!isLoading && productsList.length === 0 ? (
             <View style={styles.noProductsContainer}>
               <Image source={require('../../../assets/noproduct.png')} />
@@ -1017,30 +1024,31 @@ const NewCategoryUi = () => {
             </View>
           ) : (
             <FlatList
-            data={productsList}
-            renderItem={renderProductItem}
-            numColumns={2}
-            keyExtractor={(item, index) => `item.toString()+${index}`}
-            contentContainerStyle={{ paddingBottom: 50 }} // Ensure footer is visible
-            refreshControl={
-              <RefreshControl
-                refreshing={refreshing}
-                onRefresh={onRefresh}
-                colors={['#000', '#689F38']}
-              />
-            }
-            onEndReached={handleEndReached}
-            onEndReachedThreshold={0.1}
-            ListFooterComponent={
-              loadingMore ? (
-                <View style={{ paddingVertical: 20, alignItems: 'center' }}>
-                  <ActivityIndicator size="small" color="#0000ff" />
-                  <Text style={{ color: '#000', marginTop: 5 }}>Loading more...</Text>
-                </View>
-              ) : null
-            }
-          />
-          
+              data={productsList}
+              renderItem={renderProductItem}
+              numColumns={2}
+              keyExtractor={(item, index) => `item.toString()+${index}`}
+              contentContainerStyle={{paddingBottom: 50}} // Ensure footer is visible
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={onRefresh}
+                  colors={['#000', '#689F38']}
+                />
+              }
+              onEndReached={handleEndReached}
+              onEndReachedThreshold={0.1}
+              ListFooterComponent={
+                loadingMore ? (
+                  <View style={{paddingVertical: 20, alignItems: 'center'}}>
+                    <ActivityIndicator size="small" color="#0000ff" />
+                    <Text style={{color: '#000', marginTop: 5}}>
+                      Loading more...
+                    </Text>
+                  </View>
+                ) : null
+              }
+            />
           )}
         </View>
       </View>
@@ -1050,34 +1058,75 @@ const NewCategoryUi = () => {
         closeModal={() => setModalVisible(false)}
         selectedItem={selectedItem}
       />
+      {/* <Modal
+        visible={imageModalVisible}
+        transparent={true}
+        onRequestClose={() => setImageModalVisible(false)}>
+        <TouchableOpacity
+          style={styles.fullscreenModal}
+          activeOpacity={1}
+          onPress={() => setImageModalVisible(false)}>
+          <View style={styles.modalContent}>
+            <TouchableOpacity
+              style={styles.closeButtonImageModel}
+              onPress={closeModal}>
+              <Image
+                style={{height: 30, width: 30, tintColor: '#000'}}
+                source={require('../../../assets/close.png')}
+              />
+            </TouchableOpacity>
+            <Image
+              style={styles.fullscreenImage}
+              source={
+                selectedImage
+                  ? {uri: selectedImage}
+                  : require('../../../assets/NewNoImage.jpg')
+              }
+              resizeMode="contain"
+            />
+          </View>
+        </TouchableOpacity>
+      </Modal> */}
+
       <Modal
-  visible={imageModalVisible}
-  transparent={true}
-  onRequestClose={() => setImageModalVisible(false)}>
-    
-  <TouchableOpacity 
-    style={styles.fullscreenModal}
-    activeOpacity={1}
-    onPress={() => setImageModalVisible(false)}>
-    <View style={styles.modalContent}>
-    <TouchableOpacity style={styles.closeButtonimages} onPress={closeModal}>
-           <Image
-             style={{height: 30, width: 30,tintColor: '#000',}}
-             source={require('../../../assets/close.png')}
-           />
-         </TouchableOpacity>
-      <Image
-        style={styles.fullscreenImage}
-        source={
-          selectedImage 
-            ? { uri: selectedImage } 
-            : require('../../../assets/NewNoImage.jpg')
-        }
-        resizeMode="contain"
-      />
-    </View>
-  </TouchableOpacity>
-</Modal>
+          transparent={true}
+          visible={imageModalVisible}
+          onRequestClose={() => setImageModalVisible(false)}>
+          <View style={styles.modalOverlayImage}>
+            <View style={styles.modalContentImage}>
+            <TouchableOpacity
+          style={styles.fullscreenModal}
+          activeOpacity={1}
+          onPress={() => setImageModalVisible(false)}>
+          <View style={styles.modalContent}>
+            <TouchableOpacity
+              style={styles.closeButtonImageModel}
+              onPress={closeModal}>
+              <Image
+                style={{height: 30, width: 30, tintColor: '#000'}}
+                source={require('../../../assets/close.png')}
+              />
+            </TouchableOpacity>
+            <Image
+              style={styles.fullscreenImage}
+              source={
+                selectedImage
+                  ? {uri: selectedImage}
+                  : require('../../../assets/NewNoImage.jpg')
+              }
+              resizeMode="contain"
+            />
+          </View>
+        </TouchableOpacity>
+              {selectedImage && (
+                <Image
+                  source={{uri: selectedImage}}
+                  style={styles.modalImageImage}
+                />
+              )}
+            </View>
+          </View>
+        </Modal>
     </View>
   );
 };
@@ -1091,8 +1140,6 @@ const getStyles = colors =>
     sidebar: {
       width: '27%',
       backgroundColor: '#fff',
-     
-     
     },
     categoryButton: {
       alignItems: 'center',
@@ -1100,7 +1147,6 @@ const getStyles = colors =>
       backgroundColor: '#fff',
       borderRadius: 5,
       elevation: 3,
-     
     },
     imageContainer: {},
 
@@ -1112,18 +1158,18 @@ const getStyles = colors =>
       color: '#000',
       fontSize: 9,
       fontWeight: 'bold',
-      alignSelf:"center"
+      alignSelf: 'center',
       // padding: 4,
     },
     categoryImage: {
       width: 40,
       height: 40,
-      // borderRadius: 20,  
+      // borderRadius: 20,
       overflow: 'hidden',
       borderWidth: 1,
       borderColor: 'rgba(255, 255, 255, 0.5)', // Light white with transparency
     },
-    
+
     categoryText: {
       fontSize: 14,
       textAlign: 'center',
@@ -1153,9 +1199,9 @@ const getStyles = colors =>
       paddingHorizontal: 8,
     },
     productCard: {
-      flex:1, 
+      flex: 1,
       marginVertical: 8,
-      marginHorizontal:5,
+      marginHorizontal: 5,
       padding: 10,
       borderRadius: 10,
       backgroundColor: '#fff',
@@ -1168,8 +1214,8 @@ const getStyles = colors =>
       width: 100,
       height: 100,
       resizeMode: 'contain',
-      alignSelf:"center",
-      marginBottom:5
+      alignSelf: 'center',
+      marginBottom: 5,
     },
     productDetails: {
       flex: 1,
@@ -1202,9 +1248,9 @@ const getStyles = colors =>
       paddingVertical: 8,
       paddingHorizontal: 25,
       marginTop: 10,
-      flexDirection:"row",
-      alignItems:"center",
-      alignSelf:"center"
+      flexDirection: 'row',
+      alignItems: 'center',
+      alignSelf: 'center',
     },
     addButtonText: {
       color: '#fff',
@@ -1339,38 +1385,40 @@ const getStyles = colors =>
       alignItems: 'center',
       flex: 1,
     },
-    fullscreenModal: {
+    modalOverlayImage: {
       flex: 1,
-      backgroundColor: 'rgba(0,0,0,0.9)',
       justifyContent: 'center',
       alignItems: 'center',
+      backgroundColor: 'rgba(0,0,0,0.5)',
     },
-    modalContent: {
-      width: '100%',
-      height: '80%',
-      justifyContent: 'center',
-      alignItems: 'center',
+    modalContentImage: {
+      backgroundColor: '#fff',
+      padding: 20,
+      borderRadius: 10,
     },
-    fullscreenImage: {
-      width: '80%',
-      height: '80%',
+    modalImageImage: {
+      width: 320,
+      height: 470,
+      marginBottom: 15,
     },
-    modalContainerimages: {
-      flex: 1,
-      backgroundColor: 'rgba(0, 0, 0, 0.8)', // Slightly transparent background
-      justifyContent: 'center',
-      alignItems: 'center',
+    closeButtonImage: {
+      padding: 10,
+      backgroundColor: '#007bff',
+      borderRadius: 5,
     },
-    closeButtonimages: {
-      position: 'absolute', // Position it relative to the modal
-      top: 70, // Adjust for desired distance from the top
-      right: 20, // Adjust for desired distance from the right
-      zIndex: 10, // Ensure it stays on top of the image
-      backgroundColor:"#fff"
+    closeButtonTextImage: {
+      color: '#fff',
+      fontSize: 16,
+    },
+    closeButtonImageModel: {
+      backgroundColor: colors.color2,
+      padding: 3,
+      borderRadius: 5,
+      alignSelf: 'flex-end',
+      marginBottom: 10,
     },
   });
 
 export default NewCategoryUi;
 
 // #1E88E5
-

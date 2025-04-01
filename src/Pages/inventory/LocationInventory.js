@@ -625,7 +625,7 @@ const getStyles = colors =>
       fontSize: 16,
     },
     closeButtonImageModel: {
-      backgroundColor: 'lightgray',
+      backgroundColor: colors.color2,
       padding: 3,
       borderRadius: 5,
       alignSelf: 'flex-end',

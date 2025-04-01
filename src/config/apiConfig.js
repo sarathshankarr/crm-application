@@ -138,6 +138,11 @@ export const API = {
   GET_GST_SLOT:'erpportal/api/Gst',
   ADD_SLOT:'erpportal/api/Gst/addGst',
   VALIDATE_SLOT:'erpportal/api/Gst/isValidGst/',
+  PICK_LIST_PAGE:'erpportal/api/ordermgmt/getAllOrdersForLazyLoad',
+  PICK_LIST_PAGE_SEARCH:'erpportal/api/filter/getAllOrdersSearchForLazyLoad',
+  PICK_LIST_PDF:'erpportal/api/ordermgmt/generatePackListPdf',
+  PICK_LIST_EDIT:'erpportal/api/ordermgmt/getPackList',
+  GENARATE_PICK_LIST:'erpportal/api/ordermgmt/updatePackList'
 };
 
 export const USER_ID = 'adminClientId';

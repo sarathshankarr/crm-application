@@ -377,6 +377,7 @@ const Sidebar = ({navigation, route}) => {
   const LocationTask = menuMap[12];
   const attendance = menuMap[13];
   const costing = menuMap[15];
+  const PickList = menuMap[16];
 
   const hasDropdownhome = home;
   const hasDropdowncategories = Categories;
@@ -388,12 +389,13 @@ const Sidebar = ({navigation, route}) => {
     const hasProductStyle = Productstyle?.menuName;
     const hasPackages = Packages?.menuName;
     const hasProductPublish = productpublish?.menuName;
-    const hasOrders = orders?.menuName || packingorders?.menuName;
+    const hasOrders = orders?.menuName || packingorders?.menuName || PickList?.menuName;
     const hasProductInventory = ProductInventory?.menuName;
     const hasLocationwiseInventory = locationwiseinventory?.menuName;
     const hasDistributorwiseInventory = distributorwiseinventory?.menuName;
     const hasActivities = Activities?.menuName; // Campaign Management
     const hasCosting = costing?.menuName; // Styles
+    const hacPickList = PickList?.menuNamel
 
     return {
       style: {
@@ -445,6 +447,13 @@ const Sidebar = ({navigation, route}) => {
                 label: packingorders.menuName,
                 route: 'Packing orders',
                 src: require('../assets/packing.png'),
+              }
+            : null,
+            PickList
+            ? {
+                label: PickList.menuName,
+                route: 'PickList',
+                src: require('../assets/material-management.png'),
               }
             : null,
         ].filter(Boolean),

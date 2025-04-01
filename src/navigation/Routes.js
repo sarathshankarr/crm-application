@@ -55,6 +55,8 @@ import SettingsScreen from '../settings/SettingsScreen';
 import CompanyDropdown from '../components/CompanyDropdown';
 import CopyProduct from '../Pages/product/CopyProduct';
 import DistributorPayments from '../Pages/payments/ DistributorPayments';
+import PickList from '../Pages/Packingorders/PickList';
+import PickListEdit from '../Pages/Packingorders/PickListEdit';
 
 const Stack = createNativeStackNavigator();
 
@@ -415,6 +417,23 @@ const Routes = () => {
         name="DistributorPayments"
         component={DistributorPayments}
         options={{headerShown: false}}
+      />
+     
+<Stack.Screen
+        name="PickList"
+        component={PickList}
+        options={{
+          headerShown: true,
+          headerTitle: () => <CompanyDropdown title="PickList" />,
+        }}
+      />
+      <Stack.Screen
+        name="PickListEdit"
+        component={PickListEdit}
+        options={{
+          headerShown: true,
+          headerTitle: () => <CompanyDropdown title="PickListEdit" />,
+        }}
       />
     </Stack.Navigator>
   );
