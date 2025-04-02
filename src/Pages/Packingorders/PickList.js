@@ -346,16 +346,16 @@ const PickList = () => {
       );
       const pdfBase64 = response.data.body;
 
-      if (Platform.OS === 'android') {
-        const hasPermission = await requestStoragePermission();
-        if (!hasPermission) {
-          Alert.alert(
-            'Permission Denied',
-            'Storage permission is required to save the PDF.',
-          );
-          return;
-        }
-      }
+      // if (Platform.OS === 'android') {
+      //   const hasPermission = await requestStoragePermission();
+      //   if (!hasPermission) {
+      //     Alert.alert(
+      //       'Permission Denied',
+      //       'Storage permission is required to save the PDF.',
+      //     );
+      //     return;
+      //   }
+      // }
       const pdfPath =
         Platform.OS === 'android'
           ? `${ReactNativeBlobUtil.fs.dirs.DownloadDir}/Pakinglist_${orderId}.pdf`
