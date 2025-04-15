@@ -15,6 +15,7 @@ import {
   ActivityIndicator,
   Switch,
   SafeAreaView,
+  PermissionsAndroid,
 } from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
 import {
@@ -34,7 +35,164 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {ColorContext} from '../../components/colortheme/colorTheme';
 
+import MapView, {Marker} from 'react-native-maps';
+import Geolocation from 'react-native-geolocation-service';
+import Geocoder from 'react-native-geocoding';
+import {GooglePlacesAutocomplete} from 'react-native-google-places-autocomplete';
+
 const Cart = () => {
+  const [region, setRegion] = useState({
+    latitude: 0, // Default values
+    longitude: 0,
+    latitudeDelta: 0.01,
+    longitudeDelta: 0.01,
+  });
+  const [marker, setMarker] = useState(null);
+  const [address, setAddress] = useState('');
+  const [confirmedLocation, setConfirmedLocation] = useState(null);
+  const [isLocationPickerVisible, setIsLocationPickerVisible] = useState(false);
+  const [locationError, setLocationError] = useState(null);
+
+  useEffect(() => {
+    Geocoder.init('AIzaSyDFkFf27LcYV5Fz6cjvAfEX1hsdXx4zE6Q');
+    getCurrentLocation();
+  }, []);
+
+  const requestLocationPermission = async () => {
+    if (Platform.OS === 'android') {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+        {
+          title: 'Location Permission',
+          message: 'This app needs access to your location',
+          buttonNeutral: 'Ask Me Later',
+          buttonNegative: 'Cancel',
+          buttonPositive: 'OK',
+        },
+      );
+      return granted === PermissionsAndroid.RESULTS.GRANTED;
+    } else if (Platform.OS === 'ios') {
+      const auth = await Geolocation.requestAuthorization('whenInUse'); // or 'always'
+      return auth === 'granted';
+    }
+
+    return false;
+  };
+
+  const getCurrentLocation = async () => {
+    setLocationError(null);
+
+    const hasPermission = await requestLocationPermission();
+    if (!hasPermission) {
+      setLocationError('Permission denied. Please select location manually.');
+      return;
+    }
+
+    Geolocation.getCurrentPosition(
+      position => {
+        const {latitude, longitude} = position.coords;
+        const newRegion = {
+          latitude,
+          longitude,
+          latitudeDelta: 0.01,
+          longitudeDelta: 0.01,
+        };
+        setRegion(newRegion);
+        setMarker({latitude, longitude});
+
+        Geocoder.from(latitude, longitude)
+          .then(res => {
+            const address = res.results[0].formatted_address;
+            setAddress(address);
+          })
+          .catch(error => {
+            console.log('Geocoding error: ', error);
+            setAddress('Address not available');
+          });
+      },
+      error => {
+        console.log('Location error: ', error);
+        setLocationError(
+          'Could not get your location. Please select manually.',
+        );
+        setRegion({
+          latitude: 0,
+          longitude: 0,
+          latitudeDelta: 0.01,
+          longitudeDelta: 0.01,
+        });
+      },
+      {enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
+    );
+  };
+
+  const onMapPress = async event => {
+    const {latitude, longitude} = event.nativeEvent.coordinate;
+    setMarker({latitude, longitude});
+    setRegion(prev => ({
+      ...prev,
+      latitude,
+      longitude,
+    }));
+
+    try {
+      const res = await Geocoder.from(latitude, longitude);
+      const address = res.results[0].formatted_address;
+      setAddress(address);
+    } catch (error) {
+      console.log('Geocoding error: ', error);
+      setAddress('Address not available');
+    }
+  };
+
+  // const handleConfirmLocation = () => {
+  //   if (marker) {
+  //     setConfirmedLocation({
+  //       latitude: marker.latitude,
+  //       longitude: marker.longitude,
+  //       address: address,
+  //     });
+  //   }
+  //   setIsLocationPickerVisible(false);
+  // };
+
+  const handleConfirmLocation = () => {
+    if (marker) {
+      setConfirmedLocation({
+        latitude: marker.latitude,
+        longitude: marker.longitude,
+        address: address,
+      });
+
+      setInputValues(prevValues => ({
+        ...prevValues,
+        locationLatLong: `${marker.latitude}, ${marker.longitude}`,
+        // locationDescription: address,
+      }));
+
+      setLocationInputValues(prevValues => ({
+        ...prevValues,
+        locationLatLong: `${marker.latitude}, ${marker.longitude}`,
+        // cityOrTown: address,
+      }));
+
+      setErrorFields(prevErrors =>
+        prevErrors.filter(field => field !== 'locationLatLong'),
+      );
+    }
+
+    setIsLocationPickerVisible(false);
+
+    setTimeout(() => {
+      if (locationTriggeredBy === 'formModal') {
+        setIsModalVisible(true);
+      } else if (locationTriggeredBy === 'locationModal') {
+        toggleLocationModal(); // re-open it
+      }
+      setLocationTriggeredBy(null); // reset the tracker
+    }, 300);
+  };
+
   const {colors} = useContext(ColorContext);
   const style = getStyles(colors);
   const userRole = useSelector(state => state.userRole) || '';
@@ -127,6 +285,23 @@ const Cart = () => {
   const [selectedState, setSelectedState] = useState(null); // Track the full state object
   const [states, setStates] = useState([]);
   const [showStateDropdown, setShowStateDropdown] = useState(false);
+  const [stateSearchTerm, setStateSearchTerm] = useState('');
+  const [filteredStates, setFilteredStates] = useState(states);
+
+  const [isPreviewVisible, setIsPreviewVisible] = useState(false);
+  const [previewImageUri, setPreviewImageUri] = useState(null);
+
+  useEffect(() => {
+    if (stateSearchTerm === '') {
+      setFilteredStates(states);
+    } else {
+      setFilteredStates(
+        states.filter(state =>
+          state.stateName.toLowerCase().includes(stateSearchTerm.toLowerCase()),
+        ),
+      );
+    }
+  }, [stateSearchTerm, states]);
 
   const getState = () => {
     const apiUrl = `${global?.userData?.productURL}${API.GET_STATE}`;
@@ -531,7 +706,7 @@ const Cart = () => {
   const handleFixDiscChange = (index, text) => {
     // Allow numbers with optional decimals (e.g., 1, 1.1, 10.50)
     const isValidInput = /^\d*\.?\d*$/.test(text);
-  
+
     if (isValidInput) {
       setFixDiscValues(prevValues => ({
         ...prevValues,
@@ -539,7 +714,6 @@ const Cart = () => {
       }));
     }
   };
-  
 
   // const grossPrices = cartItems.map(item => {
   //   if (!item || !item.quantity) return 0; // Fallback if item or quantity is missing
@@ -599,11 +773,11 @@ const Cart = () => {
 
   const textInputStyle = {
     borderWidth: 1,
-    borderColor: "#000",
+    borderColor: '#000',
     borderRadius: 5,
-    width: "100%", // Ensures the input stays within the fixed container
-    color: "#000",
-    textAlign: "center",
+    width: '100%', // Ensures the input stays within the fixed container
+    color: '#000',
+    textAlign: 'center',
   };
 
   useEffect(() => {
@@ -717,13 +891,76 @@ const Cart = () => {
   const [selectedCustomerLocationDetails, setSelectedCustomerLocationDetails] =
     useState(null);
   const [isLocationModalVisible, setIsLocationModalVisible] = useState(false);
+  const [isNavigatingToLocationModal, setIsNavigatingToLocationModal] =
+    useState(false);
 
   // const [locationInputValues, setLocationInputValues] = useState({});
 
+  // const toggleLocationModal = () => {
+  //   setIsLocationModalVisible(!isLocationModalVisible);
+  //   if (isLocationModalVisible) {
+  //     // Reset locationInputValues and locationErrorFields when modal is closing
+  //     setLocationInputValues({
+  //       locationName: '',
+  //       phoneNumber: '',
+  //       locality: '',
+  //       cityOrTown: '',
+  //       state: '',
+  //       pincode: '',
+  //       country: '',
+  //      locationLatLong:''
+  //     });
+  //     setLocationErrorFields([]);
+  //   }
+  // };
+
+  // const toggleModal = () => {
+  //   console.log('toggleModal called - current state:', isModalVisible);
+
+  //   const nextModalState = !isModalVisible;
+  //   setIsSaving(false);
+  //   // If navigating to location, just toggle and exit
+  //   if (isNavigatingToLocation) {
+  //     console.log('Preserving values for location selection');
+  //     setIsModalVisible(nextModalState);
+  //     setIsNavigatingToLocation(false);
+  //     return;
+  //   }
+
+  //   // If we are opening the modal (not closing)
+  //   if (nextModalState) {
+  //     console.log('Opening modal - clearing state');
+  //     setSelectedState(null);
+  //     setSelectedStateId(null);
+  //     setStateSearchTerm('');
+  //   } else {
+  //     console.log('Closing modal - clearing input fields');
+  //     setErrorFields([]);
+  //     setInputValues({
+  //       firstName: '',
+  //       phoneNumber: '',
+  //       whatsappId: '',
+  //       cityOrTown: '',
+  //       country: '',
+  //       pincode: '',
+  //       locationName: '',
+  //       locationDescription: '',
+  //       locationLatLong: '',
+  //     });
+  //     setSelectedState(null);
+  //     setSelectedStateId(null);
+  //   }
+
+  //   setIsModalVisible(nextModalState);
+  //   setIsNavigatingToLocation(false);
+  // };
+
   const toggleLocationModal = () => {
-    setIsLocationModalVisible(!isLocationModalVisible);
-    if (isLocationModalVisible) {
-      // Reset locationInputValues and locationErrorFields when modal is closing
+    const nextModalLocationState = !isLocationModalVisible;
+
+    // Only reset values if we're closing the modal AND not navigating to location picker
+    if (!nextModalLocationState && !isNavigatingToLocationModal) {
+      console.log('Clearing input values inside toggleLocationModal');
       setLocationInputValues({
         locationName: '',
         phoneNumber: '',
@@ -732,9 +969,12 @@ const Cart = () => {
         state: '',
         pincode: '',
         country: '',
+        locationLatLong: '',
       });
       setLocationErrorFields([]);
     }
+    setIsNavigatingToLocation(false);
+    setIsLocationModalVisible(nextModalLocationState);
   };
 
   const [inputValues, setInputValues] = useState({
@@ -746,6 +986,7 @@ const Cart = () => {
     pincode: '',
     locationName: '',
     locationDescription: '',
+    locationLatLong: '',
   });
 
   const [errorFields, setErrorFields] = useState([]);
@@ -797,6 +1038,7 @@ const Cart = () => {
       'pincode',
       'locationName',
       'locationDescription',
+      'locationLatLong',
     ];
 
     // Add state to mandatory fields if isEnabled (i.e., adding customer location details)
@@ -863,29 +1105,135 @@ const Cart = () => {
     fetchUserData();
   }, [dispatch]);
 
-  const toggleModal = () => {
-    setIsSaving(false);
-    setIsModalVisible(!isModalVisible);
-    setSelectedStatus('Active');
-    if (!isModalVisible) {
-      setSelectedState(null); // Reset selected state
-      setSelectedStateId(null); // Reset selected stateId
+  const [isNavigatingToLocation, setIsNavigatingToLocation] = useState(false);
+  const [locationTriggeredBy, setLocationTriggeredBy] = useState(null);
+
+  const handlePickLocation = () => {
+    setIsNavigatingToLocation(true);
+    setLocationTriggeredBy('formModal');
+    setIsModalVisible(false);
+
+    setTimeout(() => {
+      setIsLocationPickerVisible(true);
+      getCurrentLocation();
+    }, 100);
+  };
+
+  const handleLocationModalPick = () => {
+    setIsNavigatingToLocationModal(true); // Set this first to prevent clearing
+    setLocationTriggeredBy('locationModal');
+
+    // Close the modal
+    setIsLocationModalVisible(false);
+
+    // Open location picker after a small delay
+    setTimeout(() => {
+      setIsLocationPickerVisible(true);
+      getCurrentLocation();
+    }, 100);
+
+    // Reset the navigation flag after everything is done
+    setTimeout(() => setIsNavigatingToLocationModal(false), 500);
+  };
+
+  // const toggleModal = () => {
+  //   setIsSaving(false);
+  //   setIsModalVisible(!isModalVisible);
+  //   setSelectedStatus('Active');
+  //   if (!isModalVisible) {
+  //     setSelectedState(null); // Reset selected state
+  //     setSelectedStateId(null); // Reset selected stateId
+  //   }
+  //   // Reset error fields and input values when modal is closed
+  //   if (isModalVisible) {
+  //     setErrorFields([]);
+  //     setInputValues({
+  //       firstName: '',
+  //       phoneNumber: '',
+  //       cityOrTown: '',
+  //       state: '',
+  //       country: '',
+  //       pincode: '',
+  //       locationName: '',
+  //       locationDescription: '',
+  //       // Add other input fields if needed
+  //     });
+  //   }
+  // };
+
+  useEffect(() => {
+    if (isModalVisible && !isNavigatingToLocation) {
+      console.log('Modal opened (not from location), clearing state');
+      setSelectedState(null);
+      setSelectedStateId(null);
+      setStateSearchTerm('');
+    } else if (isModalVisible && isNavigatingToLocation) {
+      console.log('Modal opened from location, keeping state');
     }
-    // Reset error fields and input values when modal is closed
-    if (isModalVisible) {
+  }, [isModalVisible]);
+
+  const toggleModal = () => {
+    console.log('toggleModal called - current state:', isModalVisible);
+
+    const nextModalState = !isModalVisible;
+    setIsSaving(false);
+    // If navigating to location, just toggle and exit
+    if (isNavigatingToLocation) {
+      console.log('Preserving values for location selection');
+      setIsModalVisible(nextModalState);
+      setIsNavigatingToLocation(false);
+      return;
+    }
+
+    // If we are opening the modal (not closing)
+    if (nextModalState) {
+      console.log('Opening modal - clearing state');
+      setSelectedState(null);
+      setSelectedStateId(null);
+      setStateSearchTerm('');
+    } else {
+      console.log('Closing modal - clearing input fields');
       setErrorFields([]);
       setInputValues({
         firstName: '',
         phoneNumber: '',
+        whatsappId: '',
         cityOrTown: '',
-        state: '',
         country: '',
         pincode: '',
         locationName: '',
         locationDescription: '',
-        // Add other input fields if needed
+        locationLatLong: '',
       });
+      setSelectedState(null);
+      setSelectedStateId(null);
     }
+
+    setIsModalVisible(nextModalState);
+    setIsNavigatingToLocation(false);
+  };
+
+  const resetModal = () => {
+    console.log('Resetting modal state after save');
+    setIsModalVisible(false);
+    setErrorFields([]);
+    setInputValues({
+      firstName: '',
+      phoneNumber: '',
+      whatsappId: '',
+      cityOrTown: '',
+      country: '',
+      pincode: '',
+      locationName: '',
+      locationDescription: '',
+      locationLatLong: '',
+    });
+    setSelectedState(null);
+    setSelectedStateId(null);
+    setStateSearchTerm('');
+    setIsNavigatingToLocation(false);
+    setConfirmedLocation(null);
+    setIsSaving(false);
   };
 
   const getisValidCustomer = async () => {
@@ -899,6 +1247,7 @@ const Cart = () => {
       // Check if the response indicates the distributor is valid
       if (response.data === true) {
         addCustomerDetails();
+        resetModal();
         // Proceed to save distributor details
       } else {
         // Show an alert if the distributor name is already used
@@ -947,11 +1296,11 @@ const Cart = () => {
       locationDescription: inputValues.locationDescription,
       linkType: 3,
       statusId: selectedStatusId,
-
+      mobLatitude: confirmedLocation?.latitude || null,
+      mobLongitude: confirmedLocation?.longitude || null,
       // userId:userId
     };
     console.log('requestData====>', requestData);
-
     axios
       .post(
         global?.userData?.productURL + API.ADD_CUSTOMER_DETAILS,
@@ -994,6 +1343,7 @@ const Cart = () => {
       // Check if the response indicates the distributor is valid
       if (response.data === true) {
         addDistributorDetails();
+        resetModal();
         // Proceed to save distributor details
       } else {
         // Show an alert if the distributor name is already used
@@ -1049,6 +1399,8 @@ const Cart = () => {
       linkType: 3,
       userId: userId,
       statusId: selectedStatusId,
+      mobLatitude: confirmedLocation?.latitude || null,
+      mobLongitude: confirmedLocation?.longitude || null,
     };
     console.log('requestDatafordis===>', requestData);
 
@@ -2009,12 +2361,12 @@ const Cart = () => {
     // Ensure quantity is a number, default to 0 if empty or invalid
     let currentQuantity = parseInt(updatedItems[index].quantity, 10);
     if (isNaN(currentQuantity)) {
-        currentQuantity = 0; // Default to 0 when input is empty
+      currentQuantity = 0; // Default to 0 when input is empty
     }
 
     updatedItems[index].quantity = currentQuantity + 1;
     dispatch(updateCartItem(index, updatedItems[index]));
-};
+  };
 
   // Function to handle decrementing quantity in cartItems
   const handleDecrementQuantityCart = index => {
@@ -2532,6 +2884,7 @@ const Cart = () => {
       'state',
       'pincode',
       'country',
+      'locationLatLong',
     ];
     setLocationErrorFields([]);
     const missingFields = mandatoryFields.filter(
@@ -2551,6 +2904,8 @@ const Cart = () => {
 
     getisValidLocation();
     toggleLocationModal();
+    setConfirmedLocation(null);
+    setIsNavigatingToLocationModal(false);
   };
   const getisValidLocation = async () => {
     const cusDisID = isEnabled ? selectedCustomerId : selectedDistributorId;
@@ -2611,7 +2966,11 @@ const Cart = () => {
       locationType: 0,
       userId: userId,
       linkType: 7,
+      mobLatitude: confirmedLocation?.latitude || null,
+      mobLongitude: confirmedLocation?.longitude || null,
     };
+
+    console.log('requestLocationData====>', requestLocationData);
 
     axios
       .post(
@@ -2644,12 +3003,18 @@ const Cart = () => {
     setIsModalVisible(false);
     setInputValues([]); // Assuming inputValues should be an array too
     setErrorFields([]);
+    setConfirmedLocation(null);
+    setMarker(null);
+    setAddress('');
   };
 
   const handleCloseModalLocation = () => {
     setIsLocationModalVisible(false);
     setLocationInputValues([]);
     setLocationErrorFields([]);
+    setConfirmedLocation(null);
+    setMarker(null);
+    setAddress('');
   };
 
   useEffect(() => {}, []);
@@ -3306,28 +3671,39 @@ const Cart = () => {
           {/* <View style={style.header}>
             <Text style={style.txt}>Total Items: {cartItems.length}</Text>
           </View> */}
-          <ScrollView horizontal contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', alignItems: 'center' }}>
-  {cartItems.length === 0 ? (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', marginVertical: 50 }}>
-      <Image
-        style={{ width: 150, height: 150, tintColor: 'black' }}
-        resizeMode="contain"
-        source={require('../../../assets/no-cart-product.png')}
-      />
-      <Text
-        style={{
-          color: '#000',
-          fontWeight: 'bold',
-          fontSize: 20,
-          textAlign: 'center',
-          marginTop: 10,
-        }}>
-        No items in cart
-      </Text>
-    </View>
-  ) : (
-            <View>
-             
+          <ScrollView
+            horizontal
+            contentContainerStyle={{
+              flexGrow: 1,
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}>
+            {cartItems.length === 0 ? (
+              <View
+                style={{
+                  flex: 1,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  marginVertical: 50,
+                }}>
+                <Image
+                  style={{width: 150, height: 150, tintColor: 'black'}}
+                  resizeMode="contain"
+                  source={require('../../../assets/no-cart-product.png')}
+                />
+                <Text
+                  style={{
+                    color: '#000',
+                    fontWeight: 'bold',
+                    fontSize: 20,
+                    textAlign: 'center',
+                    marginTop: 10,
+                  }}>
+                  No items in cart
+                </Text>
+              </View>
+            ) : (
+              <View>
                 {cartItems.map((item, index) => (
                   <View
                     key={`${item.styleId}-${item.colorId}-${item.sizeId}-${index}`}>
@@ -3335,7 +3711,6 @@ const Cart = () => {
                       key={`${item.styleId}-${item.colorId}-${item.sizeId}-${index}`}
                       style={{
                         marginBottom: 20,
-                       
                       }}>
                       {(index === 0 ||
                         item.styleId !== cartItems[index - 1].styleId ||
@@ -3343,15 +3718,25 @@ const Cart = () => {
                         <View style={style.itemContainer}>
                           <View style={style.imgContainer}>
                             {item.imageUrls && item.imageUrls.length > 0 && (
-                              <Image
-                                source={{uri: item.imageUrls[0]}}
-                                style={{
-                                  width: 100,
-                                  height: 100,
-                                  resizeMode: 'cover',
-                                  margin: 5,
-                                }}
-                              />
+                              <TouchableOpacity
+                                onPress={() => {
+                                  setPreviewImageUri(item.imageUrls[0]);
+                                  setIsPreviewVisible(true);
+                                  console.log(
+                                    'Clicked Image URI:',
+                                    item.imageUrls[0],
+                                  ); // ✅ Add this
+                                }}>
+                                <Image
+                                  source={{uri: item.imageUrls[0]}}
+                                  style={{
+                                    width: 100,
+                                    height: 100,
+                                    resizeMode: 'cover',
+                                    margin: 5,
+                                  }}
+                                />
+                              </TouchableOpacity>
                             )}
 
                             <View style={{flex: 1}}>
@@ -3397,32 +3782,34 @@ const Cart = () => {
                             </View>
                           </View>
                           <View style={style.sizehead}>
-                            <View style={{flex: 2,marginLeft:10}}>
-                              <Text style={{color: '#000',alignSelf:"center"}}>
+                            <View style={{flex: 2, marginLeft: 10}}>
+                              <Text
+                                style={{color: '#000', alignSelf: 'center'}}>
                                 SIZE
                               </Text>
                             </View>
-                            <View style={{flex: 2,marginLeft:50, }}>
-                              <Text style={{color: '#000'}}>QUANTITY  </Text>
+                            <View style={{flex: 2, marginLeft: 50}}>
+                              <Text style={{color: '#000'}}>QUANTITY </Text>
                             </View>
-                            <View style={{flex: 2,marginLeft:30,  }}>
+                            <View style={{flex: 2, marginLeft: 30}}>
                               <Text style={{color: '#000'}}>
                                 {pdf_flag ? 'MRP' : 'PRICE'}
                               </Text>
                             </View>
 
-                            <View style={{flex: 2,marginLeft:20, }}>
+                            <View style={{flex: 2, marginLeft: 20}}>
                               <Text style={{color: '#000'}}>GST</Text>
                             </View>
                             {!pdf_flag && (
-                              <View style={{width:50,marginLeft:30}}>
+                              <View style={{width: 50, marginLeft: 30}}>
                                 <Text style={{color: '#000'}}>Fixed Disc</Text>
                               </View>
                             )}
                             <View
                               style={{
-                                width:50,marginLeft:10,marginRight:22
-                           
+                                width: 50,
+                                marginLeft: 10,
+                                marginRight: 22,
                               }}>
                               <Text style={{color: '#000'}}>Gross Price</Text>
                             </View>
@@ -3430,125 +3817,178 @@ const Cart = () => {
                             <TouchableOpacity
                               onPress={() => copyValueToClipboard(index)}>
                               <Image
-                                style={{height: 25, width: 25,marginRight:20}}
+                                style={{height: 25, width: 25, marginRight: 20}}
                                 source={require('../../../assets/copy.png')}
                               />
                             </TouchableOpacity>
                           </View>
                         </View>
                       )}
-                      <TouchableOpacity 
-  onLongPress={() => 
-    Alert.alert("Alert", "Do you want to remove this item?", [
-      { text: "Cancel", style: "cancel" },
-      { text: "Yes", onPress: () => handleRemoveItem(index) }
-    ])
-  } 
-  activeOpacity={0.1}
->
-                      <View style={[style.itemDetails, { alignItems: "center", paddingVertical: 5 }]}>
-  {/* Size Description */}
-  <View style={{ width: 50 , marginRight: 5 }}>
-    <Text style={{ color: "#000", fontWeight: "bold" }}>{item.sizeDesc}</Text>
-  </View>
+                      <TouchableOpacity
+                        onLongPress={() =>
+                          Alert.alert(
+                            'Alert',
+                            'Do you want to remove this item?',
+                            [
+                              {text: 'Cancel', style: 'cancel'},
+                              {
+                                text: 'Yes',
+                                onPress: () => handleRemoveItem(index),
+                              },
+                            ],
+                          )
+                        }
+                        activeOpacity={0.1}>
+                        <View
+                          style={[
+                            style.itemDetails,
+                            {alignItems: 'center', paddingVertical: 5},
+                          ]}>
+                          {/* Size Description */}
+                          <View style={{width: 50, marginRight: 5}}>
+                            <Text style={{color: '#000', fontWeight: 'bold'}}>
+                              {item.sizeDesc}
+                            </Text>
+                          </View>
 
-  {/* Decrease Quantity */}
-  <TouchableOpacity onPress={() => handleDecrementQuantityCart(index)}>
-    <Image
-      style={{ height: 23, width: 23, marginHorizontal: 5 }}
-      source={require("../../../assets/sub1.png")}
-    />
-  </TouchableOpacity>
+                          {/* Decrease Quantity */}
+                          <TouchableOpacity
+                            onPress={() => handleDecrementQuantityCart(index)}>
+                            <Image
+                              style={{
+                                height: 23,
+                                width: 23,
+                                marginHorizontal: 5,
+                              }}
+                              source={require('../../../assets/sub1.png')}
+                            />
+                          </TouchableOpacity>
 
-  {/* Quantity Input */}
-  <View style={[style.quantityInputContainer, { width: 50 }]}>
-  <TextInput
-    placeholderTextColor="#000"
-    style={[textInputStyle, { textAlign: "center", width: "100%" }]}
-    value={item.quantity !== undefined ? item.quantity.toString() : ""}
-    onChangeText={(text) => handleQuantityChange(index, text)}
-    keyboardType="numeric"
-  />
-</View>
+                          {/* Quantity Input */}
+                          <View
+                            style={[style.quantityInputContainer, {width: 50}]}>
+                            <TextInput
+                              placeholderTextColor="#000"
+                              style={[
+                                textInputStyle,
+                                {textAlign: 'center', width: '100%'},
+                              ]}
+                              value={
+                                item.quantity !== undefined
+                                  ? item.quantity.toString()
+                                  : ''
+                              }
+                              onChangeText={text =>
+                                handleQuantityChange(index, text)
+                              }
+                              keyboardType="numeric"
+                            />
+                          </View>
 
+                          {/* Increase Quantity */}
+                          <TouchableOpacity
+                            onPress={() => handleIncrementQuantityCart(index)}>
+                            <Image
+                              style={{
+                                height: 20,
+                                width: 20,
+                                marginLeft: 5,
+                                marginRight: 10,
+                              }}
+                              source={require('../../../assets/add1.png')}
+                            />
+                          </TouchableOpacity>
 
-  {/* Increase Quantity */}
-  <TouchableOpacity onPress={() => handleIncrementQuantityCart(index)}>
-    <Image
-      style={{ height: 20, width: 20, marginLeft: 5, marginRight: 10 }}
-      source={require("../../../assets/add1.png")}
-    />
-  </TouchableOpacity>
+                          {/* Price Input */}
+                          <View style={{width: 50, marginHorizontal: 5}}>
+                            <TextInput
+                              style={{
+                                borderWidth: 1,
+                                borderColor: '#000',
+                                borderRadius: 5,
+                                width: '100%', // Ensures the input stays within the fixed container
+                                color: '#000',
+                                textAlign: 'center',
+                              }}
+                              value={
+                                pdf_flag
+                                  ? item?.mrp?.toString() || ''
+                                  : isEnabled
+                                  ? item?.retailerPrice?.toString() || ''
+                                  : item?.dealerPrice?.toString() || ''
+                              }
+                              onChangeText={text =>
+                                handlePriceChange(index, text)
+                              }
+                              keyboardType="numeric"
+                            />
+                          </View>
 
-  {/* Price Input */}
-  <View style={{ width: 50 , marginHorizontal:5 }}>
-    <TextInput
-      style={{   borderWidth: 1,
-        borderColor: "#000",
-        borderRadius: 5,
-        width: "100%", // Ensures the input stays within the fixed container
-        color: "#000",
-        textAlign: "center",}}
-      value={
-        pdf_flag
-          ? item?.mrp?.toString() || ""
-          : isEnabled
-          ? item?.retailerPrice?.toString() || ""
-          : item?.dealerPrice?.toString() || ""
-      }
-      onChangeText={(text) => handlePriceChange(index, text)}
-      keyboardType="numeric"
-    />
-  </View>
+                          {/* GST Input */}
+                          <View style={{width: 50, marginHorizontal: 5}}>
+                            <TextInput
+                              style={{
+                                borderWidth: 1,
+                                borderColor: '#000',
+                                borderRadius: 5,
+                                width: '100%', // Ensures the input stays within the fixed container
+                                color: '#000',
+                                textAlign: 'center',
+                              }}
+                              value={
+                                gstValues[index] !== undefined
+                                  ? gstValues[index]
+                                  : item?.gst?.toString()
+                              }
+                              onChangeText={text =>
+                                handleGstChange(index, text)
+                              }
+                              keyboardType="numeric"
+                            />
+                          </View>
 
-  {/* GST Input */}
-  <View style={{ width: 50 ,marginHorizontal:5  }}>
-    <TextInput
-     style={{   borderWidth: 1,
-      borderColor: "#000",
-      borderRadius: 5,
-      width: "100%", // Ensures the input stays within the fixed container
-      color: "#000",
-      textAlign: "center",}}
-      value={
-        gstValues[index] !== undefined ? gstValues[index] : item?.gst?.toString()
-      }
-      onChangeText={(text) => handleGstChange(index, text)}
-      keyboardType="numeric"
-    />
-  </View>
+                          {/* Fixed Discount (if applicable) */}
+                          {!pdf_flag && (
+                            <View style={{width: 50, marginHorizontal: 5}}>
+                              <TextInput
+                                style={{
+                                  borderWidth: 1,
+                                  borderColor: '#000',
+                                  borderRadius: 5,
+                                  width: '100%', // Ensures the input stays within the fixed container
+                                  color: '#000',
+                                  textAlign: 'center',
+                                }}
+                                value={
+                                  fixDiscValues[index] !== undefined
+                                    ? fixDiscValues[index]
+                                    : item?.fixDisc?.toString()
+                                }
+                                onChangeText={text =>
+                                  handleFixDiscChange(index, text)
+                                }
+                                keyboardType="numeric"
+                              />
+                            </View>
+                          )}
 
-  {/* Fixed Discount (if applicable) */}
-  {!pdf_flag && (
-  <View style={{ width: 50 , marginHorizontal:5 }}>
-      <TextInput
-      style={{   borderWidth: 1,
-        borderColor: "#000",
-        borderRadius: 5,
-        width: "100%", // Ensures the input stays within the fixed container
-        color: "#000",
-        textAlign: "center",}}
-        value={
-          fixDiscValues[index] !== undefined
-            ? fixDiscValues[index]
-            : item?.fixDisc?.toString()
-        }
-        onChangeText={(text) => handleFixDiscChange(index, text)}
-        keyboardType="numeric"
-      />
-    </View>
-  )}
+                          {/* Gross Price */}
+                          <View style={{width: 50, marginLeft: 13}}>
+                            <Text style={{color: '#000'}}>
+                              {grossPrices[index]}
+                            </Text>
+                          </View>
 
-  {/* Gross Price */}
-  <View style={{ width: 50, marginLeft: 13 }}>
-    <Text style={{ color: "#000",  }}>{grossPrices[index]}</Text>
-  </View>
-
-  {/* Delete Button */}
-  <TouchableOpacity onPress={() => handleRemoveItem(index)}>
-    <Image style={style.buttonIcon} source={require("../../../assets/del.png")} />
-  </TouchableOpacity>
-</View></TouchableOpacity>
+                          {/* Delete Button */}
+                          <TouchableOpacity
+                            onPress={() => handleRemoveItem(index)}>
+                            <Image
+                              style={style.buttonIcon}
+                              source={require('../../../assets/del.png')}
+                            />
+                          </TouchableOpacity>
+                        </View>
+                      </TouchableOpacity>
 
                       {/* <View style={style.separator} /> */}
                     </View>
@@ -3564,9 +4004,9 @@ const Cart = () => {
                             paddingVertical: 10,
                             borderRadius: 20,
                             flex: 1,
-                            justifyContent:"space-between"
+                            justifyContent: 'space-between',
                           }}>
-                          <View style={{width:50, marginLeft: 18}}>
+                          <View style={{width: 50, marginLeft: 18}}>
                             <Text style={{color: '#000'}}>Total</Text>
                           </View>
                           {/* <View
@@ -3578,8 +4018,8 @@ const Cart = () => {
                         </View> */}
                           <View
                             style={{
-                              width:50,
-                             
+                              width: 50,
+
                               marginRight: 170,
                             }}>
                             <Text style={{color: '#000'}}>
@@ -3598,7 +4038,7 @@ const Cart = () => {
                           {/* <View style={{ flex: 1 }}>
                           <Text style={{color:"#000"}}>Total Set: {calculateTotalItems(item.styleId, item.colorId)}</Text>
                         </View> */}
-                          <View style={{width:50, marginRight:60}}>
+                          <View style={{width: 50, marginRight: 60}}>
                             <Text style={{color: '#000'}}>
                               {calculateTotalPrice(item.styleId, item.colorId)}
                             </Text>
@@ -3610,9 +4050,8 @@ const Cart = () => {
                     )}
                   </View>
                 ))}
-             
-            </View>
-          )}
+              </View>
+            )}
           </ScrollView>
           <View>
             {/* <TextInput
@@ -3801,6 +4240,7 @@ const Cart = () => {
                       onChangeText={text =>
                         setInputValues({...inputValues, phoneNumber: text})
                       }
+                      value={inputValues.phoneNumber}
                     />
                     {errorFields.includes('phoneNumber') && (
                       <Text style={style.errorText}>
@@ -3815,6 +4255,7 @@ const Cart = () => {
                       onChangeText={text =>
                         setInputValues({...inputValues, whatsappId: text})
                       }
+                      value={inputValues.whatsappId}
                     />
                     {errorFields.includes('whatsappId') && (
                       <Text style={style.errorText}>
@@ -3834,6 +4275,7 @@ const Cart = () => {
                       onChangeText={text =>
                         setInputValues({...inputValues, cityOrTown: text})
                       }
+                      value={inputValues.cityOrTown}
                     />
                     {errorFields.includes('cityOrTown') && (
                       <Text style={style.errorText}>
@@ -3879,15 +4321,21 @@ const Cart = () => {
                         {/* Dropdown list */}
                         {showStateDropdown && (
                           <View style={style.dropdownContentstate}>
+                            <TextInput
+                              style={style.searchInputsearch}
+                              placeholder="Search state..."
+                              placeholderTextColor="#000"
+                              value={stateSearchTerm}
+                              onChangeText={text => setStateSearchTerm(text)}
+                            />
                             <ScrollView
                               style={style.scrollView}
                               nestedScrollEnabled={true}>
-                              {states.map(state => (
+                              {filteredStates.map(state => (
                                 <TouchableOpacity
                                   key={state.stateId}
                                   style={style.dropdownItem}
-                                  onPress={() => handleSelectState(state)} // Pass the full state object
-                                >
+                                  onPress={() => handleSelectState(state)}>
                                   <Text style={style.dropdownText}>
                                     {state.stateName}
                                   </Text>
@@ -3912,6 +4360,7 @@ const Cart = () => {
                       onChangeText={text =>
                         setInputValues({...inputValues, country: text})
                       }
+                      value={inputValues.country}
                     />
                     {errorFields.includes('country') && (
                       <Text style={style.errorText}>Please Enter Country</Text>
@@ -3929,6 +4378,7 @@ const Cart = () => {
                       onChangeText={text =>
                         setInputValues({...inputValues, pincode: text})
                       }
+                      value={inputValues.pincode}
                     />
                     {errorFields.includes('pincode') && (
                       <Text style={style.errorText}>Please Enter Pincode</Text>
@@ -3946,6 +4396,7 @@ const Cart = () => {
                       onChangeText={text =>
                         setInputValues({...inputValues, locationName: text})
                       }
+                      value={inputValues.locationName}
                     />
                     {errorFields.includes('locationName') && (
                       <Text style={style.errorText}>
@@ -3968,6 +4419,7 @@ const Cart = () => {
                           locationDescription: text,
                         })
                       }
+                      value={inputValues.locationDescription}
                     />
                     {errorFields.includes('locationDescription') && (
                       <Text style={style.errorText}>
@@ -4005,6 +4457,40 @@ const Cart = () => {
                         )}
                       </View>
                     </View>
+                    <TouchableOpacity
+                      onPress={handlePickLocation}
+                      style={{
+                        padding: 10,
+                        borderWidth: 1,
+                        borderRadius: 5,
+                        borderColor: errorFields.includes('locationLatLong')
+                          ? 'red'
+                          : 'gray',
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                      }}>
+                      <Text style={{color: '#000'}}>Pick Location</Text>
+                      <Image
+                        style={{height: 25, width: 25}}
+                        source={require('../../../assets/location-pin.png')}
+                      />
+                    </TouchableOpacity>
+
+                    {/* Show an error message if locationLatLong is missing */}
+                    {errorFields.includes('locationLatLong') && (
+                      <Text style={{color: 'red', marginTop: 5}}>
+                        Please pick a location
+                      </Text>
+                    )}
+                    {confirmedLocation && (
+                      <View style={{marginTop: 20}}>
+                        <Text style={{color: '#000'}}>
+                          Selected Address: {confirmedLocation.address}
+                        </Text>
+                        {/* <Text style={{color:'#000'}}>Latitude: {confirmedLocation.latitude}</Text>
+          <Text style={{color:'#000'}}>Longitude: {confirmedLocation.longitude}</Text> */}
+                      </View>
+                    )}
                     <TouchableOpacity
                       style={style.saveButton}
                       onPress={handleSaveButtonPress}
@@ -4115,6 +4601,7 @@ const Cart = () => {
                             phoneNumber: text,
                           })
                         }
+                        value={locationInputValues.phoneNumber}
                       />
                       {locationErrorFields.includes('phoneNumber') && (
                         <Text style={style.errorText}>
@@ -4131,6 +4618,7 @@ const Cart = () => {
                             locality: text,
                           })
                         }
+                        value={locationInputValues.locality}
                       />
                       <TextInput
                         style={[
@@ -4148,6 +4636,7 @@ const Cart = () => {
                             cityOrTown: text,
                           })
                         }
+                        value={locationInputValues.cityOrTown}
                       />
                       {locationErrorFields.includes('cityOrTown') && (
                         <Text style={style.errorText}>
@@ -4170,6 +4659,7 @@ const Cart = () => {
                             state: text,
                           })
                         }
+                        value={locationInputValues.state}
                       />
                       {locationErrorFields.includes('state') && (
                         <Text style={style.errorText}>Please Enter State</Text>
@@ -4190,6 +4680,7 @@ const Cart = () => {
                             pincode: text,
                           })
                         }
+                        value={locationInputValues.pincode}
                       />
                       {locationErrorFields.includes('pincode') && (
                         <Text style={style.errorText}>
@@ -4212,11 +4703,50 @@ const Cart = () => {
                             country: text,
                           })
                         }
+                        value={locationInputValues.country}
                       />
                       {locationErrorFields.includes('country') && (
                         <Text style={style.errorText}>
                           Please Enter Country
                         </Text>
+                      )}
+
+                      <TouchableOpacity
+                        onPress={handleLocationModalPick}
+                        style={{
+                          padding: 10,
+                          borderWidth: 1,
+                          borderRadius: 5,
+                          borderColor: locationErrorFields.includes(
+                            'locationLatLong',
+                          )
+                            ? 'red'
+                            : 'gray',
+                          flexDirection: 'row',
+                          justifyContent: 'space-between',
+                        }}>
+                        <Text style={{color: '#000'}}>Pick Location</Text>
+                        <Image
+                          style={{height: 25, width: 25}}
+                          source={require('../../../assets/location-pin.png')}
+                        />
+                      </TouchableOpacity>
+
+                      {/* Show an error message if locationLatLong is missing */}
+                      {locationErrorFields.includes('locationLatLong') && (
+                        <Text style={{color: 'red', marginTop: 5}}>
+                          Please pick a location
+                        </Text>
+                      )}
+
+                      {confirmedLocation && (
+                        <View style={{marginTop: 20}}>
+                          <Text style={{color: '#000'}}>
+                            Selected Address: {confirmedLocation.address}
+                          </Text>
+                          {/* <Text style={{color:'#000'}}>Latitude: {confirmedLocation.latitude}</Text>
+          <Text style={{color:'#000'}}>Longitude: {confirmedLocation.longitude}</Text> */}
+                        </View>
                       )}
                       <TouchableOpacity
                         onPress={handleSaveLocationButtonPress}
@@ -4231,6 +4761,169 @@ const Cart = () => {
           </View>
         </SafeAreaView>
       </ScrollView>
+      <View style={{flex: 1, padding: 20}}>
+        {/* <TouchableOpacity
+  onPress={() => {
+    getCurrentLocation(); // Fetch user's location before opening the map
+    setIsLocationPickerVisible(true);
+  }}
+  style={{
+    padding: 15,
+    backgroundColor: 'blue',
+    borderRadius: 5,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  }}>
+  <Text style={{ color: 'white' }}>Pick Location</Text>
+  <Image
+    style={{ height: 25, width: 25 }}
+    source={require('../../../assets/location-pin.png')}
+  />
+</TouchableOpacity>
+
+
+      {confirmedLocation && (
+        <View style={{marginTop: 20}}>
+          <Text>Selected Address: {confirmedLocation.address}</Text>
+          <Text>Latitude: {confirmedLocation.latitude}</Text>
+          <Text>Longitude: {confirmedLocation.longitude}</Text>
+        </View>
+      )} */}
+
+        <Modal visible={isLocationPickerVisible} animationType="slide">
+          <SafeAreaView style={{flex: 1}}>
+            <View
+              style={{
+                position: 'relative',
+                alignItems: 'center',
+                paddingVertical: 10,
+              }}>
+              {/* Back Button (Left Side) */}
+              <TouchableOpacity
+                onPress={() => setIsLocationPickerVisible(false)}
+                style={{
+                  position: 'absolute',
+                  left: 10, // Ensures it's on the left
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                }}>
+                <Image
+                  style={{height: 25, width: 25, marginTop: 10}}
+                  source={require('../../../assets/back_arrow.png')}
+                />
+              </TouchableOpacity>
+
+              {/* Centered Title */}
+              <Text
+                style={{
+                  color: '#000',
+                  fontWeight: 'bold',
+                  fontSize: 17,
+                  textAlign: 'center',
+                }}>
+                Pick Location
+              </Text>
+            </View>
+
+            <MapView
+              style={{flex: 1}}
+              region={region}
+              onPress={onMapPress}
+              initialRegion={region}>
+              {marker && <Marker coordinate={marker} />}
+            </MapView>
+            <GooglePlacesAutocomplete
+              placeholder="Search for a location"
+              fetchDetails={true}
+              onPress={(data, details = null) => {
+                if (details) {
+                  const {lat, lng} = details.geometry.location;
+                  setRegion({
+                    ...region,
+                    latitude: lat,
+                    longitude: lng,
+                  });
+                  setMarker({latitude: lat, longitude: lng});
+                  setAddress(details.formatted_address);
+                }
+              }}
+              query={{
+                key: 'AIzaSyDFkFf27LcYV5Fz6cjvAfEX1hsdXx4zE6Q',
+                language: 'en',
+              }}
+              styles={{
+                container: {flex: 0, zIndex: 1},
+                textInput: {
+                  height: 40,
+                  borderRadius: 5,
+                  paddingHorizontal: 10,
+                  backgroundColor: '#fff',
+                  color: '#000',
+                },
+                listView: {
+                  backgroundColor: '#fff',
+                },
+                row: {
+                  padding: 13,
+                  height: 44,
+                  flexDirection: 'row',
+                },
+                description: {
+                  color: 'black', // 👈 This changes the suggestion text color
+                },
+                predefinedPlacesDescription: {
+                  color: 'black',
+                },
+              }}
+              textInputProps={{
+                placeholderTextColor: 'black',
+              }}
+            />
+
+            <TouchableOpacity
+              onPress={handleConfirmLocation}
+              style={{
+                padding: 15,
+                backgroundColor: 'blue',
+                margin: 10,
+                borderRadius: 10,
+              }}>
+              <Text style={{color: 'white', textAlign: 'center'}}>
+                Confirm Location
+              </Text>
+            </TouchableOpacity>
+          </SafeAreaView>
+        </Modal>
+        <Modal
+          transparent={true}
+          visible={isPreviewVisible}
+          onRequestClose={() => setIsPreviewVisible(false)}>
+          <TouchableOpacity
+            style={style.modalOverlayImage}
+            activeOpacity={1}
+            onPress={() => setIsPreviewVisible(false)}>
+            <View style={style.modalContentImage}>
+              <TouchableOpacity
+                style={style.closeButtonImageModel}
+                onPress={() => setIsPreviewVisible(false)}>
+                <Image
+                  style={{height: 30, width: 30, tintColor: '#000'}}
+                  source={require('../../../assets/close.png')}
+                />
+              </TouchableOpacity>
+              <Image
+                style={style.fullscreenImage}
+                source={
+                  previewImageUri
+                    ? {uri: previewImageUri}
+                    : require('../../../assets/NewNoImage.jpg')
+                }
+                resizeMode="contain"
+              />
+            </View>
+          </TouchableOpacity>
+        </Modal>
+      </View>
       <TouchableOpacity
         onPress={PlaceAddOrder}
         disabled={isSubmitting} // Disable button when submitting
@@ -4288,12 +4981,12 @@ const getStyles = colors =>
     buttonsContainer: {
       flexDirection: 'row',
       marginLeft: 'auto',
-      marginRight:5
+      marginRight: 5,
     },
     buttonIcon: {
       width: 30,
       height: 30,
-      marginLeft:13
+      marginLeft: 13,
     },
     bottomContainer: {
       alignItems: 'flex-start',
@@ -4359,7 +5052,7 @@ const getStyles = colors =>
       paddingLeft: 20,
       marginHorizontal: 15,
     },
-  
+
     dateIcon: {
       height: 25,
       width: 25,
@@ -4377,11 +5070,11 @@ const getStyles = colors =>
       marginBottom: 10,
       alignItems: 'center',
     },
-     quantityInputContainer : {
+    quantityInputContainer: {
       // Fixed width to prevent expansion
-      alignItems: "center",
+      alignItems: 'center',
     },
-    
+
     quantityInput: {
       borderWidth: 1,
       borderColor: '#ccc',
@@ -4590,6 +5283,17 @@ const getStyles = colors =>
       // backgroundColor: '#f1f1f1',
       marginRight: 10,
     },
+
+    searchInputsearch: {
+      height: 40,
+      borderWidth: 1,
+      margin: 5,
+      borderRadius: 10,
+      borderColor: '#ccc',
+      paddingHorizontal: 10,
+      marginBottom: 5,
+      color: '#000',
+    },
     dropdownButton: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -4703,6 +5407,31 @@ const getStyles = colors =>
       borderWidth: 1,
       marginHorizontal: 10,
       marginVertical: 3,
+    },
+    modalOverlayImage: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.8)',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    modalContentImage: {
+      width: '90%',
+      height: '60%',
+      backgroundColor: '#fff',
+      borderRadius: 10,
+      overflow: 'hidden',
+    },
+    fullscreenImage: {
+      width: '100%',
+      height: '100%',
+    },
+    closeButtonImageModel: {
+      backgroundColor: colors.color2,
+      borderRadius: 5,
+      position: 'absolute',
+      top: 10,
+      right: 10,
+      zIndex: 2,
     },
   });
 export default Cart;

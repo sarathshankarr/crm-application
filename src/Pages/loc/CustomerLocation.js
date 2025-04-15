@@ -294,9 +294,17 @@ const initialize = async () => {
             <View style={styles.statusContainer}>
               <Text style={styles.statustxt}>{item.status}</Text>
             </View>
+           
           </View>
+       
         </TouchableOpacity>
-        <Text style={styles.distanceText}>Distance Traveled: {traveledDistance}</Text>
+        {/* <View style={{flexDirection:"row",justifyContent:"space-between"}}>
+        <View style={styles.statusContainer}>
+              <Text style={styles.statustxt}>latitude - {item.mobLatitude}</Text>
+              <Text style={styles.statustxt}>longitude - {item.mobLongitude}</Text>
+            </View>
+            </View> */}
+        {/* <Text style={styles.distanceText}>Distance Traveled: {traveledDistance}</Text> */}
       </View>
     </View>
   );
@@ -437,6 +445,88 @@ const initialize = async () => {
   
   
 
+  // const createAddressString = task => {
+  //   const {
+  //     customerName = '',
+  //     houseNo = '',
+  //     street = '',
+  //     locationName = '',
+  //     locality = '',
+  //     cityOrTown = '',
+  //     state = '',
+  //     country = '',
+  //     pincode = '',
+  //     changedLocation = '',
+  //     changedLocFlag = 0,
+  //     changed_loc_latitude = null,
+  //     changed_loc_longitude = null,
+  //     mobLatitude ='',
+  //     mobLongitude = ''
+  //   } = task;
+  
+  //   // If changedLocFlag is 1, use the coordinates; otherwise, construct the full address
+  //   let finalLocation = '';
+  
+  //   if (changedLocFlag === 1) {
+  //     if (changed_loc_latitude !== null && changed_loc_longitude !== null) {
+  //       finalLocation = ` ${changed_loc_latitude}, ${changed_loc_longitude}`;
+  //     } else {
+  //       // Fallback if latitude/longitude are missing
+  //       finalLocation = 'Location coordinates not available';
+  //     }
+  //   } else {
+  //     finalLocation = [
+  //       customerName,
+  //       houseNo,
+  //       street,
+  //       locationName,
+  //       locality,
+  //       cityOrTown,
+  //       state,
+  //       country,
+  //       pincode,
+  //       mobLatitude,
+  //     mobLongitude,
+  //     ].filter(part => part.trim()).join(', ');
+  //   }
+  
+  //   console.log("Address:", finalLocation);
+  
+  //   return finalLocation;
+  // };
+  
+
+
+  // const createAddressString = task => {
+  //   const {
+  //     changedLocFlag = 0,
+  //     mobLatitude ='',
+  //     mobLongitude = ''
+  //   } = task;
+  
+  //   // If changedLocFlag is 1, use the coordinates; otherwise, construct the full address
+  //   let finalLocation = '';
+  
+  //   if (changedLocFlag === 1) {
+  //     if (changed_loc_latitude !== null && changed_loc_longitude !== null) {
+  //       finalLocation = ` ${changed_loc_latitude}, ${changed_loc_longitude}`;
+  //     } else {
+  //       // Fallback if latitude/longitude are missing
+  //       finalLocation = 'Location coordinates not available';
+  //     }
+  //   } else {
+  //     finalLocation = [
+  //       mobLatitude,
+  //     mobLongitude,
+  //     ].filter(part => part.trim()).join(', ');
+  //   }
+  
+  //   console.log("Address:", finalLocation);
+  
+  //   return finalLocation;
+  // };
+
+
   const createAddressString = task => {
     const {
       customerName = '',
@@ -451,20 +541,23 @@ const initialize = async () => {
       changedLocation = '',
       changedLocFlag = 0,
       changed_loc_latitude = null,
-      changed_loc_longitude = null
+      changed_loc_longitude = null,
+      mobLatitude = '',
+      mobLongitude = ''
     } = task;
   
-    // If changedLocFlag is 1, use the coordinates; otherwise, construct the full address
     let finalLocation = '';
   
-    if (changedLocFlag === 1) {
-      if (changed_loc_latitude !== null && changed_loc_longitude !== null) {
-        finalLocation = ` ${changed_loc_latitude}, ${changed_loc_longitude}`;
-      } else {
-        // Fallback if latitude/longitude are missing
-        finalLocation = 'Location coordinates not available';
-      }
-    } else {
+    // First priority: use changed location if available
+    if (changedLocFlag === 1 && changed_loc_latitude && changed_loc_longitude) {
+      finalLocation = `${changed_loc_latitude}, ${changed_loc_longitude}`;
+    } 
+    // Second priority: use mobile coordinates if available
+    else if (mobLatitude && mobLongitude) {
+      finalLocation = `${mobLatitude}, ${mobLongitude}`;
+    } 
+    // Fallback: build full address string
+    else {
       finalLocation = [
         customerName,
         houseNo,
@@ -475,17 +568,16 @@ const initialize = async () => {
         state,
         country,
         pincode
-      ].filter(part => part.trim()).join(', ');
+      ].filter(part => part && part.trim()).join(', ');
     }
   
-    console.log("Address:", finalLocation);
-  
+    console.log('Final Location:', finalLocation);
     return finalLocation;
   };
-  
 
+  
   const geocodeAddress = async address => {
-    const apiKey = 'AIzaSyBSKRShklVy5gBNSQzNSTwpXu6l2h8415M';
+    const apiKey = 'AIzaSyDFkFf27LcYV5Fz6cjvAfEX1hsdXx4zE6Q';
     const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
       address,
     )}&key=${apiKey}`;
@@ -538,7 +630,7 @@ const initialize = async () => {
   };
 
   const getRoadDistance = async (startLat, startLong, endLat, endLong) => {
-    const apiKey = 'AIzaSyBSKRShklVy5gBNSQzNSTwpXu6l2h8415M';
+    const apiKey = 'AIzaSyDFkFf27LcYV5Fz6cjvAfEX1hsdXx4zE6Q';
     const url = `https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&origins=${startLat},${startLong}&destinations=${endLat},${endLong}&key=${apiKey}`;
 
     try {
@@ -602,7 +694,9 @@ const initialize = async () => {
       checkOut: task.checkOut,
       locId: task.locId,
       changedLocFlag: task.changedLocFlag,
-      changedLocation: task.changedLocation
+      changedLocation: task.changedLocation,
+      mobLatitude: task.mobLatitude,
+      mobLongitude: task.mobLongitude
     });
 
     // Reset switch state for the task
@@ -705,7 +799,6 @@ const initialize = async () => {
         style={{
           paddingVertical: 10,
           backgroundColor:  colors.color2,
-          marginVertical: 5,
         }}>
         <Text
           style={{

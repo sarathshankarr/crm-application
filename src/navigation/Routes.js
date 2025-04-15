@@ -57,6 +57,7 @@ import CopyProduct from '../Pages/product/CopyProduct';
 import DistributorPayments from '../Pages/payments/ DistributorPayments';
 import PickList from '../Pages/Packingorders/PickList';
 import PickListEdit from '../Pages/Packingorders/PickListEdit';
+import GoogleMap from '../components/GoogleMap';
 
 const Stack = createNativeStackNavigator();
 
@@ -433,6 +434,14 @@ const Routes = () => {
         options={{
           headerShown: true,
           headerTitle: () => <CompanyDropdown title="PickListEdit" />,
+        }}
+      />
+        <Stack.Screen
+        name="GoogleMap"
+        component={GoogleMap}
+        options={{
+          headerShown: true,
+          headerTitle: () => <CompanyDropdown title="GoogleMap" />,
         }}
       />
     </Stack.Navigator>

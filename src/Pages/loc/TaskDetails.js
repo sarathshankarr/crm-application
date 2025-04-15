@@ -1,5 +1,5 @@
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import {useFocusEffect, useNavigation} from '@react-navigation/native';
+import React, {useCallback, useContext, useEffect, useState} from 'react';
 import {
   Image,
   PermissionsAndroid,
@@ -16,19 +16,19 @@ import {
   AppState,
   Dimensions,
 } from 'react-native';
-import { RadioButton } from 'react-native-radio-buttons-group';
-import { API } from '../../config/apiConfig';
+import {RadioButton} from 'react-native-radio-buttons-group';
+import {API} from '../../config/apiConfig';
 import axios from 'axios';
 import Geolocation from 'react-native-geolocation-service';
-import { useSelector } from 'react-redux';
+import {useSelector} from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ImagePicker from 'react-native-image-crop-picker';
 import DocumentPicker from 'react-native-document-picker';
 import CustomCheckBox from '../../components/CheckBox';
-import { formatDateIntoDMY } from '../../Helper/Helper';
-import { ColorContext } from '../../components/colortheme/colorTheme';
+import {formatDateIntoDMY} from '../../Helper/Helper';
+import {ColorContext} from '../../components/colortheme/colorTheme';
 
-const TaskDetails = ({ route }) => {
+const TaskDetails = ({route}) => {
   const {
     customerName,
     locationName,
@@ -44,11 +44,13 @@ const TaskDetails = ({ route }) => {
     traveledDistance,
     checkIn,
     checkOut,
-    locId
+    locId,
+    mobLatitude,
+    mobLongitude,
   } = route.params;
 
   const navigation = useNavigation();
-  const { colors } = useContext(ColorContext);
+  const {colors} = useContext(ColorContext);
   const styles = getStyles(colors);
   const [selectedRadioButtonId, setSelectedRadioButtonId] = useState(null);
   const [isSwitchOn, setIsSwitchOn] = useState(false);
@@ -87,17 +89,21 @@ const TaskDetails = ({ route }) => {
   const [isChecked, setIsChecked] = useState(false);
   const loginuser = useSelector(state => state.loggedInUser);
 
-  const isAdmin = loginuser?.role?.some(role => role.role.toLowerCase() === 'admin');
-  const isDistributor = loginuser?.role?.some(role => role.role.toLowerCase() === 'distributor');
+  const isAdmin = loginuser?.role?.some(
+    role => role.role.toLowerCase() === 'admin',
+  );
+  const isDistributor = loginuser?.role?.some(
+    role => role.role.toLowerCase() === 'distributor',
+  );
 
   const screenHeight = Dimensions.get('window').height;
 
   const selectedCompany = useSelector(state => state.selectedCompany);
   const goToFiles = id => {
-    navigation.navigate('Files', { id }); // Pass the id as a parameter
+    navigation.navigate('Files', {id}); // Pass the id as a parameter
   };
 
-  useEffect(() => { }, []);
+  useEffect(() => {}, []);
 
   // useFocusEffect(
   //   React.useCallback(() => {
@@ -115,22 +121,28 @@ const TaskDetails = ({ route }) => {
 
   useFocusEffect(
     React.useCallback(() => {
-      console.log("Screen focused, running useFocusEffect...");
+      console.log('Screen focused, running useFocusEffect...');
       initialize();
-    }, [])
+    }, []),
   );
 
-  const handleAppStateChange = (nextAppState) => {
-    if (appState.current.match(/inactive|background/) && nextAppState === "active") {
-      console.log("App resumed from background, reloading data...");
+  const handleAppStateChange = nextAppState => {
+    if (
+      appState.current.match(/inactive|background/) &&
+      nextAppState === 'active'
+    ) {
+      console.log('App resumed from background, reloading data...');
       initialize();
     }
     appState.current = nextAppState;
   };
-  
+
   useEffect(() => {
-    const subscription = AppState.addEventListener("change", handleAppStateChange);
-    
+    const subscription = AppState.addEventListener(
+      'change',
+      handleAppStateChange,
+    );
+
     return () => {
       subscription.remove(); // Cleanup listener on unmount
     };
@@ -139,21 +151,20 @@ const TaskDetails = ({ route }) => {
   useFocusEffect(
     React.useCallback(() => {
       initialize();
-    }, [])
+    }, []),
   );
-  
 
   const initialize = async () => {
     try {
-      console.log("called requestLocationPermission=================>");
+      console.log('called requestLocationPermission=================>');
       await requestLocationPermission();
-      console.log("called getLocation ===================>");
+      console.log('called getLocation ===================>');
       await getLocation();
-      console.log("called getTasksAccUser=====================> ");
+      console.log('called getTasksAccUser=====================> ');
       await getDetails();
       await getTasksAccUser();
     } catch (error) {
-      console.error("Error during initialization:", error);
+      console.error('Error during initialization:', error);
     }
   };
   useEffect(() => {
@@ -227,10 +238,12 @@ const TaskDetails = ({ route }) => {
           status: task.status || '',
           dueDateStr: task.dueDateStr || '',
           desc: task.desc || '',
-          remarks:task.remarks || '',
+          remarks: task.remarks || '',
           checkIn: checkIn || '',
           checkOut: checkOut || '',
-          locId: locId || ''
+          locId: locId || '',
+          mobLatitude: task.mobLatitude,
+          mobLongitude: task.mobLongitude,
         }));
 
         console.log('Response========>:', response.data[0]);
@@ -300,15 +313,17 @@ const TaskDetails = ({ route }) => {
               1000,
             ); // Wait 1 second before retrying
           } else {
-            Alert.alert('Error', 'Location permission denied. Please enable it in app settings.');
+            Alert.alert(
+              'Error',
+              'Location permission denied. Please enable it in app settings.',
+            );
             reject(error);
           }
         },
-        { enableHighAccuracy: true, timeout: 30000, maximumAge: 1000 }, // Increase timeout to 30 seconds
+        {enableHighAccuracy: true, timeout: 30000, maximumAge: 1000}, // Increase timeout to 30 seconds
       );
     });
   };
-
 
   // const handleCheckBoxPress = async() => {
   //   if (isChecked) {
@@ -366,26 +381,27 @@ const TaskDetails = ({ route }) => {
             text: 'OK',
             onPress: async () => {
               setIsChecked(true);
-              const location = await getLocationcurrent();  // Get current location
+              const location = await getLocationcurrent(); // Get current location
               if (location) {
-                await AddNewLocation(1, location);  // Call API with flag 1 (confirmed) and location
+                await AddNewLocation(1, location); // Call API with flag 1 (confirmed) and location
                 handleTaskSelect(task); // Navigate to Google Maps
               }
             },
           },
         ],
-        { cancelable: false }
+        {cancelable: false},
       );
     }
   };
-  
 
   const AddNewLocation = async (flag, location) => {
     try {
       // Ensure the location object has latitude and longitude
-      const { latitude, longitude } = location;
+      const {latitude, longitude} = location;
 
-      const apiUrl = `${global?.userData?.productURL}${API.ADD_NEW_LOCATION}/${locId}/${latitude}/${longitude}/${isChecked ? 0 : 1}`;
+      const apiUrl = `${global?.userData?.productURL}${
+        API.ADD_NEW_LOCATION
+      }/${locId}/${latitude}/${longitude}/${isChecked ? 0 : 1}`;
 
       console.log('API URL:', apiUrl);
 
@@ -402,7 +418,7 @@ const TaskDetails = ({ route }) => {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
 
       console.log('Location updated successfully:', response.data);
@@ -420,19 +436,17 @@ const TaskDetails = ({ route }) => {
     return new Promise((resolve, reject) => {
       Geolocation.getCurrentPosition(
         position => {
-          const { latitude, longitude } = position.coords;
-          resolve({ latitude, longitude });
+          const {latitude, longitude} = position.coords;
+          resolve({latitude, longitude});
         },
         error => {
           console.error('Error fetching location:', error);
           reject(error);
         },
-        { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+        {enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
       );
     });
   };
-
-
 
   // const createAddressString = task => {
   //   const {
@@ -473,64 +487,68 @@ const TaskDetails = ({ route }) => {
   //   return finalLocation;
   // };
 
-  
-useFocusEffect(
+  useFocusEffect(
     React.useCallback(() => {
       const updateDistance = async () => {
         try {
-          console.log("Rechecking location after returning to the app...");
-          
+          console.log('Rechecking location after returning to the app...');
+
           // Get updated current location
           await requestLocationPermission();
           await getLocation();
-  
+
           if (!mLat || !mLong) {
             console.error('Current location not available');
             return;
           }
-  
+
           if (!selectedTask) {
             console.error('No task selected');
             return;
           }
-  
+
           // Get customer location
           const customerAddress = createAddressString(selectedTask);
           const customerLocation = await geocodeAddress(customerAddress);
-  
+
           if (!customerLocation) {
             console.error('Customer location not available');
             return;
           }
-  
+
           // Recalculate distance
           const newDistance = await getRoadDistance(
-            mLat, 
-            mLong, 
-            customerLocation.lat, 
-            customerLocation.lng
+            mLat,
+            mLong,
+            customerLocation.lat,
+            customerLocation.lng,
           );
-  
+
           console.log('Updated Distance:', newDistance, 'km');
-  
+
           // Retrieve the last saved distance
           const savedDistance = await AsyncStorage.getItem('latestDistance');
-          const parsedDistance = savedDistance ? parseFloat(savedDistance) : null;
-  
+          const parsedDistance = savedDistance
+            ? parseFloat(savedDistance)
+            : null;
+
           // Update and store the distance only if it has changed
           if (parsedDistance !== newDistance) {
-            await AsyncStorage.setItem('latestDistance', newDistance.toString());
+            await AsyncStorage.setItem(
+              'latestDistance',
+              newDistance.toString(),
+            );
             setDistance(newDistance);
           }
         } catch (error) {
           console.error('Error updating distance:', error);
         }
       };
-  
+
       updateDistance();
-    }, [selectedTask]) // Dependency array ensures update when the selected task changes
+    }, [selectedTask]), // Dependency array ensures update when the selected task changes
   );
-  
+
   useEffect(() => {
     const loadSavedDistance = async () => {
       try {
@@ -543,21 +561,95 @@ useFocusEffect(
         console.error('Error loading saved distance:', error);
       }
     };
-  
+
     loadSavedDistance();
   }, []);
-  
-  
+
+  // const createAddressString = task => {
+  //   console.log('Address to geocode:', {
+  //     state,
+  //     houseNo,
+  //     street,
+  //     locality,
+  //     cityOrTown,
+  //     country,
+  //     pincode
+  //   });
+  //   const {
+  //     customerName = '',
+  //     houseNo = '',
+  //     street = '',
+  //     locationName = '',
+  //     locality = '',
+  //     cityOrTown = '',
+  //     state = '',
+  //     country = '',
+  //     pincode = '',
+  //     changedLocation = '',
+  //     changedLocFlag = 0,
+  //     changed_loc_latitude = null,
+  //     changed_loc_longitude = null
+  //   } = task;
+
+  //   // If changedLocFlag is 1, use the coordinates; otherwise, construct the full address
+  //   let finalLocation = '';
+
+  //   if (changedLocFlag === 1) {
+  //     if (changed_loc_latitude !== null && changed_loc_longitude !== null) {
+  //       finalLocation = ` ${changed_loc_latitude}, ${changed_loc_longitude}`;
+  //     } else {
+  //       // Fallback if latitude/longitude are missing
+  //       finalLocation = 'Location coordinates not available';
+  //     }
+  //   } else {
+  //     finalLocation = [
+  //       customerName,
+  //       houseNo,
+  //       street,
+  //       locationName,
+  //       locality,
+  //       cityOrTown,
+  //       state,
+  //       country,
+  //       pincode
+  //     ].filter(part => part.trim()).join(', ');
+  //   }
+
+  //   console.log("Address:", finalLocation);
+
+  //   return finalLocation;
+  // };
+
+  // const createAddressString = task => {
+  //   const {
+  //     changedLocFlag = 0,
+  //     mobLatitude ='',
+  //     mobLongitude = ''
+  //   } = task;
+
+  //   // If changedLocFlag is 1, use the coordinates; otherwise, construct the full address
+  //   let finalLocation = '';
+
+  //   if (changedLocFlag === 1) {
+  //     if (changed_loc_latitude !== null && changed_loc_longitude !== null) {
+  //       finalLocation = ` ${changed_loc_latitude}, ${changed_loc_longitude}`;
+  //     } else {
+  //       // Fallback if latitude/longitude are missing
+  //       finalLocation = 'Location coordinates not available';
+  //     }
+  //   } else {
+  //     finalLocation = [
+  //       mobLatitude,
+  //     mobLongitude,
+  //     ].filter(part => part.trim()).join(', ');
+  //   }
+
+  //   console.log("Address:", finalLocation);
+
+  //   return finalLocation;
+  // };
+
   const createAddressString = task => {
-    console.log('Address to geocode:', {
-      state,
-      houseNo,
-      street,
-      locality,
-      cityOrTown,
-      country,
-      pincode
-    });
     const {
       customerName = '',
       houseNo = '',
@@ -571,20 +663,23 @@ useFocusEffect(
       changedLocation = '',
       changedLocFlag = 0,
       changed_loc_latitude = null,
-      changed_loc_longitude = null
+      changed_loc_longitude = null,
+      mobLatitude = '',
+      mobLongitude = '',
     } = task;
-  
-    // If changedLocFlag is 1, use the coordinates; otherwise, construct the full address
+
     let finalLocation = '';
-  
-    if (changedLocFlag === 1) {
-      if (changed_loc_latitude !== null && changed_loc_longitude !== null) {
-        finalLocation = ` ${changed_loc_latitude}, ${changed_loc_longitude}`;
-      } else {
-        // Fallback if latitude/longitude are missing
-        finalLocation = 'Location coordinates not available';
-      }
-    } else {
+
+    // First priority: use changed location if available
+    if (changedLocFlag === 1 && changed_loc_latitude && changed_loc_longitude) {
+      finalLocation = `${changed_loc_latitude}, ${changed_loc_longitude}`;
+    }
+    // Second priority: use mobile coordinates if available
+    else if (mobLatitude && mobLongitude) {
+      finalLocation = `${mobLatitude}, ${mobLongitude}`;
+    }
+    // Fallback: build full address string
+    else {
       finalLocation = [
         customerName,
         houseNo,
@@ -594,17 +689,18 @@ useFocusEffect(
         cityOrTown,
         state,
         country,
-        pincode
-      ].filter(part => part.trim()).join(', ');
+        pincode,
+      ]
+        .filter(part => part && part.trim())
+        .join(', ');
     }
-  
-    console.log("Address:", finalLocation);
-  
+
+    console.log('Final Location:', finalLocation);
     return finalLocation;
   };
 
   const geocodeAddress = async address => {
-    const apiKey = 'AIzaSyBSKRShklVy5gBNSQzNSTwpXu6l2h8415M';
+    const apiKey = 'AIzaSyDFkFf27LcYV5Fz6cjvAfEX1hsdXx4zE6Q';
     const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
       address,
     )}&key=${apiKey}`;
@@ -612,7 +708,7 @@ useFocusEffect(
     try {
       const response = await axios.get(url);
       const data = response.data;
-      console.log("added name", response.data)
+      console.log('added name', response.data);
 
       if (data.status === 'OK') {
         const location = data.results[0].geometry.location;
@@ -664,20 +760,20 @@ useFocusEffect(
   // };
   const [shouldRedirect, setShouldRedirect] = useState(false);
 
-  const handleTaskSelect = async (task) => {
+  const handleTaskSelect = async task => {
     setSelectedTask(task);
-  
+
     if (!mLat || !mLong) {
       console.error('Current location not available');
       Alert.alert('Error', 'Current location not available');
       return;
     }
-  
+
     const address = createAddressString(task);
     const location = await geocodeAddress(address);
-  
+
     if (location) {
-      setShouldRedirect(true);  // Set state to indicate redirection is needed
+      setShouldRedirect(true); // Set state to indicate redirection is needed
       openGoogleMaps(mLat, mLong, location.lat, location.lng);
     }
   };
@@ -685,10 +781,10 @@ useFocusEffect(
   useFocusEffect(
     useCallback(() => {
       if (shouldRedirect) {
-        setShouldRedirect(false);  // Reset state after redirection
+        setShouldRedirect(false); // Reset state after redirection
         navigation.replace('CustomerLocation'); // Redirect to CustomerLocation
       }
-    }, [shouldRedirect])
+    }, [shouldRedirect]),
   );
 
   const openGoogleMaps = (
@@ -731,13 +827,12 @@ useFocusEffect(
   //   'Completed',
   // ];
 
-
   const [statusOptions, setStatusOptions] = useState([]);
-  
+
   const getStatusOption = () => {
     setLoading(true);
     const apiUrl = `${global?.userData?.productURL}${API.STATUS_OPTION}/${companyId}`;
-  
+
     axios
       .get(apiUrl, {
         headers: {
@@ -747,7 +842,7 @@ useFocusEffect(
       .then(response => {
         if (Array.isArray(response?.data)) {
           // Extract only the 'stts' field
-          const statusList = response.data.map(item => item.stts.trim()); 
+          const statusList = response.data.map(item => item.stts.trim());
           setStatusOptions(statusList);
         } else {
           console.error('Unexpected response format:', response.data);
@@ -760,11 +855,11 @@ useFocusEffect(
         setLoading(false);
       });
   };
-  
+
   useEffect(() => {
     getStatusOption();
   }, []);
-  
+
   const handleShipDropdownClickStatus = () => {
     setShipFromToClickedStatus(!shipFromToClickedStatus);
   };
@@ -837,8 +932,6 @@ useFocusEffect(
   //     });
   // };
 
-
-
   const handleTakeSelfie = async () => {
     // Check distance logic
     if (
@@ -852,9 +945,9 @@ useFocusEffect(
       );
       return;
     }
-  
+
     const MAX_SELFIES = 1;
-  
+
     if (selfieImages.length >= MAX_SELFIES) {
       Alert.alert(
         'Limit Reached',
@@ -862,23 +955,23 @@ useFocusEffect(
       );
       return;
     }
-  
+
     try {
       // Open the camera
       const image = await ImagePicker.openCamera({
         cropping: true,
         mediaType: 'photo',
         compressImageQuality: 0.8,
-        useFrontCamera: true,  // Use front camera for selfie
+        useFrontCamera: true, // Use front camera for selfie
       });
-  
+
       const newSelfie = {
-        uri: image.path, 
+        uri: image.path,
         width: image.width,
         height: image.height,
         mime: image.mime,
       };
-  
+
       if (selfieImages.length + 1 > MAX_SELFIES) {
         Alert.alert(
           'Limit Exceeded',
@@ -886,7 +979,7 @@ useFocusEffect(
         );
         return;
       }
-  
+
       setSelfieImages(prevImages => [...prevImages, newSelfie]);
     } catch (error) {
       // Handle specific error cases
@@ -899,7 +992,6 @@ useFocusEffect(
     }
   };
 
-  
   const removeImage = (index, imageType) => {
     if (imageType === 'selfie') {
       setSelfieImages(selfieImages.filter((_, i) => i !== index));
@@ -952,7 +1044,7 @@ useFocusEffect(
       });
     });
 
-    console.log('formData',formData)
+    console.log('formData', formData);
     const apiUrl0 = `${global?.userData?.productURL}${API.ADD_LOCATION_IMAGES}`;
 
     axios
@@ -964,7 +1056,7 @@ useFocusEffect(
       })
       .then(response => {
         Alert.alert('Success', 'added successfully.', [
-          { text: 'OK', onPress: () => navigation.navigate('CustomerLocation') }, // Navigate to Location screen on OK
+          {text: 'OK', onPress: () => navigation.navigate('CustomerLocation')}, // Navigate to Location screen on OK
         ]);
       })
       .catch(error => {
@@ -1033,7 +1125,7 @@ useFocusEffect(
   const handleDocumentPicker = async () => {
     const MAX_DOCUMENT = 3;
     const SUPPORTED_TYPES = ['pdf', 'doc', 'docx'];
-  
+
     if (documents.length >= MAX_DOCUMENT) {
       Alert.alert(
         'Limit Reached',
@@ -1041,7 +1133,7 @@ useFocusEffect(
       );
       return;
     }
-  
+
     try {
       const res = await DocumentPicker.pick({
         type: [
@@ -1051,13 +1143,13 @@ useFocusEffect(
           DocumentPicker.types.allFiles,
         ],
       });
-  
+
       // Process the selected documents
       const selectedDocs = Array.isArray(res) ? res : [res];
-  
+
       for (let doc of selectedDocs) {
         const fileType = doc.name?.split('.').pop()?.toLowerCase();
-  
+
         // Check if the file type is supported
         if (!fileType || !SUPPORTED_TYPES.includes(fileType)) {
           Alert.alert(
@@ -1067,7 +1159,7 @@ useFocusEffect(
           return; // Skip adding unsupported files
         }
       }
-  
+
       // Check if adding these documents exceeds the limit
       const newDocuments = [...documents, ...selectedDocs];
       if (newDocuments.length > MAX_DOCUMENT) {
@@ -1077,7 +1169,7 @@ useFocusEffect(
         );
         return;
       }
-  
+
       // Add documents to state if all files are supported and within limit
       setDocuments(newDocuments);
     } catch (error) {
@@ -1089,7 +1181,6 @@ useFocusEffect(
     }
   };
 
-  
   const handleImagePicker = () => {
     const MAX_IMAGES = 3;
 
@@ -1137,7 +1228,7 @@ useFocusEffect(
       });
 
       // Extract selfie image name from response
-      const { selfieImageName, imageUrls, pdfUrls } = response.data;
+      const {selfieImageName, imageUrls, pdfUrls} = response.data;
       // Update state based on API response
       setSelfieImageName(selfieImageName);
       setImageUrls(imageUrls);
@@ -1292,136 +1383,135 @@ useFocusEffect(
   useEffect(() => {
     setInitialRemark(remark || ''); // Store the remark when the screen loads
   }, []); // Runs only once when the component mounts
-  
+
   const PunchInPunchOut = async () => {
-    if (isSignedIn) { // Only show alerts on checkout
-      if (remark?.trim() && remark !== initialRemark) { 
+    if (isSignedIn) {
+      // Only show alerts on checkout
+      if (remark?.trim() && remark !== initialRemark) {
         Alert.alert(
           'Remark Entered',
           'You have entered a remark. Please update it before checking out.',
-          [{ text: 'OK', style: 'cancel' }]
+          [{text: 'OK', style: 'cancel'}],
         );
         return;
       }
-  
+
       if (selfieImages.length > 0) {
         Alert.alert(
           'Selfie Uploaded',
           'You have uploaded a selfie. Please update it before checking out.',
-          [{ text: 'OK', style: 'cancel' }]
+          [{text: 'OK', style: 'cancel'}],
         );
         return;
       }
-  
+
       if (galleryImages.length > 0) {
         Alert.alert(
           'Images Uploaded',
           'You have uploaded images. Please update them before checking out.',
-          [{ text: 'OK', style: 'cancel' }]
+          [{text: 'OK', style: 'cancel'}],
         );
         return;
       }
-  
+
       if (documents.length > 0) {
         Alert.alert(
           'Documents Uploaded',
           'You have uploaded documents. Please update them before checking out.',
-          [{ text: 'OK', style: 'cancel' }]
+          [{text: 'OK', style: 'cancel'}],
         );
         return;
       }
     }
-  
+
     // Proceed with check-in or check-out
     handleCheckInOut();
   };
-  
-  
-const handleCheckInOut = async () => {
-  // Fetch the latest GPS location
-  Geolocation.getCurrentPosition(
-    async (position) => {
-      const { latitude, longitude } = position.coords;
-      console.log('Current Location:', latitude, longitude);
 
-      const apiUrl = `${global?.userData?.productURL}${API.CHECK_IN_CHECK_OUT}`;
-      const now = new Date();
-      const formattedDateTime = formatDateTime(now, 'full');
+  const handleCheckInOut = async () => {
+    // Fetch the latest GPS location
+    Geolocation.getCurrentPosition(
+      async position => {
+        const {latitude, longitude} = position.coords;
+        console.log('Current Location:', latitude, longitude);
 
-      const payload = isSignedIn
-        ? {
-            id: id,
-            checkOut: formattedDateTime,
-            check_out_latitude: latitude, // Use the latest latitude
-            check_out_longitude: longitude, // Use the latest longitude
-            type: 1,
-            userId: userId,
-            t_company_id: companyId,
-            taskName: label,
-          }
-        : {
-            id: id,
-            checkIn: formattedDateTime,
-            check_in_latitude: latitude, // Use the latest latitude
-            check_in_longitude: longitude, // Use the latest longitude
-            type: 0,
-            userId: userId,
-            t_company_id: companyId,
-            taskName: label,
-          };
+        const apiUrl = `${global?.userData?.productURL}${API.CHECK_IN_CHECK_OUT}`;
+        const now = new Date();
+        const formattedDateTime = formatDateTime(now, 'full');
 
-      console.log('Payload:', payload);
+        const payload = isSignedIn
+          ? {
+              id: id,
+              checkOut: formattedDateTime,
+              check_out_latitude: latitude, // Use the latest latitude
+              check_out_longitude: longitude, // Use the latest longitude
+              type: 1,
+              userId: userId,
+              t_company_id: companyId,
+              taskName: label,
+            }
+          : {
+              id: id,
+              checkIn: formattedDateTime,
+              check_in_latitude: latitude, // Use the latest latitude
+              check_in_longitude: longitude, // Use the latest longitude
+              type: 0,
+              userId: userId,
+              t_company_id: companyId,
+              taskName: label,
+            };
 
-      try {
-        const response = await axios.put(apiUrl, payload, {
-          headers: {
-            Authorization: `Bearer ${global?.userData?.token?.access_token}`,
-            'Content-Type': 'application/json',
-          },
-        });
+        console.log('Payload:', payload);
 
-        console.log('Response:', response.data);
+        try {
+          const response = await axios.put(apiUrl, payload, {
+            headers: {
+              Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+              'Content-Type': 'application/json',
+            },
+          });
 
-        // Toggle the signed-in state (Check-in or Check-out)
-        setIsSignedIn(!isSignedIn);
+          console.log('Response:', response.data);
 
-        // Reload the page after check-in/out is successful
-        navigation.replace('TaskDetails', {
-          customerName,
-          locationName,
-          state,
-          status,
-          dueDateStr,
-          label,
-          id,
-          desc,
-          remarks,
-          task,
-          distance,
-          traveledDistance,
-          checkIn: payload.checkIn || checkIn,
-          checkOut: payload.checkOut || checkOut,
-          locId,
-        });
+          // Toggle the signed-in state (Check-in or Check-out)
+          setIsSignedIn(!isSignedIn);
 
-      } catch (error) {
-        console.error('Error:', error);
-        Alert.alert('Error', 'Failed to punch in/out. Please try again.');
-      }
-    },
-    (error) => {
-      console.error('Location Error:', error);
-      Alert.alert('Error', 'Failed to get current location.');
-    },
-    { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
-  );
-};
+          // Reload the page after check-in/out is successful
+          navigation.replace('TaskDetails', {
+            customerName,
+            locationName,
+            state,
+            status,
+            dueDateStr,
+            label,
+            id,
+            desc,
+            remarks,
+            task,
+            distance,
+            traveledDistance,
+            checkIn: payload.checkIn || checkIn,
+            checkOut: payload.checkOut || checkOut,
+            locId,
+          });
+        } catch (error) {
+          console.error('Error:', error);
+          Alert.alert('Error', 'Failed to punch in/out. Please try again.');
+        }
+      },
+      error => {
+        console.error('Location Error:', error);
+        Alert.alert('Error', 'Failed to get current location.');
+      },
+      {enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
+    );
+  };
 
   // const handleCheckInOut = async () => {
   //   const apiUrl = `${global?.userData?.productURL}${API.CHECK_IN_CHECK_OUT}`;
   //   const now = new Date();
   //   const formattedDateTime = formatDateTime(now, 'full');
-  
+
   //   const payload = isSignedIn
   //     ? {
   //         id: id,
@@ -1443,9 +1533,9 @@ const handleCheckInOut = async () => {
   //         t_company_id: companyId,
   //         taskName: label,
   //       };
-  
+
   //   console.log('payload==============>', payload);
-  
+
   //   try {
   //     const response = await axios.put(apiUrl, payload, {
   //       headers: {
@@ -1453,12 +1543,12 @@ const handleCheckInOut = async () => {
   //         'Content-Type': 'application/json',
   //       },
   //     });
-  
+
   //     console.log('Response:', response.data);
-  
+
   //     // Toggle the signed-in state (Check-in or Check-out)
   //     setIsSignedIn(!isSignedIn);
-  
+
   //     // Reload the page after check-in/out is successful
   //     navigation.replace('TaskDetails', {
   //       customerName,
@@ -1477,13 +1567,12 @@ const handleCheckInOut = async () => {
   //       checkOut: payload.checkOut || checkOut,
   //       locId,
   //     });
-  
+
   //   } catch (error) {
   //     console.error('Error:', error);
   //     Alert.alert('Error', 'Failed to punch in/out. Please try again.');
-  //   } 
+  //   }
   // };
-
 
   return (
     <SafeAreaView style={styles.container}>
@@ -1499,28 +1588,37 @@ const handleCheckInOut = async () => {
       <ScrollView>
         <View style={styles.navTabs}>
           <Text style={styles.txt}>Visits</Text>
-          <TouchableOpacity style={styles.visitsheader} onPress={() => goToFiles(id)}>
+          <TouchableOpacity
+            style={styles.visitsheader}
+            onPress={() => goToFiles(id)}>
             <Text style={styles.txt}>Visited Files</Text>
           </TouchableOpacity>
         </View>
-        <View style={{ marginHorizontal: 10, flexDirection: 'row', alignItems: 'center', marginVertical: 10 }}>
+        <View
+          style={{
+            marginHorizontal: 10,
+            flexDirection: 'row',
+            alignItems: 'center',
+            marginVertical: 10,
+          }}>
           {/* {task.changedLocFlag === 0 && (
             <CustomCheckBox isChecked={isChecked} onToggle={handleCheckBoxPress} />
           )}
            {task.changedLocFlag === 0 && (
           <Text style={{ fontWeight: 'bold', marginHorizontal: 5, color: '#000' }}>Changed the Current Location</Text>
            )} */}
-           <CustomCheckBox 
-  isChecked={isChecked || task.changedLocFlag === 1} 
-  onToggle={task.changedLocFlag === 1 ? null : handleCheckBoxPress} 
-  disabled={task.changedLocFlag === 1} 
-/>
+          <CustomCheckBox
+            isChecked={isChecked || task.changedLocFlag === 1}
+            onToggle={task.changedLocFlag === 1 ? null : handleCheckBoxPress}
+            disabled={task.changedLocFlag === 1}
+          />
 
-<Text style={{ fontWeight: 'bold', marginHorizontal: 5, color: '#000' }}>
-  {task.changedLocFlag === 1 ? 'Current Location Updated' : 'Changed the Current Location'}
-</Text>
-
-
+          <Text
+            style={{fontWeight: 'bold', marginHorizontal: 5, color: '#000'}}>
+            {task.changedLocFlag === 1
+              ? 'Current Location Updated'
+              : 'Changed the Current Location'}
+          </Text>
         </View>
         <View style={styles.dateContainer}>
           <Text style={styles.dateText}>{dueDateStr}</Text>
@@ -1539,15 +1637,17 @@ const handleCheckInOut = async () => {
           </View> */}
 
           <View style={styles.taskDetails}>
-            <Text style={styles.dropdownItemText}>{task.label}</Text>
+            <Text style={styles.dropdownItemText}>{task.taskName}</Text>
 
             {/* Conditionally render the location */}
             {task.changedLocFlag === 1 ? (
               <Text style={styles.loctxt}>{task.changedLocation}</Text>
             ) : (
-              <Text style={styles.loctxt}>{task.locationName}, {'\n'}{task.state}</Text>
+              <Text style={styles.loctxt}>
+                {task.locationName}, {'\n'}
+                {task.state}
+              </Text>
             )}
-
           </View>
           <TouchableOpacity onPress={() => handleTaskSelect(task)}>
             <Image
@@ -1591,13 +1691,17 @@ const handleCheckInOut = async () => {
           {/* Left side: Check In and Check Out */}
           <View>
             {checkIn ? (
-              <Text style={{ color: '#000', marginLeft: 5, fontWeight: 'bold' }}>
-                Check In : {formatDateIntoDMY(formatDateTime(new Date(checkIn), 'date'))}({formatDateTime(new Date(checkIn), 'time')})
+              <Text style={{color: '#000', marginLeft: 5, fontWeight: 'bold'}}>
+                Check In :{' '}
+                {formatDateIntoDMY(formatDateTime(new Date(checkIn), 'date'))}(
+                {formatDateTime(new Date(checkIn), 'time')})
               </Text>
             ) : null}
             {checkOut ? (
-              <Text style={{ color: '#000', marginLeft: 5, fontWeight: 'bold' }}>
-                Check Out : {formatDateIntoDMY(formatDateTime(new Date(checkOut), 'date'))}({formatDateTime(new Date(checkOut), 'time')})
+              <Text style={{color: '#000', marginLeft: 5, fontWeight: 'bold'}}>
+                Check Out :{' '}
+                {formatDateIntoDMY(formatDateTime(new Date(checkOut), 'date'))}(
+                {formatDateTime(new Date(checkOut), 'time')})
               </Text>
             ) : null}
           </View>
@@ -1615,8 +1719,7 @@ const handleCheckInOut = async () => {
                 color: '#000',
                 textAlign: 'right',
                 marginRight: 29,
-              }}>{`Travelled Dis : ${traveledDistance || traveleDis
-                }`}</Text>
+              }}>{`Travelled Dis : ${traveledDistance || traveleDis}`}</Text>
           </View>
         </View>
 
@@ -1627,45 +1730,44 @@ const handleCheckInOut = async () => {
             justifyContent: 'space-between',
           }}>
           <TouchableOpacity
-  style={[
-    styles.signOutButton,
-    checkIn && checkOut ? { backgroundColor: '#d3d3d3' } : null, // Grey out the button if disabled
-  ]}
-  onPress={() => {
-    if (checkIn && checkOut) {
-      Alert.alert('You have already checked in and checked out');
-      return;
-    }
+            style={[
+              styles.signOutButton,
+              checkIn && checkOut ? {backgroundColor: '#d3d3d3'} : null, // Grey out the button if disabled
+            ]}
+            onPress={() => {
+              if (checkIn && checkOut) {
+                Alert.alert('You have already checked in and checked out');
+                return;
+              }
 
-    // Allow punch in/out if the user is within 1000 meters
-    if (
-      (distance.includes('km')
-        ? parseFloat(distance) * 1000
-        : parseFloat(distance)) > 1000
-    ) {
-      Alert.alert(
-        'Warning',  
-        'You must be within 1000 meters of the destination to Punch In or Punch Out'
-      );
-      return;
-    }
+              // Allow punch in/out if the user is within 1000 meters
+              if (
+                (distance.includes('km')
+                  ? parseFloat(distance) * 1000
+                  : parseFloat(distance)) > 1000
+              ) {
+                Alert.alert(
+                  'Warning',
+                  'You must be within 1000 meters of the destination to Punch In or Punch Out',
+                );
+                return;
+              }
 
-    // Call PunchInPunchOut function if within range
-    PunchInPunchOut();
-  }}
-  disabled={!!checkIn && !!checkOut} 
->
-  <Text style={{ color: '#000', fontSize: 15 }}>
-    {isSignedIn ? 'Check Out' : 'Check In'}
-  </Text>
-</TouchableOpacity>
+              // Call PunchInPunchOut function if within range
+              PunchInPunchOut();
+            }}
+            disabled={!!checkIn && !!checkOut}>
+            <Text style={{color: '#000', fontSize: 15}}>
+              {isSignedIn ? 'Check Out' : 'Check In'}
+            </Text>
+          </TouchableOpacity>
 
           <View style={styles.switchContainer}>
             <TouchableOpacity
               onPress={handleShipDropdownClickStatus}
               style={[
                 styles.dropdownButton,
-                { backgroundColor: editStatus ? '#fff' : '#dedede' },
+                {backgroundColor: editStatus ? '#fff' : '#dedede'},
               ]}>
               <Text style={styles.dropdownText}>
                 {selectedStatusOption || status || 'Status'}
@@ -1679,7 +1781,9 @@ const handleCheckInOut = async () => {
 
           {shipFromToClickedStatus &&
             editStatus &&
-            (!selectedStatusOption || selectedStatusOption !== "Completed" || isAdmin) && (
+            (!selectedStatusOption ||
+              selectedStatusOption !== 'Completed' ||
+              isAdmin) && (
               <View style={styles.dropdownContainer}>
                 <ScrollView
                   style={styles.scrollView}
@@ -1690,7 +1794,7 @@ const handleCheckInOut = async () => {
                       style={[
                         styles.dropdownOption,
                         selectedStatusOption === option &&
-                        styles.selectedOption,
+                          styles.selectedOption,
                       ]}
                       onPress={() => handleDropdownSelectStatus(option)}>
                       <Text style={styles.dropdownOptionText}>{option}</Text>
@@ -1706,7 +1810,7 @@ const handleCheckInOut = async () => {
               style={styles.uploadimg}
               onPress={handleTakeSelfie}>
               <Image
-                style={{ height: 65, width: 65 }}
+                style={{height: 65, width: 65}}
                 source={require('../../../assets/uploadsel.png')}
               />
               <Text
@@ -1761,7 +1865,7 @@ const handleCheckInOut = async () => {
           <ScrollView horizontal style={styles.imagePreviewContainer}>
             {selfieImages.map((image, index) => (
               <View key={index} style={styles.imageContainer}>
-                <Image source={{ uri: image.uri }} style={styles.imagePreview} />
+                <Image source={{uri: image.uri}} style={styles.imagePreview} />
                 <TouchableOpacity
                   style={styles.removeButton}
                   onPress={() => removeImage(index, 'selfie')}>
@@ -1775,7 +1879,7 @@ const handleCheckInOut = async () => {
           <ScrollView horizontal style={styles.imagePreviewContainer}>
             {galleryImages.map((image, index) => (
               <View key={index} style={styles.imageContainer}>
-                <Image source={{ uri: image.uri }} style={styles.imagePreview} />
+                <Image source={{uri: image.uri}} style={styles.imagePreview} />
                 <TouchableOpacity
                   style={styles.removeButton}
                   onPress={() => removeImage(index, 'gallery')}>
@@ -1823,301 +1927,302 @@ const handleCheckInOut = async () => {
           }}
           disabled={loadingg} // Disable button when loading
         >
-          <Text style={{ color: '#000', alignSelf: 'center' }}>Update</Text>
+          <Text style={{color: '#000', alignSelf: 'center'}}>Update</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
 };
 
-const getStyles = (colors,screenHeight) => StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  header: {
-    flexDirection: 'row',
-    marginHorizontal: 10,
-    marginVertical: 10,
-  },
-  backButton: {
-    height: 25,
-    width: 25,
-  },
-  backButtonImage: {
-    height: 25,
-    width: 25,
-  },
-  headerText: {
-    marginLeft: 10,
-    fontSize: 19,
-    fontWeight: 'bold',
-    color: '#000',
-  },
-  navTabs: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: 10,
-    backgroundColor: '#f0f0f0',
-    marginVertical: 5,
-  },
-  visitsheader:{
-    borderWidth:1,
-    marginRight:8,
-    paddingVertical:3,
-    borderRadius:10,
-    backgroundColor:"lightgray",
-  },
-  txt: {
-    color: '#000',
-    fontWeight:"400",
-    fontSize: 18,
-    marginHorizontal: 10,
-  },
-  sectionHeader: {
-    paddingVertical: 10,
-    backgroundColor: colors.color2,
-    marginVertical: 5,
-  },
-  sectionHeaderText: {
-    color: '#000',
-    fontWeight: 'bold',
-    marginLeft: 10,
-    fontSize: 17,
-  },
-  dateContainer: {
-    marginHorizontal: 10,
-    marginVertical: 5,
-  },
-  dateText: {
-    color: '#000',
-    fontWeight: 'bold',
-  },
-  taskContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    marginHorizontal: 5,
-    paddingVertical: 20,
-    marginVertical: 3,
-    borderRadius: 10,
-  },
-  taskDetails: {
-    flexDirection: 'column',
-    marginLeft: 10,
-    flex: 1,
-  },
-  dropdownItemText: {
-    color: '#000',
-    fontWeight: 'bold',
-  },
-  loctxt: {
-    color: '#000',
-    fontWeight: 'bold',
-  },
-  statetxt: {
-    color: '#000',
-    fontWeight: 'bold',
-  },
-  locationImg: {
-    width: 30,
-    height: 30,
-    marginRight: 40,
-  },
-  taskDescription: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginHorizontal: 10,
-    marginVertical: 10,
-  },
-  boldText: {
-    color: '#000',
-    fontWeight: 'bold',
-  },
-  textInputContainer: {
-    borderWidth: 1,
-    marginHorizontal: 5,
-    borderRadius: 10,
-    paddingVertical: 10,
-  },
-  textInputContainerremarks: {
-    borderWidth: 1,
-    marginHorizontal: 5,
-    borderRadius: 10,
-    paddingVertical: 14,
-  },
-  remarksText: {
-    color: '#000',
-    fontWeight: 'bold',
-    marginHorizontal: 10,
-    marginVertical: 10,
-  },
-  switchContainer: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    marginHorizontal: 10,
-    marginVertical: 10,
-  },
-  signOutButton: {
-    borderWidth: 1,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    marginHorizontal: 5,
-    borderRadius: 10,
-  },
-  dropdownButton: {
-    height: 35,
-    borderRadius: 10,
-    borderWidth: 0.5,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingLeft: 15,
-    paddingRight: 15,
-    marginHorizontal: 10,
-    marginVertical: 1,
-    position: 'relative', // Important for dropdown positioning
-  },
-  dropdownText: {
-    color: '#000',
-  },
-  dropdownImage: {
-    width: 20,
-    height: 20,
-    marginRight: 10,
-    marginLeft: 20,
-  },
-  dropdownContainer: {
-    position: 'absolute',
-    right: 0,
-    marginRight: 8,
-    width: '45%',
-    backgroundColor: 'white',
-    borderWidth: 0.5,
-    borderRadius: 10,
-    zIndex: 10,
-    elevation: 10,
-    ...(screenHeight > 700 ? { top: 47 } : { bottom: 47 }), // Adjust based on screen size
-  },
-  scrollView: {
-    minHeight: 70,
-    maxHeight: 100,
-  },
-  dropdownOption: {
-    paddingHorizontal: 10,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
-    marginBottom:12
-  },
-  selectedOption: {
-    backgroundColor: '#f0f0f0',
-    borderRadius:10
-  },
-  dropdownOptionText: {
-    color: '#000',
-  },
-  imgheader: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginHorizontal: 30,
-    marginTop: 70,
-  },
-  uploadselimg: {
-    height: 60,
-    width: 60,
-  },
+const getStyles = (colors, screenHeight) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: '#fff',
+    },
+    header: {
+      flexDirection: 'row',
+      marginHorizontal: 10,
+      marginVertical: 10,
+    },
+    backButton: {
+      height: 25,
+      width: 25,
+    },
+    backButtonImage: {
+      height: 25,
+      width: 25,
+    },
+    headerText: {
+      marginLeft: 10,
+      fontSize: 19,
+      fontWeight: 'bold',
+      color: '#000',
+    },
+    navTabs: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingVertical: 10,
+      backgroundColor: '#f0f0f0',
+      marginVertical: 5,
+    },
+    visitsheader: {
+      borderWidth: 1,
+      marginRight: 8,
+      paddingVertical: 3,
+      borderRadius: 10,
+      backgroundColor: 'lightgray',
+    },
+    txt: {
+      color: '#000',
+      fontWeight: '400',
+      fontSize: 18,
+      marginHorizontal: 10,
+    },
+    sectionHeader: {
+      paddingVertical: 10,
+      backgroundColor: colors.color2,
+      marginVertical: 5,
+    },
+    sectionHeaderText: {
+      color: '#000',
+      fontWeight: 'bold',
+      marginLeft: 10,
+      fontSize: 17,
+    },
+    dateContainer: {
+      marginHorizontal: 10,
+      marginVertical: 5,
+    },
+    dateText: {
+      color: '#000',
+      fontWeight: 'bold',
+    },
+    taskContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      borderWidth: 1,
+      marginHorizontal: 5,
+      paddingVertical: 20,
+      marginVertical: 3,
+      borderRadius: 10,
+    },
+    taskDetails: {
+      flexDirection: 'column',
+      marginLeft: 10,
+      flex: 1,
+    },
+    dropdownItemText: {
+      color: '#000',
+      fontWeight: 'bold',
+    },
+    loctxt: {
+      color: '#000',
+      fontWeight: 'bold',
+    },
+    statetxt: {
+      color: '#000',
+      fontWeight: 'bold',
+    },
+    locationImg: {
+      width: 30,
+      height: 30,
+      marginRight: 40,
+    },
+    taskDescription: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginHorizontal: 10,
+      marginVertical: 10,
+    },
+    boldText: {
+      color: '#000',
+      fontWeight: 'bold',
+    },
+    textInputContainer: {
+      borderWidth: 1,
+      marginHorizontal: 5,
+      borderRadius: 10,
+      paddingVertical: 10,
+    },
+    textInputContainerremarks: {
+      borderWidth: 1,
+      marginHorizontal: 5,
+      borderRadius: 10,
+      paddingVertical: 14,
+    },
+    remarksText: {
+      color: '#000',
+      fontWeight: 'bold',
+      marginHorizontal: 10,
+      marginVertical: 10,
+    },
+    switchContainer: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      justifyContent: 'flex-end',
+      marginHorizontal: 10,
+      marginVertical: 10,
+    },
+    signOutButton: {
+      borderWidth: 1,
+      paddingHorizontal: 10,
+      paddingVertical: 5,
+      marginHorizontal: 5,
+      borderRadius: 10,
+    },
+    dropdownButton: {
+      height: 35,
+      borderRadius: 10,
+      borderWidth: 0.5,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingLeft: 15,
+      paddingRight: 15,
+      marginHorizontal: 10,
+      marginVertical: 1,
+      position: 'relative', // Important for dropdown positioning
+    },
+    dropdownText: {
+      color: '#000',
+    },
+    dropdownImage: {
+      width: 20,
+      height: 20,
+      marginRight: 10,
+      marginLeft: 20,
+    },
+    dropdownContainer: {
+      position: 'absolute',
+      right: 0,
+      marginRight: 8,
+      width: '45%',
+      backgroundColor: 'white',
+      borderWidth: 0.5,
+      borderRadius: 10,
+      zIndex: 10,
+      elevation: 10,
+      ...(screenHeight > 700 ? {top: 47} : {bottom: 47}), // Adjust based on screen size
+    },
+    scrollView: {
+      minHeight: 70,
+      maxHeight: 100,
+    },
+    dropdownOption: {
+      paddingHorizontal: 10,
+      paddingVertical: 12,
+      borderBottomWidth: 1,
+      borderBottomColor: '#ccc',
+      marginBottom: 12,
+    },
+    selectedOption: {
+      backgroundColor: '#f0f0f0',
+      borderRadius: 10,
+    },
+    dropdownOptionText: {
+      color: '#000',
+    },
+    imgheader: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginHorizontal: 30,
+      marginTop: 70,
+    },
+    uploadselimg: {
+      height: 60,
+      width: 60,
+    },
 
-  uploadTextContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginHorizontal: 20,
-  },
-  uploadText: {
-    color: '#000',
-    fontWeight: 'bold',
-  },
-  textInput: {
-    color: '#000',
-    marginLeft: 10
-  },
-  imagePreviewContainer: {
-    flexDirection: 'row',
-    marginVertical: 5,
-  },
-  imagePreview: {
-    width: 70,
-    height: 70,
-    marginHorizontal: 5,
-    borderRadius: 10,
-    backgroundColor: '#f0f0f0',
-  },
-  uploadButton: {
-    backgroundColor:  colors.color2,
-    paddingHorizontal: 20,
-    borderRadius: 10,
-  },
-  uploadButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-  },
-  removeButton: {
-    position: 'absolute',
-    top: 0, // Position the button at the top edge of the image
-    right: 0, // Align the button to the right edge
-    backgroundColor: 'gray',
-    borderRadius: 15,
-    width: 25,
-    height: 25,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  removeButton1: {
-    position: 'absolute',
-    top: 0, // Position the button at the top edge of the image
-    right: 5, // Align the button to the right edge
-    backgroundColor: 'gray',
-    borderRadius: 15,
-    width: 25,
-    height: 25,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  removeButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 14,
-  },
-  uploadSection: {
-    marginTop: 16,
-    marginBottom: 20,
-    marginHorizontal: 10,
-  },
-  uploadButton: {
-    backgroundColor: '#007bff',
-    padding: 12,
-    borderRadius: 4,
-    color: '#fff',
-    textAlign: 'center',
-  },
-  uploadButtonText: {
-    color: '#fff',
-    textAlign: 'center',
-  },
-  uploadimg: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  uploadanyimg: {
-    width: 65,
-    height: 65,
-    marginLeft: 10,
-  },
-  documentItem: {
-    justifyContent: 'center',
-  },
-});
+    uploadTextContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginHorizontal: 20,
+    },
+    uploadText: {
+      color: '#000',
+      fontWeight: 'bold',
+    },
+    textInput: {
+      color: '#000',
+      marginLeft: 10,
+    },
+    imagePreviewContainer: {
+      flexDirection: 'row',
+      marginVertical: 5,
+    },
+    imagePreview: {
+      width: 70,
+      height: 70,
+      marginHorizontal: 5,
+      borderRadius: 10,
+      backgroundColor: '#f0f0f0',
+    },
+    uploadButton: {
+      backgroundColor: colors.color2,
+      paddingHorizontal: 20,
+      borderRadius: 10,
+    },
+    uploadButtonText: {
+      color: '#fff',
+      fontWeight: 'bold',
+    },
+    removeButton: {
+      position: 'absolute',
+      top: 0, // Position the button at the top edge of the image
+      right: 0, // Align the button to the right edge
+      backgroundColor: 'gray',
+      borderRadius: 15,
+      width: 25,
+      height: 25,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    removeButton1: {
+      position: 'absolute',
+      top: 0, // Position the button at the top edge of the image
+      right: 5, // Align the button to the right edge
+      backgroundColor: 'gray',
+      borderRadius: 15,
+      width: 25,
+      height: 25,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    removeButtonText: {
+      color: '#fff',
+      fontWeight: 'bold',
+      fontSize: 14,
+    },
+    uploadSection: {
+      marginTop: 16,
+      marginBottom: 20,
+      marginHorizontal: 10,
+    },
+    uploadButton: {
+      backgroundColor: '#007bff',
+      padding: 12,
+      borderRadius: 4,
+      color: '#fff',
+      textAlign: 'center',
+    },
+    uploadButtonText: {
+      color: '#fff',
+      textAlign: 'center',
+    },
+    uploadimg: {
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    uploadanyimg: {
+      width: 65,
+      height: 65,
+      marginLeft: 10,
+    },
+    documentItem: {
+      justifyContent: 'center',
+    },
+  });
 
 export default TaskDetails;

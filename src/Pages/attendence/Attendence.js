@@ -958,21 +958,104 @@ const Attendance = () => {
   //   }
   // };
 
+  // const handleSignToggle = async () => {
+  //   if (loading) return;
+
+  //   setLoading(true);
+  //   try {
+  //     const location = await getLocationWithRetries(3);
+  //     if (!location || !location.lat || !location.long) {
+  //       throw new Error('Unable to retrieve location. Please try again.');
+  //     }
+
+  //     const now = new Date();
+  //     const currentDateTime = formatDateTime(now);
+  //     const day = now.toLocaleDateString('en-US', {weekday: 'long'});
+
+  //     // Update sign in/out times and locations
+  //     if (!isSignedIn) {
+  //       setSignInLocation(location);
+  //       setSignInTime(extractTime(currentDateTime));
+  //       setSignInDay(day);
+  //       setSignInDate(currentDateTime.split('T')[0]);
+  //     } else {
+  //       setSignOutLocation(location);
+  //       setSignOutTime(extractTime(currentDateTime));
+  //       setSignOutDay(day);
+  //       setSignOutDate(currentDateTime.split('T')[0]);
+  //     }
+
+  //     // Call the punch in/out API
+  //     await PunchInPunchOut(location, currentDateTime, day);
+
+  //     // Update punch status after successful API call
+  //     setPunchStatus(isSignedIn ? 'out' : 'in'); // Update punchStatus based on sign-in state
+
+  //     // Toggle sign-in state after successful punch-in/out
+  //     setIsSignedIn(prevState => !prevState);
+  //     setModalTickVisible(true);
+  //     setShowTick(true);
+
+  //     // Hide the tick and modal after 2 seconds
+  //     setTimeout(() => {
+  //       setShowTick(false);
+  //       setModalTickVisible(false); // Close the modal here
+  //     }, 2000);
+  //   } catch (error) {
+  //     Alert.alert(
+  //       'Error',
+  //       error.message || 'Failed to punch in/out. Please try again.',
+  //     );
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
   const handleSignToggle = async () => {
     if (loading) return;
-
+  
     setLoading(true);
+  
     try {
+      // Check for location permission first
+      if (Platform.OS === 'android') {
+        const hasPermission = await PermissionsAndroid.check(
+          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+        );
+  
+        if (!hasPermission) {
+          const granted = await PermissionsAndroid.request(
+            PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+            {
+              title: 'Location Permission',
+              message: 'Location access is required to punch in/out.',
+              buttonNeutral: 'Ask Me Later',
+              buttonNegative: 'Cancel',
+              buttonPositive: 'OK',
+            },
+          );
+  
+          if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+            Alert.alert(
+              'Permission Denied',
+              'Location permission is required to Punch In/Out. Please enable it in settings.'
+            );
+            setLoading(false);
+            return;
+          }
+        }
+      }
+  
+      // Get location after permission is granted
       const location = await getLocationWithRetries(3);
       if (!location || !location.lat || !location.long) {
         throw new Error('Unable to retrieve location. Please try again.');
       }
-
+  
       const now = new Date();
       const currentDateTime = formatDateTime(now);
-      const day = now.toLocaleDateString('en-US', {weekday: 'long'});
-
-      // Update sign in/out times and locations
+      const day = now.toLocaleDateString('en-US', { weekday: 'long' });
+  
       if (!isSignedIn) {
         setSignInLocation(location);
         setSignInTime(extractTime(currentDateTime));
@@ -984,32 +1067,23 @@ const Attendance = () => {
         setSignOutDay(day);
         setSignOutDate(currentDateTime.split('T')[0]);
       }
-
-      // Call the punch in/out API
+  
       await PunchInPunchOut(location, currentDateTime, day);
-
-      // Update punch status after successful API call
-      setPunchStatus(isSignedIn ? 'out' : 'in'); // Update punchStatus based on sign-in state
-
-      // Toggle sign-in state after successful punch-in/out
-      setIsSignedIn(prevState => !prevState);
+      setPunchStatus(isSignedIn ? 'out' : 'in');
+      setIsSignedIn(prev => !prev);
       setModalTickVisible(true);
       setShowTick(true);
-
-      // Hide the tick and modal after 2 seconds
       setTimeout(() => {
         setShowTick(false);
-        setModalTickVisible(false); // Close the modal here
+        setModalTickVisible(false);
       }, 2000);
     } catch (error) {
-      Alert.alert(
-        'Error',
-        error.message || 'Failed to punch in/out. Please try again.',
-      );
+      Alert.alert('Error', error.message || 'Failed to punch in/out.');
     } finally {
       setLoading(false);
     }
   };
+  
 
   const PunchInPunchOut = async (location, currentDateTime, day) => {
     const formattedDate = currentDateTime.split('T')[0];
