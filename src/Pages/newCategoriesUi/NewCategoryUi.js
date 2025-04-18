@@ -232,7 +232,7 @@ const NewCategoryUi = () => {
     setPageNo(1);
     setSelectedCategory('All Products');
     setActiveCategoryId(null);
-    getAllProducts(companyId);
+    getAllProducts(companyId, true, 1); 
   };
 
   const getSelectedCategoryAllProducts = async (categoryId, companyId) => {
@@ -296,7 +296,7 @@ const NewCategoryUi = () => {
       });
 
       const data = response.data.content;
-      if (pageNo === 1) {
+      if (page === 1 || reset) { 
         setProductsList(data);
         setTotalItems(response.data.totalItems);
       } else {
@@ -614,9 +614,10 @@ const NewCategoryUi = () => {
   const onRefresh = async () => {
     setPageNo(1);
     setRefreshing(true);
+    setLoadingMore(false); 
     setProductsList([]);
     if (selectedCategory === 'All Products') {
-      await getAllProducts(companyId);
+      await getAllProducts(companyId, true, 1);  // Always pass true and 1 for reset
     } else {
       await getSelectedCategoryAllProducts(activeCategoryId, companyId);
     }
@@ -1039,7 +1040,7 @@ const NewCategoryUi = () => {
               onEndReached={handleEndReached}
               onEndReachedThreshold={0.1}
               ListFooterComponent={
-                loadingMore ? (
+                loadingMore && !refreshing ? ( // Only show when loadingMore is true AND refreshing is false
                   <View style={{paddingVertical: 20, alignItems: 'center'}}>
                     <ActivityIndicator size="small" color="#0000ff" />
                     <Text style={{color: '#000', marginTop: 5}}>

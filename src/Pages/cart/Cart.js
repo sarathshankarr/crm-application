@@ -4824,14 +4824,6 @@ const Cart = () => {
                 Pick Location
               </Text>
             </View>
-
-            <MapView
-              style={{flex: 1}}
-              region={region}
-              onPress={onMapPress}
-              initialRegion={region}>
-              {marker && <Marker coordinate={marker} />}
-            </MapView>
             <GooglePlacesAutocomplete
               placeholder="Search for a location"
               fetchDetails={true}
@@ -4880,6 +4872,14 @@ const Cart = () => {
               }}
             />
 
+            <MapView
+              style={{flex: 1}}
+              region={region}
+              onPress={onMapPress}
+              initialRegion={region}>
+              {marker && <Marker coordinate={marker} />}
+            </MapView>
+         
             <TouchableOpacity
               onPress={handleConfirmLocation}
               style={{
