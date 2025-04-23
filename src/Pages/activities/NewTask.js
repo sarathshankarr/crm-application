@@ -1688,9 +1688,7 @@ const filteredDistributors = distributors
 
   return (
     <SafeAreaView style={{flex:1,backgroundColor:'#fff'}}> 
-    <ScrollView style={{flex: 1, backgroundColor: '#ffffff'}}>
-      <View style={{flex: 1, backgroundColor: '#fff'}}>
-        <View style={styles.header}>
+     <View style={styles.header}>
           <TouchableOpacity onPress={handleGoBack}>
             <Image
               style={{height: 25, width: 25}}
@@ -1705,6 +1703,9 @@ const filteredDistributors = distributors
             <Text style={styles.addButtonText}>SAVE</Text>
           </TouchableOpacity>
         </View>
+    <ScrollView style={{flex: 1, backgroundColor: '#ffffff'}}>
+      <View style={{flex: 1, backgroundColor: '#fff'}}>
+       
 
         <View style={styles.section}>
           <Text style={styles.sectionText}>Basic Info</Text>
@@ -1758,7 +1759,7 @@ const filteredDistributors = distributors
           </View>
         )}
         <Text style={{marginHorizontal: 10, marginVertical: 3, color: '#000'}}>
-          Users
+        Assign to
         </Text>
         <TouchableOpacity
           onPress={handleShipDropdownClickUser}
@@ -2192,6 +2193,24 @@ const filteredDistributors = distributors
                         Please Enter City Or Town
                       </Text>
                     )}
+                      <TextInput
+                      style={[
+                        style.inputt,
+                        {color: '#000'},
+                        errorFields.includes('country')
+                          ? style.errorBorder
+                          : null,
+                      ]}
+                      placeholderTextColor="#000"
+                      placeholder="Country *"
+                      onChangeText={text =>
+                        setInputValues({...inputValues, country: text})
+                      }
+                      value={inputValues.country}
+                    />
+                    {errorFields.includes('country') && (
+                      <Text style={style.errorText}>Please Enter Country</Text>
+                    )}
                     {/* <TextInput
                     style={[
                       style.input,
@@ -2257,24 +2276,7 @@ const filteredDistributors = distributors
                       </View>
                     </View>
 
-                    <TextInput
-                      style={[
-                        style.inputt,
-                        {color: '#000'},
-                        errorFields.includes('country')
-                          ? style.errorBorder
-                          : null,
-                      ]}
-                      placeholderTextColor="#000"
-                      placeholder="Country *"
-                      onChangeText={text =>
-                        setInputValues({...inputValues, country: text})
-                      }
-                      value={inputValues.country}
-                    />
-                    {errorFields.includes('country') && (
-                      <Text style={style.errorText}>Please Enter Country</Text>
-                    )}
+                  
                     <TextInput
                       style={[
                         style.inputt,
@@ -2310,7 +2312,7 @@ const filteredDistributors = distributors
                     />
                     {errorFields.includes('locationName') && (
                       <Text style={style.errorText}>
-                        Please Enter Location Name
+                        Please Enter Landmark
                       </Text>
                     )}
                     <TextInput
@@ -2322,7 +2324,7 @@ const filteredDistributors = distributors
                           : null,
                       ]}
                       placeholderTextColor="#000"
-                      placeholder="Location Description *"
+                      placeholder="Landmark *"
                       onChangeText={text =>
                         setInputValues({
                           ...inputValues,
@@ -2333,7 +2335,7 @@ const filteredDistributors = distributors
                     />
                     {errorFields.includes('locationDescription') && (
                       <Text style={style.errorText}>
-                        Please Enter Location Description
+                        Please Enter Landmark
                       </Text>
                     )}
 

@@ -58,6 +58,9 @@ import DistributorPayments from '../Pages/payments/ DistributorPayments';
 import PickList from '../Pages/Packingorders/PickList';
 import PickListEdit from '../Pages/Packingorders/PickListEdit';
 import GoogleMap from '../components/GoogleMap';
+import CameraScreen from '../components/CameraScreen';
+import MasterLocartion from '../Pages/master/MasterLocation';
+import LocationEdit from '../Pages/master/LocationEdit';
 
 const Stack = createNativeStackNavigator();
 
@@ -442,6 +445,30 @@ const Routes = () => {
         options={{
           headerShown: true,
           headerTitle: () => <CompanyDropdown title="GoogleMap" />,
+        }}
+      />
+       <Stack.Screen
+        name="CameraScreen"
+        component={CameraScreen}
+        options={{
+          headerShown: false,
+          headerTitle: () => <CompanyDropdown title="CameraScreen" />,
+        }}
+      />
+        <Stack.Screen
+        name="MasterLocartion"
+        component={MasterLocartion}
+        options={{
+          headerShown: true,
+          headerTitle: () => <CompanyDropdown title="MasterLocartion" />,
+        }}
+      />
+       <Stack.Screen
+        name="LocationEdit"
+        component={LocationEdit}
+        options={{
+          headerShown: true,
+          headerTitle: () => <CompanyDropdown title="MasterLocartion" />,
         }}
       />
     </Stack.Navigator>

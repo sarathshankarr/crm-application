@@ -612,6 +612,21 @@ const AddRetailerDistributor = (visible, onClose, type) => {
               {errorFields.includes('cityOrTown') && (
                 <Text style={styles.errorText}>Please Enter City Or Town</Text>
               )}
+                  <TextInput
+                style={[
+                  styles.input,
+                  {color: '#000'},
+                  errorFields.includes('country') ? styles.errorBorder : null,
+                ]}
+                placeholderTextColor="#000"
+                placeholder="Country *"
+                onChangeText={text =>
+                  setInputValues({...inputValues, country: text})
+                }
+              />
+              {errorFields.includes('country') && (
+                <Text style={styles.errorText}>Please Enter Country</Text>
+              )}
               {/* <TextInput
                 style={[
                   styles.input,
@@ -671,21 +686,7 @@ const AddRetailerDistributor = (visible, onClose, type) => {
                 </View>
               </View>
 
-              <TextInput
-                style={[
-                  styles.input,
-                  {color: '#000'},
-                  errorFields.includes('country') ? styles.errorBorder : null,
-                ]}
-                placeholderTextColor="#000"
-                placeholder="Country *"
-                onChangeText={text =>
-                  setInputValues({...inputValues, country: text})
-                }
-              />
-              {errorFields.includes('country') && (
-                <Text style={styles.errorText}>Please Enter Country</Text>
-              )}
+          
               <TextInput
                 style={[
                   styles.input,
@@ -727,14 +728,14 @@ const AddRetailerDistributor = (visible, onClose, type) => {
                     : null,
                 ]}
                 placeholderTextColor="#000"
-                placeholder="Location Description *"
+                placeholder="Landmark *"
                 onChangeText={text =>
                   setInputValues({...inputValues, locationDescription: text})
                 }
               />
               {errorFields.includes('locationDescription') && (
                 <Text style={styles.errorText}>
-                  Please Enter Location Description
+                  Please Enter Landmark
                 </Text>
               )}
 

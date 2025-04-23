@@ -4298,6 +4298,24 @@ const Cart = () => {
                     <Text style={style.errorText}>Please Enter State</Text>
                   )} */}
 
+<TextInput
+                      style={[
+                        style.input,
+                        {color: '#000'},
+                        errorFields.includes('country')
+                          ? style.errorBorder
+                          : null,
+                      ]}
+                      placeholderTextColor="#000"
+                      placeholder="Country *"
+                      onChangeText={text =>
+                        setInputValues({...inputValues, country: text})
+                      }
+                      value={inputValues.country}
+                    />
+                    {errorFields.includes('country') && (
+                      <Text style={style.errorText}>Please Enter Country</Text>
+                    )}
                     <Text style={style.headerTxt}>
                       {isEnabled ? 'State *' : 'State'}{' '}
                       {/* Append '*' when isEnabled is true */}
@@ -4347,24 +4365,7 @@ const Cart = () => {
                       </View>
                     </View>
 
-                    <TextInput
-                      style={[
-                        style.input,
-                        {color: '#000'},
-                        errorFields.includes('country')
-                          ? style.errorBorder
-                          : null,
-                      ]}
-                      placeholderTextColor="#000"
-                      placeholder="Country *"
-                      onChangeText={text =>
-                        setInputValues({...inputValues, country: text})
-                      }
-                      value={inputValues.country}
-                    />
-                    {errorFields.includes('country') && (
-                      <Text style={style.errorText}>Please Enter Country</Text>
-                    )}
+                 
                     <TextInput
                       style={[
                         style.input,
@@ -4400,7 +4401,7 @@ const Cart = () => {
                     />
                     {errorFields.includes('locationName') && (
                       <Text style={style.errorText}>
-                        Please Enter Location Name
+                        Please Enter Landmark
                       </Text>
                     )}
                     <TextInput
@@ -4412,7 +4413,7 @@ const Cart = () => {
                           : null,
                       ]}
                       placeholderTextColor="#000"
-                      placeholder="Location Description *"
+                      placeholder="Landmark*"
                       onChangeText={text =>
                         setInputValues({
                           ...inputValues,
@@ -4423,7 +4424,7 @@ const Cart = () => {
                     />
                     {errorFields.includes('locationDescription') && (
                       <Text style={style.errorText}>
-                        Please Enter Location Description
+                        Please Enter Landmark
                       </Text>
                     )}
 

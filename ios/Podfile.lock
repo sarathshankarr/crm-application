@@ -1621,12 +1621,12 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNImageCropPicker (0.41.6):
+  - RNImageCropPicker (0.42.0):
     - React-Core
     - React-RCTImage
-    - RNImageCropPicker/QBImagePickerController (= 0.41.6)
+    - RNImageCropPicker/QBImagePickerController (= 0.42.0)
     - TOCropViewController (~> 2.7.4)
-  - RNImageCropPicker/QBImagePickerController (0.41.6):
+  - RNImageCropPicker/QBImagePickerController (0.42.0):
     - React-Core
     - React-RCTImage
     - TOCropViewController (~> 2.7.4)
@@ -2136,7 +2136,7 @@ SPEC CHECKSUMS:
   RNDateTimePicker: a793ed8822283f576dd0a205a0916c5098c2611f
   RNFastImage: 5c9c9fed9c076e521b3f509fe79e790418a544e8
   RNGestureHandler: 2e4971181218718ab9c5871ea5ef855ec5c389fe
-  RNImageCropPicker: 8e39c01f205e00d739c31e682f068aac315587bf
+  RNImageCropPicker: 64b6bec9ec185ee59b71a93d7058816bd0e1916e
   RNReanimated: 8b36a458b255be4d4b2e02bacc3e06e18254db9a
   RNScreens: 6649de620b77a84d4bf7c7c8ff8830cc96f11cac
   RNSVG: 8b18fe2c2884a86e5e2e008acee0f3503dc19ff2

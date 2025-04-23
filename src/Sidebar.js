@@ -221,21 +221,31 @@ const Sidebar = ({navigation, route}) => {
     navigation.navigate('SettingsScreen');
   };
 
+  // const takePhotoFromCamera = () => {
+  //   ImagePicker.openCamera({
+  //     width: 300,
+  //     height: 400,
+  //     cropping: true,
+  //     compressImageQuality: 0.7,
+  //   })
+  //     .then(image => {
+  //       setImage({uri: image.path});
+  //       setModalVisible(false);
+  //     })
+  //     .catch(error => {
+  //       setModalVisible(false);
+  //     });
+  // };
+  
   const takePhotoFromCamera = () => {
-    ImagePicker.openCamera({
-      width: 300,
-      height: 400,
-      cropping: true,
-      compressImageQuality: 0.7,
-    })
-      .then(image => {
-        setImage({uri: image.path});
+    navigation.navigate('CameraScreen', {
+      onImageCaptured: image => {
+        setImage({ uri: image.path });
         setModalVisible(false);
-      })
-      .catch(error => {
-        setModalVisible(false);
-      });
+      },
+    });
   };
+  
 
   const choosePhotoFromLibrary = () => {
     ImagePicker.openPicker({
@@ -378,6 +388,7 @@ const Sidebar = ({navigation, route}) => {
   const attendance = menuMap[13];
   const costing = menuMap[15];
   const PickList = menuMap[16];
+  const Location = menuMap[17];
 
   const hasDropdownhome = home;
   const hasDropdowncategories = Categories;
@@ -395,8 +406,8 @@ const Sidebar = ({navigation, route}) => {
     const hasDistributorwiseInventory = distributorwiseinventory?.menuName;
     const hasActivities = Activities?.menuName; // Campaign Management
     const hasCosting = costing?.menuName; // Styles
-    const hacPickList = PickList?.menuNamel
-
+    const hacPickList = PickList?.menuName;
+    const hasLocation = Location?.menuName;
     return {
       style: {
         label:
@@ -521,6 +532,19 @@ const Sidebar = ({navigation, route}) => {
             : null,
         ].filter(Boolean),
       },
+      masters: {
+        label: hasLocation ? 'Master' : null,
+        icon: hasLocation ? require('../assets/shopping.png') : null,
+        style: [
+          hasLocation
+            ? {
+                label: Location.menuName,
+                route: 'MasterLocartion',
+                src: require('../assets/location-pin.png'),
+              }
+            : null,
+        ].filter(Boolean),
+      },
     };
   }, [
     Productstyle,
@@ -533,6 +557,7 @@ const Sidebar = ({navigation, route}) => {
     distributorwiseinventory,
     Activities,
     costing,
+    Location
   ]);
 
   const renderDropdown = (key, menu) => {

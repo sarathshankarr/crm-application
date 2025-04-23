@@ -54,28 +54,6 @@ const UploadProductImage = ({route}) => {
     setSelectedImage(null);
   };
 
-  // useEffect(() => {
-  //   if (route.params && route?.params?.productStyle) {
-  //     const styleDetails = route?.params?.productStyle;
-  //     setProductStyle(styleDetails);
-
-  //     // If images exist in productStyle, set them to selectedImages
-  //     if (styleDetails.imageUrls && styleDetails.imageUrls.length > 0) {
-  //       const imageArray = styleDetails.imageUrls.map((url, index) => ({
-  //         uri: url,
-  //         width: 100,
-  //         height: 100,
-  //         mime: 'image/jpeg',
-  //         name: `image_${index}.jpg`,
-  //       }));
-  //       setSelectedImages(imageArray);
-  //     }
-
-  //     setSaveBtn(true);
-  //   }
-
-  //   getStyleList();
-  // }, [route]);
 
   useEffect(() => {
     const styleDetails =
@@ -126,158 +104,130 @@ const UploadProductImage = ({route}) => {
       });
   };
 
-  // const selectImages = () => {
-  //   if (selectedImages.length >= 10) {
-  //     Alert.alert(
-  //       'Image Limit Reached',
-  //       'You can only upload a maximum of 10 images.',
-  //     );
-  //     return;
+
+
+  // const requestCameraPermission = async () => {
+  //   try {
+  //     if (Platform.OS === 'android' && Platform.Version < 30) {
+  //       const granted = await PermissionsAndroid.requestMultiple([
+  //         PermissionsAndroid.PERMISSIONS.CAMERA,
+  //         PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+  //         PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+  //       ]);
+  
+  //       if (
+  //         granted['android.permission.CAMERA'] === PermissionsAndroid.RESULTS.GRANTED &&
+  //         granted['android.permission.WRITE_EXTERNAL_STORAGE'] === PermissionsAndroid.RESULTS.GRANTED &&
+  //         granted['android.permission.READ_EXTERNAL_STORAGE'] === PermissionsAndroid.RESULTS.GRANTED
+  //       ) {
+  //         return true;
+  //       } else {
+  //         Alert.alert(
+  //           'Permission Denied',
+  //           'Camera and storage permissions are required to upload images.',
+  //         );
+  //         return false;
+  //       }
+  //     }
+  //     return true; // Permissions automatically granted for Android 11+
+  //   } catch (err) {
+  //     console.warn('Permission request error:', err);
+  //     return false;
   //   }
-
-  //   ImagePicker.openPicker({
-  //     multiple: true,
-  //     maxFiles: 10 - selectedImages.length,
-  //     mediaType: 'photo',
-  //     cropping: true, // Enable cropping
-  //   })
-  //     .then(images => {
-  //       const imageArray = images.map(image => ({
-  //         uri: image.path,
-  //         width: image.width,
-  //         height: image.height,
-  //         mime: image.mime,
-  //       }));
-
-  //       if (selectedImages.length + imageArray.length > 10) {
-  //         Alert.alert(
-  //           'Image Limit Exceeded',
-  //           'You can only upload a maximum of 10 images.',
-  //         );
-  //       } else {
-  //         setSelectedImages([...selectedImages, ...imageArray]);
-  //       }
-  //     })
-  //     .catch(error => {
-  //       if (error.message.includes('User cancelled image selection')) {
-  //       } else {
-  //         console.error('Error selecting images: ', error);
-  //         Alert.alert(
-  //           'Error',
-  //           'An error occurred while selecting images. Please try again.',
-  //         );
-  //       }
-  //     });
   // };
 
-  // const openCamera = () => {
-  //   setModalVisible(false);
-  //   ImagePicker.openCamera({
-  //     cropping: true, // Enable cropping
-  //     mediaType: 'photo',
-  //   })
-  //     .then(image => {
-  //       const imageObj = {
-  //         uri: image.path,
-  //         width: image.width,
-  //         height: image.height,
-  //         mime: image.mime,
-  //       };
-  //       if (selectedImages.length >= 10) {
-  //         Alert.alert(
-  //           'Image Limit Reached',
-  //           'You can only upload a maximum of 10 images.',
-  //         );
-  //       } else {
-  //         setSelectedImages([...selectedImages, imageObj]);
-  //       }
-  //     })
-  //     .catch(error => {
-  //       if (!error.message.includes('User cancelled image selection')) {
-  //         console.error('Error taking photo: ', error);
-  //         Alert.alert(
-  //           'Error',
-  //           'An error occurred while taking a photo. Please try again.',
-  //         );
-  //       }
-  //     });
-  // };
+
 
   const requestCameraPermission = async () => {
     try {
+      let permissions = [PermissionsAndroid.PERMISSIONS.CAMERA];
+      
+      // Only request storage permissions for Android < 11
       if (Platform.OS === 'android' && Platform.Version < 30) {
-        const granted = await PermissionsAndroid.requestMultiple([
-          PermissionsAndroid.PERMISSIONS.CAMERA,
+        permissions.push(
           PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-          PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
-        ]);
+          PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE
+        );
+      }
   
+      const granted = await PermissionsAndroid.requestMultiple(permissions);
+      
+      // Check camera permission first
+      if (granted['android.permission.CAMERA'] !== PermissionsAndroid.RESULTS.GRANTED) {
+        Alert.alert(
+          'Permission Denied',
+          'Camera permission is required to take photos.',
+        );
+        return false;
+      }
+      
+      // For Android < 11, check storage permissions
+      if (Platform.OS === 'android' && Platform.Version < 30) {
         if (
-          granted['android.permission.CAMERA'] === PermissionsAndroid.RESULTS.GRANTED &&
-          granted['android.permission.WRITE_EXTERNAL_STORAGE'] === PermissionsAndroid.RESULTS.GRANTED &&
-          granted['android.permission.READ_EXTERNAL_STORAGE'] === PermissionsAndroid.RESULTS.GRANTED
+          granted['android.permission.WRITE_EXTERNAL_STORAGE'] !== PermissionsAndroid.RESULTS.GRANTED ||
+          granted['android.permission.READ_EXTERNAL_STORAGE'] !== PermissionsAndroid.RESULTS.GRANTED
         ) {
-          return true;
-        } else {
           Alert.alert(
             'Permission Denied',
-            'Camera and storage permissions are required to upload images.',
+            'Storage permissions are required to save photos.',
           );
           return false;
         }
       }
-      return true; // Permissions automatically granted for Android 11+
+      
+      return true;
     } catch (err) {
       console.warn('Permission request error:', err);
       return false;
     }
   };
-
+  
 const openCamera = async () => {
-  // setModalVisible(false);
-
-  // Check and request camera permissions
   const hasPermission = await requestCameraPermission();
   if (!hasPermission) {
+    console.warn('Camera permission denied');
     return;
   }
 
-  // Open the camera
-  ImagePicker.openCamera({
-    cropping: true, // Enable cropping
-    mediaType: 'photo', // Capture photos only
-    compressImageQuality: 0.8, // Optional: Adjust image quality
-  })
-    .then(image => {
-      const imageObj = {
-        uri: image.path,
-        width: image.width,
-        height: image.height,
-        mime: image.mime,
-      };
+  console.log('Opening camera with VisionCamera...');
+  
+  try {
+    // You'll need to navigate to a new screen with the VisionCamera component
+    navigation.navigate('CameraScreen', {
+      onImageCaptured: (image) => {
+        console.log('Image captured successfully:', {
+          path: image.path,
+          width: image.width,
+          height: image.height,
+          mime: 'image/jpeg', // VisionCamera typically saves as JPEG
+        });
 
-      // Check if the maximum image limit is reached
-      if (selectedImages.length >= 10) {
-        Alert.alert(
-          'Image Limit Reached',
-          'You can only upload a maximum of 10 images.',
-        );
-      } else {
-        // Add the new image to the selected images list
-        setSelectedImages([...selectedImages, imageObj]);
-      }
-    })
-    .catch(error => {
-      // Handle errors (excluding user cancellation)
-      if (!error.message.includes('User cancelled image selection')) {
-        console.error('Error taking photo: ', error);
-        Alert.alert(
-          'Error',
-          'An error occurred while taking a photo. Please try again.',
-        );
+        const imageObj = {
+          uri: image.path,
+          width: image.width,
+          height: image.height,
+          mime: 'image/jpeg',
+        };
+
+        if (selectedImages.length >= 10) {
+          console.warn('Image limit reached (10)');
+          Alert.alert(
+            'Image Limit Reached',
+            'You can only upload a maximum of 10 images.',
+          );
+        } else {
+          console.log('Adding image to state...');
+          setSelectedImages([...selectedImages, imageObj]);
+        }
       }
     });
+  } catch (error) {
+    console.error('Camera error:', error);
+    Alert.alert('Error', 'An error occurred while using the camera. Please try again.');
+  }
 };
+  
+  
 
 
 useEffect(() => {

@@ -65,50 +65,103 @@ const MainApp = () => {
   //   };
   // }, [navigation]);
 
+  let navigationResetInProgress = false;
+
+  // useEffect(() => {
+  //   const interceptor = axios.interceptors.response.use(
+  //     response => response,
+  //     async error => {
+  //       const originalRequest = error.config;
+
+  //       if (
+  //         error.response &&
+  //         error.response.status === 401 &&
+  //         !originalRequest._retry
+  //       ) {
+  //         originalRequest._retry = true;
+
+  //         try {
+  //           const newTokenData = await refreshToken();
+  //           originalRequest.headers.Authorization = `Bearer ${newTokenData.token.access_token}`;
+  //           return axios(originalRequest);
+  //         } catch (refreshError) {
+  //           await AsyncStorage.multiRemove([
+  //             'userdata',
+  //             'loggedIn',
+  //             'userRole',
+  //             'userRoleId',
+  //             'loggedInUser',
+  //             'selectedCompany',
+  //           ]);
+  //           dispatch({type: CLEAR_CART});
+  //           navigation.reset({
+  //             index: 0,
+  //             routes: [{name: 'Login'}],
+  //           });
+  //           return Promise.reject(refreshError);
+  //         }
+  //       }
+
+  //       return Promise.reject(error);
+  //     },
+  //   );
+
+  //   return () => {
+  //     axios.interceptors.response.eject(interceptor);
+  //   };
+  // }, [navigation]);
+
+
   useEffect(() => {
     const interceptor = axios.interceptors.response.use(
       response => response,
       async error => {
         const originalRequest = error.config;
-
+  
         if (
           error.response &&
           error.response.status === 401 &&
           !originalRequest._retry
         ) {
           originalRequest._retry = true;
-
+  
           try {
             const newTokenData = await refreshToken();
             originalRequest.headers.Authorization = `Bearer ${newTokenData.token.access_token}`;
             return axios(originalRequest);
           } catch (refreshError) {
-            await AsyncStorage.multiRemove([
-              'userdata',
-              'loggedIn',
-              'userRole',
-              'userRoleId',
-              'loggedInUser',
-              'selectedCompany',
-            ]);
-            dispatch({type: CLEAR_CART});
-            navigation.reset({
-              index: 0,
-              routes: [{name: 'Login'}],
-            });
+            if (!navigationResetInProgress) {
+              navigationResetInProgress = true;
+  
+              await AsyncStorage.multiRemove([
+                'userdata',
+                'loggedIn',
+                'userRole',
+                'userRoleId',
+                'loggedInUser',
+                'selectedCompany',
+              ]);
+  
+              dispatch({type: CLEAR_CART});
+  
+              navigation.reset({
+                index: 0,
+                routes: [{name: 'Login'}],
+              });
+            }
             return Promise.reject(refreshError);
           }
         }
-
+  
         return Promise.reject(error);
       },
     );
-
+  
     return () => {
       axios.interceptors.response.eject(interceptor);
     };
   }, [navigation]);
-
+  
   const refreshToken = async () => {
     try {
       const userData = JSON.parse(await AsyncStorage.getItem('userdata'));

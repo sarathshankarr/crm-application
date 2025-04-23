@@ -142,7 +142,13 @@ export const API = {
   PICK_LIST_PAGE_SEARCH:'erpportal/api/filter/getAllOrdersSearchForLazyLoad',
   PICK_LIST_PDF:'erpportal/api/ordermgmt/generatePackListPdf',
   PICK_LIST_EDIT:'erpportal/api/ordermgmt/getPackList',
-  GENARATE_PICK_LIST:'erpportal/api/ordermgmt/updatePackList'
+  GENARATE_PICK_LIST:'erpportal/api/ordermgmt/updatePackList',
+  MASTER_LOCATION:'erpportal/api/location/getAlllocationLazy',
+  MASTER_LOCATION_SEARCH:'erpportal/api/filter/getlocationDataForLazyLoad',
+  MASTER_LOCATION_EDIT:'erpportal/api/location',
+  MASTER_EDIT_LOCATION:'erpportal/api/location/editlocation',
+  MASTER_EDIT_LOCATION_VALIDATE:'erpportal/api/location/isValid',
+
 };
 
 export const USER_ID = 'adminClientId';

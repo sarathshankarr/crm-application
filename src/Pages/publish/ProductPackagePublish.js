@@ -1545,6 +1545,22 @@ const ProductPackagePublish = () => {
               {errorFields.includes('cityOrTown') && (
                 <Text style={styles.errorText}>Please Enter City Or Town</Text>
               )}
+                <TextInput
+                style={[
+                  styles.input,
+                  {color: '#000'},
+                  errorFields.includes('country') ? styles.errorBorder : null,
+                ]}
+                placeholderTextColor="#000"
+                placeholder="Country *"
+                onChangeText={text =>
+                  setInputValues({...inputValues, country: text})
+                }
+                value={inputValues.country}
+              />
+              {errorFields.includes('country') && (
+                <Text style={styles.errorText}>Please Enter Country</Text>
+              )}
               {/* <TextInput
                 style={[
                   styles.input,
@@ -1610,22 +1626,7 @@ const ProductPackagePublish = () => {
                 </View>
               </View>
 
-              <TextInput
-                style={[
-                  styles.input,
-                  {color: '#000'},
-                  errorFields.includes('country') ? styles.errorBorder : null,
-                ]}
-                placeholderTextColor="#000"
-                placeholder="Country *"
-                onChangeText={text =>
-                  setInputValues({...inputValues, country: text})
-                }
-                value={inputValues.country}
-              />
-              {errorFields.includes('country') && (
-                <Text style={styles.errorText}>Please Enter Country</Text>
-              )}
+            
               <TextInput
                 style={[
                   styles.input,
@@ -1671,7 +1672,7 @@ const ProductPackagePublish = () => {
                     : null,
                 ]}
                 placeholderTextColor="#000"
-                placeholder="Location Description *"
+                placeholder="Landmark *"
                 onChangeText={text =>
                   setInputValues({...inputValues, locationDescription: text})
                 }
@@ -1679,7 +1680,7 @@ const ProductPackagePublish = () => {
               />
               {errorFields.includes('locationDescription') && (
                 <Text style={styles.errorText}>
-                  Please Enter Location Description
+                  Please Enter Landmark
                 </Text>
               )}
 
