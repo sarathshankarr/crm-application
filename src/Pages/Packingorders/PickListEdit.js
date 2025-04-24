@@ -71,6 +71,8 @@ const PickListEdit = () => {
           lineItem.dqty = qty - lineItem.qty > 0 ? lineItem.qty : qty;
           lineItem.companyId = companyId;
           lineItem.userId = userId;
+          // lineItem.picklist_flag = this.picklist_flag;
+          // lineItem.aisle_bin_inv_flag = this.aisle_bin_inv_flag;
           tempAbInv.push(lineItem);
         }
       } else {
@@ -79,6 +81,8 @@ const PickListEdit = () => {
         lineItem.dqty = qty > 0 ? lineItem.qty : lineItem.oqty;
         lineItem.companyId = companyId;
         lineItem.userId = userId;
+        // lineItem.picklist_flag = this.picklist_flag;
+        // lineItem.aisle_bin_inv_flag = this.aisle_bin_inv_flag;
         tempAbInv.push(lineItem);
       }
     });

@@ -141,41 +141,86 @@ const LocationEdit = ({route, navigation}) => {
   //   setIsLocationPickerVisible(false);
   // };
 
-  const handleConfirmLocation = () => {
-    if (marker) {
-      setConfirmedLocation({
-        latitude: marker.latitude,
-        longitude: marker.longitude,
-        address: address,
-      });
-      setFormEdited(true);
-    }
 
-    setIsLocationPickerVisible(false);
-
-    setTimeout(() => {
-      if (locationTriggeredBy === 'formModal') {
-        setIsModalVisible(true);
-      } else if (locationTriggeredBy === 'locationModal') {
-        toggleLocationModal(); // re-open it
-      }
-      setLocationTriggeredBy(null); // reset the tracker
-    }, 300);
-  };
   const [isNavigatingToLocation, setIsNavigatingToLocation] = useState(false);
   const [locationTriggeredBy, setLocationTriggeredBy] = useState(null);
 
+  const searchEnteredLocation = (locationDetails) => {
+    const searchQuery = [
+      locationDetails.locationName,
+      locationDetails.locality,
+      locationDetails.cityOrTown,
+      locationDetails.state,
+      locationDetails.pincode,
+      locationDetails.country
+    ].filter(Boolean).join(', ');
+
+    if (searchQuery) {
+      Geocoder.from(searchQuery)
+        .then(json => {
+          const location = json.results[0].geometry.location;
+          const fullAddress = json.results[0].formatted_address;
+          
+          setRegion({
+            latitude: location.lat,
+            longitude: location.lng,
+            latitudeDelta: 0.01,
+            longitudeDelta: 0.01,
+          });
+          setMarker({
+            latitude: location.lat,
+            longitude: location.lng,
+          });
+          setAddress(fullAddress);
+          setFormEdited(true);
+        })
+        .catch(error => {
+          console.warn('Geocoding error:', error);
+          getCurrentLocation();
+        });
+    } else {
+      getCurrentLocation();
+    }
+  };
+
   const handlePickLocation = () => {
     setIsNavigatingToLocation(true);
-    setLocationTriggeredBy('formModal');
-    setIsModalVisible(false);
+    setLocationTriggeredBy('locationEdit');
+    
+    // Pass current location details from stylesData
+    const enteredLocation = {
+      locationName: stylesData.locationName,
+      locality: stylesData.locality,
+      cityOrTown: stylesData.cityOrTown,
+      state: stylesData.state,
+      pincode: stylesData.pincode,
+      country: stylesData.country
+    };
 
     setTimeout(() => {
       setIsLocationPickerVisible(true);
-      getCurrentLocation();
+      searchEnteredLocation(enteredLocation);
     }, 100);
   };
 
+  const handleConfirmLocation = () => {
+    if (marker) {
+      const confirmedData = {
+        latitude: marker.latitude,
+        longitude: marker.longitude,
+        address: address,
+      };
+
+      setConfirmedLocation(confirmedData);
+      setFormEdited(true);
+
+      // Update stylesData with coordinates
+      updateField('mobLatitude', marker.latitude);
+      updateField('mobLongitude', marker.longitude);
+    }
+
+    setIsLocationPickerVisible(false);
+  };
 
 
   const {locationId, customerType} = route.params;
@@ -740,6 +785,13 @@ const LocationEdit = ({route, navigation}) => {
                   });
                   setMarker({latitude: lat, longitude: lng});
                   setAddress(details.formatted_address);
+                  const components = {};
+                  details.address_components.forEach(component => {
+                    component.types.forEach(type => {
+                      components[type] = component.long_name;
+                    });
+                  });
+
                 }
               }}
               query={{

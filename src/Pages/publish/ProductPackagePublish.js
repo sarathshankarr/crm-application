@@ -148,34 +148,30 @@ const ProductPackagePublish = () => {
 
   const handleConfirmLocation = () => {
     if (marker) {
-      setConfirmedLocation({
+      const confirmedLocationData = {
         latitude: marker.latitude,
         longitude: marker.longitude,
-        address: address,
-      });
-
-      setInputValues(prevValues => ({
-        ...prevValues,
-        locationLatLong: `${marker.latitude}, ${marker.longitude}`,
-        // locationDescription: address,
-      }));
-
-
-      setErrorFields(prevErrors =>
-        prevErrors.filter(field => field !== 'locationLatLong'),
-      );
-    }
-
-    setIsLocationPickerVisible(false);
-
-    setTimeout(() => {
+        address: address
+      };
+  
+      setConfirmedLocation(confirmedLocationData);
+  
       if (locationTriggeredBy === 'formModal') {
-        setIsModalVisible(true);
-      } else if (locationTriggeredBy === 'locationModal') {
-        toggleLocationModal(); // re-open it
-      }
-      setLocationTriggeredBy(null); // reset the tracker
-    }, 300);
+        setInputValues(prev => ({
+          ...prev,
+          locationLatLong: `${marker.latitude}, ${marker.longitude}`,
+          // locationDescription: address
+        }));
+      } 
+      setIsLocationPickerVisible(false);
+    
+      setTimeout(() => {
+        if (locationTriggeredBy === 'formModal') {
+          setIsModalVisible(true);
+        } 
+        setLocationTriggeredBy(null);
+      }, 300);
+    }
   };
 
   const [isNavigatingToLocation, setIsNavigatingToLocation] = useState(false);
@@ -184,17 +180,74 @@ const ProductPackagePublish = () => {
   const [isNavigatingToLocationModal, setIsNavigatingToLocationModal] =
     useState(false);
     
-  const handlePickLocation = () => {
-    setIsNavigatingToLocation(true);
-    setLocationTriggeredBy('formModal');
-    setIsModalVisible(false);
+    const handlePickLocation = () => {
+      setIsNavigatingToLocation(true);
+      setLocationTriggeredBy('formModal');
+    
+      // Pass form modal location details
+      const enteredLocation = {
+        locationName: inputValues.locationName,
+        cityOrTown: inputValues.cityOrTown,
+        country: inputValues.country,
+        pincode: inputValues.pincode,
+        locationDescription: inputValues.locationDescription
+      };
+    
+      setIsModalVisible(false);
+      setTimeout(() => {
+        setIsLocationPickerVisible(true);
+        searchEnteredLocation(enteredLocation, false); // false for form modal
+      }, 100);
+    };
 
-    setTimeout(() => {
-      setIsLocationPickerVisible(true);
+  const searchEnteredLocation = (locationDetails, isLocationModal = false) => {
+    // Construct search query from the appropriate state
+    const searchQuery = [
+      locationDetails.locationName,
+      locationDetails.locality,
+      locationDetails.cityOrTown,
+      locationDetails.state,
+      locationDetails.pincode,
+      locationDetails.country
+    ].filter(Boolean).join(', ');
+  
+    if (searchQuery) {
+      Geocoder.from(searchQuery)
+        .then(json => {
+          const location = json.results[0].geometry.location;
+          const fullAddress = json.results[0].formatted_address;
+          
+          setRegion({
+            latitude: location.lat,
+            longitude: location.lng,
+            latitudeDelta: 0.01,
+            longitudeDelta: 0.01,
+          });
+          setMarker({
+            latitude: location.lat,
+            longitude: location.lng,
+          });
+          setAddress(fullAddress);
+  
+          // Update the appropriate state based on which modal triggered this
+          if (isLocationModal) {
+            setInputValues(prev => ({
+              ...prev,
+              cityOrTown: locationDetails.cityOrTown || prev.cityOrTown,
+              country: locationDetails.country || prev.country,
+              pincode: locationDetails.pincode || prev.pincode,
+              locationDescription: fullAddress
+            }));
+          } 
+        })
+        .catch(error => {
+          console.warn('Geocoding error:', error);
+          getCurrentLocation();
+        });
+    } else {
       getCurrentLocation();
-    }, 100);
+    }
   };
-
 
   const navigation = useNavigation();
   const {colors} = useContext(ColorContext);
@@ -1813,6 +1866,23 @@ const ProductPackagePublish = () => {
                   });
                   setMarker({latitude: lat, longitude: lng});
                   setAddress(details.formatted_address);
+                  
+                  const components = {};
+                  details.address_components.forEach(component => {
+                    component.types.forEach(type => {
+                      components[type] = component.long_name;
+                    });
+                  });
+
+                  if (locationTriggeredBy === 'formModal') {
+                    setInputValues(prev => ({
+                      ...prev,
+                      cityOrTown: components.locality || components.postal_town || prev.cityOrTown,
+                      country: components.country || prev.country,
+                      pincode: components.postal_code || prev.pincode,
+                      locationDescription: details.formatted_address
+                    }));
+                  }
                 }
               }}
               query={{

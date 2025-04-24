@@ -158,39 +158,99 @@ const Cart = () => {
 
   const handleConfirmLocation = () => {
     if (marker) {
-      setConfirmedLocation({
+      const confirmedLocationData = {
         latitude: marker.latitude,
         longitude: marker.longitude,
-        address: address,
-      });
-
-      setInputValues(prevValues => ({
-        ...prevValues,
-        locationLatLong: `${marker.latitude}, ${marker.longitude}`,
-        // locationDescription: address,
-      }));
-
-      setLocationInputValues(prevValues => ({
-        ...prevValues,
-        locationLatLong: `${marker.latitude}, ${marker.longitude}`,
-        // cityOrTown: address,
-      }));
-
-      setErrorFields(prevErrors =>
-        prevErrors.filter(field => field !== 'locationLatLong'),
-      );
-    }
-
-    setIsLocationPickerVisible(false);
-
-    setTimeout(() => {
+        address: address
+      };
+  
+      setConfirmedLocation(confirmedLocationData);
+  
       if (locationTriggeredBy === 'formModal') {
-        setIsModalVisible(true);
+        setInputValues(prev => ({
+          ...prev,
+          locationLatLong: `${marker.latitude}, ${marker.longitude}`,
+          locationDescription: address
+        }));
       } else if (locationTriggeredBy === 'locationModal') {
-        toggleLocationModal(); // re-open it
+        setLocationInputValues(prev => ({
+          ...prev,
+          locationLatLong: `${marker.latitude}, ${marker.longitude}`,
+          // locationDescription: address
+        }));
       }
-      setLocationTriggeredBy(null); // reset the tracker
-    }, 300);
+  
+      setIsLocationPickerVisible(false);
+  
+      setTimeout(() => {
+        if (locationTriggeredBy === 'formModal') {
+          setIsModalVisible(true);
+        } else if (locationTriggeredBy === 'locationModal') {
+          setIsLocationModalVisible(true);
+        }
+        setLocationTriggeredBy(null);
+      }, 300);
+    }
+  };
+
+
+  const searchEnteredLocation = (locationDetails, isLocationModal = false) => {
+    // Construct search query from the appropriate state
+    const searchQuery = [
+      locationDetails.locationName,
+      locationDetails.locality,
+      locationDetails.cityOrTown,
+      locationDetails.state,
+      locationDetails.pincode,
+      locationDetails.country
+    ].filter(Boolean).join(', ');
+  
+    if (searchQuery) {
+      Geocoder.from(searchQuery)
+        .then(json => {
+          const location = json.results[0].geometry.location;
+          const fullAddress = json.results[0].formatted_address;
+          
+          setRegion({
+            latitude: location.lat,
+            longitude: location.lng,
+            latitudeDelta: 0.01,
+            longitudeDelta: 0.01,
+          });
+          setMarker({
+            latitude: location.lat,
+            longitude: location.lng,
+          });
+          setAddress(fullAddress);
+  
+          // Update the appropriate state based on which modal triggered this
+          if (isLocationModal) {
+            setLocationInputValues(prev => ({
+              ...prev,
+              locality: locationDetails.locality || prev.locality,
+              cityOrTown: locationDetails.cityOrTown || prev.cityOrTown,
+              state: locationDetails.state || prev.state,
+              pincode: locationDetails.pincode || prev.pincode,
+              country: locationDetails.country || prev.country,
+              locationDescription: fullAddress
+            }));
+          } else {
+            setInputValues(prev => ({
+              ...prev,
+              cityOrTown: locationDetails.cityOrTown || prev.cityOrTown,
+              country: locationDetails.country || prev.country,
+              pincode: locationDetails.pincode || prev.pincode,
+              locationDescription: fullAddress
+            }));
+          }
+        })
+        .catch(error => {
+          console.warn('Geocoding error:', error);
+          getCurrentLocation();
+        });
+    } else {
+      getCurrentLocation();
+    }
   };
 
   const {colors} = useContext(ColorContext);
@@ -1108,33 +1168,46 @@ const Cart = () => {
   const [isNavigatingToLocation, setIsNavigatingToLocation] = useState(false);
   const [locationTriggeredBy, setLocationTriggeredBy] = useState(null);
 
-  const handlePickLocation = () => {
-    setIsNavigatingToLocation(true);
-    setLocationTriggeredBy('formModal');
-    setIsModalVisible(false);
+const handlePickLocation = () => {
+  setIsNavigatingToLocation(true);
+  setLocationTriggeredBy('formModal');
 
-    setTimeout(() => {
-      setIsLocationPickerVisible(true);
-      getCurrentLocation();
-    }, 100);
+  // Pass form modal location details
+  const enteredLocation = {
+    locationName: inputValues.locationName,
+    cityOrTown: inputValues.cityOrTown,
+    country: inputValues.country,
+    pincode: inputValues.pincode,
+    locationDescription: inputValues.locationDescription
   };
 
-  const handleLocationModalPick = () => {
-    setIsNavigatingToLocationModal(true); // Set this first to prevent clearing
-    setLocationTriggeredBy('locationModal');
+  setIsModalVisible(false);
+  setTimeout(() => {
+    setIsLocationPickerVisible(true);
+    searchEnteredLocation(enteredLocation, false); // false for form modal
+  }, 100);
+};
 
-    // Close the modal
-    setIsLocationModalVisible(false);
+const handleLocationModalPick = () => {
+  setIsNavigatingToLocationModal(true);
+  setLocationTriggeredBy('locationModal');
 
-    // Open location picker after a small delay
-    setTimeout(() => {
-      setIsLocationPickerVisible(true);
-      getCurrentLocation();
-    }, 100);
-
-    // Reset the navigation flag after everything is done
-    setTimeout(() => setIsNavigatingToLocationModal(false), 500);
+  // Pass location modal details
+  const enteredLocation = {
+    locationName: locationInputValues.locationName,
+    locality: locationInputValues.locality,
+    cityOrTown: locationInputValues.cityOrTown,
+    state: locationInputValues.state,
+    pincode: locationInputValues.pincode,
+    country: locationInputValues.country
   };
+
+  setIsLocationModalVisible(false);
+  setTimeout(() => {
+    setIsLocationPickerVisible(true);
+    searchEnteredLocation(enteredLocation, true); // true for location modal
+  }, 100);
+};
 
   // const toggleModal = () => {
   //   setIsSaving(false);
@@ -4838,8 +4911,34 @@ const Cart = () => {
                   });
                   setMarker({latitude: lat, longitude: lng});
                   setAddress(details.formatted_address);
+                  const components = {};
+                  details.address_components.forEach(component => {
+                    component.types.forEach(type => {
+                      components[type] = component.long_name;
+                    });
+                  });
+                  if (locationTriggeredBy === 'formModal') {
+                    setInputValues(prev => ({
+                      ...prev,
+                      cityOrTown: components.locality || components.postal_town || prev.cityOrTown,
+                      country: components.country || prev.country,
+                      pincode: components.postal_code || prev.pincode,
+                      locationDescription: details.formatted_address
+                    }));
+                  } else if (locationTriggeredBy === 'locationModal') {
+                    setLocationInputValues(prev => ({
+                      ...prev,
+                      locality: components.locality || components.sublocality || prev.locality,
+                      cityOrTown: components.locality || components.postal_town || prev.cityOrTown,
+                      state: components.administrative_area_level_1 || prev.state,
+                      pincode: components.postal_code || prev.pincode,
+                      country: components.country || prev.country,
+                      locationDescription: details.formatted_address
+                    }));
+                  }
                 }
               }}
+              
               query={{
                 key: 'AIzaSyDFkFf27LcYV5Fz6cjvAfEX1hsdXx4zE6Q',
                 language: 'en',
