@@ -23,6 +23,7 @@ import {ColorContext} from '../../components/colortheme/colorTheme';
 const Packorders = () => {
   const {colors} = useContext(ColorContext);
   const style = getStyles(colors);
+  const picklist_flag = useSelector(state => state.selectedCompany.picklist_flag);
   const [orders, setOrders] = useState([]);
   const [pageNo, setPageNo] = useState(1);
   const [pageSize, setPageSize] = useState(20);
@@ -123,10 +124,16 @@ const Packorders = () => {
       setTo(20);
       setHasMoreTasks(true); // Reset hasMoreTasks for new fetch
     }
+    
 
     const apiUrl = `${global?.userData?.productURL}${
       API.GET_ALL_ORDER_LAZY
     }/${customFrom}/${customTo}/${companyId}/${2}`;
+
+    const params = {
+      picklist_flag: picklist_flag?.toString(),
+    };
+  
 
     console.log('getAllOrders A ', customFrom, customTo);
 
@@ -135,6 +142,7 @@ const Packorders = () => {
         headers: {
           Authorization: `Bearer ${global?.userData?.token?.access_token}`,
         },
+        params,
       });
 
       const newTasks = response.data.response.ordersList;
@@ -216,6 +224,7 @@ const Packorders = () => {
       to: customTo,
       companyId: companyId,
       pdfFlag: 0,
+      picklist_flag:picklist_flag
     };
 
     console.log('gettasksearch==> ', customFrom, customTo);

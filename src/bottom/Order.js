@@ -626,6 +626,7 @@ import { ColorContext } from '../components/colortheme/colorTheme';
 const Order = () => {
   const { colors } = useContext(ColorContext);
   const style = getStyles(colors);
+  const picklist_flag = useSelector(state => state.selectedCompany.picklist_flag);
   const [orders, setOrders] = useState([]);
   const [pageNo, setPageNo] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -784,7 +785,9 @@ const Order = () => {
     }
   
     const apiUrl = `${global?.userData?.productURL}${API.GET_ALL_ORDER_LAZY}/${customFrom}/${customTo}/${companyId}/${0}`;
-  
+    const params = {
+      picklist_flag: picklist_flag?.toString(),
+    };
     console.log("Fetching orders from API:", apiUrl);
   
     try {
@@ -792,6 +795,7 @@ const Order = () => {
         headers: {
           Authorization: `Bearer ${global?.userData?.token?.access_token}`,
         },
+        params,
       });
   
       console.log("API Response:", response.data);
@@ -910,6 +914,7 @@ useFocusEffect(
       to: 1000,
       companyId: companyId,
       pdfFlag: 0,
+      picklist_flag:picklist_flag
     };
 
     console.log("gettasksearch==> ",customFrom,customTo);

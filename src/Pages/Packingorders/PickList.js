@@ -24,6 +24,7 @@ import {ColorContext} from '../../components/colortheme/colorTheme';
 import ReactNativeBlobUtil from 'react-native-blob-util';
 
 const PickList = () => {
+  const picklist_flag = useSelector(state => state.selectedCompany.picklist_flag);
   const flatListRef = useRef(null);
   const {colors} = useContext(ColorContext);
   const styles = getStyles(colors);
@@ -111,7 +112,9 @@ const PickList = () => {
     const apiUrl = `${global?.userData?.productURL}${
       API.PICK_LIST_PAGE
     }/${customFrom}/${customTo}/${companyId}/${6}`;
-
+    const params = {
+      picklist_flag: picklist_flag?.toString(),
+    };
     console.log('getAllOrders A ', customFrom, customTo);
 
     try {
@@ -119,6 +122,7 @@ const PickList = () => {
         headers: {
           Authorization: `Bearer ${global?.userData?.token?.access_token}`,
         },
+        params,
       });
 
       const newTasks = response.data.response.ordersList;
@@ -202,6 +206,7 @@ const PickList = () => {
       to: customTo,
       companyId: companyId,
       pdfFlag: 6,
+      picklist_flag:picklist_flag
     };
 
     console.log('gettasksearch==> ', customFrom, customTo);
