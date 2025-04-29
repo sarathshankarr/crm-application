@@ -169,8 +169,7 @@ const PickListEdit = () => {
           lineItem.userId = userId;
           lineItem.picklist_flag = picklist_flag;
           lineItem.aisle_bin_inv_flag = aisle_bin_inv_flag;
-          lineItem.linkType = 1,
-          tempAbInv.push(lineItem);
+          (lineItem.linkType = 1), tempAbInv.push(lineItem);
         }
       } else {
         let qty = lineItem.oqty - lineItem.qty;
@@ -178,8 +177,7 @@ const PickListEdit = () => {
         lineItem.dqty = qty > 0 ? lineItem.qty : lineItem.oqty;
         lineItem.companyId = companyId;
         lineItem.userId = userId;
-        lineItem.linkType = 1,
-        lineItem.picklist_flag = picklist_flag;
+        (lineItem.linkType = 1), (lineItem.picklist_flag = picklist_flag);
         lineItem.aisle_bin_inv_flag = aisle_bin_inv_flag;
         tempAbInv.push(lineItem);
       }
@@ -257,36 +255,125 @@ const PickListEdit = () => {
     }
   };
 
-  const renderItem = ({item, index}) => (
-    <View style={styles.orderItem}>
-      {picklist_flag === 1 && (
-        <CustomCheckBoxPickList
-          checked={!!checkedItems[index]}
-          indeterminate={false}
-          disabled={item?.statusFlag === 1}
-          onChange={isChecked => handleCheck(isChecked, index, item)}
-          style={{width: 50}}
-        />
-      )}
-      <TouchableOpacity onPress={() => openModal(item.imageUrl1)}>
-        <Image source={{uri: item.imageUrl1}} style={styles.image} />
-      </TouchableOpacity>
-      <Text style={styles.orderIdText}> {item.styleName}</Text>
-      <Text style={styles.customerText}> {item.color}</Text>
-      <Text style={styles.qtyText}>{item.size}</Text>
-      <Text style={styles.qtyText}> {item.location}</Text>
+  // const renderItem = ({item, index}) => (
+  //   <View style={styles.orderItem}>
+  //     {picklist_flag === 1 && (
+  //       <CustomCheckBoxPickList
+  //         checked={!!checkedItems[index]}
+  //         indeterminate={false}
+  //         disabled={item?.statusFlag === 1}
+  //         onChange={isChecked => handleCheck(isChecked, index, item)}
+  //         style={{width: 50}}
+  //       />
+  //     )}
+  //     <TouchableOpacity onPress={() => openModal(item.imageUrl1)}>
+  //       <Image source={{uri: item.imageUrl1}} style={styles.image} />
+  //     </TouchableOpacity>
+  //     <Text style={styles.orderIdText}> {item.styleName}</Text>
+  //     <Text style={styles.customerText}> {item.color}</Text>
+  //     <Text style={styles.qtyText}>{item.size}</Text>
+  //     <Text style={styles.qtyText}> {item.location}</Text>
 
-      {(picklist_flag === 0 || aisle_bin_inv_flag === 1) && (
-        <>
-          <Text style={styles.statusText}> {item.aisle}</Text>
-          <Text style={styles.dateText}> {item.bin}</Text>
-          <Text style={styles.dateText}>{item.qty}</Text>
-        </>
+  //     {(picklist_flag === 0 || aisle_bin_inv_flag === 1) && (
+  //       <>
+  //         <Text style={styles.statusText}> {item.aisle}</Text>
+  //         <Text style={styles.dateText}> {item.bin}</Text>
+  //         <Text style={styles.dateText}>{item.qty}</Text>
+  //       </>
+  //     )}
+
+  //     <Text style={styles.dateText}>{item.oqty}</Text>
+  //   </View>
+  // );
+
+ 
+const renderItem = ({item, index}) => {
+  const isFirstOfStyle =
+    index === 0 ||
+    abInv[index - 1].styleName !== item.styleName ||
+    abInv[index - 1].orderId !== item.orderId;
+
+  // Conditionally adjust styles
+  const sizeHeaderStyle = [
+    styles.columnHeaderText,
+    styles.sizeHeaderText,
+    picklist_flag === 1 && {marginLeft: 15}
+  ];
+
+  return (
+    <View style={styles.itemContainer}>
+      {/* Only show header if this is the first item of its style */}
+      {isFirstOfStyle && (
+        <View style={styles.headerContainer}>
+          <View style={styles.headerTextContainer}>
+            <Text style={styles.styleNameText}>{item.styleName}</Text>
+            <Text style={styles.colorLocationText}>{item.color}</Text>
+            <Text style={styles.colorLocationText}>{item.location}</Text>
+          </View>
+
+          <TouchableOpacity onPress={() => openModal(item.imageUrl1)}>
+            <Image
+              source={{uri: item.imageUrl1}}
+              style={styles.imageStyle}
+            />
+          </TouchableOpacity>
+        </View>
       )}
 
-      <Text style={styles.dateText}>{item.oqty}</Text>
+      {/* Show column headers only for the first item */}
+      {isFirstOfStyle && (
+        <View style={styles.columnHeaderContainer}>
+          <View style={styles.columnHeaderRow}>
+            {picklist_flag === 1 && <View style={{width: 24}} />}
+            <Text style={sizeHeaderStyle}>Size</Text>
+
+            {(picklist_flag === 0 || aisle_bin_inv_flag === 1) && (
+              <>
+                <Text style={[styles.columnHeaderText, styles.centeredColumnHeaderText]}>
+                  Aisle
+                </Text>
+                <Text style={[styles.columnHeaderText, styles.centeredColumnHeaderText]}>
+                  Bin
+                </Text>
+                <Text style={[styles.columnHeaderText, styles.centeredColumnHeaderText]}>
+                  Avail Qty
+                </Text>
+              </>
+            )}
+            <Text style={[styles.columnHeaderText, styles.rightAlignedColumnHeaderText]}>
+              Order Qty
+            </Text>
+          </View>
+        </View>
+      )}
+
+      {/* Table Row Section */}
+      <View style={styles.tableRowContainer}>
+        <View style={styles.tableRow}>
+          {picklist_flag === 1 && (
+            <CustomCheckBoxPickList
+              checked={!!checkedItems[index]}
+              indeterminate={false}
+              disabled={item?.statusFlag === 1}
+              onChange={isChecked => handleCheck(isChecked, index, item)}
+              style={{marginRight: 5}}
+            />
+          )}
+          <Text style={styles.sizeText}>{item.size}</Text>
+
+          {(picklist_flag === 0 || aisle_bin_inv_flag === 1) && (
+            <>
+              <Text style={styles.centeredText}>{item.aisle}</Text>
+              <Text style={styles.centeredText}>{item.bin}</Text>
+              <Text style={styles.centeredText}>{item.qty || 0}</Text>
+            </>
+          )}
+          <Text style={styles.rightAlignedText}>{item.oqty || 0}</Text>
+        </View>
+      </View>
     </View>
   );
+};
 
   const [generating, setGenerating] = useState(false);
   const [generateError, setGenerateError] = useState(null);
@@ -471,7 +558,7 @@ const PickListEdit = () => {
         )}
       </View>
       <ScrollView style={styles.container}>
-        <ScrollView horizontal={true}>
+        <ScrollView>
           <View>
             {/* Header Row */}
 
@@ -489,7 +576,10 @@ const PickListEdit = () => {
                   style={{width: 50}}
                 />
               )}
-              <Text style={styles.orderIdText}>Image</Text>
+              <Text style={{color: 'gray', fontWeight: 'bold'}}>
+                Select All
+              </Text>
+              {/* <Text style={styles.orderIdText}>Image</Text>
               <Text style={styles.orderIdText}>Style</Text>
               <Text style={styles.customerText}>Color</Text>
               <Text style={styles.qtyText}>Size</Text>
@@ -502,24 +592,24 @@ const PickListEdit = () => {
                   <Text style={styles.dateText}>Available Qty</Text>
                 </>
               )}
-              <Text style={styles.dateText}>Order Qty</Text>
+              <Text style={styles.dateText}>Order Qty</Text> */}
             </View>
 
             {/* Data Rows */}
             {loading ? (
               <ActivityIndicator size="large" color="#0000ff" />
             ) : abInv.length > 0 ? (
-              abInv.map((item, index) => (
-                <View key={index}>{renderItem({item, index})}</View>
-              ))
+              abInv.map((item, index) => renderItem({item, index}))
             ) : (
               <Text style={styles.noDataText}></Text>
             )}
+
             {!loading &&
               abInv?.length === 0 &&
               picklist_flag === 1 &&
               aisle_bin_inv_flag === 1 && (
                 <View style={styles.warningMessage}>
+                  <Image style={{height:25,width:25,marginHorizontal:10}} source={require('../../../assets/exclamation.png')}/>
                   <Text style={styles.warningText}>
                     Aisle and bin details are not mapped for the styles at this
                     location. Please check.
@@ -610,6 +700,7 @@ const getStyles = colors =>
       flexDirection: 'row',
       paddingVertical: 10,
       backgroundColor: '#f0f0f0',
+      alignItems: 'center',
     },
     orderItem: {
       flexDirection: 'row',
@@ -692,11 +783,106 @@ const getStyles = colors =>
       padding: 10,
       margin: 10,
       borderRadius: 5,
+      flexDirection:"row",
+      alignItems:"center",
     },
     warningText: {
       color: '#000', // dark yellow text
       fontSize: 16,
       fontWeight: 'bold',
+    },
+    itemContainer: {
+      marginHorizontal: 10,
+      marginVertical: 5,
+      backgroundColor: 'white',
+      borderRadius: 10,
+      shadowColor: '#000',
+      shadowOffset: {width: 0, height: 1},
+      shadowOpacity: 0.2,
+      shadowRadius: 2,
+      elevation: 2,
+      overflow: 'hidden',
+    },
+    headerContainer: {
+      flexDirection: 'row',
+      padding: 15,
+      borderBottomWidth: 1,
+      borderBottomColor: '#eee',
+      alignItems: 'center',
+    },
+    headerTextContainer: {
+      flex: 1,
+    },
+    styleNameText: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      color: '#5783C3',
+      marginBottom: 5,
+    },
+    colorLocationText: {
+      fontSize: 16,
+      color: '#000',
+      marginBottom: 8,
+    },
+    imageStyle: {
+      width: 100,
+      height: 100,
+      borderRadius: 5,
+      resizeMode: 'cover',
+    },
+    columnHeaderContainer: {
+      backgroundColor: '#f9f9f9',
+      padding: 10,
+    },
+    columnHeaderRow: {
+      flexDirection: 'row',
+      paddingVertical: 10,
+      borderBottomWidth: 1,
+      borderBottomColor: '#eee',
+    },
+    columnHeaderText: {
+      fontWeight: 'bold',
+      fontSize: 16,
+      color: '#000',
+    },
+    sizeHeaderText: {
+      flex: 1,
+      marginLeft: 30, // Default value, will be overridden conditionally
+    },
+    centeredColumnHeaderText: {
+      flex: 1,
+      textAlign: 'center',
+    },
+    rightAlignedColumnHeaderText: {
+      flex: 1,
+      textAlign: 'right',
+    },
+    tableRowContainer: {
+      backgroundColor: '#f9f9f9',
+      paddingHorizontal: 10,
+    },
+    tableRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 15,
+      paddingLeft: 10,
+    },
+    sizeText: {
+      flex: 1,
+      fontSize: 15,
+      color: '#000',
+    },
+    centeredText: {
+      flex: 1,
+      fontSize: 15,
+      textAlign: 'center',
+      color: '#000',
+    },
+    rightAlignedText: {
+      flex: 1,
+      fontSize: 15,
+      textAlign: 'right',
+      color: '#000',
     },
   });
 

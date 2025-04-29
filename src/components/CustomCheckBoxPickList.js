@@ -41,8 +41,6 @@ const CustomCheckBoxPickList = ({
 
 const styles = StyleSheet.create({
   container: {
-    padding: 8,
-    width: 50,
     justifyContent: 'center',
     alignItems: 'center'
   },
