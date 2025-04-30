@@ -290,7 +290,8 @@ const PickListEdit = () => {
 const renderItem = ({item, index}) => {
   const isFirstOfStyle =
     index === 0 ||
-    abInv[index - 1].styleName !== item.styleName ||
+    abInv[index - 1].styleName !== item.styleName ||  
+    abInv[index - 1].color !== item.color ||
     abInv[index - 1].orderId !== item.orderId;
 
   // Conditionally adjust styles
@@ -309,6 +310,8 @@ const renderItem = ({item, index}) => {
             <Text style={styles.styleNameText}>{item.styleName}</Text>
             <Text style={styles.colorLocationText}>{item.color}</Text>
             <Text style={styles.colorLocationText}>{item.location}</Text>
+            <Text style={styles.colorLocationText}>Total Order Qty : {item.totalQty}</Text>
+
           </View>
 
           <TouchableOpacity onPress={() => openModal(item.imageUrl1)}>
@@ -327,6 +330,14 @@ const renderItem = ({item, index}) => {
             {picklist_flag === 1 && <View style={{width: 24}} />}
             <Text style={sizeHeaderStyle}>Size</Text>
 
+
+            {(picklist_flag === 1 || aisle_bin_inv_flag === 0) && (
+            <>
+                <Text style={[styles.columnHeaderText, styles.centeredColumnHeaderText]}>
+                  Available Qty
+                </Text>
+             </>
+            )}
             {(picklist_flag === 0 || aisle_bin_inv_flag === 1) && (
               <>
                 <Text style={[styles.columnHeaderText, styles.centeredColumnHeaderText]}>
@@ -360,6 +371,13 @@ const renderItem = ({item, index}) => {
             />
           )}
           <Text style={styles.sizeText}>{item.size}</Text>
+
+
+          {(picklist_flag === 1 || aisle_bin_inv_flag === 0) && (
+            <>
+              <Text style={styles.centeredText}>{item.availQty || 0}</Text>
+            </>
+          )}
 
           {(picklist_flag === 0 || aisle_bin_inv_flag === 1) && (
             <>
@@ -576,9 +594,11 @@ const renderItem = ({item, index}) => {
                   style={{width: 50}}
                 />
               )}
+               {picklist_flag === 1 && (
               <Text style={{color: 'gray', fontWeight: 'bold'}}>
                 Select All
               </Text>
+              )}
               {/* <Text style={styles.orderIdText}>Image</Text>
               <Text style={styles.orderIdText}>Style</Text>
               <Text style={styles.customerText}>Color</Text>
