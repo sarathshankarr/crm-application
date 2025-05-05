@@ -614,6 +614,7 @@ const getStyles = colors =>
       width: 320,
       height: 470,
       marginBottom: 15,
+      resizeMode: 'contain',
     },
     closeButtonImage: {
       padding: 10,

@@ -24,6 +24,7 @@ import {useSelector} from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomCheckBoxStatus from '../../components/CustomCheckBoxStatus';
 import {ColorContext} from '../../components/colortheme/colorTheme';
+import { InteractionManager } from 'react-native';
 
 const PackingConformation = ({route}) => {
   const navigation = useNavigation();
@@ -72,20 +73,32 @@ const PackingConformation = ({route}) => {
 
   const screenHeight = Dimensions.get('window').height;
 
+
   const [isImageModalVisible, setIsImageModalVisible] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
-
+  const [canOpenModal, setCanOpenModal] = useState(true); // debounce flag
+  
   const openImageModal = (imageUrl) => {
+    if (!canOpenModal) return;
+  
+    setCanOpenModal(false); // lock further taps
     setSelectedImage(imageUrl);
     setIsImageModalVisible(true);
   };
   
   const closeModal = () => {
     setIsImageModalVisible(false);
-    setSelectedImage(null);
-  };
   
-
+    // Defer cleanup after modal is fully closed
+    InteractionManager.runAfterInteractions(() => {
+      setSelectedImage(null);
+  
+      // Delay to allow safe re-open
+      setTimeout(() => {
+        setCanOpenModal(true); // unlock
+      }, 300); // adjust if needed
+    });
+  };
 
   const gettasksearch = async (
     reset = false,
@@ -2757,7 +2770,7 @@ if (pdf_flag !== 1) {
         <TouchableOpacity onPress={() => openImageModal(item.imageUrl || item.imageUrl1)}>
           <Image
             source={{ uri: item.imageUrl || item.imageUrl1 }}
-            style={{ width: 50, height: 50, marginHorizontal: 10, borderRadius: 5 }}
+            style={{ width: 100, height: 100, borderRadius: 5,marginVertical:10, }}
             resizeMode="contain"
           />
         </TouchableOpacity>
@@ -3511,7 +3524,7 @@ if (pdf_flag !== 1) {
           </View>
         </Modal>
 
-        <Modal transparent={true} visible={isImageModalVisible} onRequestClose={closeModal} animationType="fade">
+        <Modal transparent={true} visible={isImageModalVisible} onRequestClose={closeModal} animationType="none">
         <View style={styles.modalOverlayImage}>
        
           <View style={styles.modalContentImage}>
@@ -3954,6 +3967,7 @@ const getStyles = (colors,screenHeight) => StyleSheet.create({
       width: 300,
       height: 300,
       marginBottom: 15,
+      resizeMode: 'contain',
     },
     closeButtonImage: {
       padding: 10,

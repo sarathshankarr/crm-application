@@ -770,6 +770,7 @@ const getStyles = colors =>
       width: 320,
       height: 470,
       marginBottom: 15,
+      resizeMode: 'contain',
     },
     closeButtonImage: {
       padding: 10,
@@ -848,7 +849,7 @@ const getStyles = colors =>
       width: 100,
       height: 100,
       borderRadius: 5,
-      resizeMode: 'cover',
+      resizeMode: 'contain',
     },
     columnHeaderContainer: {
       backgroundColor: '#f9f9f9',
