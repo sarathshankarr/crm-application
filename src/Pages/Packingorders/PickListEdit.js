@@ -292,7 +292,7 @@ const renderItem = ({item, index}) => {
             <Text style={sizeHeaderStyle}>Size</Text>
 
 
-            {(picklist_flag === 1 || aisle_bin_inv_flag === 0) && (
+            {(picklist_flag === 1 && aisle_bin_inv_flag === 0) && (
             <>
                 <Text style={[styles.columnHeaderText, styles.centeredColumnHeaderText]}>
                   Available Qty
@@ -334,7 +334,7 @@ const renderItem = ({item, index}) => {
           <Text style={styles.sizeText}>{item.size}</Text>
 
 
-          {(picklist_flag === 1 || aisle_bin_inv_flag === 0) && (
+          {(picklist_flag === 1 && aisle_bin_inv_flag === 0) && (
             <>
               <Text style={styles.centeredText}>{item.availQty || 0}</Text>
             </>
