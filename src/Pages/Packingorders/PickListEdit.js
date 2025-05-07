@@ -93,12 +93,10 @@ const PickListEdit = () => {
     setAbInv(updatedAbInv);
   };
 
-  // Update handleCheck to properly update the state and data
   const handleCheck = (isChecked, index, lineItem) => {
     const newCheckedItems = {...checkedItems};
     let countDelta = 0;
 
-    // Update the status of the selected item
     abInv.forEach((item, i) => {
       if (
         item?.styleId === lineItem?.styleId &&
@@ -108,7 +106,6 @@ const PickListEdit = () => {
         const wasChecked = newCheckedItems[i] || false;
         newCheckedItems[i] = isChecked;
 
-        // Update the count
         if (isChecked && !wasChecked) countDelta++;
         if (!isChecked && wasChecked) countDelta--;
       }
@@ -117,7 +114,6 @@ const PickListEdit = () => {
     setCheckedItems(newCheckedItems);
     setCheckedCount(prev => prev + countDelta);
 
-    // Update the abInv data with the checkbox status
     const updatedAbInv = abInv.map((item, i) => {
       if (
         item?.styleId === lineItem?.styleId &&
@@ -185,7 +181,6 @@ const PickListEdit = () => {
     setQtyMap(tempQtyMap);
     setAbInv(tempAbInv);
 
-    // setStylesData(abInv);
   };
 
   const route = useRoute();
@@ -255,37 +250,6 @@ const PickListEdit = () => {
     }
   };
 
-  // const renderItem = ({item, index}) => (
-  //   <View style={styles.orderItem}>
-  //     {picklist_flag === 1 && (
-  //       <CustomCheckBoxPickList
-  //         checked={!!checkedItems[index]}
-  //         indeterminate={false}
-  //         disabled={item?.statusFlag === 1}
-  //         onChange={isChecked => handleCheck(isChecked, index, item)}
-  //         style={{width: 50}}
-  //       />
-  //     )}
-  //     <TouchableOpacity onPress={() => openModal(item.imageUrl1)}>
-  //       <Image source={{uri: item.imageUrl1}} style={styles.image} />
-  //     </TouchableOpacity>
-  //     <Text style={styles.orderIdText}> {item.styleName}</Text>
-  //     <Text style={styles.customerText}> {item.color}</Text>
-  //     <Text style={styles.qtyText}>{item.size}</Text>
-  //     <Text style={styles.qtyText}> {item.location}</Text>
-
-  //     {(picklist_flag === 0 || aisle_bin_inv_flag === 1) && (
-  //       <>
-  //         <Text style={styles.statusText}> {item.aisle}</Text>
-  //         <Text style={styles.dateText}> {item.bin}</Text>
-  //         <Text style={styles.dateText}>{item.qty}</Text>
-  //       </>
-  //     )}
-
-  //     <Text style={styles.dateText}>{item.oqty}</Text>
-  //   </View>
-  // );
-
  
 const renderItem = ({item, index}) => {
   const isFirstOfStyle =
@@ -294,7 +258,6 @@ const renderItem = ({item, index}) => {
     abInv[index - 1].color !== item.color ||
     abInv[index - 1].orderId !== item.orderId;
 
-  // Conditionally adjust styles
   const sizeHeaderStyle = [
     styles.columnHeaderText,
     styles.sizeHeaderText,
@@ -303,7 +266,6 @@ const renderItem = ({item, index}) => {
 
   return (
     <View style={styles.itemContainer}>
-      {/* Only show header if this is the first item of its style */}
       {isFirstOfStyle && (
         <View style={styles.headerContainer}>
           <View style={styles.headerTextContainer}>
@@ -323,7 +285,6 @@ const renderItem = ({item, index}) => {
         </View>
       )}
 
-      {/* Show column headers only for the first item */}
       {isFirstOfStyle && (
         <View style={styles.columnHeaderContainer}>
           <View style={styles.columnHeaderRow}>
@@ -599,23 +560,7 @@ const renderItem = ({item, index}) => {
                 Select All
               </Text>
               )}
-              {/* <Text style={styles.orderIdText}>Image</Text>
-              <Text style={styles.orderIdText}>Style</Text>
-              <Text style={styles.customerText}>Color</Text>
-              <Text style={styles.qtyText}>Size</Text>
-              <Text style={styles.qtyText}>Location</Text>
-
-              {(picklist_flag === 0 || aisle_bin_inv_flag === 1) && (
-                <>
-                  <Text style={styles.statusText}>Aisle</Text>
-                  <Text style={styles.dateText}>Bin</Text>
-                  <Text style={styles.dateText}>Available Qty</Text>
-                </>
-              )}
-              <Text style={styles.dateText}>Order Qty</Text> */}
             </View>
-
-            {/* Data Rows */}
             {loading ? (
               <ActivityIndicator size="large" color="#0000ff" />
             ) : abInv.length > 0 ? (
@@ -637,7 +582,6 @@ const renderItem = ({item, index}) => {
                 </View>
               )}
           </View>
-
           <Modal
             transparent={true}
             visible={modalVisible}

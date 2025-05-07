@@ -539,7 +539,7 @@ const Sidebar = ({navigation, route}) => {
           hasLocation
             ? {
                 label: Location.menuName,
-                route: 'MasterLocartion',
+                route: 'MasterLocation',
                 src: require('../assets/location-pin.png'),
               }
             : null,

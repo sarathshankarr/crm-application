@@ -319,18 +319,34 @@ const MasterLocation = () => {
     }
   };
 
+  const AddNewLocationPage =()=>{
+    navigation.navigate('AddNewLocation')
+  }
+
   return (
     <SafeAreaView style={styles.container}>
-      <View>
+      <View style={{flexDirection:"row",alignItems:"center",justifyContent:"space-between",marginHorizontal:10}}>
         <Text
           style={{
             color: '#000',
             fontSize: 20,
+            marginLeft:7,
             fontWeight: 'bold',
             alignSelf: 'center',
           }}>
           Location Master
         </Text>
+        {/* <TouchableOpacity onPress={AddNewLocationPage}  style={styles.addnewlochead}>
+        <Text style={{
+            color: '#000',
+            fontSize: 18,
+            paddingVertical:4,
+            paddingHorizontal:10,
+            fontWeight: 'bold',
+            alignSelf: 'center',
+            color:"#fff"
+          }}>Add New Location</Text>
+        </TouchableOpacity> */}
       </View>
       <View style={styles.searchContainer}>
         <View style={styles.searchInputContainer}>
@@ -481,6 +497,12 @@ const getStyles = colors =>
       fontSize: 20,
       fontWeight: 'bold',
       padding: 20,
+    },
+    addnewlochead:{
+borderWidth:1,
+paddingHorizontal:5,
+borderRadius:10,
+backgroundColor: colors.color2,
     },
     searchContainer: {
       flexDirection: 'row',

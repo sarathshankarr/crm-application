@@ -59,8 +59,9 @@ import PickList from '../Pages/Packingorders/PickList';
 import PickListEdit from '../Pages/Packingorders/PickListEdit';
 import GoogleMap from '../components/GoogleMap';
 import CameraScreen from '../components/CameraScreen';
-import MasterLocartion from '../Pages/master/MasterLocation';
 import LocationEdit from '../Pages/master/LocationEdit';
+import AddNewLocation from '../Pages/master/AddNewLocation';
+import MasterLocation from '../Pages/master/MasterLocation';
 
 const Stack = createNativeStackNavigator();
 
@@ -456,11 +457,11 @@ const Routes = () => {
         }}
       />
         <Stack.Screen
-        name="MasterLocartion"
-        component={MasterLocartion}
+        name="MasterLocation"
+        component={MasterLocation}
         options={{
           headerShown: true,
-          headerTitle: () => <CompanyDropdown title="MasterLocartion" />,
+          headerTitle: () => <CompanyDropdown title="MasterLocation" />,
         }}
       />
        <Stack.Screen
@@ -468,7 +469,15 @@ const Routes = () => {
         component={LocationEdit}
         options={{
           headerShown: true,
-          headerTitle: () => <CompanyDropdown title="MasterLocartion" />,
+          headerTitle: () => <CompanyDropdown title="LocationEdit" />,
+        }}
+      />
+        <Stack.Screen
+        name="AddNewLocation"
+        component={AddNewLocation}
+        options={{
+          headerShown: true,
+          headerTitle: () => <CompanyDropdown title="AddNewLocation" />,
         }}
       />
     </Stack.Navigator>
