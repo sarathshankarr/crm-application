@@ -1013,6 +1013,8 @@ useFocusEffect(
     { label: 'Order Date', value: 6 },
     { label: 'Order status', value: 7 },
     { label: 'Packing status', value: 8 },
+    { label: 'Customer Type', value: 11 },
+    { label: 'Risk Level', value: 12 },
   ];
 
   // useEffect(() => {

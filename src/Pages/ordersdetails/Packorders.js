@@ -324,6 +324,8 @@ const Packorders = () => {
     {label: 'Order Date', value: 6},
     {label: 'Order status', value: 7},
     {label: 'Packing status', value: 8},
+    { label: 'Customer Type', value: 11 },
+    { label: 'Risk Level', value: 12 },
   ];
 
   // useEffect(() => {
@@ -730,7 +732,7 @@ const getStyles = colors =>
     },
     dropdownContent1: {
       position: 'absolute',
-      top: 57,
+      top: 82,
       width: '90%',
       backgroundColor: '#fff',
       borderRadius: 10,

@@ -148,7 +148,7 @@ export const API = {
   MASTER_LOCATION_EDIT:'erpportal/api/location',
   MASTER_EDIT_LOCATION:'erpportal/api/location/editlocation',
   MASTER_EDIT_LOCATION_VALIDATE:'erpportal/api/location/isValid',
-
+  CLOSE_ORDER_PICKLIST:'erpportal/api/ordermgmt/closePicklistOrder'
 };
 
 export const USER_ID = 'adminClientId';
