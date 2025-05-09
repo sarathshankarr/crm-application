@@ -39,6 +39,7 @@ const ModalComponent = ({
 
   const pdf_flag = useSelector(state => state.selectedCompany?.pdf_flag);
 
+  const mobile_unorderqty_flag = useSelector(state => state.selectedCompany?.mobile_unorderqty_flag);
   useEffect(() => {
     dispatch(setSourceScreen('ModalComponent')); // Track current screen
     return () => {
@@ -136,6 +137,7 @@ const ModalComponent = ({
         const sizeDesc = size.sizeDesc;
         const dealerPrice = size.dealerPrice;
         const retailerPrice = size.retailerPrice;
+        const unOrderdQty =size.unOrderdQty
         // Assuming the gst is on the style level, you should pull it from style
         const gst = style.gst || 0; // Correctly reference the gst value from style
         const inputValue = inputValues[sizeDesc] || '0';
@@ -182,6 +184,7 @@ const ModalComponent = ({
             gst: gst, // Use the gst value from style
             fixDisc:style.fixDisc,
             sourceScreen: 'ModalComponent', // Include source screen
+            unOrderdQty:unOrderdQty
           };
   
           console.log('Adding item with GST:', gst);
@@ -262,7 +265,10 @@ const ModalComponent = ({
 
   const getQuantityStyles = () => {
     setLoading(true);
-    const apiUrl = `${global?.userData?.productURL}${API.STYLE_QUNTITY_DATA}/${selectedItem.styleId}/${dynamicPart}`;
+    const flagValue = mobile_unorderqty_flag ? 1 : 0;
+    const apiUrl = `${global?.userData?.productURL}${API.STYLE_QUNTITY_DATA_NEW}/${selectedItem.styleId}/${dynamicPart}/${flagValue}`;
+    // const apiUrl = `${global?.userData?.productURL}${API.STYLE_QUNTITY_DATA}/${selectedItem.styleId}/${dynamicPart}`;
+
     axios
       .get(apiUrl, {
         headers: {
@@ -271,7 +277,7 @@ const ModalComponent = ({
       })
       .then(response => {
         setStylesData(response?.data?.response?.stylesList || []);
-        // console.log("response?.data?.response?.stylesList =====>",response?.data?.response?.stylesList)
+        console.log("response?.data?.response?.stylesList =====>",response?.data?.response?.stylesList)
       })
       .catch(error => {
         console.error('Error:', error);
@@ -420,6 +426,14 @@ const ModalComponent = ({
                               }}>
                               {size.sizeDesc}
                             </Text>
+                            {/* <Text
+                              style={{
+                                marginTop: 20,
+                                marginHorizontal: 5,
+                                color: '#000',
+                              }}>
+                              {size.unOrderdQty}
+                            </Text> */}
                             {/* <Text>colorId{style.colorId}</Text> */}
                           </View>
                           <View

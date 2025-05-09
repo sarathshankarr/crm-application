@@ -41,6 +41,8 @@ import Geocoder from 'react-native-geocoding';
 import {GooglePlacesAutocomplete} from 'react-native-google-places-autocomplete';
 
 const Cart = () => {
+    const mobile_unorderqty_flag = useSelector(state => state.selectedCompany?.mobile_unorderqty_flag);
+  
   const [region, setRegion] = useState({
     latitude: 0, // Default values
     longitude: 0,
@@ -3861,16 +3863,21 @@ const handleLocationModalPick = () => {
                                 SIZE
                               </Text>
                             </View>
-                            <View style={{flex: 2, marginLeft: 50}}>
+                            <View style={{flex: 2, marginLeft: 48}}>
                               <Text style={{color: '#000'}}>QUANTITY </Text>
                             </View>
-                            <View style={{flex: 2, marginLeft: 30}}>
+                            {mobile_unorderqty_flag ? (
+                            <View style={{flex: 2, marginLeft: 18}}>
+                              <Text style={{color: '#000'}}>UNORDQTY </Text>
+                            </View>
+                            ) : null}
+                          <View style={{flex: 2, marginLeft: mobile_unorderqty_flag ? 18 : 45}}>
                               <Text style={{color: '#000'}}>
                                 {pdf_flag ? 'MRP' : 'PRICE'}
                               </Text>
                             </View>
 
-                            <View style={{flex: 2, marginLeft: 20}}>
+                            <View style={{flex: 2, marginLeft: 29}}>
                               <Text style={{color: '#000'}}>GST</Text>
                             </View>
                             {!pdf_flag && (
@@ -3922,6 +3929,8 @@ const handleLocationModalPick = () => {
                             <Text style={{color: '#000', fontWeight: 'bold'}}>
                               {item.sizeDesc}
                             </Text>
+
+
                           </View>
 
                           {/* Decrease Quantity */}
@@ -3971,9 +3980,17 @@ const handleLocationModalPick = () => {
                               source={require('../../../assets/add1.png')}
                             />
                           </TouchableOpacity>
+                          {mobile_unorderqty_flag ? (
+  <View style={{width: 58, marginHorizontal: 5}}>
+    <Text style={{color: '#000', fontSize: 14}}>
+      {item.unOrderdQty}
+    </Text>
+  </View>
+) : null}
 
+  
                           {/* Price Input */}
-                          <View style={{width: 50, marginHorizontal: 5}}>
+                          <View style={{width: 65, marginLeft:5}}>
                             <TextInput
                               style={{
                                 borderWidth: 1,

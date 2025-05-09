@@ -8,6 +8,7 @@ export const API = {
   ALL_PRODUCTS_DATA: 'erpportal/api/style/findallstyles',
   ALL_CATEGORIES_DATA: 'erpportal/api/category/getcategoriesByCompanyId',
   STYLE_QUNTITY_DATA: 'erpportal/api/style',
+  STYLE_QUNTITY_DATA_NEW:'erpportal/api/style/getStyleWitUnOrderedQty',
   ADD_ORDER_DATA: 'erpportal/api/ordermgmt/adddistributororder',
   ADD_CUSTOMER_LIST: 'erpportal/api/customers',
   GET_ALL_ORDER: 'erpportal/api/ordermgmt/findAllDisOrders',
