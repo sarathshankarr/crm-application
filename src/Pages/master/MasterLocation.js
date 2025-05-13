@@ -336,7 +336,7 @@ const MasterLocation = () => {
           }}>
           Location Master
         </Text>
-        {/* <TouchableOpacity onPress={AddNewLocationPage}  style={styles.addnewlochead}>
+        <TouchableOpacity onPress={AddNewLocationPage}  style={styles.addnewlochead}>
         <Text style={{
             color: '#000',
             fontSize: 18,
@@ -346,7 +346,7 @@ const MasterLocation = () => {
             alignSelf: 'center',
             color:"#fff"
           }}>Add New Location</Text>
-        </TouchableOpacity> */}
+        </TouchableOpacity>
       </View>
       <View style={styles.searchContainer}>
         <View style={styles.searchInputContainer}>
