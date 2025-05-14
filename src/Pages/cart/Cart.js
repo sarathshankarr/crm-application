@@ -3990,7 +3990,7 @@ const handleLocationModalPick = () => {
 
   
                           {/* Price Input */}
-                          <View style={{width: 65, marginLeft:5}}>
+                          <View style={{ width: 65, marginLeft: Platform.select({ ios: 20, android: 5 }) }}>
                             <TextInput
                               style={{
                                 borderWidth: 1,
