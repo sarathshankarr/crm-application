@@ -91,10 +91,13 @@ const ModalComponent = ({
   }, []);
 
   useEffect(() => {
-    if (selectedItem) {
+    if (modalVisible && selectedItem) {
       getQuantityStyles();
     }
-  }, [selectedItem]);
+  }, [modalVisible, selectedItem]);
+  
+  
+  
 
   const clearAllInputs = () => {
     const updatedItem = {...selectedItemState};
