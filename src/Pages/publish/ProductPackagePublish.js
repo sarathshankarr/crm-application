@@ -151,24 +151,24 @@ const ProductPackagePublish = () => {
       const confirmedLocationData = {
         latitude: marker.latitude,
         longitude: marker.longitude,
-        address: address
+        address: address,
       };
-  
+
       setConfirmedLocation(confirmedLocationData);
-  
+
       if (locationTriggeredBy === 'formModal') {
         setInputValues(prev => ({
           ...prev,
           locationLatLong: `${marker.latitude}, ${marker.longitude}`,
           // locationDescription: address
         }));
-      } 
+      }
       setIsLocationPickerVisible(false);
-    
+
       setTimeout(() => {
         if (locationTriggeredBy === 'formModal') {
           setIsModalVisible(true);
-        } 
+        }
         setLocationTriggeredBy(null);
       }, 300);
     }
@@ -179,26 +179,26 @@ const ProductPackagePublish = () => {
   const [isLocationModalVisible, setIsLocationModalVisible] = useState(false);
   const [isNavigatingToLocationModal, setIsNavigatingToLocationModal] =
     useState(false);
-    
-    const handlePickLocation = () => {
-      setIsNavigatingToLocation(true);
-      setLocationTriggeredBy('formModal');
-    
-      // Pass form modal location details
-      const enteredLocation = {
-        locationName: inputValues.locationName,
-        cityOrTown: inputValues.cityOrTown,
-        country: inputValues.country,
-        pincode: inputValues.pincode,
-        locationDescription: inputValues.locationDescription
-      };
-    
-      setIsModalVisible(false);
-      setTimeout(() => {
-        setIsLocationPickerVisible(true);
-        searchEnteredLocation(enteredLocation, false); // false for form modal
-      }, 100);
+
+  const handlePickLocation = () => {
+    setIsNavigatingToLocation(true);
+    setLocationTriggeredBy('formModal');
+
+    // Pass form modal location details
+    const enteredLocation = {
+      locationName: inputValues.locationName,
+      cityOrTown: inputValues.cityOrTown,
+      country: inputValues.country,
+      pincode: inputValues.pincode,
+      locationDescription: inputValues.locationDescription,
     };
+
+    setIsModalVisible(false);
+    setTimeout(() => {
+      setIsLocationPickerVisible(true);
+      searchEnteredLocation(enteredLocation, false); // false for form modal
+    }, 100);
+  };
 
   const searchEnteredLocation = (locationDetails, isLocationModal = false) => {
     // Construct search query from the appropriate state
@@ -208,15 +208,17 @@ const ProductPackagePublish = () => {
       locationDetails.cityOrTown,
       locationDetails.state,
       locationDetails.pincode,
-      locationDetails.country
-    ].filter(Boolean).join(', ');
-  
+      locationDetails.country,
+    ]
+      .filter(Boolean)
+      .join(', ');
+
     if (searchQuery) {
       Geocoder.from(searchQuery)
         .then(json => {
           const location = json.results[0].geometry.location;
           const fullAddress = json.results[0].formatted_address;
-          
+
           setRegion({
             latitude: location.lat,
             longitude: location.lng,
@@ -228,7 +230,7 @@ const ProductPackagePublish = () => {
             longitude: location.lng,
           });
           setAddress(fullAddress);
-  
+
           // Update the appropriate state based on which modal triggered this
           if (isLocationModal) {
             setInputValues(prev => ({
@@ -236,9 +238,9 @@ const ProductPackagePublish = () => {
               cityOrTown: locationDetails.cityOrTown || prev.cityOrTown,
               country: locationDetails.country || prev.country,
               pincode: locationDetails.pincode || prev.pincode,
-              locationDescription: fullAddress
+              locationDescription: fullAddress,
             }));
-          } 
+          }
         })
         .catch(error => {
           console.warn('Geocoding error:', error);
@@ -246,6 +248,31 @@ const ProductPackagePublish = () => {
         });
     } else {
       getCurrentLocation();
+    }
+  };
+
+  const invFormats = [
+    {id: 0, value: 'Default Invoice'},
+    {id: 1, value: 'V-mart Invoice'},
+    {id: 2, value: 'Tax invoice (Description wise)'},
+  ];
+
+  const [selectedInvoiceFormat, setSelectedInvoiceFormat] = useState(
+    invFormats[0],
+  );
+  const [invDeclaration, setInvDeclaration] = useState('');
+  const [showInvoiceDropdown, setShowInvoiceDropdown] = useState(false);
+
+  const toggleInvoiceDropdown = () => {
+    setShowInvoiceDropdown(!showInvoiceDropdown);
+  };
+
+  const handleSelectInvoiceFormat = format => {
+    setSelectedInvoiceFormat(format);
+    setShowInvoiceDropdown(false);
+
+    if (format.id === 0) {
+      setInvDeclaration(''); // Reset if default
     }
   };
 
@@ -307,7 +334,6 @@ const ProductPackagePublish = () => {
 
   const [stateSearchTerm, setStateSearchTerm] = useState('');
   const [filteredStates, setFilteredStates] = useState(states);
-
 
   useEffect(() => {
     if (stateSearchTerm === '') {
@@ -373,7 +399,9 @@ const ProductPackagePublish = () => {
     setIsSaving(false);
     setIsModalVisible(!isModalVisible);
     setSelectedStatus('Active');
+    setSelectedInvoiceFormat(invFormats[0]);
     if (!isModalVisible) {
+      setInvDeclaration('');
       setSelectedState(null); // Reset selected state
       setSelectedStateId(null); // Reset selected stateId
     }
@@ -564,6 +592,8 @@ const ProductPackagePublish = () => {
       statusId: selectedStatusId,
       mobLatitude: confirmedLocation?.latitude || null,
       mobLongitude: confirmedLocation?.longitude || null,
+      invoiceFormat: selectedInvoiceFormat.id,
+      invDeclaration: invDeclaration || '',
     };
     console.log('requestData====>', requestData);
     axios
@@ -663,6 +693,8 @@ const ProductPackagePublish = () => {
       statusId: selectedStatusId,
       mobLatitude: confirmedLocation?.latitude || null,
       mobLongitude: confirmedLocation?.longitude || null,
+      invoiceFormat: selectedInvoiceFormat.id,
+      invDeclaration: invDeclaration || '',
     };
     console.log('requestDatafordis===>', requestData);
 
@@ -851,13 +883,12 @@ const ProductPackagePublish = () => {
     setSearchKey(option.value);
     setDropdownVisible(false);
   };
-    useEffect(() => {
+  useEffect(() => {
     if (searchOption.length > 0) {
       setSelectedSearchOption(searchOption[0].label);
       setSearchKey(searchOption[0].value);
     }
   }, [searchOption]); // This will run whenever searchOption changes
-
 
   const toggleDropdown = () => {
     setDropdownVisible(!dropdownVisible);
@@ -1598,7 +1629,7 @@ const ProductPackagePublish = () => {
               {errorFields.includes('cityOrTown') && (
                 <Text style={styles.errorText}>Please Enter City Or Town</Text>
               )}
-                <TextInput
+              <TextInput
                 style={[
                   styles.input,
                   {color: '#000'},
@@ -1652,34 +1683,33 @@ const ProductPackagePublish = () => {
 
                   {/* Dropdown list */}
                   {showStateDropdown && (
-                          <View style={styles.dropdownContentstate}>
-                            <TextInput
-                              style={styles.searchInputsearch}
-                              placeholder="Search state..."
-                              placeholderTextColor="#000"
-                              value={stateSearchTerm}
-                              onChangeText={text => setStateSearchTerm(text)}
-                            />
-                            <ScrollView
-                              style={styles.scrollView}
-                              nestedScrollEnabled={true}>
-                              {filteredStates.map(state => (
-                                <TouchableOpacity
-                                  key={state.stateId}
-                                  style={styles.dropdownItem}
-                                  onPress={() => handleSelectState(state)}>
-                                  <Text style={styles.dropdownText}>
-                                    {state.stateName}
-                                  </Text>
-                                </TouchableOpacity>
-                              ))}
-                            </ScrollView>
-                          </View>
-                        )}
+                    <View style={styles.dropdownContentstate}>
+                      <TextInput
+                        style={styles.searchInputsearch}
+                        placeholder="Search state..."
+                        placeholderTextColor="#000"
+                        value={stateSearchTerm}
+                        onChangeText={text => setStateSearchTerm(text)}
+                      />
+                      <ScrollView
+                        style={styles.scrollView}
+                        nestedScrollEnabled={true}>
+                        {filteredStates.map(state => (
+                          <TouchableOpacity
+                            key={state.stateId}
+                            style={styles.dropdownItem}
+                            onPress={() => handleSelectState(state)}>
+                            <Text style={styles.dropdownText}>
+                              {state.stateName}
+                            </Text>
+                          </TouchableOpacity>
+                        ))}
+                      </ScrollView>
+                    </View>
+                  )}
                 </View>
               </View>
 
-            
               <TextInput
                 style={[
                   styles.input,
@@ -1692,7 +1722,6 @@ const ProductPackagePublish = () => {
                   setInputValues({...inputValues, pincode: text})
                 }
                 value={inputValues.pincode}
-
               />
               {errorFields.includes('pincode') && (
                 <Text style={styles.errorText}>Please Enter Pincode</Text>
@@ -1711,7 +1740,6 @@ const ProductPackagePublish = () => {
                   setInputValues({...inputValues, locationName: text})
                 }
                 value={inputValues.locationName}
-
               />
               {errorFields.includes('locationName') && (
                 <Text style={styles.errorText}>Please Enter Location Name</Text>
@@ -1732,9 +1760,7 @@ const ProductPackagePublish = () => {
                 value={inputValues.locationDescription}
               />
               {errorFields.includes('locationDescription') && (
-                <Text style={styles.errorText}>
-                  Please Enter Landmark
-                </Text>
+                <Text style={styles.errorText}>Please Enter Landmark</Text>
               )}
 
               <Text style={styles.headerTxt}>{'Status *'}</Text>
@@ -1767,40 +1793,86 @@ const ProductPackagePublish = () => {
                   )}
                 </View>
               </View>
-              <TouchableOpacity
-                      onPress={handlePickLocation}
-                      style={{
-                        padding: 10,
-                        borderWidth: 1,
-                        borderRadius: 5,
-                        borderColor: errorFields.includes('locationLatLong')
-                          ? 'red'
-                          : 'gray',
-                        flexDirection: 'row',
-                        justifyContent: 'space-between',
-                      }}>
-                      <Text style={{color: '#000'}}>Pick Location</Text>
-                      <Image
-                        style={{height: 25, width: 25}}
-                        source={require('../../../assets/location-pin.png')}
-                      />
-                    </TouchableOpacity>
+              <Text style={styles.headerTxt}>{'Invoice Format'}</Text>
+              <View style={styles.container1}>
+                <View style={styles.container2}>
+                  <TouchableOpacity
+                    style={styles.container3}
+                    onPress={toggleInvoiceDropdown}>
+                    <Text style={{fontWeight: '600', color: '#000'}}>
+                      {selectedInvoiceFormat.value}
+                    </Text>
+                    <Image
+                      source={require('../../../assets/dropdown.png')}
+                      style={{width: 20, height: 20}}
+                    />
+                  </TouchableOpacity>
 
-                    {/* Show an error message if locationLatLong is missing */}
-                    {errorFields.includes('locationLatLong') && (
-                      <Text style={{color: 'red', marginTop: 5}}>
-                        Please pick a location
-                      </Text>
-                    )}
-                    {confirmedLocation && (
-                      <View style={{marginTop: 20}}>
-                        <Text style={{color: '#000'}}>
-                          Selected Address: {confirmedLocation.address}
-                        </Text>
-                        {/* <Text style={{color:'#000'}}>Latitude: {confirmedLocation.latitude}</Text>
+                  {showInvoiceDropdown && (
+                    <ScrollView
+                      style={styles.dropdownContainersstatusinvoice}
+                      nestedScrollEnabled={true}>
+                      {invFormats.map((format, index) => (
+                        <TouchableOpacity
+                          key={index}
+                          style={styles.dropdownItem}
+                          onPress={() => handleSelectInvoiceFormat(format)}>
+                          <Text style={styles.dropdownText}>
+                            {format.value}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
+                  )}
+                </View>
+              </View>
+
+              {selectedInvoiceFormat?.id !== 0 && (
+                <>
+                  <Text style={styles.headerTxt}>{'Declaration'}</Text>
+                  <TextInput
+                    style={[styles.inputt, {color: '#000'}]}
+                    placeholderTextColor="#000"
+                    placeholder="Declaration"
+                    onChangeText={text => setInvDeclaration(text)}
+                    value={invDeclaration}
+                  />
+                </>
+              )}
+              <TouchableOpacity
+                onPress={handlePickLocation}
+                style={{
+                  padding: 10,
+                  borderWidth: 1,
+                  borderRadius: 5,
+                  borderColor: errorFields.includes('locationLatLong')
+                    ? 'red'
+                    : 'gray',
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                }}>
+                <Text style={{color: '#000'}}>Pick Location</Text>
+                <Image
+                  style={{height: 25, width: 25}}
+                  source={require('../../../assets/location-pin.png')}
+                />
+              </TouchableOpacity>
+
+              {/* Show an error message if locationLatLong is missing */}
+              {errorFields.includes('locationLatLong') && (
+                <Text style={{color: 'red', marginTop: 5}}>
+                  Please pick a location
+                </Text>
+              )}
+              {confirmedLocation && (
+                <View style={{marginTop: 20}}>
+                  <Text style={{color: '#000'}}>
+                    Selected Address: {confirmedLocation.address}
+                  </Text>
+                  {/* <Text style={{color:'#000'}}>Latitude: {confirmedLocation.latitude}</Text>
           <Text style={{color:'#000'}}>Longitude: {confirmedLocation.longitude}</Text> */}
-                      </View>
-                    )}
+                </View>
+              )}
               {/* <TouchableOpacity
               style={styles.saveButton}
               onPress={handleSaveButtonPress}>
@@ -1820,126 +1892,129 @@ const ProductPackagePublish = () => {
         </View>
       </Modal>
       <Modal visible={isLocationPickerVisible} animationType="slide">
-          <SafeAreaView style={{flex: 1}}>
-            <View
-              style={{
-                position: 'relative',
-                alignItems: 'center',
-                paddingVertical: 10,
-              }}>
-              {/* Back Button (Left Side) */}
-              <TouchableOpacity
-                onPress={() => setIsLocationPickerVisible(false)}
-                style={{
-                  position: 'absolute',
-                  left: 10, // Ensures it's on the left
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                }}>
-                <Image
-                  style={{height: 25, width: 25, marginTop: 10}}
-                  source={require('../../../assets/back_arrow.png')}
-                />
-              </TouchableOpacity>
-
-              {/* Centered Title */}
-              <Text
-                style={{
-                  color: '#000',
-                  fontWeight: 'bold',
-                  fontSize: 17,
-                  textAlign: 'center',
-                }}>
-                Pick Location
-              </Text>
-            </View>
-            <GooglePlacesAutocomplete
-              placeholder="Search for a location"
-              fetchDetails={true}
-              onPress={(data, details = null) => {
-                if (details) {
-                  const {lat, lng} = details.geometry.location;
-                  setRegion({
-                    ...region,
-                    latitude: lat,
-                    longitude: lng,
-                  });
-                  setMarker({latitude: lat, longitude: lng});
-                  setAddress(details.formatted_address);
-                  
-                  const components = {};
-                  details.address_components.forEach(component => {
-                    component.types.forEach(type => {
-                      components[type] = component.long_name;
-                    });
-                  });
-
-                  if (locationTriggeredBy === 'formModal') {
-                    setInputValues(prev => ({
-                      ...prev,
-                      cityOrTown: components.locality || components.postal_town || prev.cityOrTown,
-                      country: components.country || prev.country,
-                      pincode: components.postal_code || prev.pincode,
-                      locationDescription: details.formatted_address
-                    }));
-                  }
-                }
-              }}
-              query={{
-                key: 'AIzaSyDFkFf27LcYV5Fz6cjvAfEX1hsdXx4zE6Q',
-                language: 'en',
-              }}
-              styles={{
-                container: {flex: 0, zIndex: 1},
-                textInput: {
-                  height: 40,
-                  borderRadius: 5,
-                  paddingHorizontal: 10,
-                  backgroundColor: '#fff',
-                  color: '#000',
-                },
-                listView: {
-                  backgroundColor: '#fff',
-                },
-                row: {
-                  padding: 13,
-                  height: 44,
-                  flexDirection: 'row',
-                },
-                description: {
-                  color: 'black', // 👈 This changes the suggestion text color
-                },
-                predefinedPlacesDescription: {
-                  color: 'black',
-                },
-              }}
-              textInputProps={{
-                placeholderTextColor: 'black',
-              }}
-            />
-
-            <MapView
-              style={{flex: 1}}
-              region={region}
-              onPress={onMapPress}
-              initialRegion={region}>
-              {marker && <Marker coordinate={marker} />}
-            </MapView>
-         
+        <SafeAreaView style={{flex: 1}}>
+          <View
+            style={{
+              position: 'relative',
+              alignItems: 'center',
+              paddingVertical: 10,
+            }}>
+            {/* Back Button (Left Side) */}
             <TouchableOpacity
-              onPress={handleConfirmLocation}
+              onPress={() => setIsLocationPickerVisible(false)}
               style={{
-                padding: 15,
-                backgroundColor: 'blue',
-                margin: 10,
-                borderRadius: 10,
+                position: 'absolute',
+                left: 10, // Ensures it's on the left
+                flexDirection: 'row',
+                alignItems: 'center',
               }}>
-              <Text style={{color: 'white', textAlign: 'center'}}>
-                Confirm Location
-              </Text>
+              <Image
+                style={{height: 25, width: 25, marginTop: 10}}
+                source={require('../../../assets/back_arrow.png')}
+              />
             </TouchableOpacity>
-          </SafeAreaView>
-        </Modal>
+
+            {/* Centered Title */}
+            <Text
+              style={{
+                color: '#000',
+                fontWeight: 'bold',
+                fontSize: 17,
+                textAlign: 'center',
+              }}>
+              Pick Location
+            </Text>
+          </View>
+          <GooglePlacesAutocomplete
+            placeholder="Search for a location"
+            fetchDetails={true}
+            onPress={(data, details = null) => {
+              if (details) {
+                const {lat, lng} = details.geometry.location;
+                setRegion({
+                  ...region,
+                  latitude: lat,
+                  longitude: lng,
+                });
+                setMarker({latitude: lat, longitude: lng});
+                setAddress(details.formatted_address);
+
+                const components = {};
+                details.address_components.forEach(component => {
+                  component.types.forEach(type => {
+                    components[type] = component.long_name;
+                  });
+                });
+
+                if (locationTriggeredBy === 'formModal') {
+                  setInputValues(prev => ({
+                    ...prev,
+                    cityOrTown:
+                      components.locality ||
+                      components.postal_town ||
+                      prev.cityOrTown,
+                    country: components.country || prev.country,
+                    pincode: components.postal_code || prev.pincode,
+                    locationDescription: details.formatted_address,
+                  }));
+                }
+              }
+            }}
+            query={{
+              key: 'AIzaSyDFkFf27LcYV5Fz6cjvAfEX1hsdXx4zE6Q',
+              language: 'en',
+            }}
+            styles={{
+              container: {flex: 0, zIndex: 1},
+              textInput: {
+                height: 40,
+                borderRadius: 5,
+                paddingHorizontal: 10,
+                backgroundColor: '#fff',
+                color: '#000',
+              },
+              listView: {
+                backgroundColor: '#fff',
+              },
+              row: {
+                padding: 13,
+                height: 44,
+                flexDirection: 'row',
+              },
+              description: {
+                color: 'black', // 👈 This changes the suggestion text color
+              },
+              predefinedPlacesDescription: {
+                color: 'black',
+              },
+            }}
+            textInputProps={{
+              placeholderTextColor: 'black',
+            }}
+          />
+
+          <MapView
+            style={{flex: 1}}
+            region={region}
+            onPress={onMapPress}
+            initialRegion={region}>
+            {marker && <Marker coordinate={marker} />}
+          </MapView>
+
+          <TouchableOpacity
+            onPress={handleConfirmLocation}
+            style={{
+              padding: 15,
+              backgroundColor: 'blue',
+              margin: 10,
+              borderRadius: 10,
+            }}>
+            <Text style={{color: 'white', textAlign: 'center'}}>
+              Confirm Location
+            </Text>
+          </TouchableOpacity>
+        </SafeAreaView>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -2279,6 +2354,25 @@ const getStyles = colors =>
       borderColor: 'lightgray',
       borderWidth: 1,
       marginTop: 5,
+    },
+    dropdownContainersstatusinvoice: {
+      elevation: 5,
+      height: 150,
+      alignSelf: 'center',
+      width: '100%',
+      backgroundColor: '#fff',
+      borderRadius: 10,
+      borderColor: 'lightgray',
+      borderWidth: 1,
+      marginTop: 5,
+    },
+    inputt: {
+      borderWidth: 1,
+      borderColor: 'gray',
+      borderRadius: 5,
+      padding: Platform.OS === 'ios' ? 15 : 10,
+      marginBottom: Platform.OS === 'ios' ? 10 : 5,
+      width: '100%',
     },
     dropdownText: {
       fontWeight: '600',

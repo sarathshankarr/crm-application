@@ -41,8 +41,10 @@ import Geocoder from 'react-native-geocoding';
 import {GooglePlacesAutocomplete} from 'react-native-google-places-autocomplete';
 
 const Cart = () => {
-    const mobile_unorderqty_flag = useSelector(state => state.selectedCompany?.mobile_unorderqty_flag);
-  
+  const mobile_unorderqty_flag = useSelector(
+    state => state.selectedCompany?.mobile_unorderqty_flag,
+  );
+
   const [region, setRegion] = useState({
     latitude: 0, // Default values
     longitude: 0,
@@ -163,16 +165,16 @@ const Cart = () => {
       const confirmedLocationData = {
         latitude: marker.latitude,
         longitude: marker.longitude,
-        address: address
+        address: address,
       };
-  
+
       setConfirmedLocation(confirmedLocationData);
-  
+
       if (locationTriggeredBy === 'formModal') {
         setInputValues(prev => ({
           ...prev,
           locationLatLong: `${marker.latitude}, ${marker.longitude}`,
-          locationDescription: address
+          locationDescription: address,
         }));
       } else if (locationTriggeredBy === 'locationModal') {
         setLocationInputValues(prev => ({
@@ -181,9 +183,9 @@ const Cart = () => {
           // locationDescription: address
         }));
       }
-  
+
       setIsLocationPickerVisible(false);
-  
+
       setTimeout(() => {
         if (locationTriggeredBy === 'formModal') {
           setIsModalVisible(true);
@@ -195,7 +197,6 @@ const Cart = () => {
     }
   };
 
-
   const searchEnteredLocation = (locationDetails, isLocationModal = false) => {
     // Construct search query from the appropriate state
     const searchQuery = [
@@ -204,15 +205,17 @@ const Cart = () => {
       locationDetails.cityOrTown,
       locationDetails.state,
       locationDetails.pincode,
-      locationDetails.country
-    ].filter(Boolean).join(', ');
-  
+      locationDetails.country,
+    ]
+      .filter(Boolean)
+      .join(', ');
+
     if (searchQuery) {
       Geocoder.from(searchQuery)
         .then(json => {
           const location = json.results[0].geometry.location;
           const fullAddress = json.results[0].formatted_address;
-          
+
           setRegion({
             latitude: location.lat,
             longitude: location.lng,
@@ -224,7 +227,7 @@ const Cart = () => {
             longitude: location.lng,
           });
           setAddress(fullAddress);
-  
+
           // Update the appropriate state based on which modal triggered this
           if (isLocationModal) {
             setLocationInputValues(prev => ({
@@ -234,7 +237,7 @@ const Cart = () => {
               state: locationDetails.state || prev.state,
               pincode: locationDetails.pincode || prev.pincode,
               country: locationDetails.country || prev.country,
-              locationDescription: fullAddress
+              locationDescription: fullAddress,
             }));
           } else {
             setInputValues(prev => ({
@@ -242,7 +245,7 @@ const Cart = () => {
               cityOrTown: locationDetails.cityOrTown || prev.cityOrTown,
               country: locationDetails.country || prev.country,
               pincode: locationDetails.pincode || prev.pincode,
-              locationDescription: fullAddress
+              locationDescription: fullAddress,
             }));
           }
         })
@@ -252,6 +255,31 @@ const Cart = () => {
         });
     } else {
       getCurrentLocation();
+    }
+  };
+
+  const invFormats = [
+    {id: 0, value: 'Default Invoice'},
+    {id: 1, value: 'V-mart Invoice'},
+    {id: 2, value: 'Tax invoice (Description wise)'},
+  ];
+
+  const [selectedInvoiceFormat, setSelectedInvoiceFormat] = useState(
+    invFormats[0],
+  );
+  const [invDeclaration, setInvDeclaration] = useState('');
+  const [showInvoiceDropdown, setShowInvoiceDropdown] = useState(false);
+
+  const toggleInvoiceDropdown = () => {
+    setShowInvoiceDropdown(!showInvoiceDropdown);
+  };
+
+  const handleSelectInvoiceFormat = format => {
+    setSelectedInvoiceFormat(format);
+    setShowInvoiceDropdown(false);
+
+    if (format.id === 0) {
+      setInvDeclaration(''); // Reset if default
     }
   };
 
@@ -1170,46 +1198,46 @@ const Cart = () => {
   const [isNavigatingToLocation, setIsNavigatingToLocation] = useState(false);
   const [locationTriggeredBy, setLocationTriggeredBy] = useState(null);
 
-const handlePickLocation = () => {
-  setIsNavigatingToLocation(true);
-  setLocationTriggeredBy('formModal');
+  const handlePickLocation = () => {
+    setIsNavigatingToLocation(true);
+    setLocationTriggeredBy('formModal');
 
-  // Pass form modal location details
-  const enteredLocation = {
-    locationName: inputValues.locationName,
-    cityOrTown: inputValues.cityOrTown,
-    country: inputValues.country,
-    pincode: inputValues.pincode,
-    locationDescription: inputValues.locationDescription
+    // Pass form modal location details
+    const enteredLocation = {
+      locationName: inputValues.locationName,
+      cityOrTown: inputValues.cityOrTown,
+      country: inputValues.country,
+      pincode: inputValues.pincode,
+      locationDescription: inputValues.locationDescription,
+    };
+
+    setIsModalVisible(false);
+    setTimeout(() => {
+      setIsLocationPickerVisible(true);
+      searchEnteredLocation(enteredLocation, false); // false for form modal
+    }, 100);
   };
 
-  setIsModalVisible(false);
-  setTimeout(() => {
-    setIsLocationPickerVisible(true);
-    searchEnteredLocation(enteredLocation, false); // false for form modal
-  }, 100);
-};
+  const handleLocationModalPick = () => {
+    setIsNavigatingToLocationModal(true);
+    setLocationTriggeredBy('locationModal');
 
-const handleLocationModalPick = () => {
-  setIsNavigatingToLocationModal(true);
-  setLocationTriggeredBy('locationModal');
+    // Pass location modal details
+    const enteredLocation = {
+      locationName: locationInputValues.locationName,
+      locality: locationInputValues.locality,
+      cityOrTown: locationInputValues.cityOrTown,
+      state: locationInputValues.state,
+      pincode: locationInputValues.pincode,
+      country: locationInputValues.country,
+    };
 
-  // Pass location modal details
-  const enteredLocation = {
-    locationName: locationInputValues.locationName,
-    locality: locationInputValues.locality,
-    cityOrTown: locationInputValues.cityOrTown,
-    state: locationInputValues.state,
-    pincode: locationInputValues.pincode,
-    country: locationInputValues.country
+    setIsLocationModalVisible(false);
+    setTimeout(() => {
+      setIsLocationPickerVisible(true);
+      searchEnteredLocation(enteredLocation, true); // true for location modal
+    }, 100);
   };
-
-  setIsLocationModalVisible(false);
-  setTimeout(() => {
-    setIsLocationPickerVisible(true);
-    searchEnteredLocation(enteredLocation, true); // true for location modal
-  }, 100);
-};
 
   // const toggleModal = () => {
   //   setIsSaving(false);
@@ -1266,6 +1294,8 @@ const handleLocationModalPick = () => {
       setSelectedState(null);
       setSelectedStateId(null);
       setStateSearchTerm('');
+      setSelectedInvoiceFormat(invFormats[0]); // reset to default invoice format
+      setInvDeclaration(''); // clear declaration text
     } else {
       console.log('Closing modal - clearing input fields');
       setErrorFields([]);
@@ -1309,6 +1339,8 @@ const handleLocationModalPick = () => {
     setIsNavigatingToLocation(false);
     setConfirmedLocation(null);
     setIsSaving(false);
+    setSelectedInvoiceFormat(invFormats[0]); // reset to default invoice format
+    setInvDeclaration(''); // clear declaration text
   };
 
   const getisValidCustomer = async () => {
@@ -1373,6 +1405,8 @@ const handleLocationModalPick = () => {
       statusId: selectedStatusId,
       mobLatitude: confirmedLocation?.latitude || null,
       mobLongitude: confirmedLocation?.longitude || null,
+      invoiceFormat: selectedInvoiceFormat.id,
+      invDeclaration: invDeclaration || '',
       // userId:userId
     };
     console.log('requestData====>', requestData);
@@ -1476,9 +1510,11 @@ const handleLocationModalPick = () => {
       statusId: selectedStatusId,
       mobLatitude: confirmedLocation?.latitude || null,
       mobLongitude: confirmedLocation?.longitude || null,
+      invoiceFormat: selectedInvoiceFormat.id,
+      invDeclaration: invDeclaration || '',
     };
-    console.log('requestDatafordis===>', requestData);
 
+    console.log('requestDatafordis===>', requestData);
     axios
       .post(
         global?.userData?.productURL + API.ADD_DISTRIBUTOR_DETAILS,
@@ -3867,11 +3903,15 @@ const handleLocationModalPick = () => {
                               <Text style={{color: '#000'}}>QUANTITY </Text>
                             </View>
                             {mobile_unorderqty_flag ? (
-                            <View style={{flex: 2, marginLeft: 18}}>
-                              <Text style={{color: '#000'}}>UNORDQTY </Text>
-                            </View>
+                              <View style={{flex: 2, marginLeft: 18}}>
+                                <Text style={{color: '#000'}}>UNORDQTY </Text>
+                              </View>
                             ) : null}
-                          <View style={{flex: 2, marginLeft: mobile_unorderqty_flag ? 18 : 45}}>
+                            <View
+                              style={{
+                                flex: 2,
+                                marginLeft: mobile_unorderqty_flag ? 18 : 45,
+                              }}>
                               <Text style={{color: '#000'}}>
                                 {pdf_flag ? 'MRP' : 'PRICE'}
                               </Text>
@@ -3929,8 +3969,6 @@ const handleLocationModalPick = () => {
                             <Text style={{color: '#000', fontWeight: 'bold'}}>
                               {item.sizeDesc}
                             </Text>
-
-
                           </View>
 
                           {/* Decrease Quantity */}
@@ -3981,16 +4019,22 @@ const handleLocationModalPick = () => {
                             />
                           </TouchableOpacity>
                           {mobile_unorderqty_flag ? (
-  <View style={{width: 58, marginHorizontal: 5}}>
-    <Text style={{color: '#000', fontSize: 14}}>
-      {item.unOrderdQty}
-    </Text>
-  </View>
-) : null}
+                            <View style={{width: 58, marginHorizontal: 5}}>
+                              <Text style={{color: '#000', fontSize: 14}}>
+                                {item.unOrderdQty}
+                              </Text>
+                            </View>
+                          ) : null}
 
-  
                           {/* Price Input */}
-                          <View style={{ width: 65, marginLeft: Platform.select({ ios: 20, android: 5 }) }}>
+                          <View
+                            style={{
+                              width: 65,
+                              marginLeft: Platform.select({
+                                ios: 20,
+                                android: 13,
+                              }),
+                            }}>
                             <TextInput
                               style={{
                                 borderWidth: 1,
@@ -4388,7 +4432,7 @@ const handleLocationModalPick = () => {
                     <Text style={style.errorText}>Please Enter State</Text>
                   )} */}
 
-<TextInput
+                    <TextInput
                       style={[
                         style.input,
                         {color: '#000'},
@@ -4455,7 +4499,6 @@ const handleLocationModalPick = () => {
                       </View>
                     </View>
 
-                 
                     <TextInput
                       style={[
                         style.input,
@@ -4490,9 +4533,7 @@ const handleLocationModalPick = () => {
                       value={inputValues.locationName}
                     />
                     {errorFields.includes('locationName') && (
-                      <Text style={style.errorText}>
-                        Please Enter Landmark
-                      </Text>
+                      <Text style={style.errorText}>Please Enter Landmark</Text>
                     )}
                     <TextInput
                       style={[
@@ -4513,9 +4554,7 @@ const handleLocationModalPick = () => {
                       value={inputValues.locationDescription}
                     />
                     {errorFields.includes('locationDescription') && (
-                      <Text style={style.errorText}>
-                        Please Enter Landmark
-                      </Text>
+                      <Text style={style.errorText}>Please Enter Landmark</Text>
                     )}
 
                     <Text style={style.headerTxt}>{'Status *'}</Text>
@@ -4548,6 +4587,54 @@ const handleLocationModalPick = () => {
                         )}
                       </View>
                     </View>
+                    <Text style={style.headerTxt}>{'Invoice Format'}</Text>
+                    <View style={style.container1}>
+                      <View style={style.container2}>
+                        <TouchableOpacity
+                          style={style.container3}
+                          onPress={toggleInvoiceDropdown}>
+                          <Text style={{fontWeight: '600', color: '#000'}}>
+                            {selectedInvoiceFormat.value}
+                          </Text>
+                          <Image
+                            source={require('../../../assets/dropdown.png')}
+                            style={{width: 20, height: 20}}
+                          />
+                        </TouchableOpacity>
+
+                        {showInvoiceDropdown && (
+                          <ScrollView
+                            style={style.dropdownContainersstatusinvoice}
+                            nestedScrollEnabled={true}>
+                            {invFormats.map((format, index) => (
+                              <TouchableOpacity
+                                key={index}
+                                style={style.dropdownItem}
+                                onPress={() =>
+                                  handleSelectInvoiceFormat(format)
+                                }>
+                                <Text style={style.dropdownText}>
+                                  {format.value}
+                                </Text>
+                              </TouchableOpacity>
+                            ))}
+                          </ScrollView>
+                        )}
+                      </View>
+                    </View>
+
+                    {selectedInvoiceFormat?.id !== 0 && (
+                      <>
+                        <Text style={style.headerTxt}>{'Declaration'}</Text>
+                        <TextInput
+                          style={[style.inputt, {color: '#000'}]}
+                          placeholderTextColor="#000"
+                          placeholder="Declaration"
+                          onChangeText={text => setInvDeclaration(text)}
+                          value={invDeclaration}
+                        />
+                      </>
+                    )}
                     <TouchableOpacity
                       onPress={handlePickLocation}
                       style={{
@@ -4937,25 +5024,34 @@ const handleLocationModalPick = () => {
                   if (locationTriggeredBy === 'formModal') {
                     setInputValues(prev => ({
                       ...prev,
-                      cityOrTown: components.locality || components.postal_town || prev.cityOrTown,
+                      cityOrTown:
+                        components.locality ||
+                        components.postal_town ||
+                        prev.cityOrTown,
                       country: components.country || prev.country,
                       pincode: components.postal_code || prev.pincode,
-                      locationDescription: details.formatted_address
+                      locationDescription: details.formatted_address,
                     }));
                   } else if (locationTriggeredBy === 'locationModal') {
                     setLocationInputValues(prev => ({
                       ...prev,
-                      locality: components.locality || components.sublocality || prev.locality,
-                      cityOrTown: components.locality || components.postal_town || prev.cityOrTown,
-                      state: components.administrative_area_level_1 || prev.state,
+                      locality:
+                        components.locality ||
+                        components.sublocality ||
+                        prev.locality,
+                      cityOrTown:
+                        components.locality ||
+                        components.postal_town ||
+                        prev.cityOrTown,
+                      state:
+                        components.administrative_area_level_1 || prev.state,
                       pincode: components.postal_code || prev.pincode,
                       country: components.country || prev.country,
-                      locationDescription: details.formatted_address
+                      locationDescription: details.formatted_address,
                     }));
                   }
                 }
               }}
-              
               query={{
                 key: 'AIzaSyDFkFf27LcYV5Fz6cjvAfEX1hsdXx4zE6Q',
                 language: 'en',
@@ -4996,7 +5092,7 @@ const handleLocationModalPick = () => {
               initialRegion={region}>
               {marker && <Marker coordinate={marker} />}
             </MapView>
-         
+
             <TouchableOpacity
               onPress={handleConfirmLocation}
               style={{
@@ -5461,6 +5557,14 @@ const getStyles = colors =>
       marginVertical: 3,
       color: '#000',
     },
+    inputt: {
+      borderWidth: 1,
+      borderColor: 'gray',
+      borderRadius: 5,
+      padding: Platform.OS === 'ios' ? 15 : 10,
+      marginBottom: Platform.OS === 'ios' ? 10 : 5,
+      width: '100%',
+    },
     container1: {
       marginBottom: 5,
       flexDirection: 'row',
@@ -5500,6 +5604,17 @@ const getStyles = colors =>
     dropdownContainersstatus: {
       elevation: 5,
       height: 100,
+      alignSelf: 'center',
+      width: '100%',
+      backgroundColor: '#fff',
+      borderRadius: 10,
+      borderColor: 'lightgray',
+      borderWidth: 1,
+      marginTop: 5,
+    },
+    dropdownContainersstatusinvoice: {
+      elevation: 5,
+      height: 150,
       alignSelf: 'center',
       width: '100%',
       backgroundColor: '#fff',
