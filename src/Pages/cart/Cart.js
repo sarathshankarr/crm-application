@@ -508,12 +508,85 @@ const Cart = () => {
       });
   };
 
+  // const handleSaveItem = fetchedData => {
+  //   console.log('Fetched Data:', fetchedData); // Log fetched data for debugging
+
+  //   let itemsToUpdate = [];
+
+  //   fetchedData.forEach(item => {
+  //     const itemDetails = {
+  //       packageId: item.packageId || null,
+  //       styleId: item.styleId,
+  //       styleName: item.styleDesc,
+  //       colorName: item.colorName,
+  //       colorId: item.colorId,
+  //       sizeDesc: item.sizeDesc,
+  //       sizeId: item.sizeId,
+  //       quantity: item.qty || 1, // Default to 1 if quantity is not available
+  //       dealerPrice: item.dealerPrice,
+  //       retailerPrice: item.retailerPrice,
+  //       mrp: item.mrp,
+  //       price: item.unitPrice,
+  //       gst: item.gst,
+  //       imageUrls: item.imageUrls, // Add imageUrls to the cart item details
+  //       sourceScreen: 'ModalComponent',
+  //     };
+
+  //     console.log('Item details to add/update:', itemDetails);
+
+  //     // Check if the item already exists in the cart
+  //     const existingItemIndex = cartItems.findIndex(
+  //       cartItem =>
+  //         cartItem.styleId === item.styleId &&
+  //         cartItem.colorId === item.colorId &&
+  //         cartItem.sizeDesc === item.sizeDesc,
+  //     );
+
+  //     if (existingItemIndex !== -1) {
+  //       // Update the existing item's quantity and other details if needed
+  //       const updatedItem = {
+  //         ...cartItems[existingItemIndex],
+  //         quantity:
+  //           parseInt(cartItems[existingItemIndex].quantity, 10) +
+  //           itemDetails.quantity, // Add the new quantity
+  //         price: itemDetails.price,
+  //         imageUrls: itemDetails.imageUrls, // Update images if necessary
+  //       };
+
+  //       console.log(
+  //         `Updating existing item at index ${existingItemIndex}:`,
+  //         updatedItem,
+  //       );
+  //       dispatch(updateCartItem(existingItemIndex, updatedItem));
+  //     } else {
+  //       // Add a new item to the list if it doesn't exist
+  //       console.log('Adding new item:', itemDetails);
+  //       itemsToUpdate.push(itemDetails);
+  //     }
+  //   });
+
+  //   // Dispatch actions to update the cart
+  //   if (itemsToUpdate.length > 0) {
+  //     console.log('Items to be added to cart:', itemsToUpdate);
+  //     itemsToUpdate.forEach(item => dispatch(addItemToCart(item)));
+  //   } else {
+  //     console.log('No items to add to cart.');
+  //   }
+
+  //   // Clear inputs and close modal
+  //   console.log('Clearing input values and closing modal.');
+  //   setInputValues({});
+  //   setModalVisible(false);
+  // };
+
   const handleSaveItem = fetchedData => {
-    console.log('Fetched Data:', fetchedData); // Log fetched data for debugging
-
+    console.log('Fetched Data:', fetchedData);
+  
     let itemsToUpdate = [];
-
+  
     fetchedData.forEach(item => {
+      const isMatchingBarcode = item.gsCode === searchQueryCode; // Match scanned barcode
+  
       const itemDetails = {
         packageId: item.packageId || null,
         styleId: item.styleId,
@@ -522,62 +595,53 @@ const Cart = () => {
         colorId: item.colorId,
         sizeDesc: item.sizeDesc,
         sizeId: item.sizeId,
-        quantity: item.qty || 1, // Default to 1 if quantity is not available
+        quantity: isMatchingBarcode ? 1 : 0, // ✅ 1 for matching item, 0 for others
         dealerPrice: item.dealerPrice,
         retailerPrice: item.retailerPrice,
         mrp: item.mrp,
         price: item.unitPrice,
         gst: item.gst,
-        imageUrls: item.imageUrls, // Add imageUrls to the cart item details
+        imageUrls: item.imageUrls,
         sourceScreen: 'ModalComponent',
       };
-
+  
       console.log('Item details to add/update:', itemDetails);
-
-      // Check if the item already exists in the cart
+  
       const existingItemIndex = cartItems.findIndex(
         cartItem =>
           cartItem.styleId === item.styleId &&
           cartItem.colorId === item.colorId &&
           cartItem.sizeDesc === item.sizeDesc,
       );
-
+  
       if (existingItemIndex !== -1) {
-        // Update the existing item's quantity and other details if needed
+        // ✅ Update quantity only for the matching barcode
+        const updatedQuantity =
+          parseInt(cartItems[existingItemIndex].quantity, 10) +
+          (isMatchingBarcode ? 1 : 0);
+  
         const updatedItem = {
           ...cartItems[existingItemIndex],
-          quantity:
-            parseInt(cartItems[existingItemIndex].quantity, 10) +
-            itemDetails.quantity, // Add the new quantity
+          quantity: updatedQuantity,
           price: itemDetails.price,
-          imageUrls: itemDetails.imageUrls, // Update images if necessary
+          imageUrls: itemDetails.imageUrls,
         };
-
-        console.log(
-          `Updating existing item at index ${existingItemIndex}:`,
-          updatedItem,
-        );
+  
         dispatch(updateCartItem(existingItemIndex, updatedItem));
       } else {
-        // Add a new item to the list if it doesn't exist
-        console.log('Adding new item:', itemDetails);
+        // ✅ Always add all styles, even if quantity = 0
         itemsToUpdate.push(itemDetails);
       }
     });
-
-    // Dispatch actions to update the cart
+  
     if (itemsToUpdate.length > 0) {
-      console.log('Items to be added to cart:', itemsToUpdate);
       itemsToUpdate.forEach(item => dispatch(addItemToCart(item)));
-    } else {
-      console.log('No items to add to cart.');
     }
-
-    // Clear inputs and close modal
-    console.log('Clearing input values and closing modal.');
+  
     setInputValues({});
     setModalVisible(false);
   };
+  
 
   const getPackage = async query => {
     const trimmedQuery = typeof query === 'string' ? query.trim() : '';
@@ -1997,6 +2061,15 @@ const Cart = () => {
       }
     }
 
+    for (let i = 0; i < cartItems.length; i++) {
+      if (!cartItems[i].quantity || parseInt(cartItems[i].quantity) <= 0) {
+        Alert.alert(
+          'crm.codeverse.co says',
+          'A valid item quantity (greater than 0) is required to proceed with the order create.',
+        );
+        return;
+      }
+    }
     setIsSubmitting(true);
 
     if (hold_qty_flag === 1) {
