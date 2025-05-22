@@ -23,6 +23,7 @@ export const API = {
   ADD_LOCATION_INVENTORY: 'erpportal/api/style/cedge/getLocationInventory',
   GET_ORDER_PACKING: 'erpportal/api/ordermgmt/getOrderPacking',
   ADD_GENERATED_PDF:  'erpportal/api/ordermgmt/generatePdf',
+  ADD_GENERATED_PDF_INVOICEFORMAT:  'erpportal/api/ordermgmt/prepareInvoicePDF',
   GET_DISTRIBUTOR_GRN:'erpportal/api/ordermgmt/findAllGrnOrders',
   GET_DISTRIBUTOR_ORDER: 'erpportal/api/ordermgmt/disOrdersById',
   ADD_GRN_ORDER: 'erpportal/api/ordermgmt/addgrnorder',
@@ -149,7 +150,8 @@ export const API = {
   MASTER_LOCATION_EDIT:'erpportal/api/location',
   MASTER_EDIT_LOCATION:'erpportal/api/location/editlocation',
   MASTER_EDIT_LOCATION_VALIDATE:'erpportal/api/location/isValid',
-  CLOSE_ORDER_PICKLIST:'erpportal/api/ordermgmt/closePicklistOrder'
+  CLOSE_ORDER_PICKLIST:'erpportal/api/ordermgmt/closePicklistOrder',
+  GET_BARCODE:'erpportal/api/style/getBarcode',
 };
 
 export const USER_ID = 'adminClientId';
