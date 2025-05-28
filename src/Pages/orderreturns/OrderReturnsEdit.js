@@ -19,6 +19,7 @@ import {useSelector} from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {RadioGroup} from 'react-native-radio-buttons-group';
 import {ColorContext} from '../../components/colortheme/colorTheme';
+import FastImage from 'react-native-fast-image';
 
 
 
@@ -62,6 +63,9 @@ const [filteredReasonList, setFilteredReasonList] = useState([]);
 const [selectedReason, setSelectedReason] = useState('');
 const [selectedReasonID, setSelectedReasonID] = useState(0);
 
+
+const [isPreviewVisible, setIsPreviewVisible] = useState(false);
+const [previewImageUri, setPreviewImageUri] = useState('');
 // Modal and form states
 
 
@@ -815,16 +819,23 @@ const renderTableRow = ({item, index, groupIndex}) => (
   <View style={styles.tableRow}>
     <Text style={[styles.tableCellText, styles.colNo]}>{item.styleNum || '-'}</Text>
     
-    <View style={[styles.tableCell, styles.colImage]}>
-      {item.imageUrl1 ? (
-        <Image source={{uri: item.imageUrl1}} style={styles.productImage} />
-      ) : (
-        <View style={styles.noImage}>
-          <Text style={styles.noImageText}>No Image</Text>
-        </View>
-      )}
+    <TouchableOpacity 
+  style={[styles.tableCell, styles.colImage]}
+  onPress={() => {
+    if (item.imageUrl1) {
+      setPreviewImageUri(item.imageUrl1);
+      setIsPreviewVisible(true);
+    }
+  }}
+>
+  {item.imageUrl1 ? (
+    <FastImage source={{uri: item.imageUrl1}} style={styles.productImage} />
+  ) : (
+    <View style={styles.noImage}>
+      <Text style={styles.noImageText}>No Image</Text>
     </View>
-    
+  )}
+</TouchableOpacity>
     <Text style={[styles.tableCellText, styles.colName]}>{item.styleName || '-'}</Text>
     <Text style={[styles.tableCellText, styles.colColor]}>{item.colorName || '-'}</Text>
     <Text style={[styles.tableCellText, styles.colSize]}>{item.size || '-'}</Text>
@@ -1520,6 +1531,35 @@ const handleSubmitReturn = async () => {
           </View>
         </View>
       </Modal>
+      <Modal
+  transparent={true}
+  visible={isPreviewVisible}
+  onRequestClose={() => setIsPreviewVisible(false)}>
+  <TouchableOpacity
+    style={styles.modalOverlayImage}
+    activeOpacity={1}
+    onPress={() => setIsPreviewVisible(false)}>
+    <View style={styles.modalContentImage}>
+      <TouchableOpacity
+        style={styles.closeButtonImageModel}
+        onPress={() => setIsPreviewVisible(false)}>
+        <FastImage
+          style={{height: 30, width: 30, tintColor: '#000'}}
+          source={require('../../../assets/close.png')}
+        />
+      </TouchableOpacity>
+      <FastImage
+        style={styles.fullscreenImage}
+        source={
+          previewImageUri
+            ? {uri: previewImageUri}
+            : require('../../../assets/NewNoImage.jpg')
+        }
+        resizeMode="contain"
+      />
+    </View>
+  </TouchableOpacity>
+</Modal>
       
     </ScrollView>
   );
@@ -1918,6 +1958,31 @@ const getStyles = colors =>
       },
       radioLabel: {
         color: '#000',
+      },
+      modalOverlayImage: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.8)',
+        justifyContent: 'center',
+        alignItems: 'center',
+      },
+      modalContentImage: {
+        width: '90%',
+        height: '60%',
+        backgroundColor: '#fff',
+        borderRadius: 10,
+        overflow: 'hidden',
+      },
+      fullscreenImage: {
+        width: '100%',
+        height: '100%',
+      },
+      closeButtonImageModel: {
+        backgroundColor: colors.color2,
+        borderRadius: 5,
+        position: 'absolute',
+        top: 10,
+        right: 10,
+        zIndex: 2,
       },
   });
 
