@@ -389,6 +389,9 @@ const Sidebar = ({navigation, route}) => {
   const costing = menuMap[15];
   const PickList = menuMap[16];
   const Location = menuMap[17];
+  const OrderReturns = menuMap[18];
+
+  
 
   const hasDropdownhome = home;
   const hasDropdowncategories = Categories;
@@ -408,6 +411,7 @@ const Sidebar = ({navigation, route}) => {
     const hasCosting = costing?.menuName; // Styles
     const hacPickList = PickList?.menuName;
     const hasLocation = Location?.menuName;
+    const hasOrderReturns = OrderReturns?.menuName;
     return {
       style: {
         label:
@@ -465,6 +469,13 @@ const Sidebar = ({navigation, route}) => {
                 label: PickList.menuName,
                 route: 'PickList',
                 src: require('../assets/material-management.png'),
+              }
+            : null,
+            hasOrderReturns
+            ? {
+                label: OrderReturns.menuName,
+                route: 'OrderReturns',
+                src: require('../assets/orderreturn.png'),
               }
             : null,
         ].filter(Boolean),

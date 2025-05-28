@@ -289,7 +289,7 @@ const DistributorOrder = () => {
       totalGst: totals.totalGst,
       totalQty: totals.totalQty,
       orderStatus: 'PENDING',
-      orderId: order.orderNum,
+      orderId: order.orderNoWithPrefix,
       shippingAddressId: order.shippingAddressId,
       customerLocation: order.customerLocation,
       customerId: order.customerId,
@@ -369,7 +369,7 @@ console.log('requestData==ljkj>',requestData)
             />
           </TouchableOpacity>
           <Text style={[styles.headerText, {flex: 1}]}>
-            Order No: {order.orderNum}
+            Order No: {order.orderNoWithPrefix}
           </Text>
           <TouchableOpacity
             onPress={addGrnOrder}

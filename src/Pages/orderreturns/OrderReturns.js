@@ -14,28 +14,21 @@ import {
   Alert,
 } from 'react-native';
 import axios from 'axios';
-import {useFocusEffect, useNavigation} from '@react-navigation/native';
+import { useNavigation} from '@react-navigation/native';
 import {useSelector} from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {API} from '../../config/apiConfig';
 import {ColorContext} from '../../components/colortheme/colorTheme';
 
-const Packorders = () => {
+const OrderReturns = () => {
   const {colors} = useContext(ColorContext);
   const style = getStyles(colors);
   const picklist_flag = useSelector(state => state.selectedCompany.picklist_flag);
   const [orders, setOrders] = useState([]);
-  const [pageNo, setPageNo] = useState(1);
-  const [pageSize, setPageSize] = useState(20);
   const [initialSelectedCompany, setInitialSelectedCompany] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [firstLoad, setFirstLoad] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState(null);
-  const [refreshingOrders, setRefreshingOrders] = useState(false);
   const [showSearchInput, setShowSearchInput] = useState(false);
-
-  const [page, setPage] = useState(1);
-  const [hasMoreData, setHasMoreData] = useState(true);
 
   const [refreshing, setRefreshing] = useState(false);
   const [from, setFrom] = useState(0);
@@ -53,17 +46,7 @@ const Packorders = () => {
   const [filterFlag, setFilterFlag] = useState(false);
 
   const navigation = useNavigation();
-  const handleGoBack = () => {
-    navigation.goBack();
-  };
 
-  // useEffect(() => {
-  //   const unsubscribe = navigation.addListener('focus', () => {
-  //     setSearchQuery('');
-  //     setShowSearchInput(false);
-  //   });
-  //   return unsubscribe;
-  // }, [navigation]);
 
   useEffect(() => {
     const fetchInitialSelectedCompany = async () => {
@@ -109,61 +92,6 @@ const Packorders = () => {
     }
   }, [companyId]);
 
-  // const getAllOrders = async (
-  //   reset = false,
-  //   customFrom = from,
-  //   customTo = to,
-  // ) => {
-  //   // console.log("getAllOrders b ", customFrom, customTo);
-
-  //   if (loading || loadingMore) return;
-  //   setLoading(reset);
-
-  //   if (reset) {
-  //     setFrom(0); // Reset pagination
-  //     setTo(20);
-  //     setHasMoreTasks(true); // Reset hasMoreTasks for new fetch
-  //   }
-    
-
-  //   const apiUrl = `${global?.userData?.productURL}${
-  //     API.GET_ALL_ORDER_LAZY
-  //   }/${customFrom}/${customTo}/${companyId}/${2}`;
-
-  //   const params = {
-  //     picklist_flag: picklist_flag?.toString(),
-  //   };
-  
-
-  //   console.log('getAllOrders A ', customFrom, customTo);
-
-  //   try {
-  //     const response = await axios.get(apiUrl, {
-  //       headers: {
-  //         Authorization: `Bearer ${global?.userData?.token?.access_token}`,
-  //       },
-  //       params,
-  //     });
-
-  //     const newTasks = response.data.response.ordersList;
-  //     if (reset) {
-  //       setOrders(newTasks);
-  //     } else {
-  //       setOrders(prevTasks => [...(prevTasks || []), ...newTasks]);
-  //     }
-
-  //     if (newTasks.length < 20) {
-  //       setHasMoreTasks(false);
-  //     }
-  //   } catch (error) {
-  //     console.error('Error:', error);
-  //   } finally {
-  //     setLoading(false);
-  //     setLoadingMore(false);
-  //   }
-  // };
-
-
   const getAllOrders = async (reset = false, customFrom = from, customTo = to) => {
     if (loading || loadingMore) return;
   
@@ -175,10 +103,8 @@ const Packorders = () => {
       setHasMoreTasks(true);
     }
   
-    const apiUrl = `${global?.userData?.productURL}${API.GET_ALL_ORDER_LAZY}/${customFrom}/${customTo}/${companyId}/${2}`;
-    const params = {
-      picklist_flag: picklist_flag?.toString(),
-    };
+     const apiUrl = `${global?.userData?.productURL}${API.GET_ALL_ORDER_RETURNS_LAZY}/${5}/${customFrom}/${customTo}/${companyId}`;
+
     console.log("Fetching orders from API:", apiUrl);
   
     try {
@@ -186,7 +112,6 @@ const Packorders = () => {
         headers: {
           Authorization: `Bearer ${global?.userData?.token?.access_token}`,
         },
-        params,
       });
   
       console.log("API Response:", response.data);
@@ -263,15 +188,14 @@ const Packorders = () => {
     customFrom = from,
     customTo = to,
   ) => {
-    const apiUrl = `${global?.userData?.productURL}${API.GET_ALL_ORDER_SEARCH}`;
+    const apiUrl = `${global?.userData?.productURL}${API.GET_ALL_ORDER_RETURNS_LAZY_SEARCH}`;
     const requestBody = {
       dropdownId: searchKey,
       fieldvalue: searchQuery,
       from: customFrom,
       to: customTo,
       companyId: companyId,
-      pdfFlag: 0,
-      picklist_flag:picklist_flag
+      pdfFlag:5
     };
 
     console.log('gettasksearch==> ', customFrom, customTo);
@@ -305,12 +229,6 @@ const Packorders = () => {
     }
   };
 
-  // const handleDropdownSelect = option => {
-  //   setSelectedSearchOption(option.label);
-  //   setSearchKey(option.value);
-  //   setDropdownVisible(false);
-  //   setSearchQuery('');
-  // };
 
   const handleDropdownSelect = option => {
     onRefresh();
@@ -365,45 +283,25 @@ const Packorders = () => {
   };
 
   const searchOption = [
-    {label: 'Order No', value: 5},
-    {label: 'Retailer', value: 2},
-    {label: 'Distributor', value: 1},
-    {label: 'Order Date', value: 6},
-    {label: 'Order status', value: 7},
-    {label: 'Packing status', value: 8},
-    { label: 'Customer Type', value: 11 },
-    { label: 'Risk Level', value: 12 },
+    {label: 'Order No', value: 1},
+    {label: 'Customer', value: 2},
+    {label: 'Status', value: 3},
+    {label: 'Order Date', value: 4},
+    {label: 'Created By', value: 5},
+    {label: 'Distributor', value: 6},
+    {label: 'Retailer', value: 7},
+
   ];
 
-  // useEffect(() => {
-  //   if (firstLoad) {
-  //     getAllOrders();
-  //     setFirstLoad(false);
-  //   }
-  // }, [firstLoad, getAllOrders]);
-
-  // useFocusEffect(
-  //   useCallback(() => {
-  //     if (!firstLoad) {
-  //       getAllOrders();
-  //     }
-  //   }, [firstLoad, getAllOrders]),
-  // );
 
   const handleOrderPress = item => {
     if (item.packedStts === 'YET TO PACK') {
       setSelectedOrder(item);
     } else {
-      navigation.navigate('PackingOrders', {orderId: item.orderId});
+      navigation.navigate('OrderReturnsEdit', {orderId: item.orderId});
     }
   };
 
-  const toggleSearchInput = () => {
-    setShowSearchInput(!showSearchInput);
-    if (showSearchInput) {
-      setSearchQuery('');
-    }
-  };
 
   const renderItem = ({item}) => {
     if (!item) return null;
@@ -430,7 +328,7 @@ const Packorders = () => {
         case 'partially confirmed and partially cancelled':
           return 'orange';
         case 'fully returned':
-          return '#FFC0CB';
+          return 'gray';
         case 'partially returned':
           return '#FFD1DF';
         case 'delivered':
@@ -450,12 +348,13 @@ const Packorders = () => {
           <View style={style.ordheader}>
             <View style={style.orderidd}>
               <Text style={{color: '#000'}}>Order No : {item.orderNoWithPrefix}</Text>
-              <Text style={{color: '#000'}}>ShipQty : {item.shipQty}</Text>
+              <Text style={{color: '#000'}}>Total Qty : {item.shipQty}</Text>
             </View>
-            <View style={style.ordshpheader}>
-              <Text style={{color: '#000'}}>Order Date : {item.orderDate}</Text>
-              <Text style={{color: '#000'}}>Ship Date : {item.shipDate}</Text>
+            <View style={style.orderidd}>
+              <Text style={{color: '#000'}}>Returned Qty : {item.retTotQty}</Text>
+              <Text style={{color: '#000'}}>Created By: {item.userName}</Text>
             </View>
+           
             <View style={style.custtlheader}>
               <Text style={{flex: 0.9, color: '#000'}}>
                 Customer Name : {item.customerName}
@@ -465,11 +364,16 @@ const Packorders = () => {
               </Text>
             </View>
             <View style={style.PackedStatus}>
-              <Text style={{fontWeight: 'bold', color: '#000', flex: 0.9}}>
-                Packing status : {item.packedStts}
+              <Text style={{ color: '#000', flex: 0.9}}>
+                Created By : {item.userName}
               </Text>
               <Text style={{color: '#000'}}>
                 Total Amount : {item.totalAmount}
+              </Text>
+            </View>
+            <View style={style.PackedStatus}>
+              <Text style={{color: '#000', flex: 0.9}}>
+              order Date : {item.orderDate}
               </Text>
             </View>
             <View>
@@ -517,7 +421,7 @@ const Packorders = () => {
             fontWeight: 'bold',
             marginHorizontal: 10,
           }}>
-          Packing orders
+          Order Returns
         </Text>
       </View>
       <View style={style.searchContainer}>
@@ -587,18 +491,19 @@ const Packorders = () => {
           }
         />
       )}
-      {selectedOrder && (
+      {/* {selectedOrder && (
         <Modal visible={true} transparent={true} animationType="fade">
           <View style={style.modalContainer}>
             <View style={style.modalContent}>
               <View style={style.custtlheader}>
                 <Text style={{color: '#000'}}>
-                  Order No : {selectedOrder.orderNoWithPrefix}
+                  Order No : {selectedOrder.orderNum}
                 </Text>
                 <Text style={{color: '#000'}}>
                   TotalQty :{selectedOrder.totalQty}
                 </Text>
               </View>
+              
               <View style={style.modelordshpheader}>
                 <Text style={{color: '#000'}}>
                   Order Date : {selectedOrder.orderDate}
@@ -643,7 +548,7 @@ const Packorders = () => {
             </View>
           </View>
         </Modal>
-      )}
+      )} */}
     </View>
   );
 };
@@ -676,7 +581,7 @@ const getStyles = colors =>
       flexDirection: 'row',
       justifyContent: 'space-between',
       marginHorizontal: 10,
-      marginVertical: 5,
+      marginVertical: 2,
     },
     ordshpheader: {
       flexDirection: 'row',
@@ -799,4 +704,4 @@ const getStyles = colors =>
     },
   });
 
-export default Packorders;
+export default OrderReturns;

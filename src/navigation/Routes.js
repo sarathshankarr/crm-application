@@ -62,6 +62,8 @@ import CameraScreen from '../components/CameraScreen';
 import LocationEdit from '../Pages/master/LocationEdit';
 import AddNewLocation from '../Pages/master/AddNewLocation';
 import MasterLocation from '../Pages/master/MasterLocation';
+import OrderReturns from '../Pages/orderreturns/OrderReturns';
+import OrderReturnsEdit from '../Pages/orderreturns/OrderReturnsEdit';
 
 const Stack = createNativeStackNavigator();
 
@@ -478,6 +480,22 @@ const Routes = () => {
         options={{
           headerShown: true,
           headerTitle: () => <CompanyDropdown title="AddNewLocation" />,
+        }}
+      />
+        <Stack.Screen
+        name="OrderReturns"
+        component={OrderReturns}
+        options={{
+          headerShown: true,
+          headerTitle: () => <CompanyDropdown title="OrderReturns" />,
+        }}
+      />
+       <Stack.Screen
+        name="OrderReturnsEdit"
+        component={OrderReturnsEdit}
+        options={{
+          headerShown: true,
+          headerTitle: () => <CompanyDropdown title="OrderReturnsEdit" />,
         }}
       />
     </Stack.Navigator>

@@ -152,6 +152,15 @@ export const API = {
   MASTER_EDIT_LOCATION_VALIDATE:'erpportal/api/location/isValid',
   CLOSE_ORDER_PICKLIST:'erpportal/api/ordermgmt/closePicklistOrder',
   GET_BARCODE:'erpportal/api/style/getBarcode',
+  GET_ALL_ORDER_RETURNS_LAZY: 'erpportal/api/ordermgmt/getAllOrderReturnLazyLoad',
+  GET_ALL_ORDER_RETURNS_LAZY_SEARCH:'erpportal/api/filter/getOrderReturnBasedOnTypeServices',
+  GET_ORDER_RETURNSEDIT_BY_ID:'erpportal/api/ordermgmt/disOrdersById',
+  GET_RETURN_REASON:'erpportal/api/returns/getByCompanyId',
+  GET_RETURN_REASON_VALIDATE:'erpportal/api/returns/isValid/',
+  ADD_RETURN_REASON:'erpportal/api/returns/addreturns',
+  GET_ORDER_RETURN: 'erpportal/api/ordermgmt/getOrderPacking',
+  ADD_ORDER_RETURN: 'erpportal/api/ordermgmt/addRetOrder',
+
 };
 
 export const USER_ID = 'adminClientId';

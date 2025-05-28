@@ -28,7 +28,7 @@ const PackingOrders = () => {
   const [invoiceFormat, setInvoiceFormat] = useState(null);
   const [dPkgFlag, setDPkgFlag] = useState(null);
   const [customerName, setCustomerName] = useState('');
-const [orderNum, setOrderNum] = useState('');
+const [orderNoWithPrefix, setOrderNum] = useState('');
 
 
   const [loading, setLoading] = useState(true);
@@ -79,7 +79,7 @@ const [orderNum, setOrderNum] = useState('');
         setInvoiceFormat(orderData?.invoiceFormat);
         setDPkgFlag(orderData?.d_pkg_flag); // Add this line
         setCustomerName(orderData?.customerName);
-        setOrderNum(orderData?.orderNum);
+        setOrderNum(orderData?.orderNoWithPrefix);
         setLoading(false);
       })
       .catch(error => {
@@ -365,7 +365,7 @@ const [orderNum, setOrderNum] = useState('');
       Customer Name: {customerName || 'N/A'}
     </Text>
     <Text style={{fontSize: 16, fontWeight: 'bold', color: '#000'}}>
-      Order No: {orderNum || 'N/A'}
+      Order No: {orderNoWithPrefix || 'N/A'}
     </Text>
   </View>
 </View>

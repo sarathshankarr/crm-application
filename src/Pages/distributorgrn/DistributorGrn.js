@@ -353,7 +353,7 @@ const DistributorGrn = () => {
 
     return (
       <TouchableOpacity onPress={() => gotoDistributorOrder(item.orderId)} style={styles.orderItem}>
-        <Text style={styles.orderIdText}>{item.orderNum}</Text>
+        <Text style={styles.orderIdText}>{item.orderNoWithPrefix}</Text>
         <Text style={styles.customerText}>{item.customerName}</Text>
         <Text style={styles.qtyText}>{item.shipQty || 0}</Text>
         <Text style={styles.statusText}>{item.orderStatus}</Text>
