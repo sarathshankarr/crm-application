@@ -257,6 +257,46 @@ const ProductPackagePublish = () => {
     {id: 2, value: 'Tax invoice (Description wise)'},
   ];
 
+
+   const [priceListOptions, setPriceListOptions] = useState([]);
+    const [selectedPriceList, setSelectedPriceList] = useState('');
+    const [selectedPriceListId, setSelectedPriceListId] = useState(null);
+    const [showPriceListDropdown, setShowPriceListDropdown] = useState(false);
+  
+    const togglePriceListDropdown = () => {
+      setShowPriceListDropdown(!showPriceListDropdown);
+    };
+  
+    const handleSelectPriceList = item => {
+      setSelectedPriceList(item.priceListName); // <== NOT item.label
+      setSelectedPriceListId(item.priceListId); // <== NOT item.value
+      setShowPriceListDropdown(false);
+    };
+  
+    useEffect(() => {
+      getPriceList();
+    }, []);
+    const getPriceList = () => {
+      const apiUrl = `${global?.userData?.productURL}${API.GET_PRICE_LIST}/${companyId}/{desc}`;
+      axios
+        .get(apiUrl, {
+          headers: {
+            Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+          },
+        })
+        .then(response => {
+          console.log(
+            'response.data.priceList ===>',
+            response.data?.response?.priceLIsts,
+          );
+  
+          setPriceListOptions(response.data?.response?.priceLIsts); // Save the list for dropdown
+        })
+        .catch(error => {
+          console.error('Error fetching price list:', error);
+        });
+    };
+
   const [selectedInvoiceFormat, setSelectedInvoiceFormat] = useState(
     invFormats[0],
   );
@@ -594,6 +634,7 @@ const ProductPackagePublish = () => {
       mobLongitude: confirmedLocation?.longitude || null,
       invoiceFormat: selectedInvoiceFormat.id,
       invDeclaration: invDeclaration || '',
+      priceType: selectedPriceListId,
     };
     console.log('requestData====>', requestData);
     axios
@@ -695,6 +736,7 @@ const ProductPackagePublish = () => {
       mobLongitude: confirmedLocation?.longitude || null,
       invoiceFormat: selectedInvoiceFormat.id,
       invDeclaration: invDeclaration || '',
+      priceType: selectedPriceListId,
     };
     console.log('requestDatafordis===>', requestData);
 
@@ -1762,6 +1804,42 @@ const ProductPackagePublish = () => {
               {errorFields.includes('locationDescription') && (
                 <Text style={styles.errorText}>Please Enter Landmark</Text>
               )}
+
+
+ <Text style={styles.headerTxt}>{'Price Type '}</Text>
+                    <View style={styles.container1}>
+                      <View style={styles.container2}>
+                        <TouchableOpacity
+                          style={styles.container3}
+                          onPress={togglePriceListDropdown}>
+                          <Text style={{fontWeight: '600', color: '#000'}}>
+                            {selectedPriceList || 'Select'}
+                          </Text>
+                          <Image
+                            source={require('../../../assets/dropdown.png')}
+                            style={{width: 20, height: 20}}
+                          />
+                        </TouchableOpacity>
+                        {showPriceListDropdown && (
+                          <View style={styles.dropdownContentstate}>
+                            <ScrollView
+                              style={styles.scrollView}
+                              nestedScrollEnabled={true}>
+                              {priceListOptions.map((item, index) => (
+                                <TouchableOpacity
+                                  key={index}
+                                  style={styles.dropdownItem}
+                                  onPress={() => handleSelectPriceList(item)}>
+                                  <Text style={styles.dropdownText}>
+                                    {item.priceListName}
+                                  </Text>
+                                </TouchableOpacity>
+                              ))}
+                            </ScrollView>
+                          </View>
+                        )}
+                      </View>
+                    </View>
 
               <Text style={styles.headerTxt}>{'Status *'}</Text>
               <View style={styles.container1}>

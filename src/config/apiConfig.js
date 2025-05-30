@@ -160,7 +160,7 @@ export const API = {
   ADD_RETURN_REASON:'erpportal/api/returns/addreturns',
   GET_ORDER_RETURN: 'erpportal/api/ordermgmt/getOrderPacking',
   ADD_ORDER_RETURN: 'erpportal/api/ordermgmt/addRetOrder',
-
+  GET_PRICE_LIST: 'erpportal/api/priceList/getByCompanyId',
 };
 
 export const USER_ID = 'adminClientId';

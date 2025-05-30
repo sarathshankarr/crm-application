@@ -64,6 +64,7 @@ import AddNewLocation from '../Pages/master/AddNewLocation';
 import MasterLocation from '../Pages/master/MasterLocation';
 import OrderReturns from '../Pages/orderreturns/OrderReturns';
 import OrderReturnsEdit from '../Pages/orderreturns/OrderReturnsEdit';
+import PriceList from '../Pages/product/PriceList';
 
 const Stack = createNativeStackNavigator();
 
@@ -498,6 +499,16 @@ const Routes = () => {
           headerTitle: () => <CompanyDropdown title="OrderReturnsEdit" />,
         }}
       />
+        <Stack.Screen
+        name="PriceList"
+        component={PriceList}
+        options={{
+          headerShown: false,
+          headerTitle: () => <CompanyDropdown title="PriceList" />,
+        }}
+      />
+
+
     </Stack.Navigator>
   );
 };

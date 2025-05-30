@@ -258,6 +258,45 @@ const Cart = () => {
     }
   };
 
+  const [priceListOptions, setPriceListOptions] = useState([]);
+  const [selectedPriceList, setSelectedPriceList] = useState('');
+  const [selectedPriceListId, setSelectedPriceListId] = useState(null);
+  const [showPriceListDropdown, setShowPriceListDropdown] = useState(false);
+
+  const togglePriceListDropdown = () => {
+    setShowPriceListDropdown(!showPriceListDropdown);
+  };
+
+  const handleSelectPriceList = item => {
+    setSelectedPriceList(item.priceListName); // <== NOT item.label
+    setSelectedPriceListId(item.priceListId); // <== NOT item.value
+    setShowPriceListDropdown(false);
+  };
+
+  useEffect(() => {
+    getPriceList();
+  }, []);
+  const getPriceList = () => {
+    const apiUrl = `${global?.userData?.productURL}${API.GET_PRICE_LIST}/${companyId}/{desc}`;
+    axios
+      .get(apiUrl, {
+        headers: {
+          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+        },
+      })
+      .then(response => {
+        console.log(
+          'response.data.priceList ===>',
+          response.data?.response?.priceLIsts,
+        );
+
+        setPriceListOptions(response.data?.response?.priceLIsts); // Save the list for dropdown
+      })
+      .catch(error => {
+        console.error('Error fetching price list:', error);
+      });
+  };
+
   const invFormats = [
     {id: 0, value: 'Default Invoice'},
     {id: 1, value: 'V-mart Invoice'},
@@ -581,12 +620,12 @@ const Cart = () => {
 
   const handleSaveItem = fetchedData => {
     console.log('Fetched Data:', fetchedData);
-  
+
     let itemsToUpdate = [];
-  
+
     fetchedData.forEach(item => {
       const isMatchingBarcode = item.gsCode === searchQueryCode; // Match scanned barcode
-  
+
       const itemDetails = {
         packageId: item.packageId || null,
         styleId: item.styleId,
@@ -604,44 +643,43 @@ const Cart = () => {
         imageUrls: item.imageUrls,
         sourceScreen: 'ModalComponent',
       };
-  
+
       console.log('Item details to add/update:', itemDetails);
-  
+
       const existingItemIndex = cartItems.findIndex(
         cartItem =>
           cartItem.styleId === item.styleId &&
           cartItem.colorId === item.colorId &&
           cartItem.sizeDesc === item.sizeDesc,
       );
-  
+
       if (existingItemIndex !== -1) {
         // ✅ Update quantity only for the matching barcode
         const updatedQuantity =
           parseInt(cartItems[existingItemIndex].quantity, 10) +
           (isMatchingBarcode ? 1 : 0);
-  
+
         const updatedItem = {
           ...cartItems[existingItemIndex],
           quantity: updatedQuantity,
           price: itemDetails.price,
           imageUrls: itemDetails.imageUrls,
         };
-  
+
         dispatch(updateCartItem(existingItemIndex, updatedItem));
       } else {
         // ✅ Always add all styles, even if quantity = 0
         itemsToUpdate.push(itemDetails);
       }
     });
-  
+
     if (itemsToUpdate.length > 0) {
       itemsToUpdate.forEach(item => dispatch(addItemToCart(item)));
     }
-  
+
     setInputValues({});
     setModalVisible(false);
   };
-  
 
   const getPackage = async query => {
     const trimmedQuery = typeof query === 'string' ? query.trim() : '';
@@ -1357,6 +1395,8 @@ const Cart = () => {
       console.log('Opening modal - clearing state');
       setSelectedState(null);
       setSelectedStateId(null);
+      setSelectedPriceList('');
+      setSelectedPriceListId(null);
       setStateSearchTerm('');
       setSelectedInvoiceFormat(invFormats[0]); // reset to default invoice format
       setInvDeclaration(''); // clear declaration text
@@ -1399,6 +1439,8 @@ const Cart = () => {
     });
     setSelectedState(null);
     setSelectedStateId(null);
+    setSelectedPriceList('');
+    setSelectedPriceListId(null);
     setStateSearchTerm('');
     setIsNavigatingToLocation(false);
     setConfirmedLocation(null);
@@ -1471,6 +1513,7 @@ const Cart = () => {
       mobLongitude: confirmedLocation?.longitude || null,
       invoiceFormat: selectedInvoiceFormat.id,
       invDeclaration: invDeclaration || '',
+      priceType: selectedPriceListId,
       // userId:userId
     };
     console.log('requestData====>', requestData);
@@ -1576,6 +1619,8 @@ const Cart = () => {
       mobLongitude: confirmedLocation?.longitude || null,
       invoiceFormat: selectedInvoiceFormat.id,
       invDeclaration: invDeclaration || '',
+      priceType: selectedPriceListId,
+
     };
 
     console.log('requestDatafordis===>', requestData);
@@ -3152,6 +3197,7 @@ const Cart = () => {
       linkType: 7,
       mobLatitude: confirmedLocation?.latitude || null,
       mobLongitude: confirmedLocation?.longitude || null,
+    
     };
 
     console.log('requestLocationData====>', requestLocationData);
@@ -4629,6 +4675,41 @@ const Cart = () => {
                     {errorFields.includes('locationDescription') && (
                       <Text style={style.errorText}>Please Enter Landmark</Text>
                     )}
+
+                    <Text style={style.headerTxt}>{'Price Type '}</Text>
+                    <View style={style.container1}>
+                      <View style={style.container2}>
+                        <TouchableOpacity
+                          style={style.container3}
+                          onPress={togglePriceListDropdown}>
+                          <Text style={{fontWeight: '600', color: '#000'}}>
+                            {selectedPriceList || 'Select'}
+                          </Text>
+                          <Image
+                            source={require('../../../assets/dropdown.png')}
+                            style={{width: 20, height: 20}}
+                          />
+                        </TouchableOpacity>
+                        {showPriceListDropdown && (
+                          <View style={style.dropdownContentstate}>
+                            <ScrollView
+                              style={style.scrollView}
+                              nestedScrollEnabled={true}>
+                              {priceListOptions.map((item, index) => (
+                                <TouchableOpacity
+                                  key={index}
+                                  style={style.dropdownItem}
+                                  onPress={() => handleSelectPriceList(item)}>
+                                  <Text style={style.dropdownText}>
+                                    {item.priceListName}
+                                  </Text>
+                                </TouchableOpacity>
+                              ))}
+                            </ScrollView>
+                          </View>
+                        )}
+                      </View>
+                    </View>
 
                     <Text style={style.headerTxt}>{'Status *'}</Text>
                     <View style={style.container1}>

@@ -21,6 +21,11 @@ import { ColorContext } from '../../components/colortheme/colorTheme';
 
 const NewStyleDetail = ({route}) => {
   const navigation = useNavigation();
+
+ 
+  
+  
+
   const selectedCompany = useSelector(state => state.selectedCompany);
   const userId = useSelector(state => state?.loggedInUser?.userId);
   const styleDetails = route?.params?.Style;
@@ -2123,13 +2128,13 @@ const handleChangeScale = async (scaleId, scaleRange) => {
       setProcessing(false);
     }
   };
-  const ValidateStyleName = async () => {
+  const ValidateStyleName = async (type) => {
     if (processing) return;
     setProcessing(true);
   
     if (styleId) {
       console.log('Skipping validation because styleId is already provided.');
-      handleNextPage(); // Proceed with the next steps if styleId exists
+      handleNextPage(type); // Proceed with the next steps if styleId exists
       setProcessing(false);
       return;
     }
@@ -2166,7 +2171,7 @@ const handleChangeScale = async (scaleId, scaleRange) => {
       console.log('Response Data:', response?.data);
   
       if (response?.data === true) {
-        handleNextPage();
+        handleNextPage(type);
       } else {
         Alert.alert(
           'crm.codeverse.co.says',
@@ -2191,11 +2196,23 @@ const handleChangeScale = async (scaleId, scaleRange) => {
   
   
   
+  // const handlepricelist = () => {
   
+  //   navigation.navigate('PriceList', { 
+  //     selectedScale: selectedScale,
+  //     priceData: selectedSizes.map(size => ({
+  //       size: size.sizeDesc,
+  //       dealerPrice: size.dealerPrice || '',
+  //       retailerPrice: size.retailerPrice || '',
+  //       mrp: size.mrp || '',
+  //       corRate: size.dealerPrice || '' // default
+  //     })),
+  //   });
+  // };
   
   
 
-  const handleNextPage = () => {
+  const handleNextPage = (type) => {
     const colorsArray = colorList
       .filter(color => selectedColorIds.includes(color.colorId))
       .map(item => ({
@@ -2203,6 +2220,7 @@ const handleChangeScale = async (scaleId, scaleRange) => {
         colorName: item.colorName,
       }));
 
+    
     const styleDetails = {
       styleId: styleId,
       styleNum: styleNum,
@@ -2245,8 +2263,29 @@ const handleChangeScale = async (scaleId, scaleRange) => {
       gstSlotId:selectedSlotId,
     };
     console.log("selectedStatus===>",selectedStatusId)
-    navigation.navigate('UploadProductImage', {productStyle: styleDetails});
+    if (type === 'productImages') {
+      navigation.navigate('UploadProductImage', { productStyle: styleDetails, selectedScale: selectedScale });
+      priceData: selectedSizes.map(size => ({
+        size: size.sizeDesc,
+        sizeId: size.sizeId,
+        dealerPrice: size.dealerPrice || '',
+        retailerPrice: size.retailerPrice || '',
+        mrp: size.mrp || '',
+        // corRate: size.dealerPrice || '' // default
+      }))
+    } else {
+    navigation.navigate('PriceList', {productStyle: styleDetails, selectedScale: selectedScale,
+      priceData: selectedSizes.map(size => ({
+        size: size.sizeDesc,
+        sizeId: size.sizeId,
+        dealerPrice: size.dealerPrice || '',
+        retailerPrice: size.retailerPrice || '',
+        mrp: size.mrp || '',
+        // corRate: size.dealerPrice || '' // default
+      })),});
   };
+}
+  
 
   const handleInputChange = (index, field, value) => {
     const updatedSizes = [...selectedSizes];
@@ -2574,20 +2613,26 @@ const handleChangeScale = async (scaleId, scaleRange) => {
               </View>
             </View>
             <View style={{flexDirection: 'row', alignSelf: 'center'}}>
-              <TouchableOpacity style={style.headbasicinfo}>
-                <Text style={{color:'#000',fontWeight:"bold"}}>Basic Info</Text>
-              </TouchableOpacity>
-            <TouchableOpacity
-  onPress={ValidateStyleName} // Call ValidateStyleName instead of handleNextPage directly
-  disabled={!nextButton}
-  style={[
-    style.headprductimage,
-    { backgroundColor: nextButton ? '#' : 'lightgray' }, // Correct way to set dynamic background color
-  ]}>
-  <Text style={{color:'#000',fontWeight:"bold"}}>Product Images</Text>
-</TouchableOpacity>
+  <TouchableOpacity style={style.headbasicinfo}>
+    <Text style={{color:'#000', fontWeight: 'bold'}}>Basic Info</Text>
+  </TouchableOpacity>
+  <TouchableOpacity onPress={()=>ValidateStyleName  ('priceList')}
+    style={style.headpricelist}>
+    <Text style={{color:'#000', fontWeight: 'bold'}}>Price List</Text>
+  </TouchableOpacity>
+  <TouchableOpacity
+    onPress={()=>ValidateStyleName ('productImages')}
+    disabled={!nextButton}
+    style={[
+      style.headprductimage,
+      { backgroundColor: nextButton ? '#' : 'lightgray' },
+    ]}>
+    <Text style={{color:'#000', fontWeight: 'bold'}}>Product Images</Text>
+  </TouchableOpacity>
 
-            </View>
+
+</View>
+
             <View>
             {styleId !== 0 && (
               <TouchableOpacity   onPress={handleCopy} style={{flexDirection:"row",alignItems:"center",alignItems:"flex-end",alignSelf:"flex-end"}}>
@@ -5364,7 +5409,7 @@ const getStyles = (colors) => StyleSheet.create({
   },
   headbasicinfo: {
     marginTop: 10,
-    paddingHorizontal: 50,
+    paddingHorizontal: 20,
     borderTopLeftRadius: 10,
     borderBottomLeftRadius: 10,
     borderColor: '#000',
@@ -5374,9 +5419,17 @@ const getStyles = (colors) => StyleSheet.create({
   },
   headprductimage: {
     marginTop: 10,
-    paddingHorizontal: 50,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderColor: '#000',
+    borderWidth: 1,
     borderTopRightRadius: 10,
     borderBottomRightRadius: 10,
+  },
+  headpricelist:{
+    marginTop: 10,
+    paddingHorizontal: 20,
+  
     paddingVertical: 10,
     borderColor: '#000',
     borderWidth: 1,

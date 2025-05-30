@@ -251,6 +251,45 @@ const NewCall = () => {
     }
   };
 
+   const [priceListOptions, setPriceListOptions] = useState([]);
+    const [selectedPriceList, setSelectedPriceList] = useState('');
+    const [selectedPriceListId, setSelectedPriceListId] = useState(null);
+    const [showPriceListDropdown, setShowPriceListDropdown] = useState(false);
+  
+    const togglePriceListDropdown = () => {
+      setShowPriceListDropdown(!showPriceListDropdown);
+    };
+  
+    const handleSelectPriceList = item => {
+      setSelectedPriceList(item.priceListName); // <== NOT item.label
+      setSelectedPriceListId(item.priceListId); // <== NOT item.value
+      setShowPriceListDropdown(false);
+    };
+  
+    useEffect(() => {
+      getPriceList();
+    }, []);
+    const getPriceList = () => {
+      const apiUrl = `${global?.userData?.productURL}${API.GET_PRICE_LIST}/${companyId}/{desc}`;
+      axios
+        .get(apiUrl, {
+          headers: {
+            Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+          },
+        })
+        .then(response => {
+          console.log(
+            'response.data.priceList ===>',
+            response.data?.response?.priceLIsts,
+          );
+  
+          setPriceListOptions(response.data?.response?.priceLIsts); // Save the list for dropdown
+        })
+        .catch(error => {
+          console.error('Error fetching price list:', error);
+        });
+    };
+
   const invFormats = [
     {id: 0, value: 'Default Invoice'},
     {id: 1, value: 'V-mart Invoice'},
@@ -459,6 +498,7 @@ const NewCall = () => {
       mobLongitude: confirmedLocation?.longitude || null,
       invoiceFormat: selectedInvoiceFormat.id,
       invDeclaration: invDeclaration || '',
+      priceType: selectedPriceListId,
       // userId:userId
     };
     console.log('requestData====>', requestData);
@@ -2628,6 +2668,41 @@ const NewCall = () => {
                 {errorFields.includes('locationDescription') && (
                   <Text style={style.errorText}>Please Enter Landmark</Text>
                 )}
+
+ <Text style={style.headerTxt}>{'Price Type '}</Text>
+                    <View style={style.container1}>
+                      <View style={style.container2}>
+                        <TouchableOpacity
+                          style={style.container3}
+                          onPress={togglePriceListDropdown}>
+                          <Text style={{fontWeight: '600', color: '#000'}}>
+                            {selectedPriceList || 'Select'}
+                          </Text>
+                          <Image
+                            source={require('../../../assets/dropdown.png')}
+                            style={{width: 20, height: 20}}
+                          />
+                        </TouchableOpacity>
+                        {showPriceListDropdown && (
+                          <View style={style.dropdownContentstate}>
+                            <ScrollView
+                              style={style.scrollView}
+                              nestedScrollEnabled={true}>
+                              {priceListOptions.map((item, index) => (
+                                <TouchableOpacity
+                                  key={index}
+                                  style={style.dropdownItem}
+                                  onPress={() => handleSelectPriceList(item)}>
+                                  <Text style={style.dropdownText}>
+                                    {item.priceListName}
+                                  </Text>
+                                </TouchableOpacity>
+                              ))}
+                            </ScrollView>
+                          </View>
+                        )}
+                      </View>
+                    </View>
 
                 <Text style={style.headerTxt}>{'Status *'}</Text>
                 <View style={style.container1}>

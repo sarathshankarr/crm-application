@@ -41,6 +41,9 @@ const UploadProductImage = ({route}) => {
   
   const navigation = useNavigation();
 
+
+ 
+
   const selectedCompany = useSelector(state => state.selectedCompany);
   const companyId = selectedCompany?.id;
 
@@ -104,37 +107,6 @@ const UploadProductImage = ({route}) => {
       });
   };
 
-
-
-  // const requestCameraPermission = async () => {
-  //   try {
-  //     if (Platform.OS === 'android' && Platform.Version < 30) {
-  //       const granted = await PermissionsAndroid.requestMultiple([
-  //         PermissionsAndroid.PERMISSIONS.CAMERA,
-  //         PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-  //         PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
-  //       ]);
-  
-  //       if (
-  //         granted['android.permission.CAMERA'] === PermissionsAndroid.RESULTS.GRANTED &&
-  //         granted['android.permission.WRITE_EXTERNAL_STORAGE'] === PermissionsAndroid.RESULTS.GRANTED &&
-  //         granted['android.permission.READ_EXTERNAL_STORAGE'] === PermissionsAndroid.RESULTS.GRANTED
-  //       ) {
-  //         return true;
-  //       } else {
-  //         Alert.alert(
-  //           'Permission Denied',
-  //           'Camera and storage permissions are required to upload images.',
-  //         );
-  //         return false;
-  //       }
-  //     }
-  //     return true; // Permissions automatically granted for Android 11+
-  //   } catch (err) {
-  //     console.warn('Permission request error:', err);
-  //     return false;
-  //   }
-  // };
 
 
 
@@ -227,8 +199,6 @@ const openCamera = async () => {
   }
 };
   
-  
-
 
 useEffect(() => {
   if (selectedImages.length > 0) {
@@ -237,9 +207,7 @@ useEffect(() => {
 }, [selectedImages]);
   
 
-  const openGallery = () => {
-    // setModalVisible(false);
-  
+  const openGallery = () => {  
     if (selectedImages.length >= 10) {
       Alert.alert(
         'Image Limit Reached',
@@ -280,12 +248,6 @@ useEffect(() => {
         }
       });
   };
-  
-
-  // const removeImage = index => {
-  //   const updatedImages = selectedImages.filter((_, i) => i !== index);
-  //   setSelectedImages(updatedImages);
-  // };
 
   const removeImage = (index) => {
     const deletedImage = selectedImages.filter((_, i) => i === index);
@@ -379,7 +341,8 @@ useEffect(() => {
     formData.append('uomId', productStyle.uomId); 
     formData.append("statusId",productStyle.statusId)
     formData.append("gstSlotId",productStyle.gstSlotId)
- 
+    formData.append('priceList', JSON.stringify(route.params?.priceListData || []));
+
     selectedImages.forEach((image, index) => {
       formData.append('files', {
         uri: image.uri,
@@ -488,6 +451,7 @@ useEffect(() => {
     formData.append('decId', productStyle?.decoration?.toString());
     formData.append('trimId', productStyle?.trims?.toString());
     formData.append('processId', (productStyle.processId || 0).toString());
+    formData.append('priceList', JSON.stringify(route.params?.priceListData || []));
 
     // Debugging the image URLs
     console.log('Image URLs:',deletedImageNames);
@@ -554,9 +518,42 @@ useEffect(() => {
       });
   };
 
+  const [savedTabPriceData, setSavedTabPriceData] = useState({});
+  const [savedCopiedTabs, setSavedCopiedTabs] = useState({});
+  const [savedEditedTabs, setSavedEditedTabs] = useState({});
+
+  useEffect(() => {
+    // Get saved data from route params if returning from PriceList
+    const routeSavedTabPriceData = route?.params?.savedTabPriceData || {};
+    const routeSavedCopiedTabs = route?.params?.savedCopiedTabs || {};
+    const routeSavedEditedTabs = route?.params?.savedEditedTabs || {};
+    
+    setSavedTabPriceData(routeSavedTabPriceData);
+    setSavedCopiedTabs(routeSavedCopiedTabs);
+    setSavedEditedTabs(routeSavedEditedTabs);
+    
+    // ... your existing useEffect code
+  }, []);
+
+  
   const handlebasicinfo = () => {
     navigation.navigate('StyleDetails');
   };
+
+  const handlepricelist = () => {
+    navigation.navigate('PriceList', {
+      priceData: route?.params?.priceData || [], // Pass original price data
+      selectedScale: route?.params?.selectedScale || '',
+      // Pass the saved state data
+      savedTabPriceData: savedTabPriceData,
+      savedCopiedTabs: savedCopiedTabs,
+      savedEditedTabs: savedEditedTabs,
+      // Pass any other existing params
+      ...route.params
+    });
+  };
+
+
   return (
     <SafeAreaView>
       <View
@@ -598,9 +595,13 @@ useEffect(() => {
           style={styles.headbasicinfo}>
           <Text style={{color:'#000',fontWeight:"bold"}}>Basic Info</Text>
         </TouchableOpacity>
+        <TouchableOpacity onPress={handlepricelist} style={styles.headpricelist}>
+    <Text style={{color:'#000', fontWeight: 'bold'}}>Price List</Text>
+          </TouchableOpacity>
         <TouchableOpacity style={styles.headprductimage}>
           <Text style={{color:'#000',fontWeight:"bold"}}>Product Images</Text>
         </TouchableOpacity>
+     
       </View>
       <TouchableOpacity
         style={styles.uploadImg}
@@ -619,20 +620,6 @@ useEffect(() => {
           flexDirection: 'row',
           justifyContent: 'space-evenly',
         }}>
-        {/* {selectedImages.map((image, index) => (
-          <View key={index} style={{position: 'relative', paddingVertical: 10}}>
-            <Image
-              source={{uri: image.uri}}
-              style={{width: 65, height: 65, marginHorizontal: 5}}
-              resizeMode="cover"
-            />
-            <TouchableOpacity
-              style={styles.removeButton}
-              onPress={() => removeImage(index)}>
-              <Text style={styles.removeButtonText}>X</Text>
-            </TouchableOpacity>
-          </View>
-        ))} */}
           {selectedImages.map((image, index) => (
           <View key={index} style={{position: 'relative', paddingVertical: 10}}>
             <TouchableOpacity onPress={() => openModal(image)}>
@@ -674,21 +661,6 @@ useEffect(() => {
      </Modal>
      
       )}
-      {/* 
-      <TouchableOpacity
-        style={{
-          backgroundColor: saveBtn ? '#1F74BA' : 'skyblue',
-          padding: 10,
-          borderRadius: 5,
-          marginTop: 20,
-          width: '90%',
-          marginHorizontal: 20
-        }}
-        disabled={!saveBtn}
-        onPress={styleId ? handleEditStyle : handleSave}
-      >
-        <Text style={styles.saveButtonText}>{styleId ? 'Update' : 'Save'}</Text>
-      </TouchableOpacity> */}
       <TouchableOpacity
         style={{
           backgroundColor: saveBtn ? colors.color2 : 'skyblue',
@@ -765,7 +737,7 @@ const getStyles = colors =>
     },
     headbasicinfo: {
       marginTop: 10,
-      paddingHorizontal: 50,
+      paddingHorizontal: 20,
       borderTopLeftRadius: 10,
       borderBottomLeftRadius: 10,
       borderColor: '#000',
@@ -775,13 +747,21 @@ const getStyles = colors =>
     headprductimage: {
       backgroundColor: '#ffffff',
       marginTop: 10,
-      paddingHorizontal: 50,
-      borderTopRightRadius: 10,
-      borderBottomRightRadius: 10,
+      paddingHorizontal: 20,
       paddingVertical: 10,
       borderColor: '#000',
       borderWidth: 1,
+      borderTopRightRadius: 10,
+      borderBottomRightRadius: 10,
       backgroundColor: colors.color2,
+    },
+    headpricelist:{
+      marginTop: 10,
+      paddingHorizontal: 20,
+
+      paddingVertical: 10,
+      borderColor: '#000',
+      borderWidth: 1,
     },
     saveButtonText: {
       color: '#fff',
