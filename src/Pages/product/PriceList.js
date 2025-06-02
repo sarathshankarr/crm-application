@@ -16,7 +16,7 @@ import {
 import {ColorContext} from '../../components/colortheme/colorTheme';
 import {API} from '../../config/apiConfig';
 import axios from 'axios';
-import { useSelector } from 'react-redux';
+import {useSelector} from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const PriceList = ({route}) => {
@@ -50,31 +50,30 @@ const PriceList = ({route}) => {
   const productStyle = route?.params?.productStyle || {};
   // Company ID for API calls
 
+  const selectedCompany = useSelector(state => state.selectedCompany);
+  const [initialSelectedCompany, setInitialSelectedCompany] = useState(null);
 
-   const selectedCompany = useSelector(state => state.selectedCompany);
-    const [initialSelectedCompany, setInitialSelectedCompany] = useState(null);
-  
-    useEffect(() => {
-      const fetchInitialSelectedCompany = async () => {
-        try {
-          const initialCompanyData = await AsyncStorage.getItem(
-            'initialSelectedCompany',
-          );
-          if (initialCompanyData) {
-            const initialCompany = JSON.parse(initialCompanyData);
-            setInitialSelectedCompany(initialCompany);
-          }
-        } catch (error) {
-          console.error('Error fetching initial selected company:', error);
+  useEffect(() => {
+    const fetchInitialSelectedCompany = async () => {
+      try {
+        const initialCompanyData = await AsyncStorage.getItem(
+          'initialSelectedCompany',
+        );
+        if (initialCompanyData) {
+          const initialCompany = JSON.parse(initialCompanyData);
+          setInitialSelectedCompany(initialCompany);
         }
-      };
-  
-      fetchInitialSelectedCompany();
-    }, []);
-  
-    const companyId = selectedCompany
-      ? selectedCompany.id
-      : initialSelectedCompany?.id;
+      } catch (error) {
+        console.error('Error fetching initial selected company:', error);
+      }
+    };
+
+    fetchInitialSelectedCompany();
+  }, []);
+
+  const companyId = selectedCompany
+    ? selectedCompany.id
+    : initialSelectedCompany?.id;
 
   // Navigation handlers with state preservation
   const handleNextproductImage = () => {
@@ -241,24 +240,24 @@ const PriceList = ({route}) => {
       priceListName: priceListName.trim(),
       companyId: companyId,
       createBy: 0,
-      createOn: new Date().toISOString(), 
+      createOn: new Date().toISOString(),
       linkType: 2,
       priceListId: 0,
       userId: userId,
     };
-  
+
     try {
       console.log('📤 Sending request to:', apiUrl);
       console.log('📦 Request payload:', requestData);
-  
+
       const response = await axios.post(apiUrl, requestData, {
         headers: {
           Authorization: `Bearer ${global?.userData?.token?.access_token}`,
         },
       });
-  
+
       console.log('📥 Response:', response?.data);
-  
+
       // Modified response handling
       if (response.data?.status?.success) {
         Alert.alert('Success', 'Price list added successfully', [
@@ -272,7 +271,9 @@ const PriceList = ({route}) => {
         ]);
       } else {
         console.warn('❌ Response error:', response?.data);
-        const errorMessage = response.data?.response?.message || 'Failed to add price list. Please try again.';
+        const errorMessage =
+          response.data?.response?.message ||
+          'Failed to add price list. Please try again.';
         Alert.alert('Error', errorMessage);
       }
     } catch (error) {
@@ -281,11 +282,16 @@ const PriceList = ({route}) => {
         console.error('🛑 Error response data:', error.response.data);
         console.error('🧾 Error response status:', error.response.status);
         console.error('📄 Error response headers:', error.response.headers);
-        const errorMessage = error.response.data?.message || 'There was a problem adding the price list.';
+        const errorMessage =
+          error.response.data?.message ||
+          'There was a problem adding the price list.';
         Alert.alert('Error', errorMessage);
       } else if (error.request) {
         console.error('📡 No response received:', error.request);
-        Alert.alert('Error', 'No response received from server. Please check your connection.');
+        Alert.alert(
+          'Error',
+          'No response received from server. Please check your connection.',
+        );
       } else {
         console.error('⚙️ Error setting up the request:', error.message);
         Alert.alert('Error', 'Failed to setup request. Please try again.');
@@ -295,7 +301,6 @@ const PriceList = ({route}) => {
       setProcessing(false);
     }
   };
-  
 
   useEffect(() => {
     // Restore saved state if returning from other screens
@@ -599,22 +604,22 @@ const PriceList = ({route}) => {
             style={styles.menuimg}
           />
         </TouchableOpacity>
-         <View
-                 style={{
-                   flex: 1,
-                   alignItems: 'center',
-                   justifyContent: 'center',
-                 }}>
-                 <Text
-                   style={{
-                     fontSize: 18,
-                     fontWeight: 'bold',
-                     color: '#000',
-                     marginRight: 60,
-                   }}>
-                   {productStyle?.styleName ? productStyle?.styleName : 'New Style'}
-                 </Text>
-               </View>
+        <View
+          style={{
+            flex: 1,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+          <Text
+            style={{
+              fontSize: 18,
+              fontWeight: 'bold',
+              color: '#000',
+              marginRight: 60,
+            }}>
+            {productStyle?.styleName ? productStyle?.styleName : 'New Style'}
+          </Text>
+        </View>
       </View>
 
       <View style={{flexDirection: 'row', alignSelf: 'center'}}>
@@ -664,13 +669,15 @@ const PriceList = ({route}) => {
         </TouchableOpacity>
 
         {/* Updated Plus button to open modal */}
-        <TouchableOpacity onPress={openModal}>
-          <Image
-            resizeMode="contain"
-            source={require('../../../assets/plus.png')}
-            style={{height: 25, width: 25}}
-          />
-        </TouchableOpacity>
+        {!route?.params?.productStyle?.styleId && (
+          <TouchableOpacity onPress={openModal}>
+            <Image
+              resizeMode="contain"
+              source={require('../../../assets/plus.png')}
+              style={{height: 25, width: 25}}
+            />
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* Subscription Tier Tabs */}
