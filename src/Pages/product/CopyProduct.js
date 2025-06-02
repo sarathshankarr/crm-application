@@ -42,6 +42,7 @@ const CopyProduct = ({route, navigation}) => {
   const [styleName, setStyleName] = useState('');
   const [styleDesc, setStyleDesc] = useState('');
   const [retailerPrice, setRetailerPrice] = useState(0);
+  const [corRate, setCorRate] = useState(0);
   const [mrp, setMrp] = useState(0);
   const [gsm, setGsm] = useState(0);
   const [hsn, setHsn] = useState(0);
@@ -195,6 +196,7 @@ const CopyProduct = ({route, navigation}) => {
       setStyleName(copiedDetails.styleName || '');
       setStyleDesc(copiedDetails.styleDesc || '');
       setRetailerPrice(copiedDetails.retailerPrice || 0);
+      setCorRate(copiedDetails.corRate || 0);
       setMrp(copiedDetails.mrp || 0);
       setGsm(copiedDetails.gsm || 0);
       setHsn(copiedDetails.hsn || 0);
@@ -2018,6 +2020,7 @@ if (fetchedSizes && fetchedSizes.length > 0) {
         sizeDesc: sizeFromApi?.sizeDesc,
         dealerPrice: 0,
         retailerPrice: 0,
+        corRate: 0,
         mrp: 0,
         availQty: 0,
         gsCode: null,
@@ -2031,7 +2034,7 @@ if (fetchedSizes && fetchedSizes.length > 0) {
 
     // Ensure `intialupdateAllItems` is called after state updates
     setTimeout(() => {
-        intialupdateAllItems(dealerPrice, retailerPrice, mrp, newSizes);
+        intialupdateAllItems(dealerPrice, retailerPrice, mrp,corRate, newSizes);
     }, 50);
 
     setShowScalesList(false);
@@ -2115,6 +2118,7 @@ const handleEditSizeList = sizeList => {
     sizeDesc: item.sizeDesc,
     dealerPrice: item.dealerPrice,
     retailerPrice: item.retailerPrice,
+    corRate: item.corRate,
     mrp: item.mrp,
     j_item_id: item.j_item_id,
     article_no: item.article_no,
@@ -2235,6 +2239,7 @@ const intialupdateAllItems = (dealerPrice, retailerPrice, mrp, sizes) => {
     ...item,
     dealerPrice: Number(dealerPrice) ? Number(dealerPrice) : 0,
     retailerPrice: Number(retailerPrice) ? Number(retailerPrice) : 0,
+    corRate: Number(corRate) ? Number(corRate) : 0, // Ensure corRate is defined
     mrp: mrp ? Number(mrp) : 0,
     availQty: 0,
   }));
@@ -2686,6 +2691,7 @@ const handleAddProduct = () => {
     styleName,
     styleDesc,
     retailerPrice,
+    corRate,
     mrp,
     gsm,
     c_hsn: hsn,
@@ -2821,6 +2827,7 @@ const handleSave = async () => {
     styleName,
     styleDesc,
     retailerPrice,
+    corRate,  
     mrp,
     gsm,
     c_hsn: hsn,
@@ -3120,6 +3127,24 @@ useEffect(() => {
                 onChangeText={text => {
                   setMrp(text);
                   updateAllItems('mrp', text);
+                }}
+              />
+            </View>
+
+            <Text
+              style={{marginHorizontal: 20, marginVertical: 3, color: '#000'}}>
+              {'Cor.Rate '}
+            </Text>
+
+            <View style={styles.inputContainer}>
+              <TextInput
+                style={styles.txtinput}
+                placeholder="corRate Price "
+                placeholderTextColor="#000"
+                value={corRate > 0 ? corRate.toString() : ''}
+                onChangeText={text => {
+                  setCorRate(text);
+                  updateAllItems('corRate', text);
                 }}
               />
             </View>
@@ -4532,6 +4557,9 @@ useEffect(() => {
                   <View style={styles.headerCell5}>
                     <Text style={styles.headerText}>MRP</Text>
                   </View>
+                  <View style={styles.headerCell3}>
+                    <Text style={styles.headerText}>Cor.Rate</Text>
+                  </View>
                   <View style={styles.headerCell6}>
                     <Text style={styles.headerText}>Available Quantity</Text>
                   </View>
@@ -4576,6 +4604,18 @@ useEffect(() => {
                           value={item.mrp.toString()}
                           onChangeText={text =>
                             handleInputChange(index, 'mrp', text)
+                          }
+                          editable={true}
+                        />
+                      </View>
+
+                      <View style={styles.cell}>
+                        <TextInput
+                          style={styles.input}
+                          keyboardType="numeric"
+                          value={item?.corRate.toString()}
+                          onChangeText={text =>
+                            handleInputChange(index, 'corRate', text)
                           }
                           editable={true}
                         />
@@ -5720,11 +5760,11 @@ useEffect(() => {
               <Text style={styles.colon}>:</Text>
               <Text style={styles.value}>{item.mrp}</Text>
             </View>
-            {/* <View style={styles.row}>
+            <View style={styles.row}>
               <Text style={styles.label}>Cor. Rate:</Text>
               <Text style={styles.colon}>:</Text>
               <Text style={styles.value}>{item.corRate}</Text>
-            </View> */}
+            </View>
             <View style={styles.row}>
               <Text style={styles.label}>Fixed Discount:</Text>
               <Text style={styles.colon}>:</Text>
@@ -5854,6 +5894,9 @@ useEffect(() => {
     </View>
     <View style={styles.cell}>
       <Text style={styles.cellText}>{item?.dealerPrice}</Text>
+    </View>
+    <View style={styles.cell}>
+      <Text style={styles.cellText}>{item?.corRate}</Text>
     </View>
     <View style={styles.cell}>
       <Text style={styles.cellText}>{item?.retailerPrice}</Text>

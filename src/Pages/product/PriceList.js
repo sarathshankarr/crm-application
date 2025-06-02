@@ -16,6 +16,8 @@ import {
 import {ColorContext} from '../../components/colortheme/colorTheme';
 import {API} from '../../config/apiConfig';
 import axios from 'axios';
+import { useSelector } from 'react-redux';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const PriceList = ({route}) => {
   const {colors} = useContext(ColorContext);
@@ -41,12 +43,38 @@ const PriceList = ({route}) => {
   // Get initial price data from route params
   const initialPriceData = route?.params?.priceData || [];
   const selectedScale = route?.params?.selectedScale || '';
+  const userId = useSelector(state => state?.loggedInUser?.userId);
 
   // Get existing priceListData from route params
   const existingPriceListData = route?.params?.productStyle?.priceList || [];
-
+  const productStyle = route?.params?.productStyle || {};
   // Company ID for API calls
-  const companyId = route?.params?.productStyle?.companyId || 1;
+
+
+   const selectedCompany = useSelector(state => state.selectedCompany);
+    const [initialSelectedCompany, setInitialSelectedCompany] = useState(null);
+  
+    useEffect(() => {
+      const fetchInitialSelectedCompany = async () => {
+        try {
+          const initialCompanyData = await AsyncStorage.getItem(
+            'initialSelectedCompany',
+          );
+          if (initialCompanyData) {
+            const initialCompany = JSON.parse(initialCompanyData);
+            setInitialSelectedCompany(initialCompany);
+          }
+        } catch (error) {
+          console.error('Error fetching initial selected company:', error);
+        }
+      };
+  
+      fetchInitialSelectedCompany();
+    }, []);
+  
+    const companyId = selectedCompany
+      ? selectedCompany.id
+      : initialSelectedCompany?.id;
 
   // Navigation handlers with state preservation
   const handleNextproductImage = () => {
@@ -69,7 +97,7 @@ const PriceList = ({route}) => {
             retailerPrice: Number(size.retailerPrice) || 0,
             mrp: Number(size.mrp) || 0,
             corRate: Number(size.corRate) || 0,
-            companyId: route.params?.productStyle?.companyId || 1,
+            companyId: companyId,
           };
         });
       })
@@ -213,10 +241,10 @@ const PriceList = ({route}) => {
       priceListName: priceListName.trim(),
       companyId: companyId,
       createBy: 0,
-      createOn: '',
+      createOn: new Date().toISOString(), 
       linkType: 2,
       priceListId: 0,
-      userId: 1,
+      userId: userId,
     };
   
     try {
@@ -357,7 +385,7 @@ const PriceList = ({route}) => {
     setLoading(true);
     setError(null);
 
-    const apiUrl = `${global?.userData?.productURL}${API.GET_PRICE_LIST}/1/asc`;
+    const apiUrl = `${global?.userData?.productURL}${API.GET_PRICE_LIST}/${companyId}/asc`;
 
     axios
       .get(apiUrl, {
@@ -571,7 +599,22 @@ const PriceList = ({route}) => {
             style={styles.menuimg}
           />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Order Price List</Text>
+         <View
+                 style={{
+                   flex: 1,
+                   alignItems: 'center',
+                   justifyContent: 'center',
+                 }}>
+                 <Text
+                   style={{
+                     fontSize: 18,
+                     fontWeight: 'bold',
+                     color: '#000',
+                     marginRight: 60,
+                   }}>
+                   {productStyle?.styleName ? productStyle?.styleName : 'New Style'}
+                 </Text>
+               </View>
       </View>
 
       <View style={{flexDirection: 'row', alignSelf: 'center'}}>
