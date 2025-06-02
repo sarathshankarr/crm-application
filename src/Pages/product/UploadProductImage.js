@@ -316,6 +316,7 @@ useEffect(() => {
     formData.append('discount', 0);
     formData.append('retailerPrice', productStyle.retailerPrice);
     formData.append('mrp', productStyle.mrp);
+    formData.append("corRate", productStyle?.corRate ? productStyle?.corRate : 0);
     formData.append('myItems', productStyle.myItemsStringify);
     formData.append('categoryId', productStyle.categoryId);
     formData.append('locationId', productStyle.locationId);
@@ -415,6 +416,7 @@ useEffect(() => {
     formData.append('discount', (productStyle.discount || 0).toString());
     formData.append('retailerPrice', productStyle.retailerPrice.toString());
     formData.append('mrp', productStyle.mrp.toString());
+    formData.append("corRate", productStyle?.corRate ? productStyle?.corRate : 0);
     formData.append('hsn', productStyle.hsn || '');
     formData.append('gst', productStyle.gst || '');
     formData.append('categoryId', productStyle.categoryId.toString());

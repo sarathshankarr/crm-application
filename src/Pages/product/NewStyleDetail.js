@@ -207,6 +207,7 @@ const NewStyleDetail = ({route}) => {
   const [styleDesc, setStyleDesc] = useState('');
   const [dealerPrice, setDealerPrice] = useState(null);
   const [retailerPrice, setRetailerPrice] = useState(null);
+  const [corRate, setCorRate] = useState(null);
   const [mrp, setMrp] = useState(null);
   const [fixedDiscount, setfixedDiscount] = useState(0);
   const [colorCode, setColorCode] = useState('');
@@ -322,6 +323,7 @@ const NewStyleDetail = ({route}) => {
       styleName,
       styleDesc,
       retailerPrice,
+      corRate,
       mrp,
       gsm,
       hsn,
@@ -384,6 +386,10 @@ const NewStyleDetail = ({route}) => {
 
       console.log('Style Details ==> ', styleDetails);
 
+      if (styleDetails?.priceList) {
+        setPriceListData(styleDetails.priceList);
+      }
+
       if (styleDetails.categoryId) {
         setSelectedCategoryId(styleDetails?.categoryId);
       }
@@ -397,6 +403,9 @@ const NewStyleDetail = ({route}) => {
       }
       if (styleDetails?.retailerPrice) {
         setRetailerPrice(styleDetails?.retailerPrice);
+      }
+      if (styleDetails?.corRate) {
+        setCorRate(styleDetails?.corRate);
       }
       if (styleDetails?.mrp) {
         setMrp(styleDetails?.mrp);
@@ -1038,6 +1047,7 @@ useEffect(() => {
       sizeDesc: item.sizeDesc,
       dealerPrice: item.dealerPrice,
       retailerPrice: item.retailerPrice,
+      corRate: item.corRate,
       mrp: item.mrp,
       j_item_id: item.j_item_id,
       article_no: item.article_no,
@@ -1387,6 +1397,7 @@ const handleChangeScale = async (scaleId, scaleRange) => {
           sizeDesc: sizeFromApi?.sizeDesc,
           dealerPrice: 0,
           retailerPrice: 0,
+          corRate: 0,
           mrp: 0,
           availQty: 0,
           gsCode: null,
@@ -1400,7 +1411,7 @@ const handleChangeScale = async (scaleId, scaleRange) => {
 
       // Ensure `intialupdateAllItems` is called after state updates
       setTimeout(() => {
-          intialupdateAllItems(dealerPrice, retailerPrice, mrp, newSizes);
+          intialupdateAllItems(dealerPrice, retailerPrice, mrp,corRate, newSizes);
       }, 50);
 
       setShowScalesList(false);
@@ -1472,11 +1483,12 @@ const handleChangeScale = async (scaleId, scaleRange) => {
     setSelectedSizes(updatedSizes);
   };
 
-  const intialupdateAllItems = (dealerPrice, retailerPrice, mrp, sizes) => {
+  const intialupdateAllItems = (dealerPrice, retailerPrice, mrp, corRate,sizes) => {
     const updatedSizes = sizes.map(item => ({
       ...item,
       dealerPrice: Number(dealerPrice) ? Number(dealerPrice) : 0,
       retailerPrice: Number(retailerPrice) ? Number(retailerPrice) : 0,
+      corRate: Number(corRate) ? Number(corRate) : 0,
       mrp: mrp ? Number(mrp) : 0,
       availQty: 0,
     }));
@@ -2210,7 +2222,7 @@ const handleChangeScale = async (scaleId, scaleRange) => {
   //   });
   // };
   
-  
+  const [priceListData, setPriceListData] = useState([]);
 
   const handleNextPage = (type) => {
     const colorsArray = colorList
@@ -2231,6 +2243,7 @@ const handleChangeScale = async (scaleId, scaleRange) => {
       price: Number(dealerPrice),
       typeId: selectedTypeId,
       retailerPrice: Number(retailerPrice),
+      corRate: Number(corRate),
       mrp: Number(mrp),
       // files: (productStyle.files as any[]).map(file => file.file),  // Convert file list to array of file objects
       scaleId: selectedScaleId,
@@ -2261,8 +2274,10 @@ const handleChangeScale = async (scaleId, scaleRange) => {
       trims: selectedTrimsId,
       statusId:selectedStatusId,
       gstSlotId:selectedSlotId,
+      priceList: priceListData 
     };
     console.log("selectedStatus===>",selectedStatusId)
+    console.log("priceListData===>",priceListData)
     if (type === 'productImages') {
       navigation.navigate('UploadProductImage', { productStyle: styleDetails, selectedScale: selectedScale });
       priceData: selectedSizes.map(size => ({
@@ -2270,9 +2285,11 @@ const handleChangeScale = async (scaleId, scaleRange) => {
         sizeId: size.sizeId,
         dealerPrice: size.dealerPrice || '',
         retailerPrice: size.retailerPrice || '',
+        corRate: size.corRate || '',
         mrp: size.mrp || '',
-        // corRate: size.dealerPrice || '' // default
+        priceList: priceListData 
       }))
+      
     } else {
     navigation.navigate('PriceList', {productStyle: styleDetails, selectedScale: selectedScale,
       priceData: selectedSizes.map(size => ({
@@ -2280,9 +2297,11 @@ const handleChangeScale = async (scaleId, scaleRange) => {
         sizeId: size.sizeId,
         dealerPrice: size.dealerPrice || '',
         retailerPrice: size.retailerPrice || '',
+        corRate: size.corRate || '',
         mrp: size.mrp || '',
-        // corRate: size.dealerPrice || '' // default
-      })),});
+        priceList: priceListData 
+      }))
+      ,});
   };
 }
   
@@ -2832,6 +2851,23 @@ const handleChangeScale = async (scaleId, scaleRange) => {
                 onChangeText={text => {
                   setMrp(text);
                   updateAllItems('mrp', text);
+                }}
+              />
+            </View>
+            <Text
+              style={{marginHorizontal: 20, marginVertical: 3, color: '#000'}}>
+              {'Cor.Rate '}
+            </Text>
+
+            <View style={style.inputContainer}>
+              <TextInput
+                style={style.txtinput}
+                placeholder="corRate "
+                placeholderTextColor="#000"
+                value={corRate > 0 ? corRate.toString() : ''}
+                onChangeText={text => {
+                  setCorRate(text);
+                  updateAllItems('corRate', text);
                 }}
               />
             </View>
@@ -5311,6 +5347,9 @@ const handleChangeScale = async (scaleId, scaleRange) => {
                   <View style={style.headerCell5}>
                     <Text style={style.headerText}>MRP</Text>
                   </View>
+                  <View style={style.headerCell5}>
+                    <Text style={style.headerText}>CorRate</Text>
+                  </View>
                   <View style={style.headerCell6}>
                     <Text style={style.headerText}>Available Quantity</Text>
                   </View>
@@ -5354,6 +5393,17 @@ const handleChangeScale = async (scaleId, scaleRange) => {
                           value={item.mrp.toString()}
                           onChangeText={text =>
                             handleInputChange(index, 'mrp', text)
+                          }
+                          editable={true}
+                        />
+                      </View>
+                      <View style={style.cell}>
+                        <TextInput
+                          style={style.input}
+                          keyboardType="numeric"
+                          value={item?.corRate.toString()}
+                          onChangeText={text =>
+                            handleInputChange(index, 'corRate', text)
                           }
                           editable={true}
                         />

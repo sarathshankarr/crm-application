@@ -161,6 +161,8 @@ export const API = {
   GET_ORDER_RETURN: 'erpportal/api/ordermgmt/getOrderPacking',
   ADD_ORDER_RETURN: 'erpportal/api/ordermgmt/addRetOrder',
   GET_PRICE_LIST: 'erpportal/api/priceList/getByCompanyId',
+  ADD_PRICE_LIST: 'erpportal/api/priceList/addPriceList',
+  VALIDATE_PRICE_LIST: 'erpportal/api/priceList/isValidPriceList/',
 };
 
 export const USER_ID = 'adminClientId';
