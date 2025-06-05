@@ -303,6 +303,134 @@ const Cart = () => {
     {id: 2, value: 'Tax invoice (Description wise)'},
   ];
 
+  const [isCorrEnabled, setIsCorrEnabled] = useState(false);
+
+  const toggleCorrSwitch = () => {
+
+
+    const switchStatuscor = isEnabled; // Assuming isEnabled controls the switch
+
+    if (switchStatuscor) {
+      customerType = 1; // Retailer
+    } else {
+      customerType = 2; // Distributor
+    }
+
+    if (isSubmitting) return;
+
+
+    if (switchStatuscor) {
+      if (!selectedCustomer) {
+        Alert.alert('Alert', 'Please select a customer.');
+        return;
+      }
+    } else {
+      if (!selectedDistributor) {
+        Alert.alert('Alert', 'Please select a Distributor.');
+        return;
+      }
+    }
+    
+    const newCorr = !isCorrEnabled;
+    setIsCorrEnabled(newCorr);
+  
+    if (isEnabled && selectedCustomerDetails.length > 0) {
+      const selectedCustomer = selectedCustomerDetails[0];
+      if (selectedCustomer?.priceType !== undefined) {
+        getStylesOnDistributorChanged(
+          selectedCustomer.priceType,
+          isEnabled,
+          pdf_flag,
+          newCorr,
+          selectedCustomer.customerId // <-- PASSING customerId HERE
+        );
+      }
+    } else if (!isEnabled && selectedDistributorDetails.length > 0) {
+      const selectedDistributor = selectedDistributorDetails[0];
+      if (selectedDistributor?.priceType !== undefined) {
+        getStylesOnDistributorChanged(
+          selectedDistributor.priceType,
+          isEnabled,
+          pdf_flag,
+          newCorr,
+          selectedDistributor.id // <-- PASSING distributorId HERE
+        );
+      }
+    }
+  };
+  
+  
+  const getStylesOnDistributorChanged = (
+    priceType,
+    isEnabled,
+    pdf_flag,
+    isCorrEnabled,
+    customerId
+  ) => {
+    let secondParam = '';
+  
+    if (isCorrEnabled) {
+      secondParam = 'CORRATE';
+    } else if (pdf_flag) {
+      secondParam = 'MRP';
+    } else if (isEnabled) {
+      secondParam = 'RETAILER';
+    } else {
+      secondParam = 'DEALER';
+    }
+  
+    const customerType = isEnabled ? 1 : 2; // 1: Retailer, 2: Distributor
+  
+    const apiUrl0 = `${global?.userData?.productURL}${API.GET_STYLES_ON_DISTRIBUTOR_CHANGED}/${priceType}/${secondParam}/${companyId}?customerType=${customerType}&customerId=${customerId}`;
+  
+    console.log("apiUrl0=====>", apiUrl0);
+  
+    const requestData = cartItems.map(item => ({
+      styleId: item.styleId,
+      sizeId: item.sizeId
+    }));
+
+    console.log("requestDataDistributorChange==>",requestData)
+  
+    axios
+    .post(apiUrl0, requestData, {
+      headers: {
+        Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+      },
+    })
+    .then(response => {
+      console.log("MRP Response Data:", JSON.stringify(response.data, null, 2));
+      
+      // Alternative: Update each cart item individually
+      cartItems.forEach((cartItem, index) => {
+        // Find matching item in API response
+        const responseItem = response.data.find(apiItem => 
+          apiItem.styleId === cartItem.styleId && 
+          apiItem.sizeId === cartItem.sizeId
+        );
+        
+        if (responseItem) {
+          // Update only MRP for this specific cart item
+          const updatedItem = {
+            ...cartItem,
+            mrp: responseItem.mrp,
+            price: responseItem.mrp, // Set price equal to MRP
+          };
+          
+          dispatch(updateCartItem(index, updatedItem));
+        }
+      });
+      
+      setIsLoading(false);
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      setIsLoading(false);
+    });
+};
+  
+  
+
   const [selectedInvoiceFormat, setSelectedInvoiceFormat] = useState(
     invFormats[0],
   );
@@ -366,9 +494,9 @@ const Cart = () => {
   const [selectedShipLocationId, setSelectedShipLocationId] = useState('');
 
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [selectedCustomerDetails, setSelectedCustomerDetails] = useState(null);
+  const [selectedCustomerDetails, setSelectedCustomerDetails] = useState([]);
   const [selectedDistributorDetails, setSelectedDistributorDetails] =
-    useState(null);
+    useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [keyboardSpace, setKeyboardSpace] = useState(0);
@@ -547,76 +675,6 @@ const Cart = () => {
       });
   };
 
-  // const handleSaveItem = fetchedData => {
-  //   console.log('Fetched Data:', fetchedData); // Log fetched data for debugging
-
-  //   let itemsToUpdate = [];
-
-  //   fetchedData.forEach(item => {
-  //     const itemDetails = {
-  //       packageId: item.packageId || null,
-  //       styleId: item.styleId,
-  //       styleName: item.styleDesc,
-  //       colorName: item.colorName,
-  //       colorId: item.colorId,
-  //       sizeDesc: item.sizeDesc,
-  //       sizeId: item.sizeId,
-  //       quantity: item.qty || 1, // Default to 1 if quantity is not available
-  //       dealerPrice: item.dealerPrice,
-  //       retailerPrice: item.retailerPrice,
-  //       mrp: item.mrp,
-  //       price: item.unitPrice,
-  //       gst: item.gst,
-  //       imageUrls: item.imageUrls, // Add imageUrls to the cart item details
-  //       sourceScreen: 'ModalComponent',
-  //     };
-
-  //     console.log('Item details to add/update:', itemDetails);
-
-  //     // Check if the item already exists in the cart
-  //     const existingItemIndex = cartItems.findIndex(
-  //       cartItem =>
-  //         cartItem.styleId === item.styleId &&
-  //         cartItem.colorId === item.colorId &&
-  //         cartItem.sizeDesc === item.sizeDesc,
-  //     );
-
-  //     if (existingItemIndex !== -1) {
-  //       // Update the existing item's quantity and other details if needed
-  //       const updatedItem = {
-  //         ...cartItems[existingItemIndex],
-  //         quantity:
-  //           parseInt(cartItems[existingItemIndex].quantity, 10) +
-  //           itemDetails.quantity, // Add the new quantity
-  //         price: itemDetails.price,
-  //         imageUrls: itemDetails.imageUrls, // Update images if necessary
-  //       };
-
-  //       console.log(
-  //         `Updating existing item at index ${existingItemIndex}:`,
-  //         updatedItem,
-  //       );
-  //       dispatch(updateCartItem(existingItemIndex, updatedItem));
-  //     } else {
-  //       // Add a new item to the list if it doesn't exist
-  //       console.log('Adding new item:', itemDetails);
-  //       itemsToUpdate.push(itemDetails);
-  //     }
-  //   });
-
-  //   // Dispatch actions to update the cart
-  //   if (itemsToUpdate.length > 0) {
-  //     console.log('Items to be added to cart:', itemsToUpdate);
-  //     itemsToUpdate.forEach(item => dispatch(addItemToCart(item)));
-  //   } else {
-  //     console.log('No items to add to cart.');
-  //   }
-
-  //   // Clear inputs and close modal
-  //   console.log('Clearing input values and closing modal.');
-  //   setInputValues({});
-  //   setModalVisible(false);
-  // };
 
   const handleSaveItem = fetchedData => {
     console.log('Fetched Data:', fetchedData);
@@ -849,12 +907,6 @@ const Cart = () => {
     });
   };
 
-  // const handleGstChange = (index, text) => {
-  //   setGstValues(prevValues => ({
-  //     ...prevValues,
-  //     [index]: text, // Update GST value for the specific index/item
-  //   }));
-  // };
 
   const handleGstChange = (index, text) => {
     // Allow only whole numbers (no decimals)
@@ -881,19 +933,6 @@ const Cart = () => {
   };
   const [fixDiscValues, setFixDiscValues] = useState({});
 
-  // const handleFixDiscChange = (index, text) => {
-  //   // Allow only whole numbers (no decimals)
-  //   const isValidInput = /^\d*\.?\d*$/.test(text);
-
-  //   if (isValidInput) {
-  //     let validFixDisc =
-  //       text.trim() === '' ? '0' : parseInt(text, 10).toString();
-
-  //     setFixDiscValues(prevValues => ({
-  //       ...prevValues,
-  //       [index]: validFixDisc,
-  //     }));
-  //   }
   // };
   const handleFixDiscChange = (index, text) => {
     // Allow numbers with optional decimals (e.g., 1, 1.1, 10.50)
@@ -907,31 +946,18 @@ const Cart = () => {
     }
   };
 
-  // const grossPrices = cartItems.map(item => {
-  //   if (!item || !item.quantity) return 0; // Fallback if item or quantity is missing
-
-  //   // Determine the appropriate price based on pdf_flag and isEnabled
-  //   const price = pdf_flag
-  //     ? item?.mrp || 0 // If pdf_flag is enabled, show mrp
-  //     : isEnabled
-  //     ? item?.retailerPrice || 0 // If isEnabled is true, show retailerPrice
-  //     : item?.dealerPrice || item?.price || 0; // Otherwise, show dealerPrice or price
-
-  //   // Calculate gross price for this item
-  //   const grossPrice = (Number(price) * Number(item?.quantity || 0)).toFixed(2);
-
-  //   return parseFloat(grossPrice); // Convert to a float for accurate display
-  // });
 
   const grossPrices = cartItems.map((item, index) => {
     if (!item || !item.quantity) return 0; // Ensure item and quantity exist
 
     // Determine the price based on pdf_flag and isEnabled
-    let price = pdf_flag
-      ? item?.mrp || 0 // If pdf_flag is enabled, use MRP
-      : isEnabled
-      ? item?.retailerPrice || 0 // If enabled, use retailerPrice
-      : item?.dealerPrice || item?.price || 0; // Otherwise, use dealerPrice or price
+    // let price = pdf_flag
+    //   ? item?.mrp || 0 // If pdf_flag is enabled, use MRP
+    //   : isEnabled
+    //   ? item?.retailerPrice || 0 // If enabled, use retailerPrice
+    //   : item?.dealerPrice || item?.price || 0; // Otherwise, use dealerPrice or price
+
+    let price = item?.mrp || 0;
 
     // If pdf_flag is enabled, use price directly
     if (pdf_flag) {
@@ -1000,9 +1026,6 @@ const Cart = () => {
     setModalItems([]);
   };
 
-  // const handleRemoveItem = index => {
-  //   dispatch(removeFromCart(index));
-  // };
 
   const handleRemoveItem = index => {
     // Remove item from the cart
@@ -1086,67 +1109,6 @@ const Cart = () => {
   const [isNavigatingToLocationModal, setIsNavigatingToLocationModal] =
     useState(false);
 
-  // const [locationInputValues, setLocationInputValues] = useState({});
-
-  // const toggleLocationModal = () => {
-  //   setIsLocationModalVisible(!isLocationModalVisible);
-  //   if (isLocationModalVisible) {
-  //     // Reset locationInputValues and locationErrorFields when modal is closing
-  //     setLocationInputValues({
-  //       locationName: '',
-  //       phoneNumber: '',
-  //       locality: '',
-  //       cityOrTown: '',
-  //       state: '',
-  //       pincode: '',
-  //       country: '',
-  //      locationLatLong:''
-  //     });
-  //     setLocationErrorFields([]);
-  //   }
-  // };
-
-  // const toggleModal = () => {
-  //   console.log('toggleModal called - current state:', isModalVisible);
-
-  //   const nextModalState = !isModalVisible;
-  //   setIsSaving(false);
-  //   // If navigating to location, just toggle and exit
-  //   if (isNavigatingToLocation) {
-  //     console.log('Preserving values for location selection');
-  //     setIsModalVisible(nextModalState);
-  //     setIsNavigatingToLocation(false);
-  //     return;
-  //   }
-
-  //   // If we are opening the modal (not closing)
-  //   if (nextModalState) {
-  //     console.log('Opening modal - clearing state');
-  //     setSelectedState(null);
-  //     setSelectedStateId(null);
-  //     setStateSearchTerm('');
-  //   } else {
-  //     console.log('Closing modal - clearing input fields');
-  //     setErrorFields([]);
-  //     setInputValues({
-  //       firstName: '',
-  //       phoneNumber: '',
-  //       whatsappId: '',
-  //       cityOrTown: '',
-  //       country: '',
-  //       pincode: '',
-  //       locationName: '',
-  //       locationDescription: '',
-  //       locationLatLong: '',
-  //     });
-  //     setSelectedState(null);
-  //     setSelectedStateId(null);
-  //   }
-
-  //   setIsModalVisible(nextModalState);
-  //   setIsNavigatingToLocation(false);
-  // };
-
   const toggleLocationModal = () => {
     const nextModalLocationState = !isLocationModalVisible;
 
@@ -1183,42 +1145,6 @@ const Cart = () => {
 
   const [errorFields, setErrorFields] = useState([]);
 
-  // const handleSaveButtonPress = () => {
-  //   const mandatoryFields = [
-  //     'firstName',
-  //     'phoneNumber',
-  //     'whatsappId',
-  //     'cityOrTown',
-  //     'state',
-  //     'country',
-  //     'pincode',
-  //     'locationName',
-  //     'locationDescription',
-  //   ];
-  //   setErrorFields([]);
-  //   const missingFields = mandatoryFields.filter(field => !inputValues[field]);
-
-  //   if (missingFields.length > 0) {
-  //     setErrorFields(missingFields);
-  //     Alert.alert('Alert', 'Please fill in all mandatory fields');
-  //     return;
-  //   }
-
-  //   const hasExactlyTenDigits = /^\d{10,12}$/;
-  //   if (!hasExactlyTenDigits.test(Number(inputValues?.phoneNumber))) {
-  //     Alert.alert('Alert', 'Please Provide a valid Phone Number');
-  //     return;
-  //   }
-
-  //   if (inputValues?.whatsappId?.length > 0) {
-  //     if (!hasExactlyTenDigits.test(inputValues?.whatsappId)) {
-  //       Alert.alert('Alert', 'Please Provide a valid Whatsapp Number');
-  //       return;
-  //     }
-  //   }
-
-  //   isEnabled ? getisValidCustomer() : getisValidDistributors();
-  // };
 
   const handleSaveButtonPress = () => {
     const mandatoryFields = [
@@ -1341,30 +1267,6 @@ const Cart = () => {
     }, 100);
   };
 
-  // const toggleModal = () => {
-  //   setIsSaving(false);
-  //   setIsModalVisible(!isModalVisible);
-  //   setSelectedStatus('Active');
-  //   if (!isModalVisible) {
-  //     setSelectedState(null); // Reset selected state
-  //     setSelectedStateId(null); // Reset selected stateId
-  //   }
-  //   // Reset error fields and input values when modal is closed
-  //   if (isModalVisible) {
-  //     setErrorFields([]);
-  //     setInputValues({
-  //       firstName: '',
-  //       phoneNumber: '',
-  //       cityOrTown: '',
-  //       state: '',
-  //       country: '',
-  //       pincode: '',
-  //       locationName: '',
-  //       locationDescription: '',
-  //       // Add other input fields if needed
-  //     });
-  //   }
-  // };
 
   useEffect(() => {
     if (isModalVisible && !isNavigatingToLocation) {
@@ -1810,6 +1712,7 @@ const Cart = () => {
       .then(response => {
         // const distributorList = response?.data?.response?.distributorList || [];
         setDistributors(response?.data?.response?.distributorList || []);
+        console.log("distributorList",response?.data?.response?.distributorList )
         setIsLoading(false);
       })
       .catch(error => {
@@ -1825,35 +1728,6 @@ const Cart = () => {
     }
   };
 
-  // const handleCustomerSelection = (firstName, lastName, customerId) => {
-  //   setSelectedCustomer(`${firstName} ${lastName}`);
-  //   setClicked(false);
-  //   setSelectedCustomerId(customerId);
-  //   setSelectedLocation('');
-  //   setSelectedShipLocation('');
-  //   setSelectedLocationId('');
-  //   setSelectedShipLocationId('');
-  //   getCustomerLocations(customerId);
-  //   const selectedCustomer = customers.find(
-  //     customer => customer.customerId === customerId,
-  //   );
-  //   setSelectedCustomerDetails([selectedCustomer]);
-  // };
-
-  // const handleDistributorSelection = (firstName, lastName, customerId) => {
-  //   setSelectedDistributor(`${lastName}`);
-  //   setClicked(false);
-  //   setSelectedDistributorId(customerId);
-  //   setSelectedLocation('');
-  //   setSelectedShipLocation('');
-  //   setSelectedShipLocationId('');
-  //   setSelectedLocationId('');
-  //   getCustomerLocations(customerId);
-  //   const selectedDistributor = distributors.find(
-  //     distributor => distributor.id === customerId,
-  //   );
-  //   setSelectedDistributorDetails([selectedDistributor]);
-  // };
 
   const [hasUserSelectedLocation, setHasUserSelectedLocation] = useState(false); // Flag to track manual selection
 
@@ -1931,6 +1805,19 @@ const Cart = () => {
       customer => customer.customerId === customerId,
     );
     setSelectedCustomerDetails([selectedCustomer]);
+
+    if (selectedCustomer?.priceType !== undefined) {
+      getStylesOnDistributorChanged(
+        selectedCustomer.priceType,
+        isEnabled,
+        pdf_flag,
+        isCorrEnabled,
+        selectedCustomer.customerId
+      );
+    }
+    else {
+      console.warn('PriceType not found for selected distributor');
+    }
   };
 
   const handleDistributorSelection = (firstName, lastName, customerId) => {
@@ -1950,32 +1837,33 @@ const Cart = () => {
     const selectedDistributor = distributors.find(
       distributor => distributor.id === customerId,
     );
+    console.log("selectedDistributor",selectedDistributor)
     setSelectedDistributorDetails([selectedDistributor]);
+    if (selectedDistributor?.priceType !== undefined) {
+      getStylesOnDistributorChanged(
+        selectedDistributor.priceType,
+        isEnabled,
+        pdf_flag,
+        isCorrEnabled,
+        selectedDistributor.id
+      );
+    }
+     else {
+      console.warn('PriceType not found for selected distributor');
+    }
   };
 
-  useEffect(() => {
-    if (clicked) {
-      isEnabled ? getCustomersDetails() : getDistributorsDetails();
-    }
-    setSelectedLocation('Billing to *');
-    setSelectedShipLocation('Shipping to *');
-    setSelectedLocationId('');
-    setSelectedShipLocationId('');
-    setCustomerLocations([]);
-  }, [clicked, isEnabled]);
+  // useEffect(() => {
+  //   if (clicked) {
+  //     isEnabled ? getCustomersDetails() : getDistributorsDetails();
+  //   }
+  //   setSelectedLocation('Billing to *');
+  //   setSelectedShipLocation('Shipping to *');
+  //   setSelectedLocationId('');
+  //   setSelectedShipLocationId('');
+  //   setCustomerLocations([]);
+  // }, [clicked, isEnabled]);
 
-  // const handleLocationSelection = location => {
-  //   setSelectedLocation(location.locationName);
-  //   setSelectedLocationId(location.locationId);
-  //   setFromToClicked(false);
-  //   console.log(' Locations:', setSelectedLocation);
-
-  // };
-  // const handleShipLocation = location => {
-  //   setSelectedShipLocation(location.locationName);
-  //   setSelectedShipLocationId(location.locationId);
-  //   setShipFromToClicked(false);
-  // };
 
   const checkStyleAvailability = async cartItems => {
     const apiUrl = `${global?.userData?.productURL}${API.CHECKAVALABILITY}`;
@@ -2036,14 +1924,6 @@ const Cart = () => {
 
     if (isSubmitting) return;
 
-    // if (userRole === 'admin') {
-    //   if (!selectedCustomer || !selectedDistributor) {
-    //     Alert.alert('Alert', 'Please select a customer.');
-    //     return;
-    //   }
-    // } else if (userRole === 'Distributor' || userRole === 'Retailer') {
-    //   // No alert for Distributor or Retailer
-    // }
 
     if (switchStatus) {
       if (!selectedCustomer) {
@@ -2056,15 +1936,7 @@ const Cart = () => {
         return;
       }
     }
-    // for (let i = 0; i < cartItems.length; i++) {
-    //   if (!cartItems[i].price || parseFloat(cartItems[i].price) === 0) {
-    //     Alert.alert(
-    //       'crm.codeverse.co.says',
-    //       'Style price is mandatory for creating an order..',
-    //     );
-    //     return;
-    //   }
-    // }
+
 
     if (!selectedLocationId) {
       Alert.alert('Alert', 'Please select a Billing to location.');
@@ -2075,10 +1947,7 @@ const Cart = () => {
       Alert.alert('Alert', 'Please select a Shipping to location.');
       return;
     }
-    // if (!selectedCompanyLocationId) {
-    //   Alert.alert('Alert', 'Please select a Company Location.');
-    //   return;
-    // }
+
     if (cartItems.length === 0) {
       Alert.alert('Alert', 'No items selected. Please add items to the cart.');
       return;
@@ -2091,11 +1960,8 @@ const Cart = () => {
     // return;
 
     for (let i = 0; i < cartItems.length; i++) {
-      const itemPrice = pdf_flag
-        ? parseFloat(cartItems[i].mrp) || 0
-        : isEnabled
-        ? parseFloat(cartItems[i].retailerPrice) || 0
-        : parseFloat(cartItems[i].dealerPrice) || 0;
+      const itemPrice =  parseFloat(cartItems[i].mrp) || 0
+
 
       if (itemPrice === 0) {
         Alert.alert(
@@ -2126,13 +1992,7 @@ const Cart = () => {
         return;
       }
     }
-    //   if (hold_qty_flag === 1) {
-    //   if (!availabilityCheck.success) {
-    //     Alert.alert('Alert', availabilityCheck.message);
-    //     setIsSubmitting(false);
-    //     return;
-    //   }
-    // }
+
 
     setIsSubmitting(true);
 
@@ -2150,23 +2010,7 @@ const Cart = () => {
       ? cartItems.find(item => item.sourceScreen === 'PackageDetail').colorId
       : cartItems[0]?.colorId || null; // Fallback to null if cartItems is empty
 
-    // if (!loggedInUser || !userRole) {
-    //   // Redirect to login screen or handle not logged in scenario
-    //   return;
-    // }
 
-    // let roleId = ''; // Initialize roleId
-
-    // Check if userRole is an array and not empty
-    // if (Array.isArray(userRole) && userRole.length > 0) {
-    //   roleId = userRole[0].id; // Using the first id from userRole array
-    // } else {
-    // }
-
-    // Extract roleId from loggedInUser if userRole is not an array or is empty
-    // if (!roleId && loggedInUser.role && loggedInUser.role.length > 0) {
-    //   roleId = loggedInUser.role[0].id;
-    // }
 
     const selectedCustomerObj = customers.find(customer => {
       return `${customer.firstName} ${customer.lastName}` === selectedCustomer;
@@ -2194,51 +2038,7 @@ const Cart = () => {
         : '';
 
     const selectedShipDate = shipDate || currentDate;
-    // const gstRate = 5;
-    // const totalGst = cartItems.reduce((acc, item) => {
-    //   const itemTotalPrice = parseFloat(isEnabled ? item?.retailerPrice : item?.dealerPrice) * parseInt(item.quantity);
-    //   const itemGst = (itemTotalPrice * gstRate) / 100;
-    //   return acc + itemGst;
-    // }, 0);
-
-    // const totalGst = cartItems
-    //   .reduce((acc, item, index) => {
-    //     const gstPercentage = parseFloat(
-    //       gstValues[index] !== undefined ? gstValues[index] : item.gst,
-    //     ); // Use updated GST if available
-    //     const itemTotalPrice =
-    //       parseFloat(isEnabled ? item?.retailerPrice : item?.dealerPrice) *
-    //       parseInt(item.quantity, 10);
-    //     const itemGst = (itemTotalPrice * gstPercentage) / 100;
-    //     return acc + itemGst; // Sum GST
-    //   }, 0)
-    //   .toFixed(2);
-
-    // const totalGst = cartItems
-    // .reduce((acc, item, index) => {
-    //   const gstPercentage = parseFloat(
-    //     gstValues[index] !== undefined && !isNaN(gstValues[index])
-    //       ? gstValues[index]
-    //       : item.gst,
-    //   ); // Use gstValues if available and valid, otherwise fallback to item.gst
-
-    //   // Use mrp if pdf_flag is enabled, otherwise use retailerPrice or dealerPrice
-    //   const itemTotalPrice =
-    //     pdf_flag
-    //       ? parseFloat(item?.mrp || 0) // If pdf_flag is true, use mrp
-    //       : parseFloat(isEnabled ? item?.retailerPrice : item?.dealerPrice); // Otherwise, use retailerPrice or dealerPrice
-
-    //   const itemGst = (itemTotalPrice * gstPercentage) / 100;
-    //   return acc + itemGst; // Sum GST
-    // }, 0)
-    // .toFixed(2);
-
-    // Calculate total amount
-    // const totalAmount = (
-    //   (parseFloat(totalGst) || 0) + (parseFloat(totalGrossPrice) || 0)
-    // ) // Add gross price to the total amount
-    //   .toFixed(2); // Format the total amount to 2 decimal places
-
+  
     const requestData = {
       totalAmount: totalAmount,
       totalDiscount: '0',
@@ -2265,37 +2065,19 @@ const Cart = () => {
         gsCode: '8907536002462',
         availQty: item.quantity.toString(),
         // price: item.price.toString(),
-        price: pdf_flag
-          ? item?.mrp?.toString() // If pdf_flag is enabled, use mrp
-          : isEnabled
-          ? item?.retailerPrice?.toString() // Otherwise, use retailerPrice if isEnabled
-          : item?.dealerPrice?.toString() || item?.price?.toString(),
+        price: item?.mrp?.toString() ||item?.price?.toString(),
+        // pdf_flag
+        //   ? item?.mrp?.toString() // If pdf_flag is enabled, use mrp
+        //   : isEnabled
+        //   ? item?.retailerPrice?.toString() // Otherwise, use retailerPrice if isEnabled
+        //   : item?.dealerPrice?.toString() || item?.price?.toString(),
         gross: lineItemTotals[index]?.toString() || '0',
-        // gross : (
-        //   parseFloat(
-        //     pdf_flag
-        //       ? item?.mrp || 0 // Use mrp if pdf_flag is enabled
-        //       : isEnabled
-        //       ? item?.retailerPrice || 0 // Use retailerPrice if isEnabled
-        //       : item?.dealerPrice || 0 // Otherwise, use dealerPrice
-        //   ) *
-        //   (1 + (parseFloat(gstValues) || 0) / 100) *
-        //   (parseInt(item?.quantity) || 1)
-        // ).toString(),
-        // gross: ((parseFloat(isEnabled ? item?.retailerPrice : item?.dealerPrice) * 1.05) * parseInt(item?.quantity || 1)).toString(),
-        // gross: ((parseFloat(isEnabled ? item?.retailerPrice : item?.dealerPrice) * (parseFloat( 1 + parseFloat(gstValues)/100))) * parseInt(item?.quantity || 1)).toString(),
-        // gross: parseFloat((parseFloat(isEnabled ? item?.retailerPrice?.toString() : item?.dealerPrice?.toString()) + parseFloat(item.gst.toString())) * parseInt(item.quantity))?.toString(),
-        // gross: (parseFloat(isEnabled ? item?.retailerPrice : item?.dealerPrice) || item?.price) * parseInt(item.quantity),
         discountPercentage: '0',
         discountAmount: '0',
         gst: gstValues[index] !== undefined ? gstValues[index] : item.gst,
         total: (
-          parseFloat(
-            pdf_flag
-              ? item?.mrp?.toString() // If pdf_flag is enabled, use mrp
-              : isEnabled
-              ? item?.retailerPrice?.toString() // If isEnabled is true, use retailerPrice
-              : item?.dealerPrice?.toString(), // Otherwise, use dealerPrice
+          parseFloat(         
+            item?.mrp?.toString() // If pdf_flag is enabled, use mrp
           ) ||
           parseFloat(item?.price?.toString()) * parseInt(item?.quantity, 10)
         ) // Fallback to price if other values are not available
@@ -2320,11 +2102,13 @@ const Cart = () => {
         closeFlag: 0,
         statusFlag: 0,
         poId: 0,
-        orgPrice: pdf_flag
-          ? item?.mrp?.toString() // If pdf_flag is enabled, use mrp
-          : isEnabled
-          ? item?.retailerPrice?.toString() // If isEnabled is true, use retailerPrice
-          : item?.dealerPrice?.toString() || item?.price?.toString(), // Otherwise, use dealerPrice or fallback to price
+        orgPrice: item?.mrp?.toString() ||item?.price?.toString(),
+        // orgPrice: 
+        // pdf_flag
+        //   ? item?.mrp?.toString() // If pdf_flag is enabled, use mrp
+        //   : isEnabled
+        //   ? item?.retailerPrice?.toString() // If isEnabled is true, use retailerPrice
+        //   : item?.dealerPrice?.toString() || item?.price?.toString(), // Otherwise, use dealerPrice or fallback to price
       })),
       comments: comments,
       customerType: customerType,
@@ -2444,21 +2228,6 @@ const Cart = () => {
     setDatePickerVisibility(false);
   };
 
-  // const handleDateConfirm = date => {
-  //   console.warn('A date has been picked: ', date);
-
-  //   // Extract day, month, and year
-  //   const day = String(date.getDate()).padStart(2, '0');
-  //   const month = String(date.getMonth() + 1).padStart(2, '0'); // getMonth() returns month from 0-11
-  //   const year = date.getFullYear();
-
-  //   // Format date as DD-MM-YYYY
-  //   const formattedDate = `${day}-${month}-${year}`;
-
-  //   setSelectedDate('Expected Delivery Date: ' + formattedDate);
-  //   hideDatePicker();
-  //   setShipDate(date.toISOString().split('T')[0]);
-  // };
 
   const handleDateConfirm = date => {
     const today = new Date();
@@ -2488,15 +2257,6 @@ const Cart = () => {
     hideDatePicker();
   };
 
-  // const handleQuantityChange = (index, text) => {
-  //   const updatedItems = [...cartItems];
-  //   const parsedQuantity = parseInt(text, 10);
-
-  //   if (!isNaN(parsedQuantity) || text === '') {
-  //     updatedItems[index].quantity = text === '' ? '' : parsedQuantity;
-  //     dispatch(updateCartItem(index, updatedItems[index]));
-  //   }
-  // };
 
   const handleQuantityChange = (index, text) => {
     const updatedItems = [...cartItems];
@@ -2517,72 +2277,6 @@ const Cart = () => {
     }
   };
 
-  // const handlePriceChange = (index, text) => {
-  //   const updatedItems = [...cartItems];
-  //   const parsedPrice = parseFloat(text);
-
-  //   if (!isNaN(parsedPrice) || text === '') {
-  //     if (isEnabled) {
-  //       updatedItems[index].retailerPrice = text === '' ? '' : text;
-  //     } else {
-  //       updatedItems[index].dealerPrice = text === '' ? '' : text;
-  //     }
-  //     dispatch(updateCartItem(index, updatedItems[index]));
-  //   }
-  // };
-
-  // const handlePriceChange = (index, text) => {
-  //   const updatedItems = [...cartItems];
-
-  //   // Convert the text to an integer to remove leading zeros and then back to a string
-  //   const parsedPrice = parseInt(text, 10); // Removes leading zeros
-
-  //   // Only update if the text is a valid number or empty
-  //   if (!isNaN(parsedPrice) || text === '') {
-  //     const formattedPrice = text === '' ? '0' : parsedPrice.toString(); // Convert to string, ensure '0' if empty
-
-  //     if (isEnabled) {
-  //       updatedItems[index].retailerPrice = formattedPrice;
-  //     } else {
-  //       updatedItems[index].dealerPrice = formattedPrice;
-  //     }
-
-  //     dispatch(updateCartItem(index, updatedItems[index]));
-  //   }
-  // };
-
-  // const handlePriceChange = (index, text) => {
-  //   const updatedItems = [...cartItems];
-
-  //   // Validate the input to allow only numbers and a single decimal point
-  //   const isValidInput = /^\d*\.?\d*$/.test(text); // Matches numbers with optional decimal point
-
-  //   if (isValidInput) {
-  //     // Parse integer part only if no decimal point
-  //     const parsedPrice = text.includes('.')
-  //       ? text
-  //       : parseInt(text, 10).toString(); // Parse integer only for whole numbers
-
-  //     // Ensure empty input defaults to '0'
-  //     const formattedPrice = text === '' ? '0' : parsedPrice;
-
-  //     // Update the respective price based on isEnabled
-  //     if (isEnabled) {
-  //       updatedItems[index].retailerPrice = formattedPrice; // Update retailerPrice
-  //     } else {
-  //       updatedItems[index].dealerPrice = formattedPrice; // Update dealerPrice
-  //     }
-
-  //     dispatch(updateCartItem(index, updatedItems[index]));
-  //   }
-  // };
-
-  // const handleIncrementQuantityCart = index => {
-  //   const updatedItems = [...cartItems];
-  //   updatedItems[index].quantity =
-  //     parseInt(updatedItems[index].quantity, 10) + 1;
-  //   dispatch(updateCartItem(index, updatedItems[index]));
-  // };
 
   const handleIncrementQuantityCart = index => {
     const updatedItems = [...cartItems];
@@ -2642,15 +2336,7 @@ const Cart = () => {
     });
   };
 
-  // const totalQty = cartItems.reduce((total, item) => {
-  //   // Ensure item.quantity is defined and not NaN before adding to total
-  //   const quantity = parseInt(item.quantity);
-  //   if (!isNaN(quantity)) {
-  //     return total + quantity;
-  //   } else {
-  //     return total; // Ignore invalid quantities
-  //   }
-  // }, 0);
+
   const totalQty = cartItems.reduce((total, item) => {
     // Ensure item.quantity is defined and not NaN before adding to total
     const quantity = parseFloat(item.quantity); // Use parseFloat to handle decimals
@@ -2683,48 +2369,19 @@ const Cart = () => {
     return totalItems;
   };
 
-  // const calculateTotalPrice = (styleId, colorId) => {
-  //   let totalPrice = 0;
-  //   for (let item of cartItems) {
-  //     if (item.styleId === styleId && item.colorId === colorId) {
-  //       totalPrice +=
-  //         (isEnabled
-  //           ? item?.retailerPrice?.toString()
-  //           : item?.dealerPrice?.toString() || item?.price?.toString()) *
-  //         item.quantity;
-  //     }
-  //   }
-  //   return totalPrice;
-  // };
-
-  // const calculateTotalPrice = (styleId, colorId) => {
-  //   let totalPrice = 0;
-
-  //   for (let item of cartItems) {
-  //     if (item.styleId === styleId && item.colorId === colorId) {
-  //       const price = pdf_flag
-  //         ? parseFloat(item?.mrp?.toString() || 0) // If pdf_flag is true, use mrp
-  //         : isEnabled
-  //         ? parseFloat(item?.retailerPrice?.toString() || 0) // If isEnabled is true, use retailerPrice
-  //         : parseFloat(item?.dealerPrice?.toString() || item?.price?.toString() || 0); // Otherwise, use dealerPrice or price
-
-  //       totalPrice += price * item.quantity; // Multiply price by quantity and accumulate total price
-  //     }
-  //   }
-
-  //   return totalPrice.toFixed(2); // Ensure the result is formatted to 2 decimal places
-  // };
+  
   const calculateTotalPrice = (styleId, colorId) => {
     let totalPrice = 0;
 
     cartItems.forEach((item, index) => {
       if (item.styleId === styleId && item.colorId === colorId) {
-        let price = pdf_flag
-          ? item?.mrp || 0 // If pdf_flag is enabled, use MRP
-          : isEnabled
-          ? item?.retailerPrice || 0 // If enabled, use retailerPrice
-          : item?.dealerPrice || item?.price || 0; // Otherwise, use dealerPrice or price
+        // let price = pdf_flag
+        //   ? item?.mrp || 0 // If pdf_flag is enabled, use MRP
+        //   : isEnabled
+        //   ? item?.retailerPrice || 0 // If enabled, use retailerPrice
+        //   : item?.dealerPrice || item?.price || 0; // Otherwise, use dealerPrice or price
 
+        let price = item?.mrp || 0;
         // If pdf_flag is enabled, use price directly
         if (pdf_flag) {
           totalPrice += price * (item?.quantity || 0);
@@ -2751,11 +2408,12 @@ const Cart = () => {
   const lineItemTotals = cartItems.map((item, index) => {
     if (!item || !item.quantity) return 0; // Ensure item and quantity exist
 
-    let price = pdf_flag
-      ? item?.mrp || 0
-      : isEnabled
-      ? item?.retailerPrice || 0
-      : item?.dealerPrice || item?.price || 0;
+    // let price = pdf_flag
+    //   ? item?.mrp || 0
+    //   : isEnabled
+    //   ? item?.retailerPrice || 0
+    //   : item?.dealerPrice || item?.price || 0;
+    let price = item?.mrp || 0;
 
     let quantity = Number(item?.quantity || 0);
     let updatedFixDisc =
@@ -2798,11 +2456,12 @@ const Cart = () => {
     .reduce((total, item) => {
       // Parse price and quantity to floats and integers respectively
       const parsedPrice = parseFloat(
-        pdf_flag
-          ? item?.mrp?.toString() // If pdf_flag is enabled, use mrp
-          : isEnabled
-          ? item?.retailerPrice?.toString() // If isEnabled is true, use retailerPrice
-          : item?.dealerPrice?.toString() || item?.price?.toString(), // Otherwise, use dealerPrice or price
+        item?.mrp?.toString()
+        // pdf_flag
+        //   ? item?.mrp?.toString() // If pdf_flag is enabled, use mrp
+        //   : isEnabled
+        //   ? item?.retailerPrice?.toString() // If isEnabled is true, use retailerPrice
+        //   : item?.dealerPrice?.toString() || item?.price?.toString(), // Otherwise, use dealerPrice or price
       );
       const parsedQuantity = parseInt(item.quantity, 10);
 
@@ -2815,44 +2474,6 @@ const Cart = () => {
     }, 0)
     .toFixed(2); // Total price formatted to 2 decimal places
 
-  // Calculate total GST based on the totalPrice and user input (gstValues)
-  // const totalGst = cartItems
-  //   .reduce((acc, item, index) => {
-  //     const gstPercentage = parseFloat(
-  //       gstValues[index] !== undefined ? gstValues[index] : item.gst,
-  //     ); // Use updated GST if available
-  //     const itemTotalPrice =
-  //       parseFloat(isEnabled ? item?.retailerPrice : item?.dealerPrice) *
-  //       parseInt(item.quantity, 10);
-  //     const itemGst = (itemTotalPrice * gstPercentage) / 100;
-  //     return acc + itemGst; // Sum GST
-  //   }, 0)
-  //   .toFixed(2);
-  // const totalGst = cartItems
-  //   .reduce((acc, item, index) => {
-  //     // Parse GST percentage as a float
-  //     const gstPercentage = parseFloat(
-  //       gstValues[index] !== undefined ? gstValues[index] : item.gst,
-  //     ); // Use updated GST if available
-
-  //     // Parse price and quantity as floats for accurate calculations
-  //     const itemTotalPrice =
-  //     parseFloat(
-  //       pdf_flag
-  //         ? item?.mrp?.toString() // Use mrp if pdf_flag is true
-  //         : isEnabled
-  //         ? item?.retailerPrice?.toString() // Use retailerPrice if isEnabled is true
-  //         : item?.dealerPrice?.toString() || item?.price?.toString() // Otherwise, use dealerPrice or price
-  //     ) * parseFloat(item.quantity);
-
-  //     // Calculate GST for the item
-  //     const itemGst = (itemTotalPrice * gstPercentage) / 100;
-
-  //     // Accumulate GST
-  //     return acc + itemGst;
-  //   }, 0) // Initial accumulator is 0
-  //   .toFixed(2); // Round the final sum to 2 decimal places
-
   const totalGst = cartItems
     .reduce((acc, item, index) => {
       // Parse GST percentage as a float
@@ -2861,12 +2482,12 @@ const Cart = () => {
       ); // Use updated GST if available
 
       // Parse price and quantity for accurate calculations
-      let price = pdf_flag
-        ? parseFloat(item?.mrp) || 0 // Use MRP if pdf_flag is enabled
-        : isEnabled
-        ? parseFloat(item?.retailerPrice) || 0 // Use retailerPrice if isEnabled
-        : parseFloat(item?.dealerPrice) || parseFloat(item?.price) || 0; // Otherwise, use dealerPrice or price
-
+      // let price = pdf_flag
+      //   ? parseFloat(item?.mrp) || 0 // Use MRP if pdf_flag is enabled
+      //   : isEnabled
+      //   ? parseFloat(item?.retailerPrice) || 0 // Use retailerPrice if isEnabled
+      //   : parseFloat(item?.dealerPrice) || parseFloat(item?.price) || 0; // Otherwise, use dealerPrice or price
+      let price = item?.mrp || 0;
       // If pdf_flag is disabled, adjust price using fixDisc
       if (!pdf_flag) {
         let updatedFixDisc =
@@ -2891,14 +2512,6 @@ const Cart = () => {
     }, 0) // Initial accumulator is 0
     .toFixed(2); // Round the final sum to 2 decimal places
 
-  // Calculate total amount
-  // const totalAmount = (parseFloat(totalPrice) + parseFloat(totalGst)).toFixed(
-  //   2,
-  // ); // Total amount formatted to 2 decimal places
-
-  // const totalAmount = (
-  //   (parseFloat(totalPrice) || 0) + (parseFloat(totalGst) || 0)
-  // ).toFixed(2); // Total amount formatted to 2 decimal places
 
   const [totalAmount, setTotalAmount] = useState(0); // Updated to hold a number value
   const [roundOff, setRoundOff] = useState('');
@@ -2934,45 +2547,6 @@ const Cart = () => {
     setRoundOff(roundOff);
   }, [totalGst, totalGrossPrice]); // Recalculate whenever totalGst or totalGrossPrice change
 
-  // Handle price change function (for updating price input):
-  // const handlePriceChange = (index, text) => {
-  //   const updatedItems = [...cartItems];
-
-  //   const isValidInput = /^\d*\.?\d*$/.test(text); // Validate input
-
-  //   if (isValidInput) {
-  //     const parsedPrice = text.includes('.')
-  //       ? text
-  //       : parseInt(text, 10).toString(); // Parse integer if no decimal
-  //     const formattedPrice = text === '' ? '0' : parsedPrice;
-
-  //     // Update price based on pdf_flag and isEnabled
-  //     if (pdf_flag) {
-  //       // If pdf_flag is enabled, update mrp
-  //       updatedItems[index].mrp = formattedPrice;
-  //     } else if (isEnabled) {
-  //       // If isEnabled is true, update retailerPrice
-  //       updatedItems[index].retailerPrice = formattedPrice;
-  //     } else {
-  //       // Otherwise, update dealerPrice
-  //       updatedItems[index].dealerPrice = formattedPrice;
-  //     }
-
-  //     // After updating price, recalculate totalAmount and roundOff
-  //     const totalAmount = (parseFloat(totalGst) || 0) + (parseFloat(totalGrossPrice) || 0);
-  //     const roundOff = calculateRoundOff(totalAmount);
-
-  //     // Round the total amount to the nearest integer
-  //     const roundedTotal = Math.round(totalAmount);
-
-  //     // Update the state again
-  //     setTotalAmount(roundedTotal);
-  //     setRoundOff(roundOff);
-
-  //     // Dispatch updated cart item
-  //     dispatch(updateCartItem(index, updatedItems[index]));
-  //   }
-  // };
 
   const [gstSlotData, setGstSlotData] = useState([]); // Store GST slot data
 
@@ -3005,20 +2579,13 @@ const Cart = () => {
         ? text
         : parseInt(text, 10).toString();
       const formattedPrice = text === '' ? '0' : parsedPrice;
-
+  
       const updatedItem = {
         ...cartItems[index],
-        price: parseFloat(formattedPrice) || 0,
+        mrp: formattedPrice, // Only update MRP
+        price: parseFloat(formattedPrice) || 0, // Also update price for calculations
       };
-
-      if (pdf_flag) {
-        updatedItem.mrp = formattedPrice;
-      } else if (isEnabled) {
-        updatedItem.retailerPrice = formattedPrice;
-      } else {
-        updatedItem.dealerPrice = formattedPrice;
-      }
-
+  
       // Recalculate GST dynamically
       const gstSlot = gstSlotData.find(
         c => c.id === Number(updatedItem.gstSlotId),
@@ -3035,7 +2602,7 @@ const Cart = () => {
       } else {
         updatedItem.gst = 0;
       }
-
+  
       // Update Redux store
       dispatch(updateCartItem(index, updatedItem));
     }
@@ -3271,13 +2838,38 @@ const Cart = () => {
   }, [locationCompanyList]);
 
   const toggleSwitch = () => {
-    setIsEnabled(previousState => !previousState);
-    // Reset selected customer or distributor to fallback text when toggled
-    if (!isEnabled) {
-      setSelectedCustomerDetails([]); // Reset customer details
-      setSelectedDistributorDetails([]); // Reset distributor details
+    const newValue = !isEnabled;
+    setIsEnabled(newValue);
+  
+    if (!newValue) {
+      setSelectedCustomerDetails([]);
+      setSelectedDistributorDetails([]);
+    }
+  
+    // Trigger API again with new switch state
+    if (newValue && selectedCustomerDetails.length > 0) {
+      const selectedCustomer = selectedCustomerDetails[0];
+      if (selectedCustomer?.priceType !== undefined) {
+        getStylesOnDistributorChanged(
+          selectedCustomer.priceType,
+          newValue,
+          pdf_flag,
+          isCorrEnabled,
+        );
+      }
+    } else if (!newValue && selectedDistributorDetails.length > 0) {
+      const selectedDistributor = selectedDistributorDetails[0];
+      if (selectedDistributor?.priceType !== undefined) {
+        getStylesOnDistributorChanged(
+          selectedDistributor.priceType,
+          newValue,
+          pdf_flag,
+          isCorrEnabled,
+        );
+      }
     }
   };
+  
 
   const OrderDetailRow = ({label, value}) => (
     <View style={{flexDirection: 'row'}}>
@@ -3898,6 +3490,26 @@ const Cart = () => {
           )}
           <View style={{marginBottom: 10}} />
 
+     
+
+<View style={style.switchContainercorrate}>
+<Switch
+  trackColor={{ false: '#767577', true: '#81b0ff' }}
+  thumbColor={isCorrEnabled ? '#f5dd4b' : '#f4f3f4'}
+  ios_backgroundColor="#3e3e3e"
+  onValueChange={toggleCorrSwitch}
+  value={isCorrEnabled}
+/>
+              <Text
+                style={{
+                  fontWeight: 'bold',
+                  fontSize: 15,
+                  color: '#000',
+                  marginLeft: 10,
+                }}>
+               Slide for Cor. Order
+              </Text>
+            </View>
           {/* <View style={style.header}>
             <Text style={style.txt}>Total Items: {cartItems.length}</Text>
           </View> */}
@@ -3968,6 +3580,7 @@ const Cart = () => {
                                 />
                               </TouchableOpacity>
                             )}
+                         
 
                             <View style={{flex: 1}}>
                               <Text
@@ -3998,6 +3611,7 @@ const Cart = () => {
                                 Color Name - {item.colorName}
                               </Text>
                             </View>
+                            
                             <View style={style.buttonsContainer}>
                               <TouchableOpacity
                                 onPress={() => openModal(item)}
@@ -4011,6 +3625,7 @@ const Cart = () => {
                               </TouchableOpacity>
                             </View>
                           </View>
+                      
                           <View style={style.sizehead}>
                             <View style={{flex: 2, marginLeft: 10}}>
                               <Text
@@ -4154,7 +3769,7 @@ const Cart = () => {
                                 android: 13,
                               }),
                             }}>
-                            <TextInput
+                            {/* <TextInput
                               style={{
                                 borderWidth: 1,
                                 borderColor: '#000',
@@ -4174,7 +3789,20 @@ const Cart = () => {
                                 handlePriceChange(index, text)
                               }
                               keyboardType="numeric"
-                            />
+                            /> */}
+                            <TextInput
+  style={{
+    borderWidth: 1,
+    borderColor: '#000',
+    borderRadius: 5,
+    width: '100%',
+    color: '#000',
+    textAlign: 'center',
+  }}
+  value={item?.mrp?.toString() || ''} // Always use MRP from response
+  onChangeText={text => handlePriceChange(index, text)}
+  keyboardType="numeric"
+/>
                           </View>
 
                           {/* GST Input */}
@@ -5094,33 +4722,6 @@ const Cart = () => {
         </SafeAreaView>
       </ScrollView>
       <View style={{flex: 1, padding: 20}}>
-        {/* <TouchableOpacity
-  onPress={() => {
-    getCurrentLocation(); // Fetch user's location before opening the map
-    setIsLocationPickerVisible(true);
-  }}
-  style={{
-    padding: 15,
-    backgroundColor: 'blue',
-    borderRadius: 5,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  }}>
-  <Text style={{ color: 'white' }}>Pick Location</Text>
-  <Image
-    style={{ height: 25, width: 25 }}
-    source={require('../../../assets/location-pin.png')}
-  />
-</TouchableOpacity>
-
-
-      {confirmedLocation && (
-        <View style={{marginTop: 20}}>
-          <Text>Selected Address: {confirmedLocation.address}</Text>
-          <Text>Latitude: {confirmedLocation.latitude}</Text>
-          <Text>Longitude: {confirmedLocation.longitude}</Text>
-        </View>
-      )} */}
 
         <Modal visible={isLocationPickerVisible} animationType="slide">
           <SafeAreaView style={{flex: 1}}>
@@ -5622,6 +5223,13 @@ const getStyles = colors =>
       flexDirection: 'row',
       marginVertical: 5,
       alignItems: 'center',
+    },
+    switchContainercorrate: {
+      paddingLeft: 10, // Add padding if you want some space from the left edge
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent:"flex-end",
+      marginHorizontal:5
     },
     scrollView: {
       minHeight: 100,

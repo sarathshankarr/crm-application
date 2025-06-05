@@ -236,7 +236,7 @@ const PackingConformation = ({route}) => {
 
     setIsLoading(reset);
 
-    const apiUrl = `${global?.userData?.productURL}${API.GET_SELECT_STYLE}/${start}/${end}/${companyId}/${order.customerLocation}`;
+    const apiUrl = `${global?.userData?.productURL}${API.GET_SELECT_STYLE}/${start}/${end}/${companyId}/${order.customerLocation}?priceListId=${customerPriceType}`;
     console.log('apiUrl:', apiUrl);
 
     try {
@@ -754,6 +754,7 @@ if (newItem?.mrp && newItem?.mrp > 0 && newItem?.fixDisc && newItem?.fixDisc > 0
     console.log("Updated MRP after FixDisc:", newItem.mrp);
 }
 
+
 if (order?.customerType === 3) {
     unitPrice = newItem.corRate;
     console.log("Price to Show (corRate):", unitPrice);
@@ -779,7 +780,7 @@ if (order?.customerType === 3) {
         updatedLineItems[existingIndex] = {
           ...existingItem,
           qty: existingItem.qty,
-          unitPrice: unitPrice ?? existingItem.unitPrice, // **Updated to match renderItem logic**
+          // unitPrice: unitPrice ?? existingItem.unitPrice, // **Updated to match renderItem logic**
           gst: calculatedGst, // **Updated GST**
           discAmnt: newItem.discAmnt ?? existingItem.discAmnt,
           discAmntSec: newItem.discAmntSec ?? existingItem.discAmntSec,
@@ -1493,6 +1494,8 @@ if (order?.customerType === 3) {
     }
   };
 
+  const [customerPriceType, setCustomerPriceType] = useState('');
+
   const getDistributorOrder = async () => {
     setLoading(true);
     const apiUrl = `${global?.userData?.productURL}${API.GET_DISTRIBUTOR_ORDER}/${orderId}`;
@@ -1503,16 +1506,17 @@ if (order?.customerType === 3) {
           Authorization: `Bearer ${global?.userData?.token?.access_token}`,
         },
       });
+  
       if (response.data.status.success) {
         const orderData = response.data.response.ordersList[0];
         console.log('orderData==>', orderData);
         setOrder(orderData);
-
+        setCustomerPriceType(orderData.customerPriceType || ''); // <-- store it here
         setComments(orderData.appComments || '');
+  
         const hasConfirmedOrCanceled = orderData.orderLineItems.some(
           item => item.statusFlag === 1 || item.statusFlag === 2,
         );
-
         setSelectedStatus(
           hasConfirmedOrCanceled ? 'Select' : orderData.orderStatus,
         );
@@ -1525,6 +1529,7 @@ if (order?.customerType === 3) {
       setLoading(false);
     }
   };
+  
 
   useEffect(() => {
     getDistributorOrder();

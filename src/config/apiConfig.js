@@ -163,6 +163,7 @@ export const API = {
   GET_PRICE_LIST: 'erpportal/api/priceList/getByCompanyId',
   ADD_PRICE_LIST: 'erpportal/api/priceList/addPriceList',
   VALIDATE_PRICE_LIST: 'erpportal/api/priceList/isValidPriceList/',
+  GET_STYLES_ON_DISTRIBUTOR_CHANGED:'erpportal/api/style/getStylesOnDistributorChanged'
 };
 
 export const USER_ID = 'adminClientId';
