@@ -306,31 +306,25 @@ const Cart = () => {
   const [isCorrEnabled, setIsCorrEnabled] = useState(false);
 
   const toggleCorrSwitch = () => {
-
-
-    const switchStatuscor = isEnabled; // Assuming isEnabled controls the switch
-
-    if (switchStatuscor) {
-      customerType = 1; // Retailer
-    } else {
-      customerType = 2; // Distributor
-    }
-
     if (isSubmitting) return;
-
-
-    if (switchStatuscor) {
-      if (!selectedCustomer) {
-        Alert.alert('Alert', 'Please select a customer.');
-        return;
-      }
-    } else {
-      if (!selectedDistributor) {
-        Alert.alert('Alert', 'Please select a Distributor.');
-        return;
-      }
+  
+    // Block toggle if already enabled and cart is not empty
+    if (isCorrEnabled && cartItems.length > 0) {
+      // Do nothing (just return silently)
+      return;
     }
-    
+  
+    const switchStatuscor = isEnabled;
+  
+    if (switchStatuscor && !selectedCustomer) {
+      Alert.alert('Alert', 'Please select a customer.');
+      return;
+    }
+    if (!switchStatuscor && !selectedDistributor) {
+      Alert.alert('Alert', 'Please select a Distributor.');
+      return;
+    }
+  
     const newCorr = !isCorrEnabled;
     setIsCorrEnabled(newCorr);
   
@@ -342,7 +336,7 @@ const Cart = () => {
           isEnabled,
           pdf_flag,
           newCorr,
-          selectedCustomer.customerId // <-- PASSING customerId HERE
+          selectedCustomer.customerId
         );
       }
     } else if (!isEnabled && selectedDistributorDetails.length > 0) {
@@ -353,11 +347,13 @@ const Cart = () => {
           isEnabled,
           pdf_flag,
           newCorr,
-          selectedDistributor.id // <-- PASSING distributorId HERE
+          selectedDistributor.id
         );
       }
     }
   };
+  
+  
   
   
   const getStylesOnDistributorChanged = (
@@ -1027,18 +1023,38 @@ const Cart = () => {
   };
 
 
-  const handleRemoveItem = index => {
-    // Remove item from the cart
-    dispatch(removeFromCart(index));
+  // const handleRemoveItem = index => {
+  //   // Remove item from the cart
+  //   dispatch(removeFromCart(index));
 
-    // Update barcodeList to remove the corresponding barcode
+  //   // Update barcodeList to remove the corresponding barcode
+  //   setBarcodeList(prevList => {
+  //     const updatedList = [...prevList]; // Clone the current list
+  //     updatedList.splice(index, 1); // Remove the barcode at the given index
+  //     console.log('Updated barcodeList after removal:', updatedList);
+  //     return updatedList; // Return the updated list
+  //   });
+  // };
+
+  const handleRemoveItem = index => {
+    dispatch(removeFromCart(index));
+  
     setBarcodeList(prevList => {
-      const updatedList = [...prevList]; // Clone the current list
-      updatedList.splice(index, 1); // Remove the barcode at the given index
-      console.log('Updated barcodeList after removal:', updatedList);
-      return updatedList; // Return the updated list
+      const updatedList = [...prevList];
+      updatedList.splice(index, 1);
+  
+      const updatedCart = [...cartItems];
+      updatedCart.splice(index, 1);
+  
+      if (updatedCart.length === 0) {
+        setIsCorrEnabled(false); // Allow switch to be used again
+      }
+  
+      return updatedList;
     });
   };
+  
+  
 
   const filteredCustomers = customers
     .filter(customer => customer !== null) // Filter out null values
@@ -1437,7 +1453,6 @@ const Cart = () => {
         setSelectedCustomerDetails([newCustomer]);
         setSelectedCustomerId(newCustomer.customerId);
 
-        // Fetch and set the customer locations for the new customer
         getCustomerLocations(newCustomer.customerId);
 
         // Close the modal
@@ -3494,12 +3509,23 @@ const Cart = () => {
 
 <View style={style.switchContainercorrate}>
 <Switch
-  trackColor={{ false: '#767577', true: '#81b0ff' }}
-  thumbColor={isCorrEnabled ? '#f5dd4b' : '#f4f3f4'}
+  trackColor={{
+    false: '#767577',
+    true: cartItems.length > 0 ? '#ccc' : '#81b0ff' // Gray when locked
+  }}
+  thumbColor={
+    isCorrEnabled
+      ? cartItems.length > 0
+        ? '#999' // Gray thumb when locked
+        : '#f5dd4b'
+      : '#f4f3f4'
+  }
   ios_backgroundColor="#3e3e3e"
   onValueChange={toggleCorrSwitch}
   value={isCorrEnabled}
 />
+
+
               <Text
                 style={{
                   fontWeight: 'bold',
