@@ -228,7 +228,7 @@ const calculateOrderTotals = (groupedOrdersData) => {
             pack.retTotalAmnt += parseFloat(lineItem.gross);
 
             // Credit applied validation
-            if (creditApplied > 0 && totAmnt > 0 && orderData[0]?.d_pkg_flag === 0) {
+            if (creditApplied > 0 && totAmnt > 0 ) {
               const eligibleReturnAmnt = parseFloat((
                 Math.round(Math.round(totAmnt) - creditApplied)
               ).toFixed(2));
@@ -282,7 +282,7 @@ const calculateOrderTotals = (groupedOrdersData) => {
             pack.retTotalAmnt += parseFloat(lineItem.gross);
 
             // Credit applied validation (same as PDF logic)
-            if (creditApplied > 0 && totAmnt > 0 && orderData[0]?.d_pkg_flag === 0) {
+            if (creditApplied > 0 && totAmnt > 0 ) {
               const eligibleReturnAmnt = parseFloat((
                 Math.round(Math.round(totAmnt) - creditApplied)
               ).toFixed(2));
@@ -781,11 +781,11 @@ const renderGroupHeader = (group, groupIndex) => {
         <Text style={styles.groupHeaderText}>
           Invoice: {group.invoiceNo}  
         </Text>
-        {d_pkg_flag === 0 && (
+        {/* {d_pkg_flag === 0 && ( */}
           <Text style={styles.creditAppliedText}>
             Credit Applied: ₹{group.creditApplied}
           </Text>
-        )}
+        {/* )} */}
       </View>
       <Text style={styles.groupHeaderTextpack}>
         Pack: {group.packNo}
