@@ -11,6 +11,8 @@ import {
   TextInput,
   Image,
   Alert,
+  PermissionsAndroid,
+  Platform,
 } from 'react-native';
 import axios from 'axios';
 import {API} from '../../config/apiConfig';
@@ -20,6 +22,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {RadioGroup} from 'react-native-radio-buttons-group';
 import {ColorContext} from '../../components/colortheme/colorTheme';
 import FastImage from 'react-native-fast-image';
+import ReactNativeBlobUtil from 'react-native-blob-util';
 
 
 
@@ -80,14 +83,203 @@ const [isLoading, setIsLoading] = useState(false);
 
 const [refreshing, setRefreshing] = useState(false);
 
+const [isReturnModalVisible, setIsReturnModalVisible] = useState(false);
+  const [orderReturnList, setOrderReturnList] = useState([]);
+  const [isFetchingReturns, setIsFetchingReturns] = useState(false);
 
+  const fetchOrderReturnData = () => {
+    const apiUrl = `${global?.userData?.productURL}${API.ORDER_RETURNS_MODEL}/${orderId}`;
+    setLoading(true);
+  
+    axios
+      .get(apiUrl, {
+        headers: {
+          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+        },
+      })
+      .then(response => {
+        const result = response?.data?.response?.ordersList?.[0];
+  
+        console.log('result=====>', result);
+  
+        const creditNotesArray = result?.creditNotes || [];
+  
+        setOrderReturnList(creditNotesArray);  // ✅ Ensure this is an array
+        setLoading(false);
+      })
+      .catch(error => {
+        console.error('Error fetching order returns:', error);
+        setLoading(false);
+      });
+  };
+  
+
+  const handleOpenReturnModal = () => {
+    setIsReturnModalVisible(true);
+    fetchOrderReturnData();
+  };
+
+  const renderOrderReturnItem = ({ item }) => {
+    return (
+      <View style={styles.row}>
+        <Text style={styles.cell}>{item?.ordReturnNo || '-'}</Text>
+        <Text style={styles.cell}>{item?.invNos || '-'}</Text>
+        <Text style={styles.cell}>{item?.cn_tot_qty ?? '-'}</Text>
+        <Text style={styles.cell}>₹{item?.cn_tot_amnt ?? '-'}</Text>
+        <Text style={styles.cell}>{item?.createdBy || '-'}</Text>
+        <TouchableOpacity
+          style={styles.cellpdf}
+          onPress={() => getPdfForModel(item?.cn_order_id, item?.cn_id)}
+        >
+          <Image
+            style={styles.pdfimgmodel}
+            source={require('../../../assets/pdf.png')}
+          />
+        </TouchableOpacity>
+      </View>
+    );
+  };
+  
+  
+
+    const requestStoragePermission = async () => {
+      try {
+        if (Platform.OS === 'android') {
+          if (Platform.Version >= 33) {
+            // Android 13 and above
+            const granted = await PermissionsAndroid.request(
+              PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES,
+              {
+                title: 'Storage Permission Required',
+                message: 'This app needs access to your storage to download PDF',
+                buttonNeutral: 'Ask Me Later',
+                buttonNegative: 'Cancel',
+                buttonPositive: 'OK',
+              },
+            );
+            return granted === PermissionsAndroid.RESULTS.GRANTED;
+          } else if (Platform.Version >= 30) {
+            // Android 11 - 12 (Scoped Storage)
+            const granted = await PermissionsAndroid.request(
+              PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+              {
+                title: 'Storage Permission Required',
+                message: 'This app needs access to your storage to download PDF',
+                buttonNeutral: 'Ask Me Later',
+                buttonNegative: 'Cancel',
+                buttonPositive: 'OK',
+              },
+            );
+            return granted === PermissionsAndroid.RESULTS.GRANTED;
+          } else {
+            // Below Android 11
+            const granted = await PermissionsAndroid.request(
+              PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+              PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+              {
+                title: 'Storage Permission Required',
+                message: 'This app needs access to your storage to download PDF',
+                buttonNeutral: 'Ask Me Later',
+                buttonNegative: 'Cancel',
+                buttonPositive: 'OK',
+              },
+            );
+            return granted === PermissionsAndroid.RESULTS.GRANTED;
+          }
+        }
+        return false;
+      } catch (err) {
+        console.warn('Error requesting storage permission:', err);
+        return false;
+      }
+    };
+  
+    const getPdfForModel = async (cn_order_id, cn_id) => {
+      const apiUrl = `${global?.userData?.productURL}${API.PDF_DOWNLOAD_FOR_ORDER_RETURNS_MODEL}/${cn_order_id}/${cn_id}`;
+      console.log("apiUrl====>s",apiUrl)
+      
+      try {
+        const response = await axios.post(
+          apiUrl,
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+    
+        const pdfBase64 = response.data.body;
+    
+        if (Platform.OS === 'android') {
+          const hasPermission = await requestStoragePermission();
+          if (!hasPermission) {
+            Alert.alert('Permission Denied', 'Storage permission is required to save the PDF.');
+            return;
+          }
+        }
+    
+        const pdfPath =
+          Platform.OS === 'android'
+            ? `${ReactNativeBlobUtil.fs.dirs.DownloadDir}/Sales_Return_${cn_order_id}.pdf`
+            : `${ReactNativeBlobUtil.fs.dirs.DocumentDir}/Sales_Return_${cn_order_id}.pdf`;
+    
+        await ReactNativeBlobUtil.fs.writeFile(pdfPath, pdfBase64, 'base64');
+        Alert.alert('PDF Downloaded', `PDF saved successfully at ${pdfPath}`);
+      } catch (error) {
+        console.error('Error generating or saving PDF:', error);
+        Alert.alert('Error', `Failed to generate or save PDF: ${error.message}`);
+      }
+    };
+
+
+    const getPdfForOrderReturns = async (orderId, p_id) => {
+      const apiUrl = `${global?.userData?.productURL}${API.PDF_DOWNLOAD_ORDER_RETURNS}/${orderId}/${p_id}`;
+      console.log("apiUrl====>", apiUrl);
+    
+      try {
+        const response = await axios.post(
+          apiUrl,
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+    
+        const pdfBase64 = response.data.body;
+    
+        if (Platform.OS === 'android') {
+          const hasPermission = await requestStoragePermission();
+          if (!hasPermission) {
+            Alert.alert('Permission Denied', 'Storage permission is required to save the PDF.');
+            return;
+          }
+        }
+    
+        const pdfPath =
+          Platform.OS === 'android'
+            ? `${ReactNativeBlobUtil.fs.dirs.DownloadDir}/Sales_Return_${orderId}_${p_id}.pdf`
+            : `${ReactNativeBlobUtil.fs.dirs.DocumentDir}/Sales_Return_${orderId}_${p_id}.pdf`;
+            
+        await ReactNativeBlobUtil.fs.writeFile(pdfPath, pdfBase64, 'base64');
+        Alert.alert('PDF Downloaded', `PDF saved successfully at ${pdfPath}`);
+      } catch (error) {
+        console.error('Error generating or saving PDF:', error);
+        Alert.alert('Error', `Failed to generate or save PDF: ${error.message}`);
+      }
+    };
+    
 
 const [remarks, setRemarks] = useState('');
-const [selectedId, setSelectedId] = useState('1');
+const [selectedId, setSelectedId] = useState('0');
 
 const [radioButtons, setRadioButtons] = useState([
   {
-    id: '1',
+    id: '0',
     label: 'Cash',
     value: '0',
     labelStyle: styles.radioLabel,
@@ -95,7 +287,7 @@ const [radioButtons, setRadioButtons] = useState([
     disabled: false,
   },
   {
-    id: '2',
+    id: '1',
     label: 'Credit Note',
     value: '1',
     labelStyle: styles.radioLabel,
@@ -373,39 +565,47 @@ const handleQuantityChange = (text, groupIndex, itemIndex) => {
 // Function to group orders by invoiceNo and packNo
 const groupOrdersByInvoiceAndPack = (orders) => {
   const grouped = {};
-  
+
   orders.forEach(order => {
     const key = `${order.invoiceNo}_${order.packNo}`;
     if (!grouped[key]) {
       grouped[key] = {
-        p_id: order.p_id, // Add this line to capture p_id from the order
+        p_id: order.p_id,
         invoiceNo: order.invoiceNo,
         packNo: order.packNo,
         creditApplied: order.creditApplied,
         totAmnt: order.totAmnt,
-        orderId: order.orderId, // Also add orderId if available
-        orders: []
+        orderId: order.orderId,
+        orders: [],
+        showPdf: false, // 👈 add this
       };
     }
-    
-    // Add child items to orders array
+
     if (order.childLists && Array.isArray(order.childLists)) {
       order.childLists.forEach(child => {
+        const currentReturnQty = child.retQty || 0;
+
         grouped[key].orders.push({
           ...child,
-          currentReturnQty: child.retQty || 0,
+          currentReturnQty,
           maxReturnQty: child.shipQty || 0,
           invoiceNo: order.invoiceNo,
           packNo: order.packNo,
-          p_id: order.p_id, // Also add p_id to each child item
-          enterQty: 0, // Initialize enter quantity
+          p_id: order.p_id,
+          enterQty: 0,
         });
+
+        // 👇 Check if any item has currentReturnQty > 0
+        if (currentReturnQty > 0) {
+          grouped[key].showPdf = true;
+        }
       });
     }
   });
-  
+
   return Object.values(grouped);
 };
+
 
 // Also make sure in buildOrderReturnObject function, you're using pack.p_id correctly:
 // In the orderPackingList mapping, change:
@@ -467,7 +667,9 @@ useEffect(() => {
 }, []);
 
 const companyId = selectedCompany ? selectedCompany.id : initialSelectedCompany?.id;
-const userId = global?.userData?.userId;
+
+ const userData = useSelector(state => state.loggedInUser);
+  const userId = userData?.userId;
 
 useEffect(() => {
   if (companyId) {
@@ -781,15 +983,27 @@ const renderGroupHeader = (group, groupIndex) => {
         <Text style={styles.groupHeaderText}>
           Invoice: {group.invoiceNo}  
         </Text>
-        {/* {d_pkg_flag === 0 && ( */}
+        {group.showPdf && (
+  <TouchableOpacity
+    style={styles.cellpdf}
+    onPress={() => getPdfForOrderReturns(group.orderId, group.p_id)}
+  >
+    <Image
+      style={styles.pdfimg}
+      source={require('../../../assets/pdf.png')}
+    />
+  </TouchableOpacity>
+)}
+
+
           <Text style={styles.creditAppliedText}>
             Credit Applied: ₹{group.creditApplied}
           </Text>
-        {/* )} */}
       </View>
       <Text style={styles.groupHeaderTextpack}>
         Pack: {group.packNo}
       </Text>
+   
     </View>
   );
 };
@@ -1460,7 +1674,9 @@ const handleSubmitReturn = async () => {
           )}
         </View>
       )}
-      
+    <TouchableOpacity onPress={handleOpenReturnModal}>
+        <Text style={styles.viewText}>View Order Returns</Text>
+      </TouchableOpacity>
       <View style={styles.radiobutheader}>
         <RadioGroup
           radioButtons={radioButtons}
@@ -1560,7 +1776,54 @@ const handleSubmitReturn = async () => {
     </View>
   </TouchableOpacity>
 </Modal>
-      
+<Modal
+  visible={isReturnModalVisible}
+  transparent
+  animationType="slide"
+  onRequestClose={() => setIsReturnModalVisible(false)}
+>
+  <View style={styles.modalContainer}>
+    <View style={styles.modalContent}>
+      {/* Modal Header */}
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+        <Text style={styles.title}>Order Returns</Text>
+        <TouchableOpacity onPress={() => setIsReturnModalVisible(false)} style={styles.closeButton}>
+          <Image style={styles.modalCloseIcon} source={require('../../../assets/close.png')} />
+        </TouchableOpacity>
+      </View>
+
+      {/* Loader or List */}
+      {isFetchingReturns ? (
+        <ActivityIndicator size="large" color="#0000ff" />
+      ) : orderReturnList?.length > 0 ? (
+        <>
+          {/* Table Header */}
+          <View style={[styles.row, styles.headerRow]}>
+            <Text style={styles.headerCell}>Order Return No</Text>
+            <Text style={styles.headerCell}>Invoice Nos</Text>
+            <Text style={styles.headerCell}>Total Qty</Text>
+            <Text style={styles.headerCell}>Total Amount</Text>
+            <Text style={styles.headerCell}>Returned By</Text>
+            <Text style={styles.headerCellpdf}>PDF</Text>
+          </View>
+
+          {/* Table Rows */}
+          <FlatList
+            data={orderReturnList}
+            renderItem={renderOrderReturnItem}
+            keyExtractor={(item, index) => index.toString()}
+            contentContainerStyle={{ paddingBottom: 20 }}
+          />
+        </>
+      ) : (
+        <View style={{ alignItems: 'center',}}>
+          <Text style={{ fontSize: 16, color: '#000',fontWeight:"bold" }}>No data available</Text>
+        </View>
+      )}
+    </View>
+  </View>
+</Modal>
+
     </ScrollView>
   );
 };
@@ -1922,10 +2185,10 @@ const getStyles = colors =>
       },
       groupHeaderone: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
         alignItems: 'center',
         marginBottom: 5,
         paddingHorizontal: 10,
+        justifyContent:"space-between"
       },
       
       groupHeaderText: {
@@ -1945,6 +2208,7 @@ const getStyles = colors =>
         color: '#000',
         fontWeight: '600',
         marginBottom: 4,
+
       },
       groupSummary: {
     justifyContent:'flex-end',
@@ -1983,6 +2247,82 @@ const getStyles = colors =>
         top: 10,
         right: 10,
         zIndex: 2,
+      },
+      viewText: {
+        color: 'blue',
+        textDecorationLine: 'underline',
+        marginTop:5,
+        marginLeft:15
+      },
+      modalContainer: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        justifyContent: 'center',
+        padding: 10,
+      },
+      modalContent: {
+        backgroundColor: 'white',
+        padding: 10,
+        borderRadius: 8,
+        maxHeight: '80%',
+      },
+      title: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#007BFF',
+      },
+      row: {
+        flexDirection: 'row',
+        paddingVertical: 6,
+        borderBottomWidth: 0.5,
+        borderColor: '#ccc',
+        alignItems: 'center',
+      },
+      headerRow: {
+        backgroundColor: '#e7f0f7',
+      },
+      cell: {
+        flex: 1,
+        fontSize: 12,
+        paddingHorizontal: 4,
+        color:'#000',
+        marginLeft:5
+      },
+      cellpdf:{
+        marginHorizontal:2
+      },
+      headerCell: {
+        flex: 1,
+        fontWeight: 'bold',
+        fontSize: 12,
+        paddingHorizontal: 4,
+      },
+      headerCellpdf:{
+        fontWeight: 'bold',
+        fontSize: 12,
+        marginHorizontal:5
+      },
+      icon: {
+        flex: 0.5,
+        textAlign: 'center',
+      },
+      closeButton: {
+        backgroundColor: colors.color2,
+        padding: 5,
+      marginVertical:5,
+        alignItems: 'center',
+        borderRadius: 5,
+      },
+      pdfimg: {
+        height: 30,
+        width: 30,
+        paddingHorizontal: 4,
+        marginRight:40
+      },
+      pdfimgmodel: {
+        height: 30,
+        width: 30,
+        paddingHorizontal: 4,
       },
   });
 

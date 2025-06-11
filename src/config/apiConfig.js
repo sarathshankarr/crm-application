@@ -1,3 +1,4 @@
+import Order from "../bottom/Order";
 
 export const CUSTOMER_URL =
   'https://crm.codeverse.co/cedge/get-customer-url/crm/';
@@ -163,7 +164,10 @@ export const API = {
   GET_PRICE_LIST: 'erpportal/api/priceList/getByCompanyId',
   ADD_PRICE_LIST: 'erpportal/api/priceList/addPriceList',
   VALIDATE_PRICE_LIST: 'erpportal/api/priceList/isValidPriceList/',
-  GET_STYLES_ON_DISTRIBUTOR_CHANGED:'erpportal/api/style/getStylesOnDistributorChanged'
+  GET_STYLES_ON_DISTRIBUTOR_CHANGED:'erpportal/api/style/getStylesOnDistributorChanged',
+  ORDER_RETURNS_MODEL:'erpportal/api/ordermgmt/getDisOrderReturns',
+  PDF_DOWNLOAD_FOR_ORDER_RETURNS_MODEL:'erpportal/api/ordermgmt/prepareOrderReturnPdf',
+  PDF_DOWNLOAD_ORDER_RETURNS:'erpportal/api/ordermgmt/generateSalesReturnPDF'
 };
 
 export const USER_ID = 'adminClientId';
