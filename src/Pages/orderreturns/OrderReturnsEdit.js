@@ -974,6 +974,8 @@ const renderOrderItem = ({item, index}) => {
   );
 };
 
+const d_pkg_flag = orderData.length > 0 ? orderData[0].d_pkg_flag : null;
+
 const renderGroupHeader = (group, groupIndex) => {
   const d_pkg_flag = orderData.length > 0 ? orderData[0].d_pkg_flag : null;
   
@@ -1011,9 +1013,17 @@ const renderGroupHeader = (group, groupIndex) => {
 const renderTableHeader = () => (
   <View style={styles.tableHeader}>
     <Text style={[styles.tableHeaderText, styles.colNo]}>No.</Text>
+    {d_pkg_flag === 0 && (
     <Text style={[styles.tableHeaderText, styles.colImage]}>Image</Text>
-    <Text style={[styles.tableHeaderText, styles.colName]}>Name</Text>
+    )}
+      {d_pkg_flag !== 0 && (
+  <Text style={[styles.tableHeaderText, styles.colName]}>packages</Text>
+)}
+    <Text style={[styles.tableHeaderText, styles.colName]}>{d_pkg_flag === 0 ? 'Name' : 'styles'}</Text>
+  
+    {d_pkg_flag === 0 && (
     <Text style={[styles.tableHeaderText, styles.colColor]}>Color</Text>
+    )}
     <Text style={[styles.tableHeaderText, styles.colSize]}>Size</Text>
     <Text style={[styles.tableHeaderText, styles.colShippedQty]}>Shipped Qty</Text>
     <Text style={[styles.tableHeaderText, styles.colQty]}>Return Qty</Text>
@@ -1032,7 +1042,7 @@ const renderTableHeader = () => (
 const renderTableRow = ({item, index, groupIndex}) => (
   <View style={styles.tableRow}>
     <Text style={[styles.tableCellText, styles.colNo]}>{item.styleNum || '-'}</Text>
-    
+    {d_pkg_flag === 0 && (
     <TouchableOpacity 
   style={[styles.tableCell, styles.colImage]}
   onPress={() => {
@@ -1042,6 +1052,7 @@ const renderTableRow = ({item, index, groupIndex}) => (
     }
   }}
 >
+
   {item.imageUrl1 ? (
     <FastImage source={{uri: item.imageUrl1}} style={styles.productImage} />
   ) : (
@@ -1049,10 +1060,19 @@ const renderTableRow = ({item, index, groupIndex}) => (
       <Text style={styles.noImageText}>No Image</Text>
     </View>
   )}
+
 </TouchableOpacity>
+)}
+    {d_pkg_flag !== 0 && (
+    <Text style={[styles.tableCellText, styles.colName]}>{item.pkgName || '-'}</Text>
+    )}
     <Text style={[styles.tableCellText, styles.colName]}>{item.styleName || '-'}</Text>
+    {d_pkg_flag === 0 && (
     <Text style={[styles.tableCellText, styles.colColor]}>{item.colorName || '-'}</Text>
-    <Text style={[styles.tableCellText, styles.colSize]}>{item.size || '-'}</Text>
+    )}
+<Text style={[styles.tableCellText, styles.colSize]}>
+  {d_pkg_flag === 0 ? (item.size || '-') : (item.sizes || '-')}
+</Text>
     <Text style={[styles.tableCellText, styles.colShippedQty]}>{item.shipQty || 0}</Text>
     <Text style={[styles.tableCellText, styles.colShippedQty]}>{item.currentReturnQty || 0}</Text>
 

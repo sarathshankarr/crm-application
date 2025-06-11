@@ -189,8 +189,15 @@ const DistributorOrder = () => {
 
     return (
       <View style={styles.orderItem}>
+       
+
+       {order?.d_pkg_flag  !== 0 && (
+                <Text style={[styles.orderText, {flex: 1.3}]}>{item.pkgName}</Text>
+       )}
         <Text style={[styles.orderText, {flex: 1.3}]}>{item.styleName}</Text>
+        {order?.d_pkg_flag === 0 && (
         <Text style={[styles.orderText, {flex: 1.3}]}>{item.colorName}</Text>
+        )}
         <Text style={[styles.orderText, {flex: 1}]}>{item.size}</Text>
         <Text style={[styles.orderText, {flex: 1}]}>{item.shipQty}</Text>
         <Text style={[styles.orderText, {flex: 1}]}>{item.grnQty}</Text>
@@ -388,8 +395,17 @@ console.log('requestData==ljkj>',requestData)
         </Text>
       </View>
       <View style={styles.orderDetailsHeader}>
-        <Text style={[styles.orderDetailsText, {flex: 1.3}]}>Name</Text>
+      {order?.d_pkg_flag  !== 0 && (
+          <Text style={[styles.orderDetailsText, styles.orderDetailsText]}>Packages</Text>
+        )}
+      <Text style={[styles.orderDetailsText, {flex: 1.3}]}>
+        
+  {order?.d_pkg_flag === 0 ? 'Name' : 'Style'}
+</Text>
+{order?.d_pkg_flag === 0 && (
         <Text style={[styles.orderDetailsText, {flex: 1.3}]}>Color</Text>
+)}
+
         <Text style={[styles.orderDetailsText, {flex: 1}]}>Size</Text>
         <Text style={[styles.orderDetailsText, {flex: 1}]}>Ship Qty</Text>
         <Text style={[styles.orderDetailsText, {flex: 1}]}>Rec Qty</Text>

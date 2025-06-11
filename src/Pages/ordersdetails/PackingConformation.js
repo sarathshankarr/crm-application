@@ -2597,20 +2597,7 @@ discountPercentageThird: parseFloat(item.discountPercentageThird) || parseFloat(
 
     const checkboxColor = getCheckboxColor(item.statusFlag);
 
-    // let fixedPrice = 0;
-    // if (pdf_flag !== 1) {
-    //   if (item.discountPercentageThird) {
-    //     if (item.unitPrice) {
-    //       fixedPrice = item.unitPrice - item.discountPercentageThird;
-    //     } else {
-    //       fixedPrice = 0;
-    //     }
-    //   } else {
-    //     fixedPrice = item.unitPrice || 0;
-    //   }
-    // } else {
-    //   fixedPrice = item.unitPrice || 0;
-    // }
+
 
     let fixedPrice = 0;
 if (pdf_flag !== 1) {
@@ -2743,7 +2730,7 @@ if (pdf_flag !== 1) {
     // });
     return (
       <View style={styles.orderItem}>
-        <View style={{flexDirection: 'row', marginLeft: 10, }}>
+        <View style={{flexDirection: 'row', marginLeft: 10,justifyContent:"space-between" }}>
           <CustomCheckBoxStatus
             isChecked={
               !!selectedItems[item.orderLineitemId] ||
@@ -2757,8 +2744,17 @@ if (pdf_flag !== 1) {
             borderColor={checkboxColor}
           />
       
-          <Text style={styles.orderstylenametxt}>{item?.styleName || item.style}</Text>
-        
+   <View style={{ marginRight: 200 }}>
+  {order.d_pkg_flag !== 0 && (
+    <Text style={styles.orderstylenametxt}>
+      Package - {item?.pkgName || item.pkgName}
+    </Text>
+  )}
+  <Text style={styles.orderstylenametxt}>
+    Style - {item?.styleName || item.style}
+  </Text>
+</View>
+     
           {item.statusFlag !== 1 && item.statusFlag !== 2 && (
             <TouchableOpacity
               onPress={() => handleDelete(item.styleId, item.size, item.qty)}>
@@ -2771,7 +2767,7 @@ if (pdf_flag !== 1) {
           
         </View>
 
-        {(item.imageUrl || item.imageUrl1) && (
+        {(item.imageUrl || item.imageUrl1) && order.d_pkg_flag === 0 && (
         <TouchableOpacity onPress={() => openImageModal(item.imageUrl || item.imageUrl1)}>
           <Image
             source={{ uri: item.imageUrl || item.imageUrl1 }}
@@ -3106,6 +3102,7 @@ if (pdf_flag !== 1) {
                 {totalFormatted}
               </Text>
             </View>
+            {order.d_pkg_flag === 0 && (
             <View style={{flexDirection: 'row', top: 15}}>
               <Text
                 style={{
@@ -3135,6 +3132,7 @@ if (pdf_flag !== 1) {
                 {item?.colorName}
               </Text>
             </View>
+            )}
             <View style={{flexDirection: 'row', top: 15}}>
               <Text
                 style={{
