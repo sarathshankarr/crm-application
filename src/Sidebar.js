@@ -19,7 +19,7 @@ import {useDispatch, useSelector} from 'react-redux';
 import {CLEAR_CART, SET_SELECTED_COMPANY} from './redux/ActionTypes';
 import {ColorContext, ColorProvider} from './components/colortheme/colorTheme';
 import FastImage from 'react-native-fast-image';
-import { setLoggedInUser } from './redux/actions/Actions';
+import {setLoggedInUser} from './redux/actions/Actions';
 
 const Sidebar = ({navigation, route}) => {
   const userRole = useSelector(state => state.userRole) || '';
@@ -46,7 +46,6 @@ const Sidebar = ({navigation, route}) => {
   const companyName = selectedCompany ? selectedCompany.companyName : '';
   const companyCode = selectedCompany ? selectedCompany.companyCode : '';
   const [selectedCompanyy, setSelectedCompany] = useState(null);
-
 
   const [companyLogo, setCompanyLogo] = useState(null);
 
@@ -77,8 +76,6 @@ const Sidebar = ({navigation, route}) => {
       getCompany(selectedCompany.id);
     }
   }, [selectedCompany]);
-
-
 
   const getCompany = companyId => {
     const apiUrl = `${global?.userData?.productURL}${API.GET_COMPANY}/${companyId}`;
@@ -191,11 +188,9 @@ const Sidebar = ({navigation, route}) => {
       });
   };
 
-
   const toggleDropdown = key => {
     setOpenDropdown(prev => (prev === key ? null : key));
   };
-
 
   const goToHome = () => {
     navigation.navigate('Home');
@@ -204,7 +199,6 @@ const Sidebar = ({navigation, route}) => {
   const goToCategories = () => {
     navigation.navigate('Categories');
   };
-
 
   const goToDistributorGrn = () => {
     navigation.navigate('Distributor GRN');
@@ -236,16 +230,15 @@ const Sidebar = ({navigation, route}) => {
   //       setModalVisible(false);
   //     });
   // };
-  
+
   const takePhotoFromCamera = () => {
     navigation.navigate('CameraScreen', {
       onImageCaptured: image => {
-        setImage({ uri: image.path });
+        setImage({uri: image.path});
         setModalVisible(false);
       },
     });
   };
-  
 
   const choosePhotoFromLibrary = () => {
     ImagePicker.openPicker({
@@ -390,8 +383,7 @@ const Sidebar = ({navigation, route}) => {
   const PickList = menuMap[16];
   const Location = menuMap[17];
   const OrderReturns = menuMap[18];
-
-  
+  const CreditNotes = menuMap[19];
 
   const hasDropdownhome = home;
   const hasDropdowncategories = Categories;
@@ -403,7 +395,8 @@ const Sidebar = ({navigation, route}) => {
     const hasProductStyle = Productstyle?.menuName;
     const hasPackages = Packages?.menuName;
     const hasProductPublish = productpublish?.menuName;
-    const hasOrders = orders?.menuName || packingorders?.menuName || PickList?.menuName;
+    const hasOrders =
+      orders?.menuName || packingorders?.menuName || PickList?.menuName;
     const hasProductInventory = ProductInventory?.menuName;
     const hasLocationwiseInventory = locationwiseinventory?.menuName;
     const hasDistributorwiseInventory = distributorwiseinventory?.menuName;
@@ -412,6 +405,7 @@ const Sidebar = ({navigation, route}) => {
     const hacPickList = PickList?.menuName;
     const hasLocation = Location?.menuName;
     const hasOrderReturns = OrderReturns?.menuName;
+    const hasCreditNotes = CreditNotes?.menuName;
     return {
       style: {
         label:
@@ -450,34 +444,31 @@ const Sidebar = ({navigation, route}) => {
         label: hasOrders ? 'Orders' : null,
         icon: hasOrders ? require('../assets/orderr.png') : null,
         style: [
-          orders
-            ? {
-                label: orders.menuName,
-                route: 'Order',
-                src: require('../assets/orderr.png'),
-              }
-            : null,
-          packingorders
-            ? {
-                label: packingorders.menuName,
-                route: 'Packing orders',
-                src: require('../assets/packing.png'),
-              }
-            : null,
-            PickList
-            ? {
-                label: PickList.menuName,
-                route: 'PickList',
-                src: require('../assets/material-management.png'),
-              }
-            : null,
-            hasOrderReturns
-            ? {
-                label: OrderReturns.menuName,
-                route: 'OrderReturns',
-                src: require('../assets/orderreturn.png'),
-              }
-            : null,
+          orders && {
+            label: orders.menuName,
+            route: 'Order',
+            src: require('../assets/orderr.png'),
+          },
+          packingorders && {
+            label: packingorders.menuName,
+            route: 'Packing orders',
+            src: require('../assets/packing.png'),
+          },
+          PickList && {
+            label: PickList.menuName,
+            route: 'PickList',
+            src: require('../assets/material-management.png'),
+          },
+          hasOrderReturns && {
+            label: OrderReturns.menuName,
+            route: 'OrderReturns',
+            src: require('../assets/orderreturn.png'),
+          },
+          hasCreditNotes && {
+            label: CreditNotes.menuName,
+            route: 'CreditNotes',
+            src: require('../assets/CreditNotes.png'),
+          },
         ].filter(Boolean),
       },
       inventory: {
@@ -568,7 +559,7 @@ const Sidebar = ({navigation, route}) => {
     distributorwiseinventory,
     Activities,
     costing,
-    Location
+    Location,
   ]);
 
   const renderDropdown = (key, menu) => {
@@ -675,33 +666,35 @@ const Sidebar = ({navigation, route}) => {
   );
   return (
     <SafeAreaView style={styles.container}>
-        <View style={styles.headerContainer}>
-          <View style={styles.header}>
-            <TouchableOpacity onPress={() => setModalVisible(true)}>
-              <Image style={[styles.img, {borderRadius: 30}]} source={image} />
-            </TouchableOpacity>
-            <View>
-              <Text style={styles.headerTitle}>Profile</Text>
-              {userData && (
-                <Text style={styles.usertxt}>
-                  {userData.token.firstName} {userData.token.lastName}
-                </Text>
-              )}
-            </View>
+      <View style={styles.headerContainer}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => setModalVisible(true)}>
+            <Image style={[styles.img, {borderRadius: 30}]} source={image} />
+          </TouchableOpacity>
+          <View>
+            <Text style={styles.headerTitle}>Profile</Text>
+            {userData && (
+              <Text style={styles.usertxt}>
+                {userData.token.firstName} {userData.token.lastName}
+              </Text>
+            )}
           </View>
-          <View style={styles.companyInfo}>
+        </View>
+        <View style={styles.companyInfo}>
           <FastImage
             source={
               companyLogo
                 ? {uri: `data:image/png;base64,${companyLogo}`}
                 : require('../assets/NewNoImage.jpg')
             }
-            resizeMode='contain'
+            resizeMode="contain"
             style={{height: 30, width: 100}}
           />
-            <Text style={styles.headerSubtitle}>{companyName} ({companyCode})</Text>
-          </View>
+          <Text style={styles.headerSubtitle}>
+            {companyName} ({companyCode})
+          </Text>
         </View>
+      </View>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         {hasDropdownhome && (
           <View style={styles.navContainer}>
@@ -732,7 +725,7 @@ const Sidebar = ({navigation, route}) => {
               onPress={goToDistributorGrn}
             />
           </View>
-        )}   
+        )}
         {hasDropdownLocationTask && (
           <View style={styles.navContainer}>
             <NavItem
@@ -842,8 +835,8 @@ const getStyles = colors =>
     usertxt: {
       fontSize: 20,
       color: '#fff',
-      marginBottom:5,
-      marginTop:3
+      marginBottom: 5,
+      marginTop: 3,
     },
     homeheader: {
       flexDirection: 'row',

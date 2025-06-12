@@ -167,7 +167,11 @@ export const API = {
   GET_STYLES_ON_DISTRIBUTOR_CHANGED:'erpportal/api/style/getStylesOnDistributorChanged',
   ORDER_RETURNS_MODEL:'erpportal/api/ordermgmt/getDisOrderReturns',
   PDF_DOWNLOAD_FOR_ORDER_RETURNS_MODEL:'erpportal/api/ordermgmt/prepareOrderReturnPdf',
-  PDF_DOWNLOAD_ORDER_RETURNS:'erpportal/api/ordermgmt/generateSalesReturnPDF'
+  PDF_DOWNLOAD_ORDER_RETURNS:'erpportal/api/ordermgmt/generateSalesReturnPDF',
+  GET_CREDI_TNOTES:'erpportal/api/creditNote/getCreditNotesFromTo',
+  GET_CREDI_TNOTES_SEARCH:'erpportal/api/creditNote/getCreditNotesSearchFromTo',
+  GET_CREDI_TNOTES_EDIT:'erpportal/api/creditNote',
+  CREDI_TNOTES_PDF:'erpportal/api/creditNote/generatePdf'
 };
 
 export const USER_ID = 'adminClientId';

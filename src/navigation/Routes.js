@@ -65,6 +65,8 @@ import MasterLocation from '../Pages/master/MasterLocation';
 import OrderReturns from '../Pages/orderreturns/OrderReturns';
 import OrderReturnsEdit from '../Pages/orderreturns/OrderReturnsEdit';
 import PriceList from '../Pages/product/PriceList';
+import CreditNotes from '../Pages/creditnotes/CreditNotes';
+import CreditNotesEdit from '../Pages/creditnotes/CreditNotesEdit';
 
 const Stack = createNativeStackNavigator();
 
@@ -506,8 +508,26 @@ const Routes = () => {
           headerShown: false,
           headerTitle: () => <CompanyDropdown title="PriceList" />,
         }}
+        
       />
-
+    <Stack.Screen
+        name="CreditNotes"
+        component={CreditNotes}
+        options={{
+          headerShown: true,
+          headerTitle: () => <CompanyDropdown title="CreditNotes" />,
+        }}
+        
+      />
+         <Stack.Screen
+        name="CreditNotesEdit"
+        component={CreditNotesEdit}
+        options={{
+          headerShown: true,
+          headerTitle: () => <CompanyDropdown title="CreditNotesEdit" />,
+        }}
+        
+      />
 
     </Stack.Navigator>
   );
