@@ -312,7 +312,7 @@ const SettingsScreen = ({navigation, route}) => {
           />
           <SettingItem
             title="Logout"
-            icon={require('../../assets/logOut.png')}
+            icon={require('../../assets/logout.png')}
             onPress={handleLogout}
           />
           <SettingItem

@@ -54,6 +54,7 @@ import {Settings} from 'react-native';
 import SettingsScreen from '../settings/SettingsScreen';
 import CompanyDropdown from '../components/CompanyDropdown';
 import CopyProduct from '../Pages/product/CopyProduct';
+// import DistributorPayments from '../Pages/payments/DistributorPayments';
 import DistributorPayments from '../Pages/payments/ DistributorPayments';
 import PickList from '../Pages/Packingorders/PickList';
 import PickListEdit from '../Pages/Packingorders/PickListEdit';
