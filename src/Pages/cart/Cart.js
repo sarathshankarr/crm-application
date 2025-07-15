@@ -56,6 +56,7 @@ const Cart = () => {
   const [confirmedLocation, setConfirmedLocation] = useState(null);
   const [isLocationPickerVisible, setIsLocationPickerVisible] = useState(false);
   const [locationError, setLocationError] = useState(null);
+  const [selectedPriceType, setSlectedPriceType] =useState(0)
 
   useEffect(() => {
     Geocoder.init('AIzaSyDFkFf27LcYV5Fz6cjvAfEX1hsdXx4zE6Q');
@@ -110,12 +111,12 @@ const Cart = () => {
             setAddress(address);
           })
           .catch(error => {
-            console.log('Geocoding error: ', error);
+            // console.log('Geocoding error: ', error);
             setAddress('Address not available');
           });
       },
       error => {
-        console.log('Location error: ', error);
+        // console.log('Location error: ', error);
         setLocationError(
           'Could not get your location. Please select manually.',
         );
@@ -144,7 +145,7 @@ const Cart = () => {
       const address = res.results[0].formatted_address;
       setAddress(address);
     } catch (error) {
-      console.log('Geocoding error: ', error);
+      // console.log('Geocoding error: ', error);
       setAddress('Address not available');
     }
   };
@@ -285,10 +286,10 @@ const Cart = () => {
         },
       })
       .then(response => {
-        console.log(
-          'response.data.priceList ===>',
-          response.data?.response?.priceLIsts,
-        );
+        // console.log(
+        //   'response.data.priceList ===>',
+        //   response.data?.response?.priceLIsts,
+        // );
 
         setPriceListOptions(response.data?.response?.priceLIsts); // Save the list for dropdown
       })
@@ -379,14 +380,14 @@ const Cart = () => {
   
     const apiUrl0 = `${global?.userData?.productURL}${API.GET_STYLES_ON_DISTRIBUTOR_CHANGED}/${priceType}/${secondParam}/${companyId}?customerType=${customerType}&customerId=${customerId}`;
   
-    console.log("apiUrl0=====>", apiUrl0);
+    // console.log("apiUrl0=====>", apiUrl0);
   
     const requestData = cartItems.map(item => ({
       styleId: item.styleId,
       sizeId: item.sizeId
     }));
 
-    console.log("requestDataDistributorChange==>",requestData)
+    // console.log("requestDataDistributorChange==>",requestData)
   
     axios
     .post(apiUrl0, requestData, {
@@ -395,7 +396,7 @@ const Cart = () => {
       },
     })
     .then(response => {
-      console.log("MRP Response Data:", JSON.stringify(response.data, null, 2));
+      // console.log("MRP Response Data:", JSON.stringify(response.data, null, 2));
       
       // Alternative: Update each cart item individually
       cartItems.forEach((cartItem, index) => {
@@ -465,7 +466,7 @@ const Cart = () => {
   const [inputValuess, setInputValuess] = useState({});
 
   const cartItems = useSelector(state => state.cartItems);
-  console.log('cartItems======>', cartItems);
+  // console.log('cartItems======>', cartItems);
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [selatedDate, setSelectedDate] = useState('Expected delivery date');
 
@@ -565,7 +566,7 @@ const Cart = () => {
         },
       })
       .then(response => {
-        console.log('response.data.state===>', response.data);
+        // console.log('response.data.state===>', response.data);
         setStates(response.data); // Assuming the response contains the states
       })
       .catch(error => {
@@ -588,6 +589,7 @@ const Cart = () => {
   useEffect(() => {
     getState();
   }, []);
+
   const statusOptions = [
     {label: 'Active', value: 0},
     {label: 'Inactive', value: 1},
@@ -625,8 +627,10 @@ const Cart = () => {
       setError('Please enter a barcode.');
       return;
     }
-
-    const apiUrl = `${global?.userData?.productURL}${API.GET_STYLE_ITEMS}/${trimmedQuery}/${companyId}/0/${comp_flag}`;
+    //  const  priceId =0;
+    console.log("selected Price type ", selectedPriceType)
+    const apiUrl = `${global?.userData?.productURL}${API.GET_STYLE_ITEMS}/${trimmedQuery}/${companyId}/0/${comp_flag}?priceListId={selectedPriceType}`;
+    console.log("selected Price type url  ", apiUrl)
 
     setLoading(true);
     setError(null);
@@ -638,7 +642,7 @@ const Cart = () => {
         },
       })
       .then(response => {
-        console.log('Fetched Data:', response.data);
+        // console.log('Fetched Data:', response.data);
         const data = response?.data || [];
 
         if (
@@ -673,7 +677,7 @@ const Cart = () => {
 
 
   const handleSaveItem = fetchedData => {
-    console.log('Fetched Data:', fetchedData);
+    // console.log('Fetched Data:', fetchedData);
 
     let itemsToUpdate = [];
 
@@ -698,7 +702,7 @@ const Cart = () => {
         sourceScreen: 'ModalComponent',
       };
 
-      console.log('Item details to add/update:', itemDetails);
+      // console.log('Item details to add/update:', itemDetails);
 
       const existingItemIndex = cartItems.findIndex(
         cartItem =>
@@ -1595,6 +1599,7 @@ const Cart = () => {
           setLocationCompanyList(response?.data?.locationList || []);
           setFilteredCompanyLocationList(response?.data?.locationList || []);
           setIsLoading(false);
+          console.log('get location')
         })
         .catch(error => {
           console.error('Error:', error);
@@ -1844,7 +1849,7 @@ const Cart = () => {
     setSelectedLocationId('');
     setSelectedShipLocationId('');
     setHasUserSelectedLocationDistributor(false); // Reset the manual selection flag
-
+    
     // Fetch locations for the distributor
     console.log('Fetching distributor locations for customerId:', customerId);
     getCustomerLocations(customerId);
@@ -1852,6 +1857,8 @@ const Cart = () => {
     const selectedDistributor = distributors.find(
       distributor => distributor.id === customerId,
     );
+    console.log("setting price id ==> ", selectedDistributor.priceType)
+    setSlectedPriceType( selectedDistributor.priceType)
     console.log("selectedDistributor",selectedDistributor)
     setSelectedDistributorDetails([selectedDistributor]);
     if (selectedDistributor?.priceType !== undefined) {
@@ -3033,10 +3040,10 @@ const Cart = () => {
                       );
                       if (searchQueryCode.trim()) {
                         if (selectedOption === 'Style') {
-                          console.log('Calling getStyle on Submit...');
+                          // console.log('Calling getStyle on Submit...');
                           getStyle(searchQueryCode); // Call getStyle on Enter key
                         } else if (selectedOption === 'Package') {
-                          console.log('Calling getPackage on Submit...');
+                          // console.log('Calling getPackage on Submit...');
                           getPackage(searchQueryCode); // Call getPackage on Enter key
                         }
                       }
@@ -3162,12 +3169,14 @@ const Cart = () => {
                                 borderBottomWidth: 0.5,
                                 borderColor: '#8e8e8e',
                               }}
-                              onPress={() =>
+                              onPress={() =>{
                                 handleDistributorSelection(
                                   item?.firstName,
                                   item?.distributorName,
                                   item?.id,
                                 )
+                              {console.log("distributor price")}
+                              }
                               }>
                               <Text
                                 style={{

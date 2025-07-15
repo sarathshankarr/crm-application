@@ -15,6 +15,7 @@ import {encode as base64Encode} from 'base-64';
 import {API, USER_ID, USER_PASSWORD} from './src/config/apiConfig';
 import Geocoder from 'react-native-geocoding';
 import 'react-native-get-random-values';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 const App = () => {
   Geocoder.init('AIzaSyDFkFf27LcYV5Fz6cjvAfEX1hsdXx4zE6Q');
@@ -247,7 +248,10 @@ const MainApp = () => {
   }, [colors]);
 
   return (
-    <View style={{flex: 1, backgroundColor: colors.color2}}>
+
+   <SafeAreaProvider>
+      <SafeAreaView style={{flex: 1, backgroundColor: colors.color2}}>
+
       {Platform.OS === 'ios' && (
         <View
           style={{
@@ -262,7 +266,8 @@ const MainApp = () => {
         backgroundColor={colors.color2}
       />
       <Routes />
-    </View>
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 };
 
