@@ -185,7 +185,7 @@ const initialize = async () => {
     }
   
     const apiUrl = `${global?.userData?.productURL}${API.GET_TASKS_ACC_USER_LAZY}/${userData.userId}/${companyId}/${newFrom}/${newTo}?taskName=${encodeURIComponent(taskName)}`;
-  
+  console.log("url ", apiUrl)
     try {
       const response = await axios.get(apiUrl, {
         headers: {
@@ -206,6 +206,7 @@ const initialize = async () => {
         if (!isLoadMore) {
           setTasks(response.data);
           setFilteredTasks(response.data);
+          // console.log("taks list ", response.data)
         } else {
           setTasks(prevTasks => [...prevTasks, ...response.data]);
           setFilteredTasks(prevTasks => [...prevTasks, ...response.data]);
@@ -772,20 +773,23 @@ const initialize = async () => {
       setTraveledDistance(traveledDistance);
     }
   };
-
+ const handleAdd = () => {
+    navigation.navigate('NewTask', {task: {}});
+  };
 
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
 
-      <View style={styles.header}>
+     
+      {/* <View style={styles.header}> */}
         {/* <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
           <Image
             style={{ height: 25, width: 25 }}
             source={require('../../../assets/back_arrow.png')}
           />
         </TouchableOpacity> */}
-        <Text
+        {/* <Text
           style={{
            
             fontSize: 19,
@@ -794,7 +798,31 @@ const initialize = async () => {
           }}>
           Location
         </Text>
-      </View>
+         <TouchableOpacity style={styles.addButton} onPress={handleAdd}>
+          <Text style={styles.addButtonText}>Add</Text>
+        </TouchableOpacity>
+      </View>  */}
+
+
+<View style={styles.header}>
+  {/* Back button (if needed) */}
+  {/* <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
+    <Image
+      style={{ height: 25, width: 25 }}
+      source={require('../../../assets/back_arrow.png')}
+    />
+  </TouchableOpacity> */}
+
+  {/* Center text */}
+  <Text style={styles.headerTitle}>Location</Text>
+
+  {/* Right side button */}
+  <TouchableOpacity style={styles.addButton} onPress={handleAdd}>
+    <Text style={styles.addButtonText}>Add Task</Text>
+  </TouchableOpacity>
+</View>
+
+
       <View
         style={{
           paddingVertical: 10,
@@ -927,11 +955,11 @@ const getStyles = (colors) => StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
-  header: {
-    flexDirection: 'row',
-    marginVertical: 10,
-    alignSelf:'center'
-  },
+  // header: {
+  //   flexDirection: 'row',
+  //   marginVertical: 10,
+  //   alignSelf:'center'
+  // },
   txt: {
     color: '#000',
     fontWeight: 'bold',
@@ -1028,6 +1056,34 @@ marginLeft: 10,
     height: 20,
     tintColor: '#000',
   },
+    addButton: {
+    paddingHorizontal: 15,
+    padding: 10,
+    backgroundColor:colors.color2,
+    borderRadius: 5,
+    marginLeft: 10,
+  },
+   addButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  header: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'space-between', // space between title and button
+  paddingHorizontal: 15,
+  marginVertical: 10,
+},
+
+headerTitle: {
+  flex: 1, // take available space so it centers properly
+  textAlign: 'center',
+  fontSize: 19,
+  fontWeight: 'bold',
+  color: '#000',
+},
+
 });
 
 export default CustomerLocation;

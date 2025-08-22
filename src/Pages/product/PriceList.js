@@ -391,6 +391,7 @@ const PriceList = ({route}) => {
     setError(null);
 
     const apiUrl = `${global?.userData?.productURL}${API.GET_PRICE_LIST}/${companyId}/asc`;
+    console.log("api price list ", apiUrl)
 
     axios
       .get(apiUrl, {
@@ -404,12 +405,17 @@ const PriceList = ({route}) => {
           response.data?.response?.priceLIsts,
         );
 
-        const priceLists = response.data?.response?.priceLIsts || [];
+        let priceLists = response.data?.response?.priceLIsts || [];
+        if(priceLists[0]===null){
+          priceLists=[];
+          console.log("inside making empty ")
+        }
+
         console.log('Full priceLists array:', priceLists);
 
         setPriceListOptions(priceLists);
 
-        const priceListNames = priceLists.map(item => item.priceListName);
+        const priceListNames = priceLists.map(item => item?.priceListName);
         console.log('Extracted priceListNames:', priceListNames);
 
         setTabs(priceListNames);
