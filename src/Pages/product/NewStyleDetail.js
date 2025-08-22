@@ -743,7 +743,7 @@ useEffect(() => {
       setSelectedSlotId(styleDetails.gstSlotId); 
     } else {
       // User is adding for the first time, so prepopulate setDefault slot
-      const defaultSlot = SlotList.find(item => item.setDefault === 1);
+      const defaultSlot = SlotList.find(item => item?.setDefault === 1);
       if (defaultSlot) {
         setIsDefault(true);
         setSelectedSlot(defaultSlot.slotName);
