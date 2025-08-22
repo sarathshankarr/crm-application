@@ -3472,7 +3472,7 @@ const handleChangeScale = async (scaleId, scaleRange) => {
                 onChangeText={text => setHsn(text)}
               />
             </View>
-            <Text
+            {/* <Text
               style={{marginHorizontal: 20, marginVertical: 3, color: '#000'}}>
               {'GST'}
             </Text>
@@ -3486,7 +3486,7 @@ const handleChangeScale = async (scaleId, scaleRange) => {
                 keyboardType="numeric"
                 onChangeText={text => setGst(text)}
               />
-            </View>
+            </View> */}
 
             {/* Closure Dropdown */}
             {prod_additional_field_flag === 1 && (
