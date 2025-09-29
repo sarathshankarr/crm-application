@@ -308,6 +308,8 @@ const Cart = () => {
 
   const toggleCorrSwitch = () => {
     if (isSubmitting) return;
+
+    if(cartItems.length > 0) return;
   
     // Block toggle if already enabled and cart is not empty
     if (isCorrEnabled && cartItems.length > 0) {
@@ -629,7 +631,7 @@ const Cart = () => {
     }
     //  const  priceId =0;
     console.log("selected Price type ", selectedPriceType)
-    const apiUrl = `${global?.userData?.productURL}${API.GET_STYLE_ITEMS}/${trimmedQuery}/${companyId}/0/${comp_flag}?priceListId={selectedPriceType}`;
+    const apiUrl = `${global?.userData?.productURL}${API.GET_STYLE_ITEMS}/${trimmedQuery}/${companyId}/0/${comp_flag}?priceListId=${selectedPriceType}`;
     console.log("selected Price type url  ", apiUrl)
 
     setLoading(true);
@@ -642,16 +644,16 @@ const Cart = () => {
         },
       })
       .then(response => {
-        // console.log('Fetched Data:', response.data);
         const data = response?.data || [];
+        console.log('Fetched Data: from style dd ', response.data);
 
         if (
           data.length === 0 &&
           (trimmedQuery.length === 11 || trimmedQuery.length === 13)
         ) {
           Alert.alert(
-            'No Package Found',
-            'No package found for the given barcode. Please check and try again.',
+            'No Style Found',
+            'No Style found for the given barcode. Please check and try again.',
             [
               {
                 text: 'OK',
@@ -687,7 +689,8 @@ const Cart = () => {
       const itemDetails = {
         packageId: item.packageId || null,
         styleId: item.styleId,
-        styleName: item.styleDesc,
+        styleName: item.style,
+        styleDesc: item.styleDesc,
         colorName: item.colorName,
         colorId: item.colorId,
         sizeDesc: item.sizeDesc,
@@ -698,6 +701,7 @@ const Cart = () => {
         mrp: item.mrp,
         price: item.unitPrice,
         gst: item.gst,
+        corRate: item.corRate,
         imageUrls: item.imageUrls,
         sourceScreen: 'ModalComponent',
       };
@@ -1825,6 +1829,7 @@ const Cart = () => {
       customer => customer.customerId === customerId,
     );
     setSelectedCustomerDetails([selectedCustomer]);
+    setSlectedPriceType(selectedCustomer?.priceType || 0)
 
     if (selectedCustomer?.priceType !== undefined) {
       getStylesOnDistributorChanged(
@@ -1858,7 +1863,7 @@ const Cart = () => {
       distributor => distributor.id === customerId,
     );
     console.log("setting price id ==> ", selectedDistributor.priceType)
-    setSlectedPriceType( selectedDistributor.priceType)
+    setSlectedPriceType( selectedDistributor?.priceType || 0)
     console.log("selectedDistributor",selectedDistributor)
     setSelectedDistributorDetails([selectedDistributor]);
     if (selectedDistributor?.priceType !== undefined) {
@@ -3527,11 +3532,13 @@ const Cart = () => {
       ? cartItems.length > 0
         ? '#999' // Gray thumb when locked
         : '#f5dd4b'
-      : '#f4f3f4'
+      :cartItems.length > 0
+        ? '#999' // Gray thumb when locked
+        : '#f4f3f4'
   }
   ios_backgroundColor="#3e3e3e"
   onValueChange={toggleCorrSwitch}
-  value={isCorrEnabled}
+  value={isCorrEnabled} 
 />
 
 
@@ -3804,7 +3811,7 @@ const Cart = () => {
                                 android: 13,
                               }),
                             }}>
-                            {/* <TextInput
+                            <TextInput
                               style={{
                                 borderWidth: 1,
                                 borderColor: '#000',
@@ -3814,6 +3821,7 @@ const Cart = () => {
                                 textAlign: 'center',
                               }}
                               value={
+                                isCorrEnabled ? item?.corRate?.toString() || '' :
                                 pdf_flag
                                   ? item?.mrp?.toString() || ''
                                   : isEnabled
@@ -3824,8 +3832,8 @@ const Cart = () => {
                                 handlePriceChange(index, text)
                               }
                               keyboardType="numeric"
-                            /> */}
-                            <TextInput
+                            />
+                            {/* <TextInput
   style={{
     borderWidth: 1,
     borderColor: '#000',
@@ -3837,7 +3845,7 @@ const Cart = () => {
   value={item?.mrp?.toString() || ''} // Always use MRP from response
   onChangeText={text => handlePriceChange(index, text)}
   keyboardType="numeric"
-/>
+/> */}
                           </View>
 
                           {/* GST Input */}
