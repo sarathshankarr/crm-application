@@ -239,6 +239,7 @@ const Login = () => {
   };
 
   const handleLogin = async productURL => {
+    console.log("handleLogin productURL:", productURL);
     if (!username) {
       Alert.alert('crm.codeverse.co.says', 'Please enter a username');
       return;
@@ -248,7 +249,7 @@ const Login = () => {
       Alert.alert('crm.codeverse.co.says', 'Please enter a password');
       return;
     }
-    setLoading(true);
+    setLoading(true); 
     const postData = new URLSearchParams();
     postData.append('username', username);
     postData.append('grant_type', 'password');
@@ -267,6 +268,7 @@ const Login = () => {
         { headers }
       );
   
+      console.log('Login api calling :', productURL + API.LOGIN);
       if (isValidString(response.data)) {
         let data = { token: response.data, productURL: productURL };
         await saveToken(data);
@@ -559,7 +561,7 @@ const Login = () => {
             <TextInput
   style={styles.input}
   placeholder="Code"
-  placeholderTextColor="#000"
+  placeholderTextColor="#777"
   onChangeText={text => setCode(text.trimStart())}
   value={code}
 />
@@ -591,7 +593,7 @@ const Login = () => {
               <TextInput
                 style={styles.input}
                 placeholder="Username"
-                placeholderTextColor="#000"
+                placeholderTextColor="#777"
                 onChangeText={handleUsernameChange}
                 value={username}
               />
@@ -633,7 +635,7 @@ const Login = () => {
               <TextInput
                 style={styles.input}
                 placeholder="Password"
-                placeholderTextColor="#000"
+                placeholderTextColor="#777"
                 secureTextEntry={!showPassword} // Toggle secureTextEntry based on state
                 onChangeText={text => setPassword(text)}
                 value={password}

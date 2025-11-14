@@ -448,8 +448,8 @@ const ProductsStyles = ({route}) => {
 
   const searchOption = [
     {label: 'id', value: 1},
-    {label: 'Style Name', value: 3},
-    {label: 'Style Description', value: 4},
+    {label: 'Product Name', value: 3},
+    {label: 'Description', value: 4},
     {label: 'Color', value: 5},
     {label: 'Created Date', value: 6},
     {label: 'user Name', value: 7},
@@ -814,10 +814,10 @@ const ProductsStyles = ({route}) => {
             source={require('../../../assets/back_arrow.png')}
           />
         </TouchableOpacity> */}
-        <Text style={styles.txt1}>Product Style</Text>
+        <Text style={styles.txt1}>Products</Text>
         <View style={styles.flexSpacer} />
         <TouchableOpacity onPress={handleAddNew} style={styles.head2}>
-          <Text style={styles.txt2}>Add New Style</Text>
+          <Text style={styles.txt2}>Add New Product</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[
@@ -911,7 +911,7 @@ const ProductsStyles = ({route}) => {
       <View style={styles.topheader}>
         <View style={{marginLeft: 10}}></View>
         <Text style={styles.txtid}>ID</Text>
-        <Text style={styles.txt4}>Style Name</Text>
+        <Text style={styles.txt4}>Product Name</Text>
         <Text style={styles.txt5}>Color</Text>
         <Text style={styles.txt6}>Price</Text>
         <Text style={styles.txt7}>Barcode</Text>

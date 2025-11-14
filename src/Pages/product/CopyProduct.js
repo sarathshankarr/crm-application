@@ -2,7 +2,6 @@ import React, {useContext, useEffect, useState} from 'react';
 import {
   View,
   Text,
-  TextInput,
   ScrollView,
   StyleSheet,
   Button,
@@ -20,7 +19,7 @@ import { ColorContext } from '../../components/colortheme/colorTheme';
 import { useSelector } from 'react-redux';
 import CustomCheckBox from '../../components/CheckBox';
 import ImagePicker from 'react-native-image-crop-picker';
-
+import { TextInput } from 'react-native-paper';
 
 const CopyProduct = ({route, navigation}) => {
   const selectedCompany = useSelector(state => state.selectedCompany);
@@ -82,8 +81,23 @@ const CopyProduct = ({route, navigation}) => {
   const [showScaleTable, setShowScaleTable] = useState(false);
   const [productStyle, setProductStyle] = useState({});
 
+  const [industryTypesList, setIndustryTypesList] = useState([]);
+  const [selectedIndustryTypeId, setSelectedIndustryTypeId] = useState(0);  
+  const [hasSizes, setHasSizes] = useState(false); ; 
 
+  const [fabricQuanlity, setFabricQuanlity]=useState('');
+  const [availableQuantity, setAvailableQuantity]=useState('');
+  const [quantityLimit, setQuantityLimit]=useState('');
 
+  const industryIcons = {
+  "apparels.png": require("../../../assets/apparels.png"),
+  "home-textiles.png": require("../../../assets/home-textiles.png"),
+  "shoes.png": require("../../../assets/shoes.png"),
+  "bags.png": require("../../../assets/bags.png"),
+  "jewellery.png": require("../../../assets/jewellery.png"),
+  "machine&tools.png": require("../../../assets/machine&tools.png"),
+  "default.png": require("../../../assets/default.png"),
+};
 
   useEffect(() => {
     if (categoryList?.length > 0 && selectedCategoryId) {
@@ -430,6 +444,38 @@ const getCategoriesList = () => {
       console.error('Error:', error);
     });
 };
+ const getAllIndustryTypes = () => {
+    const apiUrl = `${global?.userData?.productURL}${API.GET_ALL_INDUSTRYTYPES_LIST}${companyId}/company`;
+    setIsLoading(true);
+    console.log("API URL industry types==>",apiUrl);
+    axios
+      .get(apiUrl, {
+        headers: {
+          Authorization: `Bearer ${global?.userData?.token?.access_token}`,
+        },
+      })
+      .then(response => {
+        // console.log("response industry types==>",response.data);
+        setIndustryTypesList(response.data || []);
+
+        const industryList = response.data || [];
+
+      // find the item with max categoryMapped value
+      const highestCategoryItem = industryList.reduce((maxItem, currentItem) => {
+        if (!maxItem || currentItem.categoryMapped > maxItem.categoryMapped) {
+          return currentItem;
+        }
+        return maxItem;
+      }, null);
+
+        setSelectedIndustryTypeId(highestCategoryItem?.id || 0);
+        setIsLoading(false); 
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        setIsLoading(false); 
+      });
+  };
 
 useEffect(() => {
   getCategoriesList();
@@ -447,6 +493,7 @@ useEffect(() => {
   getAllKapture(3);
   getAllKapture(4);
   getAllKapture(5);
+  getAllIndustryTypes();
 }, [1]);
 
 const toggleCategoryModal = () => {
@@ -2947,7 +2994,9 @@ useEffect(() => {
   const backHandler = BackHandler.addEventListener('hardwareBackPress', handleGoBack);
   return () => backHandler.remove();
 }, []);
-  return (
+  
+
+return (
     <View style={styles.container}>
         <View style={styles. headerback}>
         <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
@@ -2974,11 +3023,11 @@ useEffect(() => {
    
     <ScrollView style={styles.container}>
      
-      <View style={styles.field}>
+      {/* <View style={styles.field}>
       <Text style={{marginHorizontal: 20, marginVertical: 3, color: '#000'}}>Category *</Text>
-      </View>
+      </View> */}
     
-      <View style={styles.container1}>
+      {/* <View style={styles.container1}>
     <View style={styles.container2}>
       <TouchableOpacity
         style={styles.container3}
@@ -3060,27 +3109,113 @@ useEffect(() => {
         </ScrollView>
       )}
     </View>
+  )} */}
+
+ <View style={styles.fieldContainer}>
+  <View style={styles.fieldRow}>
+    {/* Dropdown TextInput */}
+    <View style={{flex: 1}}>
+      <TextInput
+        label="Category *"
+        mode="outlined"
+        value={selectedCategory}
+        placeholder="Select"
+        editable={false}
+        outlineColor="#D1D5DB"
+        activeOutlineColor="#1F74BA"
+        style={styles.dropdownInput}
+        right={
+          <TextInput.Icon
+            icon={require('../../../assets/dropdown.png')}
+            onPress={handleCategoryDropDown}
+            forceTextInputFocus={false}
+            style={{width: 18, height: 18, tintColor: '#1F74BA'}}
+          />
+        }
+      />
+    </View>
+
+    {/* "+" Button */}
+    <TouchableOpacity onPress={toggleCategoryModal} style={styles.addButton}>
+      <Text style={styles.addButtonText}>+</Text>
+    </TouchableOpacity>
+  </View>
+
+  {/* Dropdown List */}
+  {showCategoryList && (
+    <View style={styles.dropdownList}>
+      <TextInput
+        style={styles.searchInput}
+        placeholder="Search"
+        placeholderTextColor="#6B7280"
+        onChangeText={filtercategories}
+      />
+
+      {filteredCategories.length === 0 && !isLoading ? (
+        <Text style={styles.noResults}>Sorry, no results found!</Text>
+      ) : (
+        <ScrollView nestedScrollEnabled={true}>
+          {filteredCategories?.map((item, index) => (
+            <TouchableOpacity
+              key={index}
+              style={styles.dropdownItem}
+              onPress={() => handleSelectCategory(item)}>
+              <Text style={styles.dropdownItemText}>{item?.category}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      )}
+    </View>
   )}
+</View>
 
 
-<Text style={{marginHorizontal: 20, marginVertical: 3, color: '#000'}}>Style Name *</Text>
+
+{/* <Text style={{marginHorizontal: 20, marginVertical: 3, color: '#000'}}>Style Name *</Text>
   <View style={styles.inputContainer}>
   <TextInput
     style={styles.input}
     value={styleName}
     onChangeText={setStyleName}
   />
- </View>
+ </View> */}
 
- <Text style={{marginHorizontal: 20, marginVertical: 3, color: '#000'}}>Style Description *</Text>
+ {/* <Text style={{marginHorizontal: 20, marginVertical: 3, color: '#000'}}>Style Description *</Text>
         <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
           value={styleDesc}
           onChangeText={setStyleDesc}
         />
-      </View>
-      <Text
+      </View> */}
+
+        <TextInput
+    label="Style Name *"
+    mode="outlined"
+    value={styleName}
+    onChangeText={setStyleName}
+    placeholder="Enter style name"
+    placeholderTextColor="#6B7280"
+    outlineColor="#D1D5DB"
+    activeOutlineColor="#1F74BA"
+    style={styles.input}
+  />
+
+
+<TextInput
+  label="Style Description *"
+  mode="outlined"
+  value={styleDesc}
+  onChangeText={setStyleDesc}
+  placeholder="Enter style description"
+  placeholderTextColor="#6B7280"
+  outlineColor="#D1D5DB"
+  activeOutlineColor="#1F74BA"
+  style={styles.input}
+/>
+
+
+      {/* <Text
               style={{marginHorizontal: 20, marginVertical: 3, color: '#000'}}>
               {'Dealer Price'}
             </Text>
@@ -3156,9 +3291,81 @@ useEffect(() => {
           value={fixedDiscount.toString()} // Convert the number to a string
           onChangeText={text => setFixedDiscount(Number(text))} // Convert input to number
         />
-      </View>
+      </View> */}
 
-      <Text style={styles.headerTxt}>{'Customer Level '}</Text>
+      <TextInput
+  label="Dealer Price *"
+  mode="outlined"
+  value={dealerPrice > 0 ? dealerPrice.toString() : ''}
+  onChangeText={text => {
+    setDealerPrice(text);
+    updateAllItems('dealerPrice', text);
+  }}
+  placeholder="Enter Dealer Price"
+  placeholderTextColor="#6B7280"
+  outlineColor="#D1D5DB"
+  activeOutlineColor="#1F74BA"
+  style={styles.input}
+/>
+
+<TextInput
+  label="Retailer Price"
+  mode="outlined"
+  value={retailerPrice > 0 ? retailerPrice.toString() : ''}
+  onChangeText={text => {
+    setRetailerPrice(text);
+    updateAllItems('retailerPrice', text);
+  }}
+  placeholder="Enter Retailer Price"
+  placeholderTextColor="#6B7280"
+  outlineColor="#D1D5DB"
+  activeOutlineColor="#1F74BA"
+  style={styles.input}
+/>
+
+<TextInput
+  label="MRP"
+  mode="outlined"
+  value={mrp > 0 ? mrp.toString() : ''}
+  onChangeText={text => {
+    setMrp(text);
+    updateAllItems('mrp', text);
+  }}
+  placeholder="Enter MRP"
+  placeholderTextColor="#6B7280"
+  outlineColor="#D1D5DB"
+  activeOutlineColor="#1F74BA"
+  style={styles.input}
+/>
+
+<TextInput
+  label="Cor. Rate"
+  mode="outlined"
+  value={corRate > 0 ? corRate.toString() : ''}
+  onChangeText={text => {
+    setCorRate(text);
+    updateAllItems('corRate', text);
+  }}
+  placeholder="Enter Cor. Rate"
+  placeholderTextColor="#6B7280"
+  outlineColor="#D1D5DB"
+  activeOutlineColor="#1F74BA"
+  style={styles.input}
+/>
+
+<TextInput
+  label="Fixed Discount"
+  mode="outlined"
+  value={fixedDiscount.toString()}
+  onChangeText={text => setFixedDiscount(Number(text))}
+  placeholder="Enter Fixed Discount"
+  placeholderTextColor="#6B7280"
+  outlineColor="#D1D5DB"
+  activeOutlineColor="#1F74BA"
+  style={styles.input}
+/>
+
+      {/* <Text style={styles.headerTxt}>{'Customer Level '}</Text>
 
 <View style={{flexDirection: 'row', marginTop: 13}}>
   <TouchableOpacity
@@ -3272,7 +3479,80 @@ useEffect(() => {
                   />
                 </View>
               </>
-            )}
+            )} */}
+{
+/* Customer Level Dropdown */}
+<View style={styles.fieldContainer}>
+  <View style={styles.fieldRow}>
+    <View style={{flex: 1}}>
+      <TextInput
+        label="Customer Level"
+        mode="outlined"
+        value={selectedCustomerLevel}
+        placeholder="Select"
+        editable={false}
+        outlineColor="#D1D5DB"
+        activeOutlineColor="#1F74BA"
+        style={styles.dropdownInput}
+        right={
+          <TextInput.Icon
+            icon={require('../../../assets/dropdown.png')}
+            onPress={handleCustomerLevelDropDown}
+            forceTextInputFocus={false}
+            style={{width: 18, height: 18, tintColor: '#1F74BA'}}
+          />
+        }
+      />
+    </View>
+  </View>
+
+  {/* Dropdown List */}
+  {showCustomerLevelList && (
+    <View style={styles.dropdownList}>
+      <TextInput
+        style={styles.searchInput}
+        placeholder="Search"
+        placeholderTextColor="#6B7280"
+        onChangeText={filterCustomerLevels}
+      />
+
+      {filteredcustomerLevelList.length === 0 && !isLoading ? (
+        <Text style={styles.noResults}>Sorry, no results found!</Text>
+      ) : (
+        <ScrollView nestedScrollEnabled={true}>
+          {filteredcustomerLevelList?.map((item, index) => (
+            <TouchableOpacity
+              key={index}
+              style={styles.dropdownItem}
+              onPress={() => handleSelectCustomerLevel(item)}>
+              <Text style={styles.dropdownItemText}>
+                {item?.customerLevelType}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      )}
+    </View>
+  )}
+</View>
+
+{/* Customer Level Price */}
+{showCustomerLevelPrice && (
+  <TextInput
+    label="Customer Level Price"
+    mode="outlined"
+    value={customerLevelPrice > 0 ? customerLevelPrice.toString() : ''}
+    onChangeText={text => setCustomerLevelPrice(text)}
+    placeholder="Enter Customer Level Price"
+    placeholderTextColor="#6B7280"
+    outlineColor="#D1D5DB"
+    activeOutlineColor="#1F74BA"
+    style={styles.input}
+  />
+)}
+
+
+{/*             
             <Text style={styles.headerTxt}>{'Color *'}</Text>
 
             <View style={styles.container1}>
@@ -3283,23 +3563,13 @@ useEffect(() => {
                     {backgroundColor: editColor ? '#fff' : '#f1e8e6'},
                   ]}
                   onPress={handleColorDropDown}>
-             {/* <Text style={{fontWeight: '600', color: '#000'}}>
-  {selectedColorIds.length > 0
-    ? filteredColorList
-        .filter(color => selectedColorIds.includes(color.colorId))
-        .map(color => color.colorName)
-        .join(', ')
-    : 'Select'}
-</Text> */}
 <Text style={{ fontWeight: '600', color: '#000' }}>
   {selectedColorIds
     ? (filteredColorList.find(color => color.colorId === selectedColorIds) || {}).colorName || 'Select'
     : 'Select'}
 </Text>
 
-                    {/* <Text style={{fontWeight: '600', color: '#000'}}>
-                    {selectedColor ? selectedColor : 'Select'}
-                  </Text> */}
+                    
                   <Image
                     source={require('../../../assets/dropdown.png')}
                     style={{width: 20, height: 20}}
@@ -3336,23 +3606,7 @@ useEffect(() => {
                   borderWidth: 1,
                   marginTop: 5,
                 }}>
-                {/* <View>
-                  <TouchableOpacity
-                    onPress={handleSelectAll}
-                    style={{
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      margin: 10,
-                    }}>
-                    <CustomCheckBox
-                      isChecked={isSelectAll}
-                      onToggle={handleSelectAll}
-                    />
-                    <Text style={{color: '#000', marginLeft: 10}}>
-                      Select All
-                    </Text>
-                  </TouchableOpacity>
-                </View> */}
+                
                 <TextInput
                   style={{
                     marginTop: 10,
@@ -3395,10 +3649,7 @@ useEffect(() => {
         alignItems: 'center',
         marginHorizontal: 10,
       }}>
-      {/* <CustomCheckBox
-        isChecked={selectedColorIds(item.colorId)}  // Automatically check/uncheck based on selection
-        onToggle={() => handleSelectColor(item)}
-      /> */}
+  
       <CustomCheckBox
   isChecked={selectedColorIds === item.colorId}  // Check if the current color is the selected one
   onToggle={() => handleSelectColor(item)}      // Handle selection/deselection
@@ -3419,11 +3670,94 @@ useEffect(() => {
                   </ScrollView>
                 )}
               </View>
-            )}
-      
+            )} */}
+
+
+      {/* Color Dropdown */}
+<View style={styles.fieldContainer}>
+  <View style={styles.fieldRow}>
+    <View style={{flex: 1}}>
+      <TextInput
+        label="Color"
+        mode="outlined"
+        value={
+          selectedColorIds
+            ? (filteredColorList.find(c => c.colorId === selectedColorIds) || {}).colorName || 'Select'
+            : 'Select'
+        }
+        placeholder="Select"
+        editable={false}
+        outlineColor="#D1D5DB"
+        activeOutlineColor="#1F74BA"
+        style={[
+          styles.dropdownInput,
+          { backgroundColor: editColor ? '#fff' : '#f1e8e6' },
+        ]}
+        right={
+          <TextInput.Icon
+            icon={require('../../../assets/dropdown.png')}
+            onPress={handleColorDropDown}
+            forceTextInputFocus={false}
+            style={{ width: 18, height: 18, tintColor: '#1F74BA' }}
+          />
+        }
+      />
+    </View>
+
+    <TouchableOpacity onPress={toggleColorModal} style={styles.addButton}>
+      <Text style={styles.addButtonText}>+</Text>
+    </TouchableOpacity>
+  </View>
+
+  {/* Dropdown List */}
+  {showColorList && editColor && (
+    <View style={styles.dropdownList}>
+      <TextInput
+        style={styles.searchInput}
+        placeholder="Search"
+        placeholderTextColor="#6B7280"
+        onChangeText={filterColors}
+      />
+
+      {filteredColorList?.length === 0 && !isLoading ? (
+        <Text style={styles.noResults}>Sorry, no results found!</Text>
+      ) : (
+        <ScrollView nestedScrollEnabled={true}>
+          {filteredColorList?.map((item, index) => (
+            <TouchableOpacity
+              key={index}
+              style={styles.dropdownItem}
+              onPress={() => handleSelectColor(item)}>
+              <View style={styles.dropdownItemRow}>
+                <CustomCheckBox
+                  isChecked={selectedColorIds === item.colorId}
+                  onToggle={() => handleSelectColor(item)}
+                />
+                <Text style={styles.dropdownItemText}>{item.colorName}</Text>
+              </View>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      )}
+    </View>
+  )}
+</View>
+
+<TextInput
+  label="Color Code"
+  mode="outlined"
+  value={colorCode}
+  onChangeText={setColorCode}
+  placeholder="Color Code"
+  placeholderTextColor="#6B7280"
+  editable={false}
+  outlineColor="#D1D5DB"
+  activeOutlineColor="#1F74BA"
+  style={styles.input}
+/>
 
     
-      <Text style={{marginHorizontal: 20, marginVertical: 3, color: '#000'}}>Color Code</Text>
+      {/* <Text style={{marginHorizontal: 20, marginVertical: 3, color: '#000'}}>Color Code</Text>
       <View style={styles.inputContainer}>
               <TextInput
                 style={styles.txtinput}
@@ -3433,10 +3767,11 @@ useEffect(() => {
                 value={colorCode}
                 onChangeText={text => setColorCode(text)}
               />
-            </View>
+            </View> */}
      
 
-            <Text style={styles.headerTxt}>{'Types *'}</Text>
+  
+  {/* <Text style={styles.headerTxt}>{'Types *'}</Text>
 
 <View style={styles.container1}>
   <View style={styles.container2}>
@@ -3533,9 +3868,9 @@ useEffect(() => {
       </ScrollView>
     )}
   </View>
-)}
+)} */}
 
-<Text style={styles.headerTxt}>{'Season Groups *'}</Text>
+{/* <Text style={styles.headerTxt}>{'Season Groups *'}</Text>
 
 <View style={styles.container1}>
   <View style={styles.container2}>
@@ -3634,9 +3969,9 @@ useEffect(() => {
       </ScrollView>
     )}
   </View>
-)}
+)} */}
         
-      <Text style={{marginHorizontal: 20, marginVertical: 3, color: '#000'}}>GSM</Text>
+      {/* <Text style={{marginHorizontal: 20, marginVertical: 3, color: '#000'}}>GSM</Text>
         <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
@@ -3661,10 +3996,121 @@ useEffect(() => {
           value={gst.toString()} 
           onChangeText={text => setGst(Number(text))} 
         />
-      </View>
+      </View> */}
+
+{/* Types Dropdown */}
+<View style={styles.fieldContainer}>
+  <View style={styles.fieldRow}>
+    <View style={{ flex: 1 }}>
+      <TextInput
+        label="Types"
+        mode="outlined"
+        value={selectedType || 'Select'}
+        placeholder="Select"
+        editable={false}
+        outlineColor="#D1D5DB"
+        activeOutlineColor="#1F74BA"
+        style={styles.dropdownInput}
+        right={
+          <TextInput.Icon
+            icon={require('../../../assets/dropdown.png')}
+            onPress={handleTypesDropDown}
+            forceTextInputFocus={false}
+            style={{ width: 18, height: 18, tintColor: '#1F74BA' }}
+          />
+        }
+      />
+    </View>
+
+    <TouchableOpacity onPress={toggleTypesModal} style={styles.addButton}>
+      <Text style={styles.addButtonText}>+</Text>
+    </TouchableOpacity>
+  </View>
+
+  {showTypesList && (
+    <View style={styles.dropdownList}>
+      <TextInput
+        style={styles.searchInput}
+        placeholder="Search"
+        placeholderTextColor="#6B7280"
+        onChangeText={filterTypes}
+      />
+
+      {filteredTypesList.length === 0 && !isLoading ? (
+        <Text style={styles.noResults}>Sorry, no results found!</Text>
+      ) : (
+        <ScrollView nestedScrollEnabled={true}>
+          {filteredTypesList?.map((item, index) => (
+            <TouchableOpacity
+              key={index}
+              style={styles.dropdownItem}
+              onPress={() => handleSelectType(item)}>
+              <Text style={styles.dropdownItemText}>{item?.typeName}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      )}
+    </View>
+  )}
+</View>
+
+{/* GSM Input */}
+<TextInput
+  label="GSM"
+  mode="outlined"
+  value={gsm.toString()}
+  onChangeText={text => setGsm(Number(text))}
+  placeholder="Enter GSM"
+  placeholderTextColor="#6B7280"
+  outlineColor="#D1D5DB"
+  activeOutlineColor="#1F74BA"
+  style={styles.input}
+/>
+
+<TextInput
+  label="Fabric Quality"
+  mode="outlined"
+  value={fabricQuanlity}
+  onChangeText={text => setFabricQuanlity(text)}
+  placeholder="Enter Fabric Quality"
+  placeholderTextColor="#6B7280"
+  keyboardType="numeric"
+  outlineColor="#D1D5DB"
+  activeOutlineColor="#1F74BA"
+  style={styles.input}
+/>
+
+{/* HSN Input */}
+<TextInput
+  label="Hsn"
+  mode="outlined"
+  value={hsn.toString()}
+  onChangeText={text => setHsn(Number(text))}
+  placeholder="Enter HSN"
+  placeholderTextColor="#6B7280"
+  outlineColor="#D1D5DB"
+  activeOutlineColor="#1F74BA"
+  style={styles.input}
+/>
+
+{/* GST Input */}
+<TextInput
+  label="GST"
+  mode="outlined"
+  value={gst.toString()}
+  onChangeText={text => setGst(Number(text))}
+  placeholder="Enter GST"
+  placeholderTextColor="#6B7280"
+  outlineColor="#D1D5DB"
+  activeOutlineColor="#1F74BA"
+  style={styles.input}
+/>
+
+
+
 
        {/* Closure Dropdown */}
-       {prod_additional_field_flag === 1 && (
+       {/* {prod_additional_field_flag === 1 && (
               <View style={styles.dropdownContainer}>
                 <Text style={styles.headerTxt}>{'Closure'}</Text>
                 <View style={styles.container1}>
@@ -3735,10 +4181,10 @@ useEffect(() => {
                   </View>
                 )}
               </View>
-            )}
+            )} */}
 
             {/* Peak Dropdown */}
-            {prod_additional_field_flag === 1 && (
+            {/* {prod_additional_field_flag === 1 && (
               <View style={styles.dropdownContainer}>
                 <Text style={styles.headerTxt}>{'Peak'}</Text>
                 <View style={styles.container1}>
@@ -3807,10 +4253,10 @@ useEffect(() => {
                   </View>
                 )}
               </View>
-            )}
+            )} */}
 
             {/* Logo Dropdown */}
-            {prod_additional_field_flag === 1 && (
+            {/* {prod_additional_field_flag === 1 && (
               <View style={styles.dropdownContainer}>
                 <Text style={styles.headerTxt}>{'Logo'}</Text>
                 <View style={styles.container1}>
@@ -3879,9 +4325,10 @@ useEffect(() => {
                   </View>
                 )}
               </View>
-            )}
+            )} */}
+
             {/* Decoration Dropdown */}
-            {prod_additional_field_flag === 1 && (
+            {/* {prod_additional_field_flag === 1 && (
               <View style={styles.dropdownContainer}>
                 <Text style={styles.headerTxt}>{'Decoration'}</Text>
                 <View style={styles.container1}>
@@ -3951,9 +4398,9 @@ useEffect(() => {
                   </View>
                 )}
               </View>
-            )}
+            )} */}
             {/* Trims Dropdown */}
-            {prod_additional_field_flag === 1 && (
+            {/* {prod_additional_field_flag === 1 && (
               <View style={styles.dropdownContainer}>
                 <Text style={styles.headerTxt}>{'Trims'}</Text>
                 <View style={styles.container1}>
@@ -4035,7 +4482,334 @@ useEffect(() => {
                   </View>
                 )}
               </View>
-            )}
+            )} */}
+
+
+{/* Closure Dropdown */}
+{prod_additional_field_flag === 1 && (
+  <View style={styles.fieldContainer}>
+    <View style={styles.fieldRow}>
+      {/* Dropdown TextInput */}
+      <View style={{flex: 1}}>
+        <TextInput
+          label="Closure"
+          mode="outlined"
+          value={selectedClosure}
+          placeholder="Select"
+          editable={false}
+          outlineColor="#D1D5DB"
+          activeOutlineColor="#1F74BA"
+          style={styles.dropdownInput}
+          right={
+            <TextInput.Icon
+              icon={require('../../../assets/dropdown.png')}
+              onPress={toggleClosure}
+              forceTextInputFocus={false}
+              style={{width: 18, height: 18, tintColor: '#1F74BA'}}
+            />
+          }
+        />
+      </View>
+
+      {/* "+" Button */}
+      <TouchableOpacity onPress={toggleClosureModal} style={styles.addButton}>
+        <Text style={styles.addButtonText}>+</Text>
+      </TouchableOpacity>
+    </View>
+
+    {/* Dropdown List */}
+    {showClosure && (
+      <View style={styles.dropdownList}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search"
+          placeholderTextColor="#6B7280"
+          value={searchClosure}
+          onChangeText={setSearchClosure}
+        />
+
+        {isKaptureLoading ? (
+          <Text style={styles.noResults}>Loading...</Text>
+        ) : filteredClosureData.length === 0 && !isKaptureLoading ? (
+          <Text style={styles.noResults}>Sorry, no results found!</Text>
+        ) : (
+          <ScrollView nestedScrollEnabled={true}>
+            {filteredClosureData.map(item => (
+              <TouchableOpacity
+                key={item.m_id}
+                style={styles.dropdownItem}
+                onPress={() => {
+                  setSelectedClosure(item.m_name);
+                  setSelectedClosureId(item.m_id);
+                  setShowClosure(false);
+                }}>
+                <Text style={styles.dropdownItemText}>{item.m_name}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        )}
+      </View>
+    )}
+  </View>
+)}
+
+
+{/* Peak Dropdown */}
+{prod_additional_field_flag === 1 && (
+  <View style={styles.fieldContainer}>
+    <View style={styles.fieldRow}>
+      <View style={{flex: 1}}>
+        <TextInput
+          label="Peak"
+          mode="outlined"
+          value={selectedPeak}
+          placeholder="Select"
+          editable={false}
+          outlineColor="#D1D5DB"
+          activeOutlineColor="#1F74BA"
+          style={styles.dropdownInput}
+          right={
+            <TextInput.Icon
+              icon={require('../../../assets/dropdown.png')}
+              onPress={togglePeak}
+              forceTextInputFocus={false}
+              style={{width: 18, height: 18, tintColor: '#1F74BA'}}
+            />
+          }
+        />
+      </View>
+      <TouchableOpacity onPress={togglePeakModal} style={styles.addButton}>
+        <Text style={styles.addButtonText}>+</Text>
+      </TouchableOpacity>
+    </View>
+
+    {showPeak && (
+      <View style={styles.dropdownList}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search"
+          placeholderTextColor="#6B7280"
+          value={searchPeak}
+          onChangeText={setSearchPeak}
+        />
+        {isKaptureLoading ? (
+          <Text style={styles.noResults}>Loading...</Text>
+        ) : filteredPeakData.length === 0 && !isKaptureLoading ? (
+          <Text style={styles.noResults}>Sorry, no results found!</Text>
+        ) : (
+          <ScrollView nestedScrollEnabled={true}>
+            {filteredPeakData.map(item => (
+              <TouchableOpacity
+                key={item.m_id}
+                style={styles.dropdownItem}
+                onPress={() => {
+                  setSelectedPeak(item.m_name);
+                  setSelectedPeakId(item.m_id);
+                  setShowPeak(false);
+                }}>
+                <Text style={styles.dropdownItemText}>{item.m_name}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        )}
+      </View>
+    )}
+  </View>
+)}
+
+
+{/* Logo Dropdown */}
+{prod_additional_field_flag === 1 && (
+  <View style={styles.fieldContainer}>
+    <View style={styles.fieldRow}>
+      <View style={{flex: 1}}>
+        <TextInput
+          label="Logo"
+          mode="outlined"
+          value={selectedLogo}
+          placeholder="Select"
+          editable={false}
+          outlineColor="#D1D5DB"
+          activeOutlineColor="#1F74BA"
+          style={styles.dropdownInput}
+          right={
+            <TextInput.Icon
+              icon={require('../../../assets/dropdown.png')}
+              onPress={toggleLogo}
+              forceTextInputFocus={false}
+              style={{width: 18, height: 18, tintColor: '#1F74BA'}}
+            />
+          }
+        />
+      </View>
+      <TouchableOpacity onPress={toggleLogoModal} style={styles.addButton}>
+        <Text style={styles.addButtonText}>+</Text>
+      </TouchableOpacity>
+    </View>
+
+    {showLogo && (
+      <View style={styles.dropdownList}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search"
+          placeholderTextColor="#6B7280"
+          value={searchLogo}
+          onChangeText={setSearchLogo}
+        />
+        {isKaptureLoading ? (
+          <Text style={styles.noResults}>Loading...</Text>
+        ) : filteredLogoData.length === 0 && !isKaptureLoading ? (
+          <Text style={styles.noResults}>Sorry, no results found!</Text>
+        ) : (
+          <ScrollView nestedScrollEnabled={true}>
+            {filteredLogoData.map(item => (
+              <TouchableOpacity
+                key={item.m_id}
+                style={styles.dropdownItem}
+                onPress={() => {
+                  setSelectedLogo(item.m_name);
+                  setSelectedLogoId(item.m_id);
+                  setShowLogo(false);
+                }}>
+                <Text style={styles.dropdownItemText}>{item.m_name}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        )}
+      </View>
+    )}
+  </View>
+)}
+
+
+{/* Decoration Dropdown */}
+{prod_additional_field_flag === 1 && (
+  <View style={styles.fieldContainer}>
+    <View style={styles.fieldRow}>
+      <View style={{flex: 1}}>
+        <TextInput
+          label="Decoration"
+          mode="outlined"
+          value={selectedDecoration}
+          placeholder="Select"
+          editable={false}
+          outlineColor="#D1D5DB"
+          activeOutlineColor="#1F74BA"
+          style={styles.dropdownInput}
+          right={
+            <TextInput.Icon
+              icon={require('../../../assets/dropdown.png')}
+              onPress={toggleDecoration}
+              forceTextInputFocus={false}
+              style={{width: 18, height: 18, tintColor: '#1F74BA'}}
+            />
+          }
+        />
+      </View>
+      <TouchableOpacity onPress={toggleDecorationModal} style={styles.addButton}>
+        <Text style={styles.addButtonText}>+</Text>
+      </TouchableOpacity>
+    </View>
+
+    {showDecoration && (
+      <View style={styles.dropdownList}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search"
+          placeholderTextColor="#6B7280"
+          value={searchDecoration}
+          onChangeText={setSearchDecoration}
+        />
+        {isKaptureLoading ? (
+          <Text style={styles.noResults}>Loading...</Text>
+        ) : filteredDecorationData.length === 0 && !isKaptureLoading ? (
+          <Text style={styles.noResults}>Sorry, no results found!</Text>
+        ) : (
+          <ScrollView nestedScrollEnabled={true}>
+            {filteredDecorationData.map(item => (
+              <TouchableOpacity
+                key={item.m_id}
+                style={styles.dropdownItem}
+                onPress={() => {
+                  setSelectedDecoration(item.m_name);
+                  setSelectedDecorationId(item.m_id);
+                  setShowDecoration(false);
+                }}>
+                <Text style={styles.dropdownItemText}>{item.m_name}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        )}
+      </View>
+    )}
+  </View>
+)}
+
+
+{/* Trims Dropdown */}
+{prod_additional_field_flag === 1 && (
+  <View style={styles.fieldContainer}>
+    <View style={styles.fieldRow}>
+      <View style={{flex: 1}}>
+        <TextInput
+          label="Trims"
+          mode="outlined"
+          value={selectedTrims}
+          placeholder="Select"
+          editable={false}
+          outlineColor="#D1D5DB"
+          activeOutlineColor="#1F74BA"
+          style={styles.dropdownInput}
+          right={
+            <TextInput.Icon
+              icon={require('../../../assets/dropdown.png')}
+              onPress={toggleTrims}
+              forceTextInputFocus={false}
+              style={{width: 18, height: 18, tintColor: '#1F74BA'}}
+            />
+          }
+        />
+      </View>
+      <TouchableOpacity onPress={toggleTrimsModal} style={styles.addButton}>
+        <Text style={styles.addButtonText}>+</Text>
+      </TouchableOpacity>
+    </View>
+
+    {showTrims && (
+      <View style={styles.dropdownList}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search"
+          placeholderTextColor="#6B7280"
+          value={searchTrims}
+          onChangeText={setSearchTrims}
+        />
+        {isKaptureLoading ? (
+          <Text style={styles.noResults}>Loading...</Text>
+        ) : filteredTrimsData.length === 0 && !isKaptureLoading ? (
+          <Text style={styles.noResults}>Sorry, no results found!</Text>
+        ) : (
+          <ScrollView nestedScrollEnabled={true}>
+            {filteredTrimsData.map(item => (
+              <TouchableOpacity
+                key={item.m_id}
+                style={styles.dropdownItem}
+                onPress={() => {
+                  setSelectedTrims(item.m_name);
+                  setSelectedTrimsId(item.m_id);
+                  setShowTrims(false);
+                }}>
+                <Text style={styles.dropdownItemText}>{item.m_name}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        )}
+      </View>
+    )}
+  </View>
+)}
+
+
 
 {cedge_flag === 1 && (
               <Text style={styles.headerTxt}>{'Process Work Flow *'}</Text>
@@ -4070,6 +4844,8 @@ useEffect(() => {
                 </TouchableOpacity>
               </View>
             )}
+
+
             {showProcessWorkflowList &&  (
               <View
                 style={{
@@ -4128,7 +4904,9 @@ useEffect(() => {
                 )}
               </View>
             )}
-            <Text style={styles.headerTxt}>{'UOM (Unit of Measure) '}</Text>
+
+
+            {/* <Text style={styles.headerTxt}>{'UOM (Unit of Measure) '}</Text>
 
 <View style={styles.container1}>
               <View style={styles.container2}>
@@ -4410,9 +5188,199 @@ useEffect(() => {
       </ScrollView>
     )}
   </View>
+)} */}
+
+{prod_additional_field_flag === 1 && (
+  <View style={styles.fieldContainer}>
+    <View style={styles.fieldRow}>
+      <View style={{flex: 1}}>
+        <TextInput
+          label="UOM (Unit of Measure)"
+          mode="outlined"
+          value={selectedUom}
+          placeholder="Select"
+          editable={false}
+          outlineColor="#D1D5DB"
+          activeOutlineColor="#1F74BA"
+          style={styles.dropdownInput}
+          right={
+            <TextInput.Icon
+              icon={require('../../../assets/dropdown.png')}
+              onPress={handUomDropDown}
+              forceTextInputFocus={false}
+              style={{width: 18, height: 18, tintColor: '#1F74BA'}}
+            />
+          }
+        />
+      </View>
+      <TouchableOpacity onPress={toggleSeasonUomModal} style={styles.addButton}>
+        <Text style={styles.addButtonText}>+</Text>
+      </TouchableOpacity>
+    </View>
+
+    {showUomList && (
+      <View style={styles.dropdownList}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search"
+          placeholderTextColor="#6B7280"
+          onChangeText={filterUom}
+        />
+        {filteredUomList.length === 0 && !isLoading ? (
+          <Text style={styles.noResults}>Sorry, no results found!</Text>
+        ) : (
+          <ScrollView nestedScrollEnabled={true}>
+            {filteredUomList.map((item, index) => (
+              <TouchableOpacity
+                key={index}
+                style={styles.dropdownItem}
+                onPress={() => handleSelectUom(item)}>
+                <Text style={styles.dropdownItemText}>{item?.uomName}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        )}
+      </View>
+    )}
+  </View>
 )}
+
+{prod_additional_field_flag === 1 && (
+  <View style={styles.fieldContainer}>
+    <View style={styles.fieldRow}>
+      <View style={{flex: 1}}>
+        <TextInput
+          label="GST"
+          mode="outlined"
+          value={selectedSlot}
+          placeholder="Select"
+          editable={false}
+          outlineColor="#D1D5DB"
+          activeOutlineColor="#1F74BA"
+          style={styles.dropdownInput}
+          right={
+            <TextInput.Icon
+              icon={require('../../../assets/dropdown.png')}
+              onPress={handSlotDropDown}
+              forceTextInputFocus={false}
+              style={{width: 18, height: 18, tintColor: '#1F74BA'}}
+            />
+          }
+        />
+      </View>
+      <TouchableOpacity onPress={toggleSeasonSlotModal} style={styles.addButton}>
+        <Text style={styles.addButtonText}>+</Text>
+      </TouchableOpacity>
+    </View>
+
+    {showSlotList && (
+      <View style={styles.dropdownList}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search"
+          placeholderTextColor="#6B7280"
+          onChangeText={filterSlot}
+        />
+        {filteredSlotList.length === 0 && !isLoading ? (
+          <Text style={styles.noResults}>Sorry, no results found!</Text>
+        ) : (
+          <ScrollView nestedScrollEnabled={true}>
+            {filteredSlotList.map((item, index) => (
+              <TouchableOpacity
+                key={index}
+                style={styles.dropdownItem}
+                onPress={() => handleSelectSlot(item)}>
+                <Text style={styles.dropdownItemText}>{item?.slotName}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        )}
+      </View>
+    )}
+  </View>
+)}
+
+<View style={styles.fieldContainer}>
+  <View style={styles.fieldRow}>
+    <View style={{ flex: 1 }}>
+    <TextInput
+      label="Warehouse*"
+      mode="outlined"
+      value={selectedLocation}
+      placeholder="Select"
+      editable={false}
+      outlineColor="#D1D5DB"
+      activeOutlineColor="#1F74BA"
+      style={styles.dropdownInput}
+      right={
+        <TextInput.Icon
+          icon={require('../../../assets/dropdown.png')}
+          onPress={handleLocationDropDown}
+          forceTextInputFocus={false}
+          style={{ width: 18, height: 18, tintColor: '#1F74BA' }}
+        />
+      }
+    />
+        </View>
+  </View>
+
+  {/* Dropdown List */}
+  {showLocationList && (
+    <View style={styles.dropdownList}>
+      <TextInput
+        style={styles.searchInput}
+        placeholder="Search"
+        placeholderTextColor="#6B7280"
+        onChangeText={filterLocation}
+      />
+
+      {filteredLocationList.length === 0 && !isLoading ? (
+        <Text style={styles.noResults}>Sorry, no results found!</Text>
+      ) : (
+        <ScrollView nestedScrollEnabled={true}>
+          {filteredLocationList.map((item, index) => (
+            <TouchableOpacity
+              key={index}
+              style={styles.dropdownItem}
+              onPress={() => handleSelectLocation(item)}
+            >
+              <Text style={styles.dropdownItemText}>{item?.locationName}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      )}
+    </View>
+  )}
+</View>
+
+
+{(!hasSizes) && <TextInput
+  label="Available Quality"
+  mode="outlined"
+  value={availableQuantity}
+  onChangeText={text => setAvailableQuantity(text)}
+  placeholder="Enter Available Quantity"
+  placeholderTextColor="#6B7280"
+  keyboardType="numeric"
+  outlineColor="#D1D5DB"
+  activeOutlineColor="#1F74BA"
+  style={styles.input}
+/>}
+
+{(!hasSizes) &&  <TextInput
+  label="Quantity Limit"
+  mode="outlined"
+  value={quantityLimit}
+  onChangeText={text => setQuantityLimit(text)}
+  placeholder="Enter Quantity Limit"
+  placeholderTextColor="#6B7280"
+  keyboardType="numeric"
+  outlineColor="#D1D5DB"
+  activeOutlineColor="#1F74BA"
+  style={styles.input}
+/>}
       
-      <Text style={styles.headerTxt}>{'Scales *'}</Text>
+      {/* <Text style={styles.headerTxt}>{'Scales *'}</Text>
 
 <View style={styles.container1}>
   <View style={styles.container2}>
@@ -4507,9 +5475,9 @@ useEffect(() => {
       </ScrollView>
     )}
   </View>
-)}      
+)}       */}
   
-  <Text style={styles.headerTxt}>{'Status'}</Text>
+  {/* <Text style={styles.headerTxt}>{'Status'}</Text>
              <View style={styles.container1}>
       <View style={styles.container2}>
         <TouchableOpacity
@@ -4538,8 +5506,51 @@ useEffect(() => {
           </View>
         )}
       </View>
+    </View> */}
+
+<View style={styles.fieldContainer}>
+  <View style={styles.fieldRow}>
+    <View style={{ flex: 1 }}>
+    <TextInput
+      label="Status"
+      mode="outlined"
+      value={selectedStatus}
+      placeholder="Select"
+      editable={false}
+      outlineColor="#D1D5DB"
+      activeOutlineColor="#1F74BA"
+      style={styles.dropdownInput}
+      right={
+        <TextInput.Icon
+          icon={require('../../../assets/dropdown.png')}
+          onPress={toggleStatusDropdown}
+          forceTextInputFocus={false}
+          style={{ width: 18, height: 18, tintColor: '#1F74BA' }}
+        />
+      }
+    />
     </View>
-      {showScaleTable && (
+  </View>
+
+  {/* Dropdown List */}
+  {showStatusDropdown && (
+    <View style={styles.dropdownList}>
+      {statusOptions.map((status, index) => (
+        <TouchableOpacity
+          key={index}
+          style={styles.dropdownItem}
+          onPress={() => handleSelectStatus(status)}
+        >
+          <Text style={styles.dropdownItemText}>{status.label}</Text>
+        </TouchableOpacity>
+      ))}
+    </View>
+  )}
+</View>
+
+
+
+      {/* {showScaleTable && (
               <View style={styles.container}>
                 <View style={styles.header}>
                   <View style={styles.headerCell1}>
@@ -4635,8 +5646,73 @@ useEffect(() => {
                   ))}
                 </ScrollView>
               </View>
-            )}
+            )} */}
 
+    
+    {showScaleTable && (
+  <View style={tableStyle.wrapper}>
+    {/* Header */}
+    <View style={tableStyle.headerRow}>
+      <Text style={tableStyle.headerCell1}>Id</Text>
+      <Text style={tableStyle.headerCell2}>Size</Text>
+      <Text style={tableStyle.headerCell3}>Dealer Price</Text>
+      <Text style={tableStyle.headerCell4}>Retailer Price</Text>
+      <Text style={tableStyle.headerCell5}>MRP</Text>
+      <Text style={tableStyle.headerCell5}>Cor.Rate</Text>
+      <Text style={tableStyle.headerCell6}>Available Qty</Text>
+    </View>
+
+    {/* Body */}
+    <ScrollView style={tableStyle.scrollBody}>
+      {selectedSizes.map((item, index) => (
+        <View key={index} style={tableStyle.dataRow}>
+          <Text style={tableStyle.dataCell1}>{item?.sizeId}</Text>
+          <Text style={tableStyle.dataCell2}>{item?.sizeDesc}</Text>
+
+          <TextInput
+            style={tableStyle.dataInput}
+            keyboardType="numeric"
+            value={item?.dealerPrice.toString()}
+            onChangeText={text => handleInputChange(index, 'dealerPrice', text)}
+            editable={true}
+          />
+
+          <TextInput
+            style={tableStyle.dataInput}
+            keyboardType="numeric"
+            value={item?.retailerPrice.toString()}
+            onChangeText={text => handleInputChange(index, 'retailerPrice', text)}
+            editable={true}
+          />
+
+          <TextInput
+            style={tableStyle.dataInput}
+            keyboardType="numeric"
+            value={item.mrp.toString()}
+            onChangeText={text => handleInputChange(index, 'mrp', text)}
+            editable={true}
+          />
+
+          <TextInput
+            style={tableStyle.dataInput}
+            keyboardType="numeric"
+            value={item?.corRate.toString()}
+            onChangeText={text => handleInputChange(index, 'corRate', text)}
+            editable={true}
+          />
+
+          <TextInput
+            style={tableStyle.dataInput}
+            keyboardType="numeric"
+            value={item.availQty.toString()}
+            onChangeText={text => handleInputChange(index, 'availQty', text)}
+            editable={true}
+          />
+        </View>
+      ))}
+    </ScrollView>
+  </View>
+)}
 
 <TouchableOpacity
         style={styles.uploadImg}
@@ -4673,7 +5749,7 @@ useEffect(() => {
         ))}
       </View>
 
-<Modal
+{/* <Modal
               animationType="fade"
               transparent={true}
               visible={categoryModal && editShortcutKey}
@@ -4893,7 +5969,265 @@ useEffect(() => {
                   </TouchableOpacity>
                 </View>
               </View>
-            </Modal>
+            </Modal> */}
+
+            {/* Category Modal */}
+<Modal
+  animationType="fade"
+  transparent={true}
+  // visible={categoryModal && editShortcutKey}
+  visible={false}
+  onRequestClose={toggleCategoryModal}>
+  <View style={styles.modalOverlay}>
+    <View style={styles.modalContainer}>
+      {/* Header */}
+      <View style={styles.modalHeader}>
+        <Text style={styles.modalTitle}>Add New Category</Text>
+        <TouchableOpacity onPress={handleCloseCategoryModal}>
+          <Image
+            style={styles.closeIcon}
+            source={require('../../../assets/close.png')}
+          />
+        </TouchableOpacity>
+      </View>
+
+      {/* Category Name */}
+      <Text style={styles.inputLabel}>Category Name *</Text>
+      <TextInput
+        style={styles.inputField}
+        placeholder="Enter category name"
+        placeholderTextColor="#6B7280"
+        onChangeText={text => setmCategoryName(text)}
+      />
+
+      {/* Category Description */}
+      <Text style={styles.inputLabel}>Category Description *</Text>
+      <TextInput
+        style={[styles.inputField, styles.textArea]}
+        multiline
+        numberOfLines={3}
+        placeholder="Enter category description"
+        placeholderTextColor="#6B7280"
+        onChangeText={text => setmCategoryDesc(text)}
+      />
+
+      {/* Save Button */}
+      <TouchableOpacity
+        onPress={ValidateNewCategory}
+        disabled={processing}
+        style={[styles.saveButton, processing && styles.saveButtonDisabled]}>
+        <Text style={styles.saveButtonText}>
+          {processing ? 'Processing...' : 'Save'}
+        </Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+</Modal>
+
+<Modal
+  animationType="fade"
+  transparent={true}
+  visible={categoryModal && editShortcutKey}
+  onRequestClose={toggleCategoryModal}>
+  <View style={styles.modalOverlay}>
+    <View style={styles.modalContainer}>
+      {/* Header */}
+      <View style={styles.modalHeader}>
+        <Text style={styles.modalTitle}>Add New Category</Text>
+        <TouchableOpacity onPress={handleCloseCategoryModal} style={styles.closeButton}>
+          <Image
+            style={styles.closeIcon}
+            source={require('../../../assets/close.png')}
+          />
+        </TouchableOpacity>
+      </View>
+
+        {/* Industry Selection */}
+      <Text style={[styles.inputLabel, {marginTop: 10}]}>Choose Industry *</Text>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{paddingVertical: 10}}>
+       {industryTypesList.length>0 && industryTypesList.map((industry) => {
+          const imageName = industry.icon.split('/').pop(); 
+          const iconSource = industryIcons[imageName];
+
+          return (
+            <TouchableOpacity
+              key={industry.id}
+                onPress={() =>{ 
+                setSelectedIndustryTypeId(industry.id);
+                const imageName = industry.icon.split('/').pop(); 
+                console.log("Selected Industry Icon:", imageName, fabricQualityIndustryIcons.includes(imageName));
+                setShowFabricQuality(fabricQualityIndustryIcons.includes(imageName));
+              }}
+              style={[
+                styles.industryCard,
+                selectedIndustryTypeId === industry.id && styles.industryCardSelected,
+              ]}>
+              
+              {/* ✅ Display icon */}
+              {iconSource && <Image source={iconSource} style={styles.industryIcon} />}
+              <Text style={styles.industryText}>{industry.industry}</Text>
+        
+              {selectedIndustryTypeId === industry?.id && (
+                <View style={styles.industryCheckMark}>
+                  <Text style={{color: '#fff'}}>✔</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          );
+        })}
+
+      </ScrollView>
+
+      {/* Category Name */}
+      <Text style={styles.inputLabel}>Category Name *</Text>
+      <TextInput
+        style={styles.inputField}
+        placeholder="Enter category name"
+        placeholderTextColor="#6B7280"
+        onChangeText={text => setmCategoryName(text)}
+      />
+
+      {/* Category Description */}
+      <Text style={styles.inputLabel}>Category Description *</Text>
+      <TextInput
+        style={[styles.inputField, styles.textArea]}
+        multiline
+        numberOfLines={3}
+        placeholder="Enter category description"
+        placeholderTextColor="#6B7280"
+        onChangeText={text => setmCategoryDesc(text)}
+      />
+
+      {/* Save Button */}
+      <TouchableOpacity
+        onPress={ValidateNewCategory}
+        disabled={processing}
+        style={[styles.saveButton, processing && styles.saveButtonDisabled]}>
+        <Text style={styles.saveButtonText}>
+          {processing ? 'Processing...' : 'Save'}
+        </Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+</Modal>
+
+
+{/* Color Modal */}
+<Modal
+  animationType="fade"
+  transparent={true}
+  visible={colorModal && editShortcutKey}
+  onRequestClose={toggleColorModal}>
+  <View style={styles.modalOverlay}>
+    <View style={styles.modalContainer}>
+      {/* Header */}
+      <View style={styles.modalHeader}>
+        <Text style={styles.modalTitle}>Add New Color</Text>
+        <TouchableOpacity onPress={handleCloseColorModal}>
+          <Image
+            style={styles.closeIcon}
+            source={require('../../../assets/close.png')}
+          />
+        </TouchableOpacity>
+      </View>
+
+      {/* Color Name */}
+      <Text style={styles.inputLabel}>Color Name *</Text>
+      <TextInput
+        style={styles.inputField}
+        placeholder="Enter color name"
+        placeholderTextColor="#6B7280"
+        onChangeText={text => setmColorName(text)}
+      />
+
+      {/* Color Description */}
+      <Text style={styles.inputLabel}>Color Description *</Text>
+      <TextInput
+        style={[styles.inputField, styles.textArea]}
+        multiline
+        numberOfLines={3}
+        placeholder="Enter color description"
+        placeholderTextColor="#6B7280"
+        onChangeText={text => setmColorDesc(text)}
+      />
+
+      {/* Color Code */}
+      <Text style={styles.inputLabel}>Color Code</Text>
+      <TextInput
+        style={styles.inputField}
+        placeholder="Enter color code"
+        placeholderTextColor="#6B7280"
+        onChangeText={text => setmColorCode(text)}
+      />
+
+      {/* Save Button */}
+      <TouchableOpacity
+        onPress={ValidateNewColor}
+        disabled={processing}
+        style={[styles.saveButton, processing && styles.saveButtonDisabled]}>
+        <Text style={styles.saveButtonText}>
+          {processing ? 'Processing...' : 'Save'}
+        </Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+</Modal>
+
+{/* Type Modal */}
+<Modal
+  animationType="fade"
+  transparent={true}
+  visible={typesModal && editShortcutKey}
+  onRequestClose={toggleTypesModal}>
+  <View style={styles.modalOverlay}>
+    <View style={styles.modalContainer}>
+      {/* Header */}
+      <View style={styles.modalHeader}>
+        <Text style={styles.modalTitle}>Add New Type</Text>
+        <TouchableOpacity onPress={handleCloseTypesModal}>
+          <Image
+            style={styles.closeIcon}
+            source={require('../../../assets/close.png')}
+          />
+        </TouchableOpacity>
+      </View>
+
+      {/* Type Name */}
+      <Text style={styles.inputLabel}>Type Name *</Text>
+      <TextInput
+        style={styles.inputField}
+        placeholder="Enter type name"
+        placeholderTextColor="#6B7280"
+        onChangeText={text => setmTypeName(text)}
+      />
+
+      {/* Type Description */}
+      <Text style={styles.inputLabel}>Type Description *</Text>
+      <TextInput
+        style={[styles.inputField, styles.textArea]}
+        multiline
+        numberOfLines={3}
+        placeholder="Enter type description"
+        placeholderTextColor="#6B7280"
+        onChangeText={text => setmTypeDesc(text)}
+      />
+
+      {/* Save Button */}
+      <TouchableOpacity
+        onPress={ValidateNewType}
+        disabled={processing}
+        style={[styles.saveButton, processing && styles.saveButtonDisabled]}>
+        <Text style={styles.saveButtonText}>
+          {processing ? 'Processing...' : 'Save'}
+        </Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+</Modal>
+
 
             <Modal
               animationType="fade"
@@ -4968,7 +6302,7 @@ useEffect(() => {
             </Modal>
 
               {/* Closure Modal */}
-              <Modal
+              {/* <Modal
               animationType="fade"
               transparent={true}
               visible={closureModal && editShortcutKey}
@@ -5014,10 +6348,51 @@ useEffect(() => {
                   </View>
                 </View>
               </ScrollView>
-            </Modal>
+            </Modal> */}
+            <Modal
+  animationType="fade"
+  transparent={true}
+  visible={closureModal && editShortcutKey}
+  onRequestClose={toggleClosureModal}>
+  <View style={styles.modalOverlay}>
+    <View style={styles.modalContainer}>
+      {/* Header */}
+      <View style={styles.modalHeader}>
+        <Text style={styles.modalTitle}>Add New Closure</Text>
+        <TouchableOpacity onPress={toggleClosureModal}>
+          <Image
+            style={styles.closeIcon}
+            source={require('../../../assets/close.png')}
+          />
+        </TouchableOpacity>
+      </View>
+
+      {/* Closure Name */}
+      <Text style={styles.inputLabel}>Closure Name *</Text>
+      <TextInput
+        style={styles.inputField}
+        placeholder="Enter Closure Name"
+        placeholderTextColor="#6B7280"
+        value={closureName}
+        onChangeText={setClosureName}
+      />
+
+      {/* Save Button */}
+      <TouchableOpacity
+        onPress={() => ValidateAllKapture(1, 'Closure', closureName)}
+        disabled={processing}
+        style={[styles.saveButton, processing && styles.saveButtonDisabled]}>
+        <Text style={styles.saveButtonText}>
+          {processing ? 'Processing...' : 'Save'}
+        </Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+</Modal>
+
 
             {/* Peak Modal */}
-            <Modal
+            {/* <Modal
               animationType="fade"
               transparent={true}
               visible={peakModal && editShortcutKey}
@@ -5061,10 +6436,10 @@ useEffect(() => {
                   </View>
                 </View>
               </ScrollView>
-            </Modal>
+            </Modal> */}
 
             {/* Logo Modal */}
-            <Modal
+            {/* <Modal
               animationType="fade"
               transparent={true}
               visible={logoModal && editShortcutKey}
@@ -5108,10 +6483,10 @@ useEffect(() => {
                   </View>
                 </View>
               </ScrollView>
-            </Modal>
+            </Modal> */}
 
             {/* Decoration Modal */}
-            <Modal
+            {/* <Modal
               animationType="fade"
               transparent={true}
               visible={decorationModal && editShortcutKey}
@@ -5157,10 +6532,10 @@ useEffect(() => {
                   </View>
                 </View>
               </ScrollView>
-            </Modal>
+            </Modal> */}
 
             {/* Trims Modal */}
-            <Modal
+            {/* <Modal
               animationType="fade"
               transparent={true}
               visible={trimsModal && editShortcutKey}
@@ -5204,7 +6579,179 @@ useEffect(() => {
                   </View>
                 </View>
               </ScrollView>
-            </Modal>
+            </Modal> */}
+
+            {/* Peak Modal */}
+<Modal
+  animationType="fade"
+  transparent={true}
+  visible={peakModal && editShortcutKey}
+  onRequestClose={togglePeakModal}>
+  <View style={styles.modalOverlay}>
+    <View style={styles.modalContainer}>
+      {/* Header */}
+      <View style={styles.modalHeader}>
+        <Text style={styles.modalTitle}>Add New Peak</Text>
+        <TouchableOpacity onPress={togglePeakModal}>
+          <Image
+            style={styles.closeIcon}
+            source={require('../../../assets/close.png')}
+          />
+        </TouchableOpacity>
+      </View>
+
+      {/* Peak Name */}
+      <Text style={styles.inputLabel}>Peak Name *</Text>
+      <TextInput
+        style={styles.inputField}
+        placeholder="Enter Peak Name"
+        placeholderTextColor="#6B7280"
+        value={peakName}
+        onChangeText={setPeakName}
+      />
+
+      {/* Save Button */}
+      <TouchableOpacity
+        onPress={() => ValidateAllKapture(2, 'Peak', peakName)}
+        disabled={processing}
+        style={[styles.saveButton, processing && styles.saveButtonDisabled]}>
+        <Text style={styles.saveButtonText}>
+          {processing ? 'Processing...' : 'Save'}
+        </Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+</Modal>
+
+{/* Logo Modal */}
+<Modal
+  animationType="fade"
+  transparent={true}
+  visible={logoModal && editShortcutKey}
+  onRequestClose={toggleLogoModal}>
+  <View style={styles.modalOverlay}>
+    <View style={styles.modalContainer}>
+      {/* Header */}
+      <View style={styles.modalHeader}>
+        <Text style={styles.modalTitle}>Add New Logo</Text>
+        <TouchableOpacity onPress={toggleLogoModal}>
+          <Image
+            style={styles.closeIcon}
+            source={require('../../../assets/close.png')}
+          />
+        </TouchableOpacity>
+      </View>
+
+      {/* Logo Name */}
+      <Text style={styles.inputLabel}>Logo Name *</Text>
+      <TextInput
+        style={styles.inputField}
+        placeholder="Enter Logo Name"
+        placeholderTextColor="#6B7280"
+        value={logoName}
+        onChangeText={setLogoName}
+      />
+
+      {/* Save Button */}
+      <TouchableOpacity
+        onPress={() => ValidateAllKapture(3, 'Logo', logoName)}
+        disabled={processing}
+        style={[styles.saveButton, processing && styles.saveButtonDisabled]}>
+        <Text style={styles.saveButtonText}>
+          {processing ? 'Processing...' : 'Save'}
+        </Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+</Modal>
+
+{/* Decoration Modal */}
+<Modal
+  animationType="fade"
+  transparent={true}
+  visible={decorationModal && editShortcutKey}
+  onRequestClose={toggleDecorationModal}>
+  <View style={styles.modalOverlay}>
+    <View style={styles.modalContainer}>
+      {/* Header */}
+      <View style={styles.modalHeader}>
+        <Text style={styles.modalTitle}>Add New Decoration</Text>
+        <TouchableOpacity onPress={toggleDecorationModal}>
+          <Image
+            style={styles.closeIcon}
+            source={require('../../../assets/close.png')}
+          />
+        </TouchableOpacity>
+      </View>
+
+      {/* Decoration Name */}
+      <Text style={styles.inputLabel}>Decoration Name *</Text>
+      <TextInput
+        style={styles.inputField}
+        placeholder="Enter Decoration Name"
+        placeholderTextColor="#6B7280"
+        value={decorationName}
+        onChangeText={setDecorationName}
+      />
+
+      {/* Save Button */}
+      <TouchableOpacity
+        onPress={() =>
+          ValidateAllKapture(4, 'Decoration', decorationName)
+        }
+        disabled={processing}
+        style={[styles.saveButton, processing && styles.saveButtonDisabled]}>
+        <Text style={styles.saveButtonText}>
+          {processing ? 'Processing...' : 'Save'}
+        </Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+</Modal>
+
+{/* Trims Modal */}
+<Modal
+  animationType="fade"
+  transparent={true}
+  visible={trimsModal && editShortcutKey}
+  onRequestClose={toggleTrimsModal}>
+  <View style={styles.modalOverlay}>
+    <View style={styles.modalContainer}>
+      {/* Header */}
+      <View style={styles.modalHeader}>
+        <Text style={styles.modalTitle}>Add New Trims</Text>
+        <TouchableOpacity onPress={toggleTrimsModal}>
+          <Image
+            style={styles.closeIcon}
+            source={require('../../../assets/close.png')}
+          />
+        </TouchableOpacity>
+      </View>
+
+      {/* Trims Name */}
+      <Text style={styles.inputLabel}>Trims Name *</Text>
+      <TextInput
+        style={styles.inputField}
+        placeholder="Enter Trims Name"
+        placeholderTextColor="#6B7280"
+        value={trimsName}
+        onChangeText={setTrimsName}
+      />
+
+      {/* Save Button */}
+      <TouchableOpacity
+        onPress={() => ValidateAllKapture(5, 'Trim', trimsName)}
+        disabled={processing}
+        style={[styles.saveButton, processing && styles.saveButtonDisabled]}>
+        <Text style={styles.saveButtonText}>
+          {processing ? 'Processing...' : 'Save'}
+        </Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+</Modal>
+
+
 
             <Modal
               animationType="fade"
@@ -5432,7 +6979,7 @@ useEffect(() => {
               </ScrollView>
             </Modal>
 
-            <Modal
+            {/* <Modal
               animationType="fade"
               transparent={true}
               visible={UomModal && editShortcutKey}
@@ -5502,7 +7049,59 @@ useEffect(() => {
                   </TouchableOpacity>
                 </View>
               </View>
-            </Modal>
+            </Modal> */}
+      
+      <Modal
+  animationType="fade"
+  transparent={true}
+  visible={UomModal && editShortcutKey}
+  onRequestClose={toggleSeasonUomModal}>
+  <View style={styles.modalOverlay}>
+    <View style={styles.modalContainer}>
+      {/* Header */}
+      <View style={styles.modalHeaderContainer}>
+        <Text style={[styles.modalTitle, {flex: 1, textAlign: 'center'}]}>
+          Add New UOM
+        </Text>
+        <TouchableOpacity onPress={handleCloseUomModal} style={styles.closeButton}>
+          <Image style={styles.closeIcon} source={require('../../../assets/close.png')} />
+        </TouchableOpacity>
+      </View>
+
+      {/* UOM Name */}
+      <Text style={styles.inputLabel}>UOM Name *</Text>
+      <TextInput
+        style={styles.inputField}
+        placeholder=""
+        placeholderTextColor="#6B7280"
+        value={mUomName}
+        onChangeText={text => setmUomName(text)}
+      />
+
+      {/* UOM Description */}
+      <Text style={styles.inputLabel}>UOM Description *</Text>
+      <TextInput
+        style={styles.inputField}
+        placeholder=""
+        placeholderTextColor="#6B7280"
+        value={mUomDesc}
+        onChangeText={text => setUomDesc(text)}
+      />
+
+      {/* Save Button */}
+      <TouchableOpacity
+        style={[styles.saveButton, processing && styles.saveButtonDisabled]}
+        onPress={ValidateUom}
+        disabled={processing}>
+        <Text style={styles.saveButtonText}>
+          {processing ? 'Processing' : 'Save'}
+        </Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+</Modal>
+
+
 
             {isModalVisibleImages && (
        <Modal
@@ -5530,7 +7129,7 @@ useEffect(() => {
       )}
 
 
-<Modal
+            {/* <Modal
               animationType="fade"
               transparent={true}
               visible={SlotModal && editShortcutKey}
@@ -5578,20 +7177,20 @@ useEffect(() => {
                     placeholderTextColor="#000"
                     onChangeText={text => setmSlotName(text)}
                   />
+                  
                  <TouchableOpacity
     style={{ flexDirection: 'row', alignItems: 'center', margin: 10 }}
-    onPress={() => setIsDefault(!isDefault)} // Handles both text & checkbox clicks
+    onPress={() => setIsDefault(!isDefault)} 
     activeOpacity={0.7}
   >
     <CustomCheckBox 
       isChecked={isDefault} 
-      onToggle={() => setIsDefault(!isDefault)} // Ensure checkbox press toggles state
+      onToggle={() => setIsDefault(!isDefault)} 
     />
     <Text style={{ color: '#000', marginLeft: 10 }}>Make it Default</Text>
   </TouchableOpacity>
 
                 <View style={{marginBottom: 10}}>
-  {/* Less than Section */}
   <View style={{flexDirection: 'row', alignItems: 'center', marginBottom: 5}}>
     <Text style={{color: '#000', fontSize: 25, fontWeight: 'bold'}}>{'<'}</Text>
     <Text style={{fontWeight: 'bold', color: '#000', marginLeft: 5}}>
@@ -5617,7 +7216,6 @@ useEffect(() => {
     />
   </View>
 
-  {/* Greater than Section */}
   <View style={{flexDirection: 'row', alignItems: 'center', marginBottom: 5}}>
     <Text style={{color: '#000', fontSize: 25, fontWeight: 'bold'}}>{'>'}</Text>
     <Text style={{fontWeight: 'bold', color: '#000', marginLeft: 5}}>
@@ -5644,9 +7242,7 @@ useEffect(() => {
   </View>
 </View>
 
-
                   <TouchableOpacity
-                    // style={style.saveButton}
                     style={[styles.saveButton, processing && {opacity: 0.5}]}
                     onPress={ValidateSlot}
                     disabled={processing}>
@@ -5656,8 +7252,122 @@ useEffect(() => {
                   </TouchableOpacity>
                 </View>
               </View>
-            </Modal>
-<Modal
+            </Modal> */}
+
+   <Modal
+  animationType="fade"
+  transparent={true}
+  visible={SlotModal && editShortcutKey}
+  onRequestClose={toggleSeasonSlotModal}>
+  <View style={styles.modalOverlay}>
+    <View style={styles.modalContainer}>
+      {/* Header */}
+      <View style={styles.modalHeader}>
+        <Text style={styles.modalTitle}>Add New GST</Text>
+        <TouchableOpacity onPress={handleCloseSlotModal}>
+          <Image style={styles.closeIcon} source={require('../../../assets/close.png')} />
+        </TouchableOpacity>
+      </View>
+
+      {/* Slot Name */}
+      <Text style={styles.inputLabel}>Slot Name *</Text>
+      <TextInput
+        style={styles.inputField}
+        placeholder="Enter Slot Name"
+        placeholderTextColor="#6B7280"
+        onChangeText={text => setmSlotName(text)}
+      />
+
+      {/* Make it Default Checkbox */}
+      <TouchableOpacity
+        style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 10 }}
+        onPress={() => setIsDefault(!isDefault)}
+        activeOpacity={0.7}
+      >
+        <CustomCheckBox 
+          isChecked={isDefault} 
+          onToggle={() => setIsDefault(!isDefault)} 
+        />
+        <Text style={{ color: '#000', marginLeft: 10 }}>Make it Default</Text>
+      </TouchableOpacity>
+
+      {/* Less than Section */}
+      <View style={{marginBottom: 10}}>
+        <View style={{flexDirection: 'row', alignItems: 'center', marginBottom: 5}}>
+        </View>
+        <View style={{flexDirection: 'row', alignItems: 'center', marginBottom: 10}}>
+          <Text style={{color: '#000', fontSize: 25, fontWeight: 'bold'}}>{'<'}</Text>
+          <TextInput
+            style={[styles.input, {flex: 1, marginHorizontal: 10}]}
+            placeholder=""
+            placeholderTextColor="#6B7280"
+            onChangeText={setSlotAmoutLess}
+            label="Amounts *"
+            mode="outlined"
+            outlineColor="#D1D5DB"
+            activeOutlineColor="#1F74BA"
+          />
+          <TextInput
+            style={[styles.input, {flex: 1}]}
+            placeholder=""
+            placeholderTextColor="#6B7280"
+            onChangeText={setSlotPercentageLess}
+            label="Percentage *"
+            mode="outlined"
+            outlineColor="#D1D5DB"
+            activeOutlineColor="#1F74BA"
+          />
+        </View>
+
+        {/* Greater than Section */}
+        <View style={{flexDirection: 'row', alignItems: 'center', marginBottom: 5}}>
+          {/* <Text style={{fontWeight: 'bold', color: '#000', marginLeft: 5}}>Amount *</Text>
+          <Text style={{fontWeight: 'bold', color: '#000', marginLeft: 10}}>Percentage *</Text> */}
+        </View>
+        <View style={{flexDirection: 'row', alignItems: 'center', marginBottom: 10}}>
+          <Text style={{color: '#000', fontSize: 25, fontWeight: 'bold'}}>{'>'}</Text>
+          <TextInput
+            style={[styles.input, {flex: 1, marginHorizontal: 10}]}
+            placeholder=""
+            placeholderTextColor="#6B7280"
+            onChangeText={setSlotAmoutGrater}
+            label="Amount *"
+            mode="outlined"
+            outlineColor="#D1D5DB"
+            activeOutlineColor="#1F74BA"
+          />
+          <TextInput
+            style={[styles.input, {flex: 1}]}
+            placeholder=""
+            placeholderTextColor="#6B7280"
+            onChangeText={setSlotPercentageGrater}
+            label="Percentage *"
+            mode="outlined"
+            outlineColor="#D1D5DB"
+            activeOutlineColor="#1F74BA"
+          />
+        </View>
+      </View>
+
+      {/* Save Button */}
+      <TouchableOpacity
+        style={[styles.saveButton, processing && styles.saveButtonDisabled]}
+        onPress={ValidateSlot}
+        disabled={processing}>
+        <Text style={styles.saveButtonText}>
+          {processing ? 'Processing...' : 'Save'}
+        </Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+</Modal>
+
+
+
+
+
+            
+       <Modal
         transparent={true}
         visible={isModalVisible}
         animationType="slide"
@@ -5703,6 +7413,8 @@ useEffect(() => {
         </View>
       </Modal>
 
+
+
       <View style={styles.buttonContainer}>
   {/* <Button title="Add" onPress={handleAddProduct} /> */}
 
@@ -5717,7 +7429,7 @@ useEffect(() => {
               }}
               onPress={ValidateStyleName}
               disabled={!nextButton}>
-              <Text style={styles.saveButtonText}>Add</Text>
+              <Text style={[styles.saveButtonText, {textAlign:'center'}]}>Add</Text>
             </TouchableOpacity>
 </View>
 
@@ -6359,6 +8071,317 @@ const getStyles = colors =>
     borderColor: '#000',
     borderWidth: 1,
   },
+     // Common input (outlined TextInput)
+  input: {
+    marginHorizontal: 20,
+    marginVertical: 8,
+    backgroundColor: '#fff',
+  },
+
+  // Wrapper for each input/dropdown field
+  fieldContainer: {
+    marginHorizontal: 20,
+    marginVertical: 8,
+  },
+
+  // Row layout for dropdown + add button
+  fieldRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+
+  // Non-editable dropdown TextInput
+  dropdownInput: {
+    backgroundColor: '#fff',
+  },
+
+  // Add (+) button
+  addButton: {
+    backgroundColor: '#1F74BA',
+    marginLeft: 10,
+    width: 40,
+    height: 40,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 2,
+  },
+  addButtonText: {
+    color: '#fff',
+    fontSize: 24,
+    fontWeight: '600',
+  },
+
+  // Dropdown list container
+  dropdownList: {
+    maxHeight: 250,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    marginTop: 4,
+    elevation: 3,
+  },
+
+  // Search input inside dropdown
+  searchInput: {
+    margin: 10,
+    height: 36,
+    borderRadius: 6,
+    paddingLeft: 10,
+    backgroundColor: '#F9FAFB',
+    fontSize: 14,
+  },
+
+  // No results text
+  noResults: {
+    textAlign: 'center',
+    marginTop: 30,
+    color: '#6B7280',
+    fontSize: 14,
+  },
+
+  // Dropdown list item
+  dropdownItem: {
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderBottomWidth: 0.5,
+    borderColor: '#E5E7EB',
+  },
+  dropdownItemText: {
+    fontSize: 15,
+    color: '#111827',
+    fontWeight: '500',
+  },
+  addButtonLarge: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'center',
+  backgroundColor: '#fff',
+  borderRadius: 10,
+  paddingVertical: 8,
+  paddingHorizontal: 16,
+  gap: 10,
+  elevation: 2,
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 1 },
+  shadowOpacity: 0.2,
+  shadowRadius: 2,
+},
+
+addButtonLargeText: {
+  fontSize: 13,
+  fontWeight: '600',
+  color: '#333',
+},
+
+addButtonIcon: {
+  width: 18,
+  height: 18,
+},
+// Modal Overlay (dim background)
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  // Main Modal Container
+  modalContainer: {
+    width: '90%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 20,
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+  },
+
+  // Header
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 15,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1F74BA',
+    textAlign: 'center',
+    flex: 1,
+  },
+  closeIcon: {
+    height: 24,
+    width: 24,
+    tintColor: '#6B7280',
+  },
+
+  // Input Section
+  inputLabel: {
+    fontWeight: '600',
+    color: '#111827',
+    marginBottom: 6,
+    fontSize: 15,
+  },
+  inputField: {
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    borderRadius: 10,
+    // paddingVertical: 5,
+    paddingHorizontal: 12,
+    color: '#111827',
+    fontSize: 15,
+    backgroundColor: '#F9FAFB',
+    marginBottom: 15,
+  },
+  textArea: {
+    textAlignVertical: 'top',
+    marginBottom: 20,
+  },
+
+  // Buttons
+  saveButton: {
+    backgroundColor: '#1F74BA',
+    borderRadius: 10,
+    paddingVertical: 14,
+    alignItems: 'center',
+    elevation: 3,
+  },
+  saveButtonDisabled: {
+    backgroundColor: '#9CA3AF',
+  },
+  saveButtonText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: 16,
+  },
+  checkboxItem: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  paddingVertical: 10,
+  borderBottomWidth: 0.5,
+  borderColor: '#8e8e8e',
+  marginHorizontal: 10,
+},
+
+checkboxLabel: {
+  fontWeight: '600',
+  marginLeft: 10,
+  color: '#000',
+},
+ // Industry Cards
+ industryCard: {
+  width: 85,
+  height: 100,
+  borderRadius: 10,
+  borderWidth: 1,
+  borderColor: '#E5E7EB',
+  alignItems: 'center',
+  justifyContent: 'center',
+  marginRight: 12,
+  backgroundColor: '#F9FAFB',
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 1 },
+  shadowOpacity: 0.1,
+  shadowRadius: 2,
+  elevation: 2,
+},
+industryCardSelected: {
+  borderColor: '#1F74BA',
+  backgroundColor: '#EAF3FB', // subtle blue-tinted background for selected
+  shadowColor: '#1F74BA',
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.2,
+  shadowRadius: 3,
+  elevation: 3,
+},
+industryIcon: {
+  width: 40,
+  height: 40,
+  resizeMode: 'contain',
+  tintColor: '#1F74BA', // consistent icon color tone
+},
+industryText: {
+  fontSize: 12,
+  textAlign: 'center',
+  marginTop: 5,
+  color: '#000',
+  fontWeight: '500',
+},
+industryCheckMark: {
+  position: 'absolute',
+  bottom: 5,
+  right: 5,
+  width: 18,
+  height: 18,
+  borderRadius: 9,
+  backgroundColor: 'rgba(31, 116, 186, 0.7)',
+  justifyContent: 'center',
+  alignItems: 'center',
+},
+
+  
+});
+
+const tableStyle = StyleSheet.create({
+  wrapper: {
+    marginVertical:20,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    paddingVertical: 6,
+    paddingHorizontal: 4,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 3,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    backgroundColor: '#f3f4f6',
+    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 6,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  headerCell1: { flex: 0.6, fontWeight: 'bold', color: '#111827', fontSize: 13, textAlign: 'center' },
+  headerCell2: { flex: 1, fontWeight: 'bold', color: '#111827', fontSize: 13, textAlign: 'center' },
+  headerCell3: { flex: 1, fontWeight: 'bold', color: '#111827', fontSize: 13, textAlign: 'center' },
+  headerCell4: { flex: 1, fontWeight: 'bold', color: '#111827', fontSize: 13, textAlign: 'center' },
+  headerCell5: { flex: 1, fontWeight: 'bold', color: '#111827', fontSize: 13, textAlign: 'center' },
+  headerCell6: { flex: 1.2, fontWeight: 'bold', color: '#111827', fontSize: 13, textAlign: 'center' },
+
+  scrollBody: { minHeight: 150 },
+  dataRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 6,
+    backgroundColor: '#fafafa',
+    borderBottomWidth: 1,
+    borderColor: '#e5e7eb',
+    borderRadius: 8,
+    marginBottom: 4,
+  },
+  dataCell1: { flex: 0.6, fontSize: 13, color: '#111827', textAlign: 'center' },
+  dataCell2: { flex: 1, fontSize: 13, color: '#111827', textAlign: 'center' },
+  dataInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    borderRadius: 8,
+    paddingVertical: 4,
+    paddingHorizontal: 6,
+    fontSize: 13,
+    textAlign: 'center',
+    backgroundColor: '#fff',
+  },
+  
 });
 
 

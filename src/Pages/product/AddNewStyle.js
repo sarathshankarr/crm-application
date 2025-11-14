@@ -72,7 +72,7 @@ const AddNewStyle = ({ route }) => {
             fontWeight: 'bold',
             color: "#000",
           }}>
-            {styleDetails?.styleName ? styleDetails?.styleName : "New Style"}
+            {styleDetails?.styleName ? styleDetails?.styleName : "New Product"}
           </Text>
         </View>
       </View>
