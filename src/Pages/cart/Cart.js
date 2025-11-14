@@ -665,7 +665,8 @@ const Cart = () => {
           );
         } else {
           setFetchedData(data); // Store fetched data if needed elsewhere
-          handleSaveItem(data); // Save items to the cart
+          handleSaveItem(data, trimmedQuery); // Save items to the cart
+           setSearchQueryCode('');
         }
       })
       .catch(error => {
@@ -678,13 +679,15 @@ const Cart = () => {
   };
 
 
-  const handleSaveItem = fetchedData => {
+  const handleSaveItem = (fetchedData,trimmedQuery = '') => {
     // console.log('Fetched Data:', fetchedData);
 
     let itemsToUpdate = [];
+    let searchQueryCode =trimmedQuery;
 
     fetchedData.forEach(item => {
-      const isMatchingBarcode = item.gsCode === searchQueryCode; // Match scanned barcode
+      const isMatchingBarcode = item.gsCode == searchQueryCode; 
+      console.log("macthing barcode ============> ", isMatchingBarcode, item.gsCode , typeof item.gsCode, searchQueryCode, typeof searchQueryCode, item.gsCode.length, searchQueryCode.length);
 
       const itemDetails = {
         packageId: item.packageId || null,
