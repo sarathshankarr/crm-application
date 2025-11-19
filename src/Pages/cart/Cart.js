@@ -57,6 +57,8 @@ const Cart = () => {
   const [isLocationPickerVisible, setIsLocationPickerVisible] = useState(false);
   const [locationError, setLocationError] = useState(null);
   const [selectedPriceType, setSlectedPriceType] =useState(0)
+  const [gstSlotData, setGstSlotData] = useState([]); // Store GST slot data
+
 
   useEffect(() => {
     Geocoder.init('AIzaSyDFkFf27LcYV5Fz6cjvAfEX1hsdXx4zE6Q');
@@ -467,8 +469,83 @@ const Cart = () => {
 
   const [inputValuess, setInputValuess] = useState({});
 
-  const cartItems = useSelector(state => state.cartItems);
+  // const cartItems = useSelector(state => state.cartItems);
   // console.log('cartItems======>', cartItems);
+
+  const initializedCartItems = useSelector(state => state.cartItems);
+
+// const cartItems = initializedCartItems.map(item => {
+//   // If not edited yet → calculate initial price
+//   if (!item.priceEdited) {
+//     const initialPrice =
+//         isCorrEnabled ? item?.corRate?.toString() || '' :
+//                                 pdf_flag
+//                                   ? item?.mrp?.toString() || ''
+//                                   : isEnabled
+//                                   ? item?.retailerPrice?.toString() || ''
+//                                   : item?.dealerPrice?.toString() || ''
+
+//     return {
+//       ...item,
+//       price: initialPrice,
+//       priceEdited: false,
+//     };
+//   }
+
+  
+//   return item;
+// });
+
+const cartItems = initializedCartItems.map(item => {
+
+  if (item.priceEdited !== true) {
+
+    const initialPrice =
+      isCorrEnabled ? item?.corRate?.toString() || '' :
+      pdf_flag      ? item?.mrp?.toString()   || '' :
+      isEnabled     ? item?.retailerPrice?.toString() || '' :
+                      item?.dealerPrice?.toString() || '';
+
+    const priceNum = parseFloat(initialPrice) || 0;
+
+    const gstSlot = gstSlotData?.find(
+      c => c.id == item.gstSlotId
+    );
+    console.log(" gstSlot found: =========> ", gstSlot);
+
+    let initialGST = 0;
+
+    if (gstSlot) {
+      const {
+        greterAmount,
+        smalestAmount,
+        greterPercent,
+        smalestPercent,
+      } = gstSlot;
+console.log("Calculating GST for price: ", priceNum, " with gstSlotId: ", item.gstSlotId);
+      initialGST =
+        priceNum >= greterAmount
+          ? greterPercent
+          : priceNum <= smalestAmount
+          ? smalestPercent
+          : 0;
+    }
+
+    return {
+      ...item,
+      price: initialPrice,  
+      gst: initialGST,       
+      priceEdited: false,    
+    };
+  }
+  return item;
+});
+
+
+console.log('cartItems======>', cartItems);
+// console.log("gstSlotData===>", gstSlotData);
+
+
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [selatedDate, setSelectedDate] = useState('Expected delivery date');
 
@@ -625,6 +702,13 @@ const Cart = () => {
 
   const getStyle = query => {
     const trimmedQuery = query.trim();
+
+
+    if (!selectedDistributorId && !selectedCustomerId) {
+      setError('Distributor/Retailer has not been selected. Please select a distributor/retailer to go ahead');
+      return;
+    }
+
     if (!trimmedQuery) {
       setError('Please enter a barcode.');
       return;
@@ -687,7 +771,8 @@ const Cart = () => {
 
     fetchedData.forEach(item => {
       const isMatchingBarcode = item.gsCode == searchQueryCode; 
-      console.log("macthing barcode ============> ", isMatchingBarcode, item.gsCode , typeof item.gsCode, searchQueryCode, typeof searchQueryCode, item.gsCode.length, searchQueryCode.length);
+      // console.log("macthing barcode ============> ", isMatchingBarcode, item.gsCode , typeof item.gsCode, searchQueryCode, typeof searchQueryCode, item.gsCode.length, searchQueryCode.length);
+      console.log("macthing barcode ============> ",  item.gstSlotId , typeof item.gstSlotId);
 
       const itemDetails = {
         packageId: item.packageId || null,
@@ -707,6 +792,7 @@ const Cart = () => {
         corRate: item.corRate,
         imageUrls: item.imageUrls,
         sourceScreen: 'ModalComponent',
+        gstSlotId: item.gstSlotId,
       };
 
       // console.log('Item details to add/update:', itemDetails);
@@ -964,7 +1050,9 @@ const Cart = () => {
     //   ? item?.retailerPrice || 0 // If enabled, use retailerPrice
     //   : item?.dealerPrice || item?.price || 0; // Otherwise, use dealerPrice or price
 
-    let price = item?.mrp || 0;
+    // let price = item?.mrp || 0;
+      let price = item?.price || 0;
+
 
     // If pdf_flag is enabled, use price directly
     if (pdf_flag) {
@@ -2095,7 +2183,8 @@ const Cart = () => {
         gsCode: '8907536002462',
         availQty: item.quantity.toString(),
         // price: item.price.toString(),
-        price: item?.mrp?.toString() ||item?.price?.toString(),
+        // price: item?.mrp?.toString() ||item?.price?.toString(),
+        price: item?.price?.toString(),
         // pdf_flag
         //   ? item?.mrp?.toString() // If pdf_flag is enabled, use mrp
         //   : isEnabled
@@ -2107,7 +2196,8 @@ const Cart = () => {
         gst: gstValues[index] !== undefined ? gstValues[index] : item.gst,
         total: (
           parseFloat(         
-            item?.mrp?.toString() // If pdf_flag is enabled, use mrp
+            // item?.mrp?.toString() // If pdf_flag is enabled, use mrp
+            item?.price?.toString() // If pdf_flag is enabled, use mrp
           ) ||
           parseFloat(item?.price?.toString()) * parseInt(item?.quantity, 10)
         ) // Fallback to price if other values are not available
@@ -2132,7 +2222,8 @@ const Cart = () => {
         closeFlag: 0,
         statusFlag: 0,
         poId: 0,
-        orgPrice: item?.mrp?.toString() ||item?.price?.toString(),
+        // orgPrice: item?.mrp?.toString() ||item?.price?.toString(),
+        orgPrice: item?.price?.toString() || item?.mrp?.toString() ,
         // orgPrice: 
         // pdf_flag
         //   ? item?.mrp?.toString() // If pdf_flag is enabled, use mrp
@@ -2411,7 +2502,8 @@ const Cart = () => {
         //   ? item?.retailerPrice || 0 // If enabled, use retailerPrice
         //   : item?.dealerPrice || item?.price || 0; // Otherwise, use dealerPrice or price
 
-        let price = item?.mrp || 0;
+        // let price = item?.mrp || 0;
+        let price = item?.price || 0;
         // If pdf_flag is enabled, use price directly
         if (pdf_flag) {
           totalPrice += price * (item?.quantity || 0);
@@ -2443,7 +2535,8 @@ const Cart = () => {
     //   : isEnabled
     //   ? item?.retailerPrice || 0
     //   : item?.dealerPrice || item?.price || 0;
-    let price = item?.mrp || 0;
+    // let price = item?.mrp || 0;
+    let price = item?.price || 0;
 
     let quantity = Number(item?.quantity || 0);
     let updatedFixDisc =
@@ -2486,7 +2579,8 @@ const Cart = () => {
     .reduce((total, item) => {
       // Parse price and quantity to floats and integers respectively
       const parsedPrice = parseFloat(
-        item?.mrp?.toString()
+        // item?.mrp?.toString()
+        item?.price?.toString()
         // pdf_flag
         //   ? item?.mrp?.toString() // If pdf_flag is enabled, use mrp
         //   : isEnabled
@@ -2517,7 +2611,7 @@ const Cart = () => {
       //   : isEnabled
       //   ? parseFloat(item?.retailerPrice) || 0 // Use retailerPrice if isEnabled
       //   : parseFloat(item?.dealerPrice) || parseFloat(item?.price) || 0; // Otherwise, use dealerPrice or price
-      let price = item?.mrp || 0;
+      let price = item?.price || 0;
       // If pdf_flag is disabled, adjust price using fixDisc
       if (!pdf_flag) {
         let updatedFixDisc =
@@ -2578,7 +2672,6 @@ const Cart = () => {
   }, [totalGst, totalGrossPrice]); // Recalculate whenever totalGst or totalGrossPrice change
 
 
-  const [gstSlotData, setGstSlotData] = useState([]); // Store GST slot data
 
   useEffect(() => {
     getGstSlot();
@@ -2596,6 +2689,7 @@ const Cart = () => {
       })
       .then(response => {
         const gstList = response?.data?.response?.gstList || [];
+        console.log('Fetched GST slot data: ===> ', gstList);
         setGstSlotData(gstList);
       })
       .catch(error => {
@@ -2610,16 +2704,26 @@ const Cart = () => {
         : parseInt(text, 10).toString();
       const formattedPrice = text === '' ? '0' : parsedPrice;
   
-      const updatedItem = {
-        ...cartItems[index],
-        mrp: formattedPrice, // Only update MRP
-        price: parseFloat(formattedPrice) || 0, // Also update price for calculations
-      };
+      // const updatedItem = {
+      //   ...cartItems[index],
+      //   // mrp: formattedPrice, // Only update MRP
+      //   price: parseFloat(formattedPrice) || 0, // Also update price for calculations
+      // };
+
+          const updatedItem = {
+      ...cartItems[index],
+      price: parseFloat(formattedPrice) || 0,
+      // mrp: formattedPrice,
+      priceEdited: true,
+    };
+
   
       // Recalculate GST dynamically
       const gstSlot = gstSlotData.find(
-        c => c.id === Number(updatedItem.gstSlotId),
+        c => c.id == updatedItem.gstSlotId,
       );
+
+      console.log("gstSlot================> ",gstSlotData,  gstSlot, updatedItem.gstSlotId)
       if (gstSlot) {
         const {greterAmount, smalestAmount, greterPercent, smalestPercent} =
           gstSlot;
@@ -2632,6 +2736,7 @@ const Cart = () => {
       } else {
         updatedItem.gst = 0;
       }
+      console.log("123===> ", updatedItem.gst)
   
       // Update Redux store
       dispatch(updateCartItem(index, updatedItem));
@@ -2647,6 +2752,7 @@ const Cart = () => {
       // Update each cart item with the correct GST
       const updatedCartItems = cartItems.map(item => {
         const gstSlot = gstSlotData.find(c => c?.id === Number(item.gstSlotId));
+        console.log("gstSlot in useEffect===> ", gstSlot)
         if (gstSlot) {
           const {greterAmount, smalestAmount, greterPercent, smalestPercent} =
             gstSlot;
@@ -2665,7 +2771,7 @@ const Cart = () => {
       // Update Redux store or state
       dispatch(updateCartItem(updatedCartItems));
     }
-  }, [gstSlotData]); // Re-run when gstSlotData is updated
+  }, [gstSlotData]); 
 
   // ✅ Calculate GST Based on Price
   const calculateGST = () => {
@@ -3823,14 +3929,15 @@ const Cart = () => {
                                 color: '#000',
                                 textAlign: 'center',
                               }}
-                              value={
-                                isCorrEnabled ? item?.corRate?.toString() || '' :
-                                pdf_flag
-                                  ? item?.mrp?.toString() || ''
-                                  : isEnabled
-                                  ? item?.retailerPrice?.toString() || ''
-                                  : item?.dealerPrice?.toString() || ''
-                              }
+                              // value={
+                              //   isCorrEnabled ? item?.corRate?.toString() || '' :
+                              //   pdf_flag
+                              //     ? item?.mrp?.toString() || ''
+                              //     : isEnabled
+                              //     ? item?.retailerPrice?.toString() || ''
+                              //     : item?.dealerPrice?.toString() || ''
+                              // }
+                                value={String(item.price)}
                               onChangeText={text =>
                                 handlePriceChange(index, text)
                               }
