@@ -2078,7 +2078,7 @@ console.log('cartItems======>', cartItems);
     // return;
 
     for (let i = 0; i < cartItems.length; i++) {
-      const itemPrice =  parseFloat(cartItems[i].mrp) || 0
+      const itemPrice =  parseFloat(cartItems[i].price) || 0
 
 
       if (itemPrice === 0) {
