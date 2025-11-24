@@ -411,13 +411,13 @@ const Cart = () => {
         );
         
         if (responseItem) {
-          // Update only MRP for this specific cart item
           const updatedItem = {
             ...cartItem,
             mrp: responseItem.mrp,
-            price: responseItem.mrp, // Set price equal to MRP
+            price:responseItem.mrp, 
+            priceEdited: selectedOption === 'Package' ? false : true,    
           };
-          
+
           dispatch(updateCartItem(index, updatedItem));
         }
       });
@@ -506,12 +506,19 @@ const cartItems = initializedCartItems.map(item => {
       isEnabled     ? item?.retailerPrice?.toString() || '' :
                       item?.dealerPrice?.toString() || '';
 
+    const initialPrice1 =
+      isCorrEnabled ? "item?.corRate?.toString()" || '' :
+      pdf_flag      ? "item?.mrp?.toString()"   || '' :
+      isEnabled     ? "item?.retailerPrice?.toString()" || '' :
+                      "item?.dealerPrice?.toString()" || '';
+
     const priceNum = parseFloat(initialPrice) || 0;
 
     const gstSlot = gstSlotData?.find(
       c => c.id == item.gstSlotId
     );
-    console.log(" gstSlot found: =========> ", gstSlot);
+    // console.log(" gstSlot found: =========> ", gstSlot);
+    console.log("intialsing cart ============== > ", item.mrp, initialPrice1, item?.retailerPrice, item?.dealerPrice )
 
     let initialGST = 0;
 
@@ -542,7 +549,6 @@ console.log("Calculating GST for price: ", priceNum, " with gstSlotId: ", item.g
 });
 
 
-console.log('cartItems======>', cartItems);
 // console.log("gstSlotData===>", gstSlotData);
 
 
@@ -772,7 +778,7 @@ console.log('cartItems======>', cartItems);
     fetchedData.forEach(item => {
       const isMatchingBarcode = item.gsCode == searchQueryCode; 
       // console.log("macthing barcode ============> ", isMatchingBarcode, item.gsCode , typeof item.gsCode, searchQueryCode, typeof searchQueryCode, item.gsCode.length, searchQueryCode.length);
-      console.log("macthing barcode ============> ",  item.gstSlotId , typeof item.gstSlotId);
+      // console.log("macthing barcode ============> ",  item.gstSlotId , typeof item.gstSlotId);
 
       const itemDetails = {
         packageId: item.packageId || null,
@@ -1827,7 +1833,7 @@ console.log('cartItems======>', cartItems);
       .then(response => {
         // const distributorList = response?.data?.response?.distributorList || [];
         setDistributors(response?.data?.response?.distributorList || []);
-        console.log("distributorList",response?.data?.response?.distributorList )
+        // console.log("distributorList",response?.data?.response?.distributorList )
         setIsLoading(false);
       })
       .catch(error => {
@@ -1868,11 +1874,11 @@ console.log('cartItems======>', cartItems);
 
   useEffect(() => {
     // Watch for changes in customerLocations
-    console.log('Updated customerLocations:', customerLocations);
+    // console.log('Updated customerLocations:', customerLocations);
 
     // Automatically select the first location if available and the user hasn't selected one
     if (customerLocations.length > 0 && !hasUserSelectedLocation) {
-      console.log('First Location:', customerLocations[0]);
+      // console.log('First Location:', customerLocations[0]);
       setSelectedLocation(customerLocations[0].locationName);
       setSelectedLocationId(customerLocations[0].locationId);
     }
@@ -1880,7 +1886,7 @@ console.log('cartItems======>', cartItems);
 
   useEffect(() => {
     // Watch for changes in customerLocations for shipping location
-    console.log('Updated dis:', customerLocations);
+    // console.log('Updated dis:', customerLocations);
 
     // Automatically select the first location for shipping if available and the user hasn't selected one
     if (customerLocations.length > 0 && !hasUserSelectedLocationDistributor) {
@@ -1892,7 +1898,7 @@ console.log('cartItems======>', cartItems);
 
   useEffect(() => {
     // Watch for changes in customerLocations for shipping location
-    console.log('Updated dis:', distributorLocations);
+    // console.log('Updated dis:', distributorLocations);
 
     // Automatically select the first location for shipping if available and the user hasn't selected one
     if (distributorLocations.length > 0 && !hasUserSelectedLocation) {
@@ -2689,7 +2695,7 @@ console.log('cartItems======>', cartItems);
       })
       .then(response => {
         const gstList = response?.data?.response?.gstList || [];
-        console.log('Fetched GST slot data: ===> ', gstList);
+        // console.log('Fetched GST slot data: ===> ', gstList);
         setGstSlotData(gstList);
       })
       .catch(error => {
@@ -2723,7 +2729,7 @@ console.log('cartItems======>', cartItems);
         c => c.id == updatedItem.gstSlotId,
       );
 
-      console.log("gstSlot================> ",gstSlotData,  gstSlot, updatedItem.gstSlotId)
+      // console.log("gstSlot================> ",gstSlotData,  gstSlot, updatedItem.gstSlotId)
       if (gstSlot) {
         const {greterAmount, smalestAmount, greterPercent, smalestPercent} =
           gstSlot;
